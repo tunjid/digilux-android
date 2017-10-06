@@ -4,8 +4,10 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.FingerprintGestureController;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.v4.content.ContextCompat;
 import android.view.accessibility.AccessibilityEvent;
 
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_DOWN;
@@ -16,7 +18,15 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
 
 public class FingerGestureService extends AccessibilityService {
 
+    private static final String BRIGHTNESS_PREFS = "brightness prefs";
+    private static final String INCREMENT_VALUE = "increment value";
+    private static final String BACKGROUND_COLOR = "background color";
+    private static final String SLIDER_COLOR = "slider color";
+    private static final String SLIDER_POSITION = "slider position";
+
     public static final String BRIGHTNESS_FRACTION = "brightness value";
+    private static final int DEF_INCREMENT_VALUE = 20;
+    private static final int DEF_POSITION_VALUE = 50;
 
     @Override
     public void onCreate() {
@@ -39,6 +49,46 @@ public class FingerGestureService extends AccessibilityService {
     @Override
     public void onInterrupt() {
 
+    }
+
+    public static void setBackgroundColor(int color) {
+        SharedPreferences preferences = Application.getContext().getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+        preferences.edit().putInt(BACKGROUND_COLOR, color).apply();
+    }
+
+    public static void setSliderColor(int color) {
+        SharedPreferences preferences = Application.getContext().getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+        preferences.edit().putInt(SLIDER_COLOR, color).apply();
+    }
+
+    public static void setIncrementPercentage(int incrementValue) {
+        SharedPreferences preferences = Application.getContext().getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+        preferences.edit().putInt(INCREMENT_VALUE, incrementValue).apply();
+    }
+
+    public static void setPositionPercentage(int positionPercentage) {
+        SharedPreferences preferences = Application.getContext().getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+        preferences.edit().putInt(SLIDER_POSITION, positionPercentage).apply();
+    }
+
+    public static int getBackgroundColor() {
+        SharedPreferences preferences = Application.getContext().getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+        return preferences.getInt(BACKGROUND_COLOR, ContextCompat.getColor(Application.getContext(), R.color.colorPrimary));
+    }
+
+    public static int getSliderColor() {
+        SharedPreferences preferences = Application.getContext().getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+        return preferences.getInt(SLIDER_COLOR, ContextCompat.getColor(Application.getContext(), R.color.colorAccent));
+    }
+
+    public static int getIncrementPercentage() {
+        SharedPreferences preferences = Application.getContext().getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+        return preferences.getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE);
+    }
+
+    public static int getPositionPercentage() {
+        SharedPreferences preferences = Application.getContext().getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+        return preferences.getInt(SLIDER_POSITION, DEF_POSITION_VALUE);
     }
 
     final class BrightnessControl extends FingerprintGestureController.FingerprintGestureCallback {
@@ -80,11 +130,15 @@ public class FingerGestureService extends AccessibilityService {
         }
 
         private int reduce(int byteValue) {
-            return Math.max(byteValue - 20, (int) MIN_BRIGHTNESS);
+            return Math.max(byteValue - normalizePercetageToByte(getIncrementPercentage()), (int) MIN_BRIGHTNESS);
         }
 
         private int increase(int byteValue) {
-            return Math.min(byteValue + 20, (int) MAX_BRIGHTNESS);
+            return Math.min(byteValue + normalizePercetageToByte(getIncrementPercentage()), (int) MAX_BRIGHTNESS);
+        }
+
+        private int normalizePercetageToByte(int percentage){
+            return (int) (MAX_BRIGHTNESS * (percentage /100F));
         }
     }
 

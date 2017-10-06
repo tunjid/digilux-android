@@ -1,8 +1,12 @@
 package com.tunjid.fingergestures;
 
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
@@ -15,12 +19,12 @@ import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 public class BrightnessActivity extends AppCompatActivity
         implements SeekBar.OnSeekBarChangeListener {
-
+    
     private static final int DISMISS_DELAY = 3;
+
     private int brightnessByte;
 
     private SeekBar seekBar;
@@ -33,9 +37,20 @@ public class BrightnessActivity extends AppCompatActivity
         setContentView(R.layout.activity_brightness);
 
         Window window = getWindow();
-        window.setLayout(MATCH_PARENT, WRAP_CONTENT);
+        window.setLayout(MATCH_PARENT, MATCH_PARENT);
+        window.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 
+        ConstraintLayout layout = findViewById(R.id.constraint_layout);
+        View seekBarbackground = findViewById(R.id.wrapper);
         seekBar = findViewById(R.id.seekbar);
+
+        ConstraintSet set = new ConstraintSet();
+        set.clone(layout);
+        set.setVerticalBias(seekBarbackground.getId(), FingerGestureService.getPositionPercentage() / 100F);
+        set.applyTo(layout);
+
+        layout.setOnClickListener(v -> finish());
+
         updateEndTime();
         handleIntent(getIntent());
     }
