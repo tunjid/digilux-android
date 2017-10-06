@@ -12,15 +12,19 @@
     <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.  Go to settings now?</string>
     <string name="accessibility_permissions_request">This app needs accessibilty to listen for fingerprint gestures.  Go to accesibility now?</string>
 
+    <string name="choose_color">Choose Color</string>
+    <string name="ok">Okay</string>
+    <string name="cancel">Cancel</string>
+
     <string name="yes">Yes</string>
     <string name="no">No</string>
 
-    <string name="edit_slider_apperance">Edit Slider Apperance</string>
+    <string name="edit_slider_apperance">Edit Slider Appearance</string>
 
     <string name="adjust_slider_delta">Adjust Slider Delta</string>
     <string name="adjust_slider_position">Adjust Slider Position</string>
 
     <string name="delta_percent">%1$d%% per swipe</string>
-    <string name="position_percent">%1$d%% to the top of the screen</string>
+    <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
 </resources>

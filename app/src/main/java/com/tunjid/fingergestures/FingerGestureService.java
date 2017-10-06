@@ -27,6 +27,8 @@ public class FingerGestureService extends AccessibilityService {
     public static final String BRIGHTNESS_FRACTION = "brightness value";
     private static final int DEF_INCREMENT_VALUE = 20;
     private static final int DEF_POSITION_VALUE = 50;
+    private static final float MAX_BRIGHTNESS = 255F;
+    private static final float MIN_BRIGHTNESS = 1F;
 
     @Override
     public void onCreate() {
@@ -93,8 +95,6 @@ public class FingerGestureService extends AccessibilityService {
 
     final class BrightnessControl extends FingerprintGestureController.FingerprintGestureCallback {
 
-        private static final float MAX_BRIGHTNESS = 255F;
-        private static final float MIN_BRIGHTNESS = 1F;
 
         @Override
         public void onGestureDetectionAvailabilityChanged(boolean available) {
@@ -119,7 +119,7 @@ public class FingerGestureService extends AccessibilityService {
             if (gesture == FINGERPRINT_GESTURE_SWIPE_UP) byteValue = increase(byteValue);
             else if (gesture == FINGERPRINT_GESTURE_SWIPE_DOWN) byteValue = reduce(byteValue);
 
-            saveBrightness(byteValue, getContentResolver());
+            saveBrightness(byteValue);
 
             float brightness = byteValue / MAX_BRIGHTNESS;
 
@@ -136,13 +136,14 @@ public class FingerGestureService extends AccessibilityService {
         private int increase(int byteValue) {
             return Math.min(byteValue + normalizePercetageToByte(getIncrementPercentage()), (int) MAX_BRIGHTNESS);
         }
-
-        private int normalizePercetageToByte(int percentage){
-            return (int) (MAX_BRIGHTNESS * (percentage /100F));
-        }
     }
 
-    public static void saveBrightness(int byteValue, ContentResolver contentResolver) {
+    public static int normalizePercetageToByte(int percentage) {
+        return (int) (MAX_BRIGHTNESS * (percentage / 100F));
+    }
+
+    public static void saveBrightness(int byteValue) {
+        ContentResolver contentResolver = Application.getContext().getContentResolver();
         Settings.System.putInt(contentResolver, SCREEN_BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_MANUAL);
         Settings.System.putInt(contentResolver, SCREEN_BRIGHTNESS, byteValue);
     }

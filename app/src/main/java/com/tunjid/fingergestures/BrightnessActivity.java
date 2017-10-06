@@ -12,17 +12,24 @@ import android.view.WindowManager;
 import android.widget.SeekBar;
 
 import java.time.LocalTime;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
 
+import static android.graphics.PorterDuff.Mode.SRC_IN;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static com.tunjid.fingergestures.FingerGestureService.BRIGHTNESS_FRACTION;
+import static com.tunjid.fingergestures.FingerGestureService.getBackgroundColor;
+import static com.tunjid.fingergestures.FingerGestureService.getPositionPercentage;
+import static com.tunjid.fingergestures.FingerGestureService.getSliderColor;
+import static com.tunjid.fingergestures.FingerGestureService.normalizePercetageToByte;
+import static com.tunjid.fingergestures.FingerGestureService.saveBrightness;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BrightnessActivity extends AppCompatActivity
         implements SeekBar.OnSeekBarChangeListener {
-    
+
     private static final int DISMISS_DELAY = 3;
 
     private int brightnessByte;
@@ -44,9 +51,13 @@ public class BrightnessActivity extends AppCompatActivity
         View seekBarbackground = findViewById(R.id.wrapper);
         seekBar = findViewById(R.id.seekbar);
 
+        seekBarbackground.setBackgroundColor(getBackgroundColor());
+        seekBar.getProgressDrawable().setColorFilter(getSliderColor(), SRC_IN);
+        seekBar.getThumb().setColorFilter(getSliderColor(), SRC_IN);
+
         ConstraintSet set = new ConstraintSet();
         set.clone(layout);
-        set.setVerticalBias(seekBarbackground.getId(), FingerGestureService.getPositionPercentage() / 100F);
+        set.setVerticalBias(seekBarbackground.getId(), getPositionPercentage() / 100F);
         set.applyTo(layout);
 
         layout.setOnClickListener(v -> finish());
@@ -66,39 +77,35 @@ public class BrightnessActivity extends AppCompatActivity
         overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_up);
     }
 
-    protected void onPause() {
-        super.onPause();
-        overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_up);
-    }
-
     @Override
     public void finish() {
         Disposable disposable = reference.get();
         if (disposable != null && !disposable.isDisposed()) disposable.dispose();
 
-        FingerGestureService.saveBrightness(brightnessByte, getContentResolver());
+        saveBrightness(brightnessByte);
         super.finish();
     }
 
     @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
-        if (progress == 100) progress--;
-        float brightness = progress / 100F;
+    public void onProgressChanged(SeekBar seekBar, int percentage, boolean b) {
+        if (percentage == 100) percentage--;
+        float brightness = percentage / 100F;
 
         Window window = getWindow();
         WindowManager.LayoutParams params = getWindowLayoutParams(window);
         params.screenBrightness = brightness;
         window.setAttributes(params);
 
-        brightnessByte = (int) (progress * 255F / 100);
+        brightnessByte = normalizePercetageToByte(percentage);
         updateEndTime();
     }
 
     private void handleIntent(Intent intent) {
-        float brightness = intent.getFloatExtra(FingerGestureService.BRIGHTNESS_FRACTION, 0);
+        float brightness = intent.getFloatExtra(BRIGHTNESS_FRACTION, 0);
+        int percentage = (int) (brightness * 100);
 
-        int fraction = (int) (brightness * 100);
-        seekBar.setProgress(fraction, true);
+        brightnessByte = normalizePercetageToByte(percentage);
+        seekBar.setProgress(percentage, true);
         seekBar.setOnSeekBarChangeListener(this);
 
         waitToFinish();
@@ -107,8 +114,7 @@ public class BrightnessActivity extends AppCompatActivity
     private void waitToFinish() {
         if (reference.get() != null) return;
 
-        reference.set(Flowable.interval(DISMISS_DELAY, TimeUnit.SECONDS)
-                .subscribe(i -> {
+        reference.set(Flowable.interval(DISMISS_DELAY, SECONDS).subscribe(i -> {
                     if (LocalTime.now().isBefore(endTime)) return;
                     reference.get().dispose();
                     finish();

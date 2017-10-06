@@ -8,6 +8,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.view.ContextThemeWrapper;
 import android.view.View;
+import android.view.View.OnClickListener;
 
 import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
@@ -16,12 +17,15 @@ import com.tunjid.fingergestures.R;
 
 import java.util.function.Consumer;
 
+import static com.tunjid.fingergestures.FingerGestureService.getBackgroundColor;
+import static com.tunjid.fingergestures.FingerGestureService.getSliderColor;
+
 public class ColorAdjusterViewHolder extends HomeViewHolder {
 
     private View backgroundIndicator;
     private View sliderIndicator;
 
-   private Context context;
+    private Context context;
 
     public ColorAdjusterViewHolder(View itemView) {
         super(itemView);
@@ -31,11 +35,17 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
         backgroundIndicator = itemView.findViewById(R.id.slider_background_color_indicator);
         sliderIndicator = itemView.findViewById(R.id.slider_color_indicator);
 
-        itemView.findViewById(R.id.slider_background_color).setOnClickListener(view ->
-                pickColor(FingerGestureService.getBackgroundColor(), this::setBackgroundColor));
+        setBackgroundColor(getBackgroundColor());
+        setSliderColor(getSliderColor());
 
-        itemView.findViewById(R.id.slider_color).setOnClickListener(view ->
-                pickColor(FingerGestureService.getSliderColor(), this::setSliderColor));
+        OnClickListener backgroundPicker = view -> pickColor(getBackgroundColor(), this::setBackgroundColor);
+        OnClickListener sliderPicker = view -> pickColor(getBackgroundColor(), this::setSliderColor);
+
+        backgroundIndicator.setOnClickListener(backgroundPicker);
+        sliderIndicator.setOnClickListener(sliderPicker);
+
+        itemView.findViewById(R.id.slider_background_color).setOnClickListener(backgroundPicker);
+        itemView.findViewById(R.id.slider_color).setOnClickListener(sliderPicker);
     }
 
     private void setBackgroundColor(int color) {
@@ -57,16 +67,14 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
     }
 
     private void pickColor(int initialColor, Consumer<Integer> consumer) {
-        ColorPickerDialogBuilder
-                .with(new ContextThemeWrapper(context, R.style.ThemeOverlay_AppCompat_Dark))
-                .setTitle("Choose color")
-                .noSliders()
-                .initialColor(initialColor)
+        ColorPickerDialogBuilder.with(new ContextThemeWrapper(context, R.style.ThemeOverlay_AppCompat_Dark))
+                .setPositiveButton(R.string.ok, (DialogInterface dialog, int selectedColor, Integer[] allColors) -> consumer.accept(selectedColor))
+                .setNegativeButton(R.string.cancel, (DialogInterface dialog, int which) -> dialog.dismiss())
                 .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                .setTitle(R.string.choose_color)
+                .initialColor(initialColor)
+                .showAlphaSlider(false)
                 .density(12)
-                .setPositiveButton("ok", (DialogInterface dialog, int selectedColor, Integer[] allColors) ->
-                        consumer.accept(selectedColor))
-                .setNegativeButton("cancel", (DialogInterface dialog, int which) -> dialog.dismiss())
                 .build()
                 .show();
     }
