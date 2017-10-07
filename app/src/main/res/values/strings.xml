@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Fincandescence</string>
+    <string name="app_name">DigiLux</string>
     <string name="ad_id">ca-app-pub-1045955192336233~2688100802</string>
     <string name="ad_unit_id">ca-app-pub-1045955192336233/5371116222</string>
 
@@ -21,6 +21,8 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
 
+    <string name="about_app">About App</string>
+
     <string name="edit_slider_apperance">Edit Slider Appearance</string>
 
     <string name="adjust_slider_delta">Adjust Slider Step</string>
@@ -33,4 +35,10 @@
     <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
     <string name="enable_horizontal_swiping">Enable horizontal swiping for maximum and minimum brightness</string>
+
+    <string name="open_source_libraries">Open Source Libraries</string>
+    <string name="rxjava">RxJava2</string>
+    <string name="color_picker">Color Picker</string>
+    <string name="android_bootstrap">Android Bootstrap</string>
+
 </resources>
