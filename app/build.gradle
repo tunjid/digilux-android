@@ -11,9 +11,21 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        release {
+            def keystoreProps = new Properties()
+            def propertiesFile = file("keystore.properties")
+            keystoreProps.load(new FileInputStream(propertiesFile))
+            storeFile file("release.keystore")
+            keyAlias keystoreProps['alias']
+            keyPassword keystoreProps['aliasPassword']
+            storePassword keystoreProps['keystorePassword']
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
