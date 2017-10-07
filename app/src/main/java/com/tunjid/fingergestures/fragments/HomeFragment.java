@@ -10,9 +10,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.transition.AutoTransition;
 import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
@@ -22,12 +20,16 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.tunjid.fingergestures.Application;
 import com.tunjid.fingergestures.BuildConfig;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.HomeAdapter;
@@ -35,7 +37,6 @@ import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
 import com.tunjid.fingergestures.services.FingerGestureService;
 
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
-import static android.support.design.widget.Snackbar.LENGTH_SHORT;
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
 public class HomeFragment extends FingerGestureFragment
@@ -44,9 +45,21 @@ public class HomeFragment extends FingerGestureFragment
 
     private static final int SETTINGS_CODE = 200;
     private static final int ACCESSIBILITY_CODE = 300;
+    private static final String RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava";
+    private static final String CLOLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker";
+    private static final String ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap";
 
     private boolean fromSettings;
     private boolean fromAccessibility;
+
+    private final TextLink[] infolist;
+
+    {
+        Context context = Application.getContext();
+        infolist = new TextLink[]{new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
+                new TextLink(context.getString(R.string.color_picker), CLOLOR_PICKER_LINK),
+                new TextLink(context.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
+    }
 
     public static HomeFragment newInstance() {
         HomeFragment fragment = new HomeFragment();
@@ -54,6 +67,12 @@ public class HomeFragment extends FingerGestureFragment
 
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -103,6 +122,24 @@ public class HomeFragment extends FingerGestureFragment
 
         fromSettings = false;
         fromAccessibility = false;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.fragment_home, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.info:
+                new AlertDialog.Builder(getContext())
+                        .setTitle(R.string.open_source_libraries)
+                        .setItems(infolist, (a, b) -> showLink(infolist[b]))
+                        .show();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -163,12 +200,6 @@ public class HomeFragment extends FingerGestureFragment
                 .show();
     }
 
-    private void showSnackbar(@StringRes int resource) {
-        ViewGroup root = (ViewGroup) getView();
-        if (root == null) return;
-        Snackbar.make(root, resource, LENGTH_SHORT).show();
-    }
-
     public boolean isAccessibilityServiceEnabled() {
         Context context = getContext();
         ContentResolver contentResolver = context.getContentResolver();
@@ -188,5 +219,41 @@ public class HomeFragment extends FingerGestureFragment
         }
 
         return false;
+    }
+
+    private void showLink(TextLink textLink) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(textLink.link));
+        startActivity(browserIntent);
+    }
+
+    private static class TextLink implements CharSequence {
+        private final CharSequence text;
+        private final String link;
+
+        TextLink(CharSequence text, String link) {
+            this.text = text;
+            this.link = link;
+        }
+
+        @Override
+        @NonNull
+        public String toString() {
+            return text.toString();
+        }
+
+        @Override
+        public int length() {
+            return text.length();
+        }
+
+        @Override
+        public char charAt(int index) {
+            return text.charAt(index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return text.subSequence(start, end);
+        }
     }
 }
