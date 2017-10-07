@@ -10,9 +10,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.transition.AutoTransition;
 import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
@@ -35,7 +33,6 @@ import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
 import com.tunjid.fingergestures.services.FingerGestureService;
 
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
-import static android.support.design.widget.Snackbar.LENGTH_SHORT;
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
 public class HomeFragment extends FingerGestureFragment
@@ -161,12 +158,6 @@ public class HomeFragment extends FingerGestureFragment
                 .setPositiveButton(R.string.yes, (dialog, b) -> startActivityForResult(accessibilityIntent(), ACCESSIBILITY_CODE))
                 .setNegativeButton(R.string.no, (dialog, b) -> dialog.dismiss())
                 .show();
-    }
-
-    private void showSnackbar(@StringRes int resource) {
-        ViewGroup root = (ViewGroup) getView();
-        if (root == null) return;
-        Snackbar.make(root, resource, LENGTH_SHORT).show();
     }
 
     public boolean isAccessibilityServiceEnabled() {
