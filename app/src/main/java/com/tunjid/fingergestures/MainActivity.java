@@ -12,6 +12,7 @@ public class MainActivity extends FingerGestureActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setSupportActionBar(findViewById(R.id.toolbar));
 
         fab = findViewById(R.id.fab);
         fabHider = ViewHider.of(fab).setDirection(ViewHider.BOTTOM).build();

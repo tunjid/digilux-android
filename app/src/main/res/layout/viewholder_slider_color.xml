@@ -3,14 +3,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="@dimen/single_margin">
 
     <View
         android:id="@+id/slider_background_color_indicator"
         android:layout_width="@dimen/single_margin"
         android:layout_height="@dimen/single_margin"
         android:background="@drawable/color_indicator"
-        android:layout_marginLeft="@dimen/single_margin"
         app:layout_constraintBottom_toBottomOf="@+id/slider_background_color"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="@+id/slider_background_color" />
@@ -20,7 +20,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="@dimen/single_margin"
-        android:text="Slider Background Color"
         android:textColor="@color/colorAccent"
         app:layout_constraintLeft_toRightOf="@+id/slider_background_color_indicator"
         app:layout_constraintRight_toRightOf="parent"
@@ -31,7 +30,6 @@
         android:layout_width="@dimen/single_margin"
         android:layout_height="@dimen/single_margin"
         android:background="@drawable/color_indicator"
-        android:layout_marginLeft="@dimen/single_margin"
         app:layout_constraintBottom_toBottomOf="@+id/slider_color"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="@+id/slider_color" />
@@ -41,7 +39,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="@dimen/single_margin"
-        android:text="Slider Color"
         android:textColor="@color/colorAccent"
         app:layout_constraintLeft_toRightOf="@+id/slider_background_color_indicator"
         app:layout_constraintRight_toRightOf="parent"

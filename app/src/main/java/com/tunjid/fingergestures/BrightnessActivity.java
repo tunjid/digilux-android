@@ -3,6 +3,7 @@ package com.tunjid.fingergestures;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
+
+import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 
 import java.time.LocalTime;
 import java.util.concurrent.atomic.AtomicReference;
@@ -48,10 +51,10 @@ public class BrightnessActivity extends AppCompatActivity
         window.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 
         ConstraintLayout layout = findViewById(R.id.constraint_layout);
-        View seekBarbackground = findViewById(R.id.wrapper);
+        View seekBarbackground = findViewById(R.id.seekbar_background);
         seekBar = findViewById(R.id.seekbar);
 
-        seekBarbackground.setBackgroundColor(getBackgroundColor());
+        seekBarbackground.setBackground(ColorAdjusterViewHolder.tint(R.drawable.color_indicator, getBackgroundColor()));
         seekBar.getProgressDrawable().setColorFilter(getSliderColor(), SRC_IN);
         seekBar.getThumb().setColorFilter(getSliderColor(), SRC_IN);
 
@@ -113,12 +116,16 @@ public class BrightnessActivity extends AppCompatActivity
 
     private void waitToFinish() {
         if (reference.get() != null) return;
+        reference.set(countdownDisposable());
+    }
 
-        reference.set(Flowable.interval(DISMISS_DELAY, SECONDS).subscribe(i -> {
-                    if (LocalTime.now().isBefore(endTime)) return;
-                    reference.get().dispose();
-                    finish();
-                }, throwable -> {}));
+    @NonNull
+    private Disposable countdownDisposable() {
+        return Flowable.interval(DISMISS_DELAY, SECONDS).subscribe(i -> {
+            if (LocalTime.now().isBefore(endTime)) return;
+            reference.get().dispose();
+            finish();
+        }, throwable -> {});
     }
 
     private void updateEndTime() {

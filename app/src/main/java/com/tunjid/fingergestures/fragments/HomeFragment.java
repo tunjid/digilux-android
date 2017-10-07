@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,7 +33,7 @@ import static android.support.design.widget.Snackbar.LENGTH_SHORT;
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
 public class HomeFragment extends FingerGestureFragment
-implements HomeAdapter.HomeAdapterListener{
+        implements HomeAdapter.HomeAdapterListener {
 
     private static final int SETTINGS_CODE = 200;
     private static final int ACCESSIBILITY_CODE = 300;
@@ -54,10 +55,12 @@ implements HomeAdapter.HomeAdapterListener{
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         RecyclerView recyclerView = root.findViewById(R.id.options_list);
         Context context = getContext();
+        DividerItemDecoration itemDecoration = new DividerItemDecoration(context, VERTICAL);
+        itemDecoration.setDrawable(ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(new HomeAdapter(this));
-        recyclerView.addItemDecoration(new DividerItemDecoration(context, VERTICAL));
+        recyclerView.addItemDecoration(itemDecoration);
 
         return root;
     }

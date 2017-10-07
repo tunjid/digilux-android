@@ -24,6 +24,9 @@
     <string name="adjust_slider_delta">Adjust Slider Delta</string>
     <string name="adjust_slider_position">Adjust Slider Position</string>
 
+    <string name="change_slider_background_color">Change slider background color</string>
+    <string name="change_slider_color">Change slider color</string>
+
     <string name="delta_percent">%1$d%% per swipe</string>
     <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
