@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">FingerGesture</string>
+    <string name="app_name">Fincandescence</string>
+    <string name="ad_id">ca-app-pub-1045955192336233~2688100802</string>
+    <string name="ad_unit_id">ca-app-pub-1045955192336233/5371116222</string>
 
     <string name="accessibility_permission_granted">Accessibility permission granted</string>
     <string name="settings_permission_granted">Settings permission granted</string>

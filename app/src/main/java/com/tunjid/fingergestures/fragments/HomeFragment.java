@@ -13,6 +13,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.transition.AutoTransition;
+import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
@@ -23,17 +25,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.tunjid.fingergestures.services.FingerGestureService;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.tunjid.fingergestures.BuildConfig;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.HomeAdapter;
 import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
+import com.tunjid.fingergestures.services.FingerGestureService;
 
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
 import static android.support.design.widget.Snackbar.LENGTH_SHORT;
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
 public class HomeFragment extends FingerGestureFragment
-        implements HomeAdapter.HomeAdapterListener {
+        implements
+        HomeAdapter.HomeAdapterListener {
 
     private static final int SETTINGS_CODE = 200;
     private static final int ACCESSIBILITY_CODE = 300;
@@ -52,7 +59,7 @@ public class HomeFragment extends FingerGestureFragment
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_home, container, false);
+        ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_home, container, false);
         RecyclerView recyclerView = root.findViewById(R.id.options_list);
         Context context = getContext();
         DividerItemDecoration itemDecoration = new DividerItemDecoration(context, VERTICAL);
@@ -62,6 +69,20 @@ public class HomeFragment extends FingerGestureFragment
         recyclerView.setAdapter(new HomeAdapter(this));
         recyclerView.addItemDecoration(itemDecoration);
 
+        AdView adView = root.findViewById(R.id.adView);
+        AdRequest.Builder builder = new AdRequest.Builder();
+
+        if (BuildConfig.DEBUG) builder.addTestDevice("4853CDD3A8952349497550F27CC60ED3");
+
+        adView.setVisibility(View.INVISIBLE);
+        adView.loadAd(builder.build());
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                TransitionManager.beginDelayedTransition(root, new AutoTransition());
+                adView.setVisibility(View.VISIBLE);
+            }
+        });
         return root;
     }
 
