@@ -6,12 +6,10 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
-import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.tunjid.fingergestures.Application;
 import com.tunjid.fingergestures.FingerGestureService;
@@ -19,20 +17,19 @@ import com.tunjid.fingergestures.R;
 
 import java.util.function.Consumer;
 
+import static com.flask.colorpicker.ColorPickerView.WHEEL_TYPE.FLOWER;
 import static com.tunjid.fingergestures.FingerGestureService.getBackgroundColor;
 import static com.tunjid.fingergestures.FingerGestureService.getSliderColor;
 
 public class ColorAdjusterViewHolder extends HomeViewHolder {
 
+    private static final int COLOR_WHEEL_DENSITY = 12;
+
     private View backgroundIndicator;
     private View sliderIndicator;
 
-    private Context context;
-
     public ColorAdjusterViewHolder(View itemView) {
         super(itemView);
-
-        context = itemView.getContext();
 
         backgroundIndicator = itemView.findViewById(R.id.slider_background_color_indicator);
         sliderIndicator = itemView.findViewById(R.id.slider_color_indicator);
@@ -76,14 +73,16 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
     }
 
     private void pickColor(int initialColor, Consumer<Integer> consumer) {
-        ColorPickerDialogBuilder.with(new ContextThemeWrapper(context, R.style.ThemeOverlay_AppCompat_Dark))
+        ColorPickerDialogBuilder.with(itemView.getContext())
                 .setPositiveButton(R.string.ok, (DialogInterface dialog, int selectedColor, Integer[] allColors) -> consumer.accept(selectedColor))
                 .setNegativeButton(R.string.cancel, (DialogInterface dialog, int which) -> dialog.dismiss())
-                .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                .density(COLOR_WHEEL_DENSITY)
                 .setTitle(R.string.choose_color)
                 .initialColor(initialColor)
+                .showColorPreview(true)
                 .showAlphaSlider(false)
-                .density(12)
+                .showColorEdit(true)
+                .wheelType(FLOWER)
                 .build()
                 .show();
     }

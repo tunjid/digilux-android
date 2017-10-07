@@ -19,6 +19,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int SLIDER_DELTA = 0;
     private static final int SLIDER_POSITION = 1;
     private static final int SLIDER_COLOR = 2;
+    private static final int NUM_ITEMS = 3;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -57,7 +58,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
 
     @Override
     public int getItemCount() {
-        return 3;
+        return NUM_ITEMS;
     }
 
     @Override
