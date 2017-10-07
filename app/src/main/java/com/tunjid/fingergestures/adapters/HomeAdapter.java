@@ -7,11 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
-import com.tunjid.fingergestures.FingerGestureService;
+import com.tunjid.fingergestures.services.FingerGestureService;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.HomeViewHolder;
 import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
+import com.tunjid.fingergestures.viewholders.ToggleViewHolder;
 
 
 public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAdapter.HomeAdapterListener> {
@@ -19,7 +20,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int SLIDER_DELTA = 0;
     private static final int SLIDER_POSITION = 1;
     private static final int SLIDER_COLOR = 2;
-    private static final int NUM_ITEMS = 3;
+    private static final int ENABLE_MAX_BRIGHTNESS = 3;
+    private static final int NUM_ITEMS = 4;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -46,6 +48,10 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         (percentage) -> context.getString(R.string.position_percent, percentage));
             case SLIDER_COLOR:
                 return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent));
+            case ENABLE_MAX_BRIGHTNESS:
+                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                        R.string.enable_horizontal_swiping,
+                        FingerGestureService::setHorizontalSwipeEnabled);
             default:
                 return new HomeViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }

@@ -1,4 +1,4 @@
-package com.tunjid.fingergestures;
+package com.tunjid.fingergestures.activities;
 
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
@@ -12,6 +12,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
+import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 
 import java.time.LocalTime;
@@ -22,12 +23,12 @@ import io.reactivex.disposables.Disposable;
 
 import static android.graphics.PorterDuff.Mode.SRC_IN;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static com.tunjid.fingergestures.FingerGestureService.BRIGHTNESS_FRACTION;
-import static com.tunjid.fingergestures.FingerGestureService.getBackgroundColor;
-import static com.tunjid.fingergestures.FingerGestureService.getPositionPercentage;
-import static com.tunjid.fingergestures.FingerGestureService.getSliderColor;
-import static com.tunjid.fingergestures.FingerGestureService.normalizePercetageToByte;
-import static com.tunjid.fingergestures.FingerGestureService.saveBrightness;
+import static com.tunjid.fingergestures.services.FingerGestureService.BRIGHTNESS_FRACTION;
+import static com.tunjid.fingergestures.services.FingerGestureService.getBackgroundColor;
+import static com.tunjid.fingergestures.services.FingerGestureService.getPositionPercentage;
+import static com.tunjid.fingergestures.services.FingerGestureService.getSliderColor;
+import static com.tunjid.fingergestures.services.FingerGestureService.normalizePercetageToByte;
+import static com.tunjid.fingergestures.services.FingerGestureService.saveBrightness;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BrightnessActivity extends AppCompatActivity

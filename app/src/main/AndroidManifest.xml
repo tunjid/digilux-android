@@ -16,14 +16,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <service
-            android:name=".FingerGestureService"
+            android:name=".services.FingerGestureService"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
@@ -34,7 +34,7 @@
                 android:resource="@xml/gesture_accessibility_service" />
         </service>
         <activity
-            android:name=".BrightnessActivity"
+            android:name=".activities.BrightnessActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:theme="@style/BrightnessDialogTheme" />

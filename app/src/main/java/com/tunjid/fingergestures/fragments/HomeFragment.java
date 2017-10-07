@@ -23,7 +23,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.tunjid.fingergestures.FingerGestureService;
+import com.tunjid.fingergestures.services.FingerGestureService;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.HomeAdapter;
 import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;

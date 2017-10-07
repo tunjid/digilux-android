@@ -10,7 +10,7 @@
     <string name="permission_required">Permission Required</string>
 
     <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.  Go to settings now?</string>
-    <string name="accessibility_permissions_request">This app needs accessibilty to listen for fingerprint gestures.  Go to accesibility now?</string>
+    <string name="accessibility_permissions_request">This app needs accessibilty to listen for fingerprint gestures.\n\nGo to accesisbility now?</string>
 
     <string name="choose_color">Choose Color</string>
     <string name="ok">Okay</string>
@@ -21,7 +21,7 @@
 
     <string name="edit_slider_apperance">Edit Slider Appearance</string>
 
-    <string name="adjust_slider_delta">Adjust Slider Delta</string>
+    <string name="adjust_slider_delta">Adjust Slider Step</string>
     <string name="adjust_slider_position">Adjust Slider Position</string>
 
     <string name="change_slider_background_color">Change slider background color</string>
@@ -30,4 +30,5 @@
     <string name="delta_percent">%1$d%% per swipe</string>
     <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
+    <string name="enable_horizontal_swiping">Enable horizontal swiping for maximum and minimum brightness</string>
 </resources>

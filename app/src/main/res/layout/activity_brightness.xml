@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/transparent"
     android:padding="@dimen/single_margin"
-    tools:context=".BrightnessActivity">
+    tools:context=".activities.BrightnessActivity">
 
     <include
         layout="@layout/brightness_slider"

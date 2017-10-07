@@ -12,14 +12,14 @@ import android.widget.TextView;
 
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.tunjid.fingergestures.Application;
-import com.tunjid.fingergestures.FingerGestureService;
+import com.tunjid.fingergestures.services.FingerGestureService;
 import com.tunjid.fingergestures.R;
 
 import java.util.function.Consumer;
 
 import static com.flask.colorpicker.ColorPickerView.WHEEL_TYPE.FLOWER;
-import static com.tunjid.fingergestures.FingerGestureService.getBackgroundColor;
-import static com.tunjid.fingergestures.FingerGestureService.getSliderColor;
+import static com.tunjid.fingergestures.services.FingerGestureService.getBackgroundColor;
+import static com.tunjid.fingergestures.services.FingerGestureService.getSliderColor;
 
 public class ColorAdjusterViewHolder extends HomeViewHolder {
 

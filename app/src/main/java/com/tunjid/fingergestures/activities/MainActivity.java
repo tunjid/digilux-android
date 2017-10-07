@@ -1,8 +1,9 @@
-package com.tunjid.fingergestures;
+package com.tunjid.fingergestures.activities;
 
 import android.os.Bundle;
 
 import com.tunjid.androidbootstrap.core.view.ViewHider;
+import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
 import com.tunjid.fingergestures.fragments.HomeFragment;
 
