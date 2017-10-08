@@ -48,6 +48,7 @@ public class HomeFragment extends FingerGestureFragment
     private static final String RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava";
     private static final String CLOLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker";
     private static final String ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap";
+    private static final String GET_SET_ICON_LINK = "http://www.myiconfinder.com/getseticons";
 
     private boolean fromSettings;
     private boolean fromAccessibility;
@@ -56,7 +57,8 @@ public class HomeFragment extends FingerGestureFragment
 
     {
         Context context = Application.getContext();
-        infolist = new TextLink[]{new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
+        infolist = new TextLink[]{new TextLink(context.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
+                new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
                 new TextLink(context.getString(R.string.color_picker), CLOLOR_PICKER_LINK),
                 new TextLink(context.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
     }

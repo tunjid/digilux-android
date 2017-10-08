@@ -40,5 +40,5 @@
     <string name="rxjava">RxJava2</string>
     <string name="color_picker">Color Picker</string>
     <string name="android_bootstrap">Android Bootstrap</string>
-
+    <string name="get_set_icon">Getseticons</string>
 </resources>
