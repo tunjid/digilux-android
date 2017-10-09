@@ -11,8 +11,9 @@
 
     <string name="permission_required">Permission Required</string>
 
-    <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.  Go to settings now?</string>
+    <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.\n\nGo to settings now?</string>
     <string name="accessibility_permissions_request">This app needs accessibilty to listen for fingerprint gestures.\n\nGo to accesisbility now?</string>
+    <string name="accessibility_service_description">This app uses accessibilty to listen for fingerprint gestures exclusively.\n\nIt will not affect the functionality of any apps depending on the finger print sensor.</string>
 
     <string name="choose_color">Choose Color</string>
     <string name="ok">Okay</string>
