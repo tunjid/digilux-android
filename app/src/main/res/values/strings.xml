@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">FingerGesture</string>
+    <string name="app_name">DigiLux</string>
+    <string name="ad_id">ca-app-pub-1045955192336233~2688100802</string>
+    <string name="ad_unit_id">ca-app-pub-1045955192336233/5371116222</string>
 
     <string name="accessibility_permission_granted">Accessibility permission granted</string>
     <string name="settings_permission_granted">Settings permission granted</string>
@@ -9,8 +11,9 @@
 
     <string name="permission_required">Permission Required</string>
 
-    <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.  Go to settings now?</string>
+    <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.\n\nGo to settings now?</string>
     <string name="accessibility_permissions_request">This app needs accessibilty to listen for fingerprint gestures.\n\nGo to accesisbility now?</string>
+    <string name="accessibility_service_description">This app uses accessibilty to listen for fingerprint gestures exclusively.\n\nIt will not affect the functionality of any apps depending on the finger print sensor.</string>
 
     <string name="choose_color">Choose Color</string>
     <string name="ok">Okay</string>
@@ -18,6 +21,8 @@
 
     <string name="yes">Yes</string>
     <string name="no">No</string>
+
+    <string name="about_app">About App</string>
 
     <string name="edit_slider_apperance">Edit Slider Appearance</string>
 
@@ -31,4 +36,10 @@
     <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
     <string name="enable_horizontal_swiping">Enable horizontal swiping for maximum and minimum brightness</string>
+
+    <string name="open_source_libraries">Open Source Libraries</string>
+    <string name="rxjava">RxJava2</string>
+    <string name="color_picker">Color Picker</string>
+    <string name="android_bootstrap">Android Bootstrap</string>
+    <string name="get_set_icon">Getseticons</string>
 </resources>
