@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_DOWN;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_LEFT;
@@ -28,6 +27,8 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NOTIFICATI
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.REDUCE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.getPreferences;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @SuppressLint("UseSparseArrays")
@@ -85,8 +86,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureFingerMap = invert(fingerGestureMap);
         actionGestureMap = invert(gestureActionMap);
 
-        actionResources = new ArrayList<>(gestureActionMap.values());
-        actions = actionResources.stream().map(app::getString).collect(Collectors.toList());
+        actionResources = gestureActionMap.values().stream().sorted(comparing(actionGestureMap::get)).collect(toList());
+        actions = actionResources.stream().map(app::getString).collect(toList());
 
         consumers.add(BrightnessGestureConsumer.getInstance());
 //        consumers.add(NightLightGestureConsumer.getInstance());
