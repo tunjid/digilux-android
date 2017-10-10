@@ -37,6 +37,22 @@
 
     <string name="enable_horizontal_swiping">Enable horizontal swiping for maximum and minimum brightness</string>
 
+    <string name="swipe_up">Swipe up</string>
+    <string name="swipe_down">Swipe Down</string>
+    <string name="swipe_left">Swipe Left</string>
+    <string name="swipe_right">Swipe Right</string>
+
+    <string name="pick_action">Pick an action</string>
+
+    <string name="increase_brightness">Increase brightness</string>
+    <string name="reduce_brightness">Reduce brightness</string>
+    <string name="maximize_brightness">Maximize brightness</string>
+    <string name="minimize_brightness">Minimize brightness</string>
+    <string name="night_mode_on">Night mode on</string>
+    <string name="night_mode_off">Night mode off</string>
+    <string name="notification_up">Notification up</string>
+    <string name="notification_down">Notification down</string>
+
     <string name="open_source_libraries">Open Source Libraries</string>
     <string name="rxjava">RxJava2</string>
     <string name="color_picker">Color Picker</string>
