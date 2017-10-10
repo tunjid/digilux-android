@@ -14,6 +14,7 @@ import java.util.Set;
 
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
+import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.MAXIMIZE_BRIGHTNESS;
@@ -81,6 +82,13 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         ContentResolver contentResolver = app.getContentResolver();
         Settings.System.putInt(contentResolver, SCREEN_BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_MANUAL);
         Settings.System.putInt(contentResolver, SCREEN_BRIGHTNESS, byteValue);
+    }
+
+    public void onScreenTurnedOff() {
+        int brightnessMode = restoresAdaptiveBrightnessOnDisplaySleep()
+                ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC
+                : SCREEN_BRIGHTNESS_MODE_MANUAL;
+        Settings.System.putInt(app.getContentResolver(), SCREEN_BRIGHTNESS_MODE, brightnessMode);
     }
 
     private int reduce(int byteValue) {

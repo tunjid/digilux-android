@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
-import android.provider.Settings;
 import android.support.v4.content.ContextCompat;
 import android.view.accessibility.AccessibilityEvent;
 
@@ -16,10 +15,6 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.gestureconsumers.GestureUtils;
-
-import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
-import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
-import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
 
 public class FingerGestureService extends AccessibilityService {
 
@@ -35,10 +30,11 @@ public class FingerGestureService extends AccessibilityService {
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            int brightnessMode = BrightnessGestureConsumer.getInstance().restoresAdaptiveBrightnessOnDisplaySleep()
-                    ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC
-                    : SCREEN_BRIGHTNESS_MODE_MANUAL;
-            Settings.System.putInt(getContentResolver(), SCREEN_BRIGHTNESS_MODE, brightnessMode);
+            switch (intent.getAction()) {
+                case Intent.ACTION_SCREEN_OFF:
+                    BrightnessGestureConsumer.getInstance().onScreenTurnedOff();
+                    break;
+            }
         }
     };
 
@@ -89,6 +85,4 @@ public class FingerGestureService extends AccessibilityService {
     public static int getPositionPercentage() {
         return GestureUtils.getPreferences().getInt(SLIDER_POSITION, DEF_POSITION_VALUE);
     }
-
-
 }

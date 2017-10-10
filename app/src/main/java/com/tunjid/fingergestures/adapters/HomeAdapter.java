@@ -41,6 +41,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     @Override
     public HomeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
+        BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
 
         switch (viewType) {
             case SLIDER_DELTA:
@@ -62,7 +63,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
             case ADAPTIVE_BRIGHTNESS:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.adaptive_brightness,
-                        BrightnessGestureConsumer.getInstance()::shouldRestoreAdaptiveBrightnessOnDisplaySleep);
+                        brightnessGestureConsumer::restoresAdaptiveBrightnessOnDisplaySleep,
+                        brightnessGestureConsumer::shouldRestoreAdaptiveBrightnessOnDisplaySleep);
             case MAP_UP_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE);
             case MAP_DOWN_ICON:
