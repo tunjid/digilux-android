@@ -51,8 +51,8 @@
     <string name="minimize_brightness">Minimum brightness</string>
     <string name="night_mode_on">Night mode on</string>
     <string name="night_mode_off">Night mode off</string>
-    <string name="notification_up">Notification up</string>
-    <string name="notification_down">Notification down</string>
+    <string name="notification_up">Notification shade up</string>
+    <string name="notification_down">Notification shade down</string>
 
     <string name="open_source_libraries">Open Source Libraries</string>
     <string name="rxjava">RxJava2</string>
