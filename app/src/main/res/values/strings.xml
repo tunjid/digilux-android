@@ -1,7 +1,17 @@
 <resources>
+    <!-- App strings-->
     <string name="app_name">DigiLux</string>
+    <string name="about_app">About App</string>
+
+    <!-- Ad config-->
     <string name="ad_id">ca-app-pub-1045955192336233~2688100802</string>
     <string name="ad_unit_id">ca-app-pub-1045955192336233/5371116222</string>
+
+    <!-- Permission Dialogs-->
+    <string name="permission_required">Permission Required</string>
+
+    <string name="accessibility_permissions_request">This app needs accessibility to listen for fingerprint gestures.\n\nGo to accessibility now?</string>
+    <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.\n\nGo to settings now?</string>
 
     <string name="accessibility_permission_granted">Accessibility permission granted</string>
     <string name="settings_permission_granted">Settings permission granted</string>
@@ -9,42 +19,33 @@
     <string name="accessibility_permission_denied">Accessibility permission denied</string>
     <string name="settings_permission_denied">Settings permission denied</string>
 
-    <string name="permission_required">Permission Required</string>
-
-    <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.\n\nGo to settings now?</string>
-    <string name="accessibility_permissions_request">This app needs accessibility to listen for fingerprint gestures.\n\nGo to accessibility now?</string>
     <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures exclusively.\n\nIt will not affect the functionality of any apps depending on the finger print sensor.</string>
 
-    <string name="choose_color">Choose Color</string>
-    <string name="ok">Okay</string>
-    <string name="cancel">Cancel</string>
-
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-
-    <string name="about_app">About App</string>
-
-    <string name="edit_slider_apperance">Edit Slider Appearance</string>
-
+    <!-- Delta Viewholder-->
+    <string name="delta_percent">%1$d%% per swipe</string>
     <string name="adjust_slider_delta">Adjust Slider Step</string>
-    <string name="adjust_slider_position">Adjust Slider Position</string>
 
+    <!-- Position Viewholder-->
+    <string name="adjust_slider_position">Adjust Slider Position</string>
+    <string name="position_percent">%1$d%% to the bottom of the screen</string>
+
+    <!-- Color Adjuster Viewholder-->
+    <string name="choose_color">Choose Color</string>
+    <string name="edit_slider_apperance">Edit Slider Appearance</string>
     <string name="change_slider_background_color">Change slider background color</string>
     <string name="change_slider_color">Change slider color</string>
 
-    <string name="delta_percent">%1$d%% per swipe</string>
-    <string name="position_percent">%1$d%% to the bottom of the screen</string>
+    <!-- Adaptive Brightness Viewholder-->
+    <string name="adaptive_brightness">Restore adaptive brightness when the screen is turned off and on</string>
 
-    <string name="enable_horizontal_swiping">Enable horizontal swiping for maximum and minimum brightness</string>
-
+    <!-- Available gestures-->
     <string name="swipe_up">Swipe up</string>
     <string name="swipe_down">Swipe Down</string>
     <string name="swipe_left">Swipe Left</string>
     <string name="swipe_right">Swipe Right</string>
 
+    <!-- Available actions-->
     <string name="pick_action">Pick an action</string>
-    <string name="unsupported_action">Sorry! Looks like that action is unsupported on your device. Please drop me a line to fix it.</string>
-
     <string name="increase_brightness">Increase brightness</string>
     <string name="reduce_brightness">Reduce brightness</string>
     <string name="maximize_brightness">Maximum brightness</string>
@@ -53,10 +54,19 @@
     <string name="night_mode_off">Night mode off</string>
     <string name="notification_up">Notification shade up</string>
     <string name="notification_down">Notification shade down</string>
+    <string name="unsupported_action">Sorry! Looks like that action is unsupported on your device. Please drop me a line to fix it.</string>
 
+    <!-- Info dialog-->
     <string name="open_source_libraries">Open Source Libraries</string>
     <string name="rxjava">RxJava2</string>
     <string name="color_picker">Color Picker</string>
     <string name="android_bootstrap">Android Bootstrap</string>
     <string name="get_set_icon">Getseticons</string>
+
+    <!-- Generic text-->
+    <string name="ok">Okay</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

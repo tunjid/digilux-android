@@ -2,12 +2,17 @@ package com.tunjid.fingergestures.services;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.FingerprintGestureController;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.tunjid.fingergestures.Application;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.gestureconsumers.GestureUtils;
 
@@ -22,28 +27,31 @@ public class FingerGestureService extends AccessibilityService {
     private static final int DEF_INCREMENT_VALUE = 20;
     private static final int DEF_POSITION_VALUE = 50;
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-    }
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case Intent.ACTION_SCREEN_OFF:
+                    BrightnessGestureConsumer.getInstance().onScreenTurnedOff();
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
-
         FingerprintGestureController gestureController = getFingerprintGestureController();
         gestureController.registerFingerprintGestureCallback(GestureMapper.getInstance(), new Handler());
+
+        registerReceiver(receiver, new IntentFilter(Intent.ACTION_SCREEN_OFF));
     }
 
     @Override
-    public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
-
-    }
+    public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {}
 
     @Override
-    public void onInterrupt() {
-
-    }
+    public void onInterrupt() {}
 
     public static void setBackgroundColor(int color) {
         GestureUtils.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply();
@@ -60,6 +68,7 @@ public class FingerGestureService extends AccessibilityService {
     public static void setPositionPercentage(int positionPercentage) {
         GestureUtils.getPreferences().edit().putInt(SLIDER_POSITION, positionPercentage).apply();
     }
+
 
     public static int getBackgroundColor() {
         return GestureUtils.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(Application.getContext(), R.color.colorPrimary));
