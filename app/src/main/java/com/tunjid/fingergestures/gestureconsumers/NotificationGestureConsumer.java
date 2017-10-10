@@ -2,8 +2,10 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.widget.Toast;
 
 import com.tunjid.fingergestures.Application;
+import com.tunjid.fingergestures.R;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -48,6 +50,7 @@ public class NotificationGestureConsumer implements GestureConsumer {
                 }
                 catch (Exception e) {
                     e.printStackTrace();
+                    Toast.makeText(Application.getContext(), R.string.unsupported_action, Toast.LENGTH_SHORT);
                 }
                 break;
         }

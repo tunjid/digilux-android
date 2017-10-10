@@ -89,8 +89,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         actions = actionResources.stream().map(app::getString).collect(Collectors.toList());
 
         consumers.add(BrightnessGestureConsumer.getInstance());
-        consumers.add(NightLightGestureConsumer.getInstance());
-        //consumers.add(NotificationGestureConsumer.getInstance());
+//        consumers.add(NightLightGestureConsumer.getInstance());
+        consumers.add(NotificationGestureConsumer.getInstance());
     }
 
     public static GestureMapper getInstance() {
