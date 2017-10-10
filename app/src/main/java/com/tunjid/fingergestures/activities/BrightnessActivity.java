@@ -13,6 +13,7 @@ import android.view.WindowManager;
 import android.widget.SeekBar;
 
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 
 import java.time.LocalTime;
@@ -27,8 +28,7 @@ import static com.tunjid.fingergestures.services.FingerGestureService.BRIGHTNESS
 import static com.tunjid.fingergestures.services.FingerGestureService.getBackgroundColor;
 import static com.tunjid.fingergestures.services.FingerGestureService.getPositionPercentage;
 import static com.tunjid.fingergestures.services.FingerGestureService.getSliderColor;
-import static com.tunjid.fingergestures.services.FingerGestureService.normalizePercetageToByte;
-import static com.tunjid.fingergestures.services.FingerGestureService.saveBrightness;
+import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BrightnessActivity extends AppCompatActivity
@@ -85,8 +85,7 @@ public class BrightnessActivity extends AppCompatActivity
     public void finish() {
         Disposable disposable = reference.get();
         if (disposable != null && !disposable.isDisposed()) disposable.dispose();
-
-        saveBrightness(brightnessByte);
+        BrightnessGestureConsumer.getInstance().saveBrightness(brightnessByte);
         super.finish();
     }
 
