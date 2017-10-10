@@ -12,8 +12,8 @@
     <string name="permission_required">Permission Required</string>
 
     <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.\n\nGo to settings now?</string>
-    <string name="accessibility_permissions_request">This app needs accessibilty to listen for fingerprint gestures.\n\nGo to accesisbility now?</string>
-    <string name="accessibility_service_description">This app uses accessibilty to listen for fingerprint gestures exclusively.\n\nIt will not affect the functionality of any apps depending on the finger print sensor.</string>
+    <string name="accessibility_permissions_request">This app needs accessibility to listen for fingerprint gestures.\n\nGo to accessibility now?</string>
+    <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures exclusively.\n\nIt will not affect the functionality of any apps depending on the finger print sensor.</string>
 
     <string name="choose_color">Choose Color</string>
     <string name="ok">Okay</string>
@@ -36,6 +36,23 @@
     <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
     <string name="enable_horizontal_swiping">Enable horizontal swiping for maximum and minimum brightness</string>
+
+    <string name="swipe_up">Swipe up</string>
+    <string name="swipe_down">Swipe Down</string>
+    <string name="swipe_left">Swipe Left</string>
+    <string name="swipe_right">Swipe Right</string>
+
+    <string name="pick_action">Pick an action</string>
+    <string name="unsupported_action">Sorry! Looks like that action is unsupported on your device. Please drop me a line to fix it.</string>
+
+    <string name="increase_brightness">Increase brightness</string>
+    <string name="reduce_brightness">Reduce brightness</string>
+    <string name="maximize_brightness">Maximum brightness</string>
+    <string name="minimize_brightness">Minimum brightness</string>
+    <string name="night_mode_on">Night mode on</string>
+    <string name="night_mode_off">Night mode off</string>
+    <string name="notification_up">Notification shade up</string>
+    <string name="notification_down">Notification shade down</string>
 
     <string name="open_source_libraries">Open Source Libraries</string>
     <string name="rxjava">RxJava2</string>
