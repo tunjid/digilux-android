@@ -2,12 +2,10 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.widget.Toast;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.Application;
-import com.tunjid.fingergestures.R;
 
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,6 +13,9 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NOTIFICATI
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NOTIFICATION_UP;
 
 public class NotificationGestureConsumer implements GestureConsumer {
+
+    public static final String ACTION_NOTIFICATION_UP = "NotificationGestureConsumer up";
+    public static final String ACTION_NOTIFICATION_DOWN = "NotificationGestureConsumer down";
 
     private final Set<Integer> gestures;
 
@@ -36,22 +37,11 @@ public class NotificationGestureConsumer implements GestureConsumer {
     public void onGestureActionTriggered(@GestureUtils.GestureAction int gestureAction) {
         switch (gestureAction) {
             case NOTIFICATION_UP:
-                Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                Application.getContext().sendBroadcast(closeIntent);
-                break;
             case NOTIFICATION_DOWN:
-                try {
-                    @SuppressLint("WrongConstant")
-                    Object sbservice = Application.getContext().getSystemService("statusbar");
-                    Class<?> statusbarManager = Class.forName("android.app.StatusBarManager");
-                    Method showsb;
-                    showsb = statusbarManager.getMethod("expandNotificationsPanel");
-                    showsb.invoke(sbservice);
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(Application.getContext(), R.string.unsupported_action, Toast.LENGTH_SHORT);
-                }
+                LocalBroadcastManager.getInstance(Application.getContext())
+                        .sendBroadcast(new Intent(gestureAction == NOTIFICATION_UP
+                                ? ACTION_NOTIFICATION_UP
+                                : ACTION_NOTIFICATION_DOWN));
                 break;
         }
     }

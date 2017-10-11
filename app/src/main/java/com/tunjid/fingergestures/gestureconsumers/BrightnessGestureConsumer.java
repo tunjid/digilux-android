@@ -14,11 +14,13 @@ import java.util.Set;
 
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
+import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.MAXIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.MININIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.REDUCE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.getPreferences;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
 import static com.tunjid.fingergestures.services.FingerGestureService.BRIGHTNESS_FRACTION;
 import static com.tunjid.fingergestures.services.FingerGestureService.getIncrementPercentage;
@@ -27,6 +29,8 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     static final float MAX_BRIGHTNESS = 255F;
     private static final float MIN_BRIGHTNESS = 1F;
+
+    private static final String ADAPTIVE_BRIGHTNESS = "adaptive brightness";
 
     private final Context app;
     private final Set<Integer> gestures;
@@ -80,11 +84,26 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         Settings.System.putInt(contentResolver, SCREEN_BRIGHTNESS, byteValue);
     }
 
+    public void onScreenTurnedOff() {
+        int brightnessMode = restoresAdaptiveBrightnessOnDisplaySleep()
+                ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC
+                : SCREEN_BRIGHTNESS_MODE_MANUAL;
+        Settings.System.putInt(app.getContentResolver(), SCREEN_BRIGHTNESS_MODE, brightnessMode);
+    }
+
     private int reduce(int byteValue) {
         return Math.max(byteValue - normalizePercetageToByte(getIncrementPercentage()), (int) MIN_BRIGHTNESS);
     }
 
     private int increase(int byteValue) {
         return Math.min(byteValue + normalizePercetageToByte(getIncrementPercentage()), (int) MAX_BRIGHTNESS);
+    }
+
+    public void shouldRestoreAdaptiveBrightnessOnDisplaySleep(boolean restore) {
+        getPreferences().edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply();
+    }
+
+    public boolean restoresAdaptiveBrightnessOnDisplaySleep() {
+        return getPreferences().getBoolean(ADAPTIVE_BRIGHTNESS, false);
     }
 }

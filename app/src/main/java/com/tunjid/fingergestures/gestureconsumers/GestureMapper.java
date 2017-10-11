@@ -20,6 +20,7 @@ import static android.accessibilityservice.FingerprintGestureController.FINGERPR
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_LEFT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_RIGHT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_UP;
+import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.DO_NOTHING;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.MAXIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.MININIMIZE_BRIGHTNESS;
@@ -75,6 +76,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureActionMap.put(MININIMIZE_BRIGHTNESS, R.string.minimize_brightness);
         gestureActionMap.put(NOTIFICATION_UP, R.string.notification_up);
         gestureActionMap.put(NOTIFICATION_DOWN, R.string.notification_down);
+        gestureActionMap.put(DO_NOTHING, R.string.do_nothing);
 //        gestureActionMap.put(NIGHT_MODE_ON, R.string.night_mode_on);
 //        gestureActionMap.put(NIGHT_MODE_OFF, R.string.night_mode_off);
 
@@ -89,6 +91,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         actionResources = gestureActionMap.values().stream().sorted(comparing(actionGestureMap::get)).collect(toList());
         actions = actionResources.stream().map(app::getString).collect(toList());
 
+        consumers.add(NothingGestureConsumer.getInstance());
         consumers.add(BrightnessGestureConsumer.getInstance());
 //        consumers.add(NightLightGestureConsumer.getInstance());
         consumers.add(NotificationGestureConsumer.getInstance());
@@ -160,7 +163,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 case RIGHT_GESTURE:
                     return MAXIMIZE_BRIGHTNESS;
                 default:
-                    return INCREASE_BRIGHTNESS;
+                    return DO_NOTHING;
             }
         }
         else return gesture;

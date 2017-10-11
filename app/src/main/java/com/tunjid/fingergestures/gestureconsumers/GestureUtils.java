@@ -23,10 +23,11 @@ public class GestureUtils {
     static final int NIGHT_MODE_OFF = 5;
     static final int NOTIFICATION_UP = 6;
     static final int NOTIFICATION_DOWN = 7;
+    static final int DO_NOTHING = 8;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({INCREASE_BRIGHTNESS, REDUCE_BRIGHTNESS, MAXIMIZE_BRIGHTNESS, MININIMIZE_BRIGHTNESS,
-            NIGHT_MODE_ON, NIGHT_MODE_OFF, NOTIFICATION_DOWN, NOTIFICATION_UP})
+            NIGHT_MODE_ON, NIGHT_MODE_OFF, NOTIFICATION_DOWN, NOTIFICATION_UP, DO_NOTHING})
     @interface GestureAction {}
 
     public static int normalizePercetageToByte(int percentage) {
