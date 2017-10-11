@@ -44,7 +44,7 @@ public class FingerGestureService extends AccessibilityService {
                     BrightnessGestureConsumer.getInstance().onScreenTurnedOff();
                     break;
                 case ACTION_NOTIFICATION_DOWN:
-                    if (!isNotificationsShowing()) performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
+                    if (!notificationsShowing()) performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
                     else expandQuickSettings(FingerGestureService.this.getRootInActiveWindow());
                     break;
                 case ACTION_NOTIFICATION_UP:
@@ -94,7 +94,7 @@ public class FingerGestureService extends AccessibilityService {
         }
     }
 
-    private boolean isNotificationsShowing() {
+    private boolean notificationsShowing() {
         AccessibilityNodeInfo info = FingerGestureService.this.getRootInActiveWindow();
         return info != null && ANDROID_SYSTEM_UI_PACKAGE.equals(info.getPackageName());
     }
