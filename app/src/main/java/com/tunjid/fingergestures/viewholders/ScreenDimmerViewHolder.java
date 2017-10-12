@@ -10,13 +10,13 @@ import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
 import static android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION;
 
-public class ScreenFilterViewHolder extends HomeViewHolder {
+public class ScreenDimmerViewHolder extends HomeViewHolder {
 
     private final Button goToSettings;
     private final Switch overLayToggle;
     private final BrightnessGestureConsumer brightnessGestureConsumer;
 
-    public ScreenFilterViewHolder(View itemView) {
+    public ScreenDimmerViewHolder(View itemView) {
         super(itemView);
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
 
@@ -24,20 +24,20 @@ public class ScreenFilterViewHolder extends HomeViewHolder {
         overLayToggle = itemView.findViewById(R.id.toggle);
 
         overLayToggle.setOnCheckedChangeListener(((buttonView, isChecked) ->
-                brightnessGestureConsumer.setFilterEnabled(isChecked)
+                brightnessGestureConsumer.setDimmerEnabled(isChecked)
         ));
     }
 
     @Override
     public void bind() {
         super.bind();
-        boolean hasFilterPermission = brightnessGestureConsumer.hasFilterPermission();
+        boolean hasOverlayPermission = brightnessGestureConsumer.hasOverlayPermission();
 
-        goToSettings.setVisibility(hasFilterPermission ? View.GONE : View.VISIBLE);
+        goToSettings.setVisibility(hasOverlayPermission ? View.GONE : View.VISIBLE);
         goToSettings.setOnClickListener(this::goToSettings);
 
-        overLayToggle.setVisibility(hasFilterPermission ? View.VISIBLE : View.GONE);
-        overLayToggle.setChecked(brightnessGestureConsumer.isFilterEnabled());
+        overLayToggle.setVisibility(hasOverlayPermission ? View.VISIBLE : View.GONE);
+        overLayToggle.setChecked(brightnessGestureConsumer.isDimmerEnabled());
     }
 
     private void goToSettings(View view) {

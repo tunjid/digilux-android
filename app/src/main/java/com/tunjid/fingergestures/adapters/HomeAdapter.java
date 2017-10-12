@@ -12,7 +12,7 @@ import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.HomeViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
-import com.tunjid.fingergestures.viewholders.ScreenFilterViewHolder;
+import com.tunjid.fingergestures.viewholders.ScreenDimmerViewHolder;
 import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.ToggleViewHolder;
 
@@ -27,13 +27,14 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int SLIDER_DELTA = 0;
     private static final int SLIDER_POSITION = 1;
     private static final int SLIDER_COLOR = 2;
-    private static final int SCREEN_FILTER = 3;
+    private static final int SCREEN_DIMMER = 3;
     private static final int ADAPTIVE_BRIGHTNESS = 4;
-    private static final int MAP_UP_ICON = 5;
-    private static final int MAP_DOWN_ICON = 6;
-    private static final int MAP_LEFT_ICON = 7;
-    private static final int MAP_RIGHT_ICON = 8;
-    private static final int NUM_ITEMS = 9;
+    private static final int SHOW_SLIDER = 5;
+    private static final int MAP_UP_ICON = 6;
+    private static final int MAP_DOWN_ICON = 7;
+    private static final int MAP_LEFT_ICON = 8;
+    private static final int MAP_RIGHT_ICON = 9;
+    private static final int NUM_ITEMS = 10;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -66,6 +67,11 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         R.string.adaptive_brightness,
                         brightnessGestureConsumer::restoresAdaptiveBrightnessOnDisplaySleep,
                         brightnessGestureConsumer::shouldRestoreAdaptiveBrightnessOnDisplaySleep);
+            case SHOW_SLIDER:
+                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                        R.string.show_slider,
+                        brightnessGestureConsumer::shouldShowSlider,
+                        brightnessGestureConsumer::setSliderVisible);
             case MAP_UP_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE);
             case MAP_DOWN_ICON:
@@ -74,8 +80,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), LEFT_GESTURE);
             case MAP_RIGHT_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE);
-            case SCREEN_FILTER:
-                return new ScreenFilterViewHolder(getView(R.layout.viewholder_screen_filter, parent));
+            case SCREEN_DIMMER:
+                return new ScreenDimmerViewHolder(getView(R.layout.viewholder_screen_dimmer, parent));
             default:
                 return new HomeViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }

@@ -50,14 +50,15 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final int DEF_POSITION_VALUE = 50;
 
     public static final String BRIGHTNESS_FRACTION = "brightness value";
-    public static final String ACTION_SCREEN_FILTER_CHANGED = "show screen filter";
+    public static final String ACTION_SCREEN_DIMMER_CHANGED = "show screen dimmer";
     private static final String INCREMENT_VALUE = "increment value";
     private static final String BACKGROUND_COLOR = "background color";
     private static final String SLIDER_COLOR = "slider color";
     private static final String SLIDER_POSITION = "slider position";
+    private static final String SLIDER_VISIBLE = "slider visible";
     private static final String ADAPTIVE_BRIGHTNESS = "adaptive brightness";
-    private static final String SCREEN_FILTER_ENABLED = "screen filter enabled";
-    private static final String SCREEN_FILTER_DIM_PERCENT = "screen filter dim percent";
+    private static final String SCREEN_DIMMER_ENABLED = "screen dimmer enabled";
+    private static final String SCREEN_DIMMER_DIM_PERCENT = "screen dimmer dim percent";
 
     private final Context app;
     private final Set<Integer> gestures;
@@ -97,10 +98,10 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         Intent intent = new Intent(app, BrightnessActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        if (engagedFilter(gestureAction, originalValue)) {
+        if (engagedDimmer(gestureAction, originalValue)) {
             byteValue = originalValue;
-            intent.setAction(ACTION_SCREEN_FILTER_CHANGED);
-            intent.putExtra(SCREEN_FILTER_DIM_PERCENT, getScreenFilterDimPercent());
+            intent.setAction(ACTION_SCREEN_DIMMER_CHANGED);
+            intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
             LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
         }
 
@@ -109,7 +110,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         float brightness = byteValue / MAX_BRIGHTNESS;
         intent.putExtra(BRIGHTNESS_FRACTION, brightness);
 
-        app.startActivity(intent);
+        if (shouldShowSlider()) app.startActivity(intent);
     }
 
 
@@ -130,32 +131,32 @@ public class BrightnessGestureConsumer implements GestureConsumer {
                 ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC
                 : SCREEN_BRIGHTNESS_MODE_MANUAL;
         Settings.System.putInt(app.getContentResolver(), SCREEN_BRIGHTNESS_MODE, brightnessMode);
-        if (restoresAdaptiveBrightness) removeFilter();
+        if (restoresAdaptiveBrightness) removeDimmer();
     }
 
-    private boolean engagedFilter(@GestureUtils.GestureAction int gestureAction, int byteValue) {
-        if (!isFilterEnabled()) return false;
+    private boolean engagedDimmer(@GestureUtils.GestureAction int gestureAction, int byteValue) {
+        if (!isDimmerEnabled()) return false;
         if (byteValue == (int) MIN_BRIGHTNESS && gestureAction == REDUCE_BRIGHTNESS) {
-            increaseScreenFilter();
+            increaseScreenDimmer();
             return true;
         }
-        else if (gestureAction == INCREASE_BRIGHTNESS && getScreenFilterDimPercent() > MIN_DIM_PERCENT) {
-            reduceScreenFilter();
+        else if (gestureAction == INCREASE_BRIGHTNESS && getScreenDimmerDimPercent() > MIN_DIM_PERCENT) {
+            reduceScreenDimmer();
             return true;
         }
         return false;
     }
 
-    private void reduceScreenFilter() {
-        float current = getScreenFilterDimPercent();
+    private void reduceScreenDimmer() {
+        float current = getScreenDimmerDimPercent();
         float changed = current - normalizePercetageToFraction(getIncrementPercentage());
-        setFilterDimPercent(Math.max(roundDown(changed), MIN_DIM_PERCENT));
+        setDimmerPercent(Math.max(roundDown(changed), MIN_DIM_PERCENT));
     }
 
-    private void increaseScreenFilter() {
-        float current = getScreenFilterDimPercent();
+    private void increaseScreenDimmer() {
+        float current = getScreenDimmerDimPercent();
         float changed = current + normalizePercetageToFraction(getIncrementPercentage());
-        setFilterDimPercent(Math.min(roundDown(changed), MAX_DIM_PERCENT));
+        setDimmerPercent(Math.min(roundDown(changed), MAX_DIM_PERCENT));
     }
 
     private int reduce(int byteValue) {
@@ -182,17 +183,21 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         getPreferences().edit().putInt(SLIDER_POSITION, positionPercentage).apply();
     }
 
-    private void setFilterDimPercent(float percentage) {
-        getPreferences().edit().putFloat(SCREEN_FILTER_DIM_PERCENT, percentage).apply();
+    private void setDimmerPercent(float percentage) {
+        getPreferences().edit().putFloat(SCREEN_DIMMER_DIM_PERCENT, percentage).apply();
     }
 
     public void shouldRestoreAdaptiveBrightnessOnDisplaySleep(boolean restore) {
         getPreferences().edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply();
     }
 
-    public void setFilterEnabled(boolean enabled) {
-        getPreferences().edit().putBoolean(SCREEN_FILTER_ENABLED, enabled).apply();
-        if (!enabled) removeFilter();
+    public void setSliderVisible(boolean visible) {
+        getPreferences().edit().putBoolean(SLIDER_VISIBLE, visible).apply();
+    }
+
+    public void setDimmerEnabled(boolean enabled) {
+        getPreferences().edit().putBoolean(SCREEN_DIMMER_ENABLED, enabled).apply();
+        if (!enabled) removeDimmer();
     }
 
     public int getBackgroundColor() {
@@ -211,30 +216,34 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return getPreferences().getInt(SLIDER_POSITION, DEF_POSITION_VALUE);
     }
 
-    public float getScreenFilterDimPercent() {
-        return getPreferences().getFloat(SCREEN_FILTER_DIM_PERCENT, DEF_DIM_PERCENT);
+    public float getScreenDimmerDimPercent() {
+        return getPreferences().getFloat(SCREEN_DIMMER_DIM_PERCENT, DEF_DIM_PERCENT);
     }
 
     public boolean restoresAdaptiveBrightnessOnDisplaySleep() {
         return getPreferences().getBoolean(ADAPTIVE_BRIGHTNESS, false);
     }
 
-    public boolean hasFilterPermission() {
+    public boolean hasOverlayPermission() {
         return Settings.canDrawOverlays(app);
     }
 
-    public boolean isFilterEnabled() {
-        return hasFilterPermission() && getPreferences().getBoolean(SCREEN_FILTER_ENABLED, false);
+    public boolean isDimmerEnabled() {
+        return hasOverlayPermission() && getPreferences().getBoolean(SCREEN_DIMMER_ENABLED, false);
     }
 
-    public boolean shouldShowFilter() {
-        return getScreenFilterDimPercent() != MIN_DIM_PERCENT;
+    public boolean shouldShowDimmer() {
+        return getScreenDimmerDimPercent() != MIN_DIM_PERCENT;
     }
 
-    public void removeFilter() {
-        setFilterDimPercent(MIN_DIM_PERCENT);
-        Intent intent = new Intent(ACTION_SCREEN_FILTER_CHANGED);
-        intent.putExtra(SCREEN_FILTER_DIM_PERCENT, getScreenFilterDimPercent());
+    public boolean shouldShowSlider() {
+        return getPreferences().getBoolean(SLIDER_VISIBLE, true);
+    }
+
+    public void removeDimmer() {
+        setDimmerPercent(MIN_DIM_PERCENT);
+        Intent intent = new Intent(ACTION_SCREEN_DIMMER_CHANGED);
+        intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
         LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
     }
 
@@ -242,7 +251,8 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         WallpaperManager wallpaperManager = app.getSystemService(WallpaperManager.class);
         Drawable drawable = wallpaperManager.getDrawable();
 
-        if (!(drawable instanceof BitmapDrawable)) return error(new Exception("Not a BitmapDrawable"));
+        if (!(drawable instanceof BitmapDrawable))
+            return error(new Exception("Not a BitmapDrawable"));
 
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
         return fromCallable(() -> Palette.from(bitmap).generate()).subscribeOn(computation()).observeOn(mainThread());

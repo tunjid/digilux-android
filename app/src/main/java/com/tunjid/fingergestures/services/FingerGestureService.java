@@ -51,8 +51,8 @@ public class FingerGestureService extends AccessibilityService {
                     Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                     Application.getContext().sendBroadcast(closeIntent);
                     break;
-                case BrightnessGestureConsumer.ACTION_SCREEN_FILTER_CHANGED:
-                    adjustFilter();
+                case BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED:
+                    adjustDimmer();
                     break;
             }
         }
@@ -68,7 +68,7 @@ public class FingerGestureService extends AccessibilityService {
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(ACTION_NOTIFICATION_DOWN);
         filter.addAction(ACTION_NOTIFICATION_UP);
-        filter.addAction(BrightnessGestureConsumer.ACTION_SCREEN_FILTER_CHANGED);
+        filter.addAction(BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         registerReceiver(receiver, filter);
@@ -103,12 +103,12 @@ public class FingerGestureService extends AccessibilityService {
         return info != null && ANDROID_SYSTEM_UI_PACKAGE.equals(info.getPackageName());
     }
 
-    private void adjustFilter() {
+    private void adjustDimmer() {
         BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
-        float dimAmount = brightnessGestureConsumer.getScreenFilterDimPercent();
+        float dimAmount = brightnessGestureConsumer.getScreenDimmerDimPercent();
         WindowManager windowManager = getSystemService(WindowManager.class);
 
-        if (brightnessGestureConsumer.shouldShowFilter()) {
+        if (brightnessGestureConsumer.shouldShowDimmer()) {
             WindowManager.LayoutParams params;
             if (overlayView == null) params = getLayoutParams(windowManager);
             else params = ((WindowManager.LayoutParams) overlayView.getLayoutParams());

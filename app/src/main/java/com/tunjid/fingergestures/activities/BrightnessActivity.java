@@ -129,12 +129,12 @@ public class BrightnessActivity extends AppCompatActivity
         seekBar.setProgress(percentage, true);
         seekBar.setOnSeekBarChangeListener(this);
 
-        boolean filterOn = brightnessGestureConsumer.shouldShowFilter();
-        seekBarText.setVisibility(filterOn ? View.VISIBLE : View.GONE);
+        boolean showDimmer = brightnessGestureConsumer.shouldShowDimmer();
+        seekBarText.setVisibility(showDimmer ? View.VISIBLE : View.GONE);
 
-        if (filterOn) {
-            float filterPercent = brightnessGestureConsumer.getScreenFilterDimPercent() * 100F;
-            seekBarText.setText(getString(R.string.screen_filter_value, filterPercent));
+        if (showDimmer) {
+            float dimmerPercent = brightnessGestureConsumer.getScreenDimmerDimPercent() * 100F;
+            seekBarText.setText(getString(R.string.screen_dimmer_value, dimmerPercent));
         }
 
         waitToFinish();
@@ -164,7 +164,7 @@ public class BrightnessActivity extends AppCompatActivity
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-        brightnessGestureConsumer.removeFilter();
+        brightnessGestureConsumer.removeDimmer();
     }
 
     @Override
