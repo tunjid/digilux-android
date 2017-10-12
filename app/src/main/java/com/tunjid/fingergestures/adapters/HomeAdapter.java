@@ -9,10 +9,10 @@ import android.view.ViewGroup;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
-import com.tunjid.fingergestures.services.FingerGestureService;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.HomeViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
+import com.tunjid.fingergestures.viewholders.ScreenFilterViewHolder;
 import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.ToggleViewHolder;
 
@@ -32,7 +32,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int MAP_DOWN_ICON = 5;
     private static final int MAP_LEFT_ICON = 6;
     private static final int MAP_RIGHT_ICON = 7;
-    private static final int NUM_ITEMS = 8;
+    private static final int SCREEN_FILTER = 8;
+    private static final int NUM_ITEMS = 9;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -48,15 +49,15 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_delta,
-                        FingerGestureService.getIncrementPercentage(),
-                        FingerGestureService::setIncrementPercentage,
+                        brightnessGestureConsumer.getIncrementPercentage(),
+                        brightnessGestureConsumer::setIncrementPercentage,
                         (increment) -> context.getString(R.string.delta_percent, increment));
             case SLIDER_POSITION:
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_position,
-                        FingerGestureService.getPositionPercentage(),
-                        FingerGestureService::setPositionPercentage,
+                        brightnessGestureConsumer.getPositionPercentage(),
+                        brightnessGestureConsumer::setPositionPercentage,
                         (percentage) -> context.getString(R.string.position_percent, percentage));
             case SLIDER_COLOR:
                 return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent));
@@ -73,6 +74,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), LEFT_GESTURE);
             case MAP_RIGHT_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE);
+            case SCREEN_FILTER:
+                return new ScreenFilterViewHolder(getView(R.layout.viewholder_screen_filter, parent));
             default:
                 return new HomeViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }
@@ -80,7 +83,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
 
     @Override
     public void onBindViewHolder(HomeViewHolder holder, int position) {
-
+        holder.bind();
     }
 
     @Override
@@ -94,6 +97,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     }
 
     public interface HomeAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
+        boolean hasPurchasedPremium();
     }
 
     private View getView(@LayoutRes int res, ViewGroup viewGroup) {

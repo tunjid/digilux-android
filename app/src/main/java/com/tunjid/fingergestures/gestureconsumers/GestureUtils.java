@@ -34,7 +34,11 @@ public class GestureUtils {
         return (int) (BrightnessGestureConsumer.MAX_BRIGHTNESS * (percentage / 100F));
     }
 
-    public static SharedPreferences getPreferences() {
+    static float normalizePercetageToFraction(int percentage) {
+        return percentage / 100F;
+    }
+
+    static SharedPreferences getPreferences() {
         return Application.getContext().getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
     }
 }

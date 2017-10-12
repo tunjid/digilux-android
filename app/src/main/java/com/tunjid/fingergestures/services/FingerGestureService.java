@@ -2,14 +2,20 @@ package com.tunjid.fingergestures.services;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.FingerprintGestureController;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.PixelFormat;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -17,7 +23,6 @@ import com.tunjid.fingergestures.Application;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
-import com.tunjid.fingergestures.gestureconsumers.GestureUtils;
 
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_DOWN;
@@ -25,16 +30,11 @@ import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureCons
 
 public class FingerGestureService extends AccessibilityService {
 
-    private static final String INCREMENT_VALUE = "increment value";
-    private static final String BACKGROUND_COLOR = "background color";
-    private static final String SLIDER_COLOR = "slider color";
-    private static final String SLIDER_POSITION = "slider position";
-
-    public static final String BRIGHTNESS_FRACTION = "brightness value";
     private static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
     private static final String QUICK_SETTINGS_DESCRIPTION = "Open quick settings";
-    private static final int DEF_INCREMENT_VALUE = 20;
-    private static final int DEF_POSITION_VALUE = 50;
+
+    @Nullable
+    private View overlayView;
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -51,6 +51,9 @@ public class FingerGestureService extends AccessibilityService {
                     Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                     Application.getContext().sendBroadcast(closeIntent);
                     break;
+                case BrightnessGestureConsumer.ACTION_SCREEN_FILTER_CHANGED:
+                    adjustFilter();
+                    break;
             }
         }
     };
@@ -65,6 +68,7 @@ public class FingerGestureService extends AccessibilityService {
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(ACTION_NOTIFICATION_DOWN);
         filter.addAction(ACTION_NOTIFICATION_UP);
+        filter.addAction(BrightnessGestureConsumer.ACTION_SCREEN_FILTER_CHANGED);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         registerReceiver(receiver, filter);
@@ -99,36 +103,44 @@ public class FingerGestureService extends AccessibilityService {
         return info != null && ANDROID_SYSTEM_UI_PACKAGE.equals(info.getPackageName());
     }
 
-    public static void setBackgroundColor(int color) {
-        GestureUtils.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply();
+    private void adjustFilter() {
+        BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
+        float dimAmount = brightnessGestureConsumer.getScreenFilterDimPercent();
+        WindowManager windowManager = getSystemService(WindowManager.class);
+
+        if (brightnessGestureConsumer.shouldShowFilter()) {
+            WindowManager.LayoutParams params;
+            if (overlayView == null) params = getLayoutParams(windowManager);
+            else params = ((WindowManager.LayoutParams) overlayView.getLayoutParams());
+
+            params.alpha = 0.1F;
+            params.dimAmount = dimAmount;
+            windowManager.updateViewLayout(overlayView, params);
+        }
+        else if (overlayView != null) {
+            windowManager.removeView(overlayView);
+            overlayView = null;
+        }
     }
 
-    public static void setSliderColor(int color) {
-        GestureUtils.getPreferences().edit().putInt(SLIDER_COLOR, color).apply();
-    }
+    @NonNull
+    @SuppressLint("InflateParams")
+    private WindowManager.LayoutParams getLayoutParams(WindowManager windowManager) {
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        | WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+                PixelFormat.TRANSLUCENT);
 
-    public static void setIncrementPercentage(int incrementValue) {
-        GestureUtils.getPreferences().edit().putInt(INCREMENT_VALUE, incrementValue).apply();
-    }
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        overlayView = inflater.inflate(R.layout.overlay_view, null);
+        windowManager.addView(overlayView, params);
 
-    public static void setPositionPercentage(int positionPercentage) {
-        GestureUtils.getPreferences().edit().putInt(SLIDER_POSITION, positionPercentage).apply();
-    }
-
-
-    public static int getBackgroundColor() {
-        return GestureUtils.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(Application.getContext(), R.color.colorPrimary));
-    }
-
-    public static int getSliderColor() {
-        return GestureUtils.getPreferences().getInt(SLIDER_COLOR, ContextCompat.getColor(Application.getContext(), R.color.colorAccent));
-    }
-
-    public static int getIncrementPercentage() {
-        return GestureUtils.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE);
-    }
-
-    public static int getPositionPercentage() {
-        return GestureUtils.getPreferences().getInt(SLIDER_POSITION, DEF_POSITION_VALUE);
+        return params;
     }
 }

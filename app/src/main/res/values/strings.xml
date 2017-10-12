@@ -38,6 +38,12 @@
     <!-- Adaptive Brightness Viewholder-->
     <string name="adaptive_brightness">Restore adaptive brightness when the screen is turned off and on</string>
 
+    <!-- Screen Filter Viewholder-->
+    <string name="screen_filter">Screen Filter</string>
+    <string name="screen_filter_toggle">Enable Screen Overlay</string>
+    <string name="screen_filter_grant_permission">Grant overlay permissions</string>
+    <string name="screen_filter_value">%1$.0f%% filter</string>
+
     <!-- Available gestures-->
     <string name="swipe_up">Swipe up</string>
     <string name="swipe_down">Swipe Down</string>

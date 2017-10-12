@@ -54,6 +54,7 @@ public class HomeFragment extends FingerGestureFragment
     private boolean fromAccessibility;
 
     private final TextLink[] infolist;
+    private RecyclerView recyclerView;
 
     {
         Context context = Application.getContext();
@@ -81,11 +82,11 @@ public class HomeFragment extends FingerGestureFragment
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_home, container, false);
-        RecyclerView recyclerView = root.findViewById(R.id.options_list);
         Context context = getContext();
         DividerItemDecoration itemDecoration = new DividerItemDecoration(context, VERTICAL);
         itemDecoration.setDrawable(ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark));
 
+        recyclerView = root.findViewById(R.id.options_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(new HomeAdapter(this));
         recyclerView.addItemDecoration(itemDecoration);
@@ -124,6 +125,14 @@ public class HomeFragment extends FingerGestureFragment
 
         fromSettings = false;
         fromAccessibility = false;
+
+        recyclerView.getAdapter().notifyDataSetChanged();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        recyclerView = null;
     }
 
     @Override
@@ -145,11 +154,6 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -167,6 +171,11 @@ public class HomeFragment extends FingerGestureFragment
                         : R.string.accessibility_permission_denied);
                 break;
         }
+    }
+
+    @Override
+    public boolean hasPurchasedPremium() {
+        return true;
     }
 
     @Override
