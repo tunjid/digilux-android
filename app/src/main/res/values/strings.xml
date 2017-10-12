@@ -42,7 +42,7 @@
     <string name="screen_filter">Screen Filter</string>
     <string name="screen_filter_toggle">Enable Screen Overlay</string>
     <string name="screen_filter_grant_permission">Grant overlay permissions</string>
-    <string name="screen_filter_value">%1$.0f%% filter</string>
+    <string name="screen_filter_value">Screen dimmed %1$.0f%% </string>
 
     <!-- Available gestures-->
     <string name="swipe_up">Swipe up</string>

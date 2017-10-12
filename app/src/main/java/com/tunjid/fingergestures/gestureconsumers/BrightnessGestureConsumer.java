@@ -114,10 +114,12 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public void onScreenTurnedOff() {
-        int brightnessMode = restoresAdaptiveBrightnessOnDisplaySleep()
+        boolean restoresAdaptiveBrightness = restoresAdaptiveBrightnessOnDisplaySleep();
+        int brightnessMode = restoresAdaptiveBrightness
                 ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC
                 : SCREEN_BRIGHTNESS_MODE_MANUAL;
         Settings.System.putInt(app.getContentResolver(), SCREEN_BRIGHTNESS_MODE, brightnessMode);
+        if (restoresAdaptiveBrightness) removeFilter();
     }
 
     private boolean engagedFilter(@GestureUtils.GestureAction int gestureAction, int byteValue) {
@@ -179,6 +181,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     public void setFilterEnabled(boolean enabled) {
         getPreferences().edit().putBoolean(SCREEN_FILTER_ENABLED, enabled).apply();
+        if (!enabled) removeFilter();
     }
 
     public int getBackgroundColor() {

@@ -109,6 +109,13 @@ public class BrightnessActivity extends AppCompatActivity
         window.setAttributes(params);
 
         brightnessByte = normalizePercetageToByte(percentage);
+        brightnessGestureConsumer.saveBrightness(brightnessByte);
+
+        if (seekBarText.getVisibility() == View.VISIBLE) {
+            TransitionManager.beginDelayedTransition(seekBarbackground, new AutoTransition());
+            seekBarText.setVisibility(View.GONE);
+        }
+
         updateEndTime();
     }
 
@@ -125,8 +132,10 @@ public class BrightnessActivity extends AppCompatActivity
         boolean filterOn = brightnessGestureConsumer.shouldShowFilter();
         seekBarText.setVisibility(filterOn ? View.VISIBLE : View.GONE);
 
-        if (filterOn)
-            seekBarText.setText(getString(R.string.screen_filter_value, brightnessGestureConsumer.getScreenFilterDimPercent() * 100F));
+        if (filterOn) {
+            float filterPercent = brightnessGestureConsumer.getScreenFilterDimPercent() * 100F;
+            seekBarText.setText(getString(R.string.screen_filter_value, filterPercent));
+        }
 
         waitToFinish();
     }
