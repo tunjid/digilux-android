@@ -138,7 +138,7 @@ public class FingerGestureService extends AccessibilityService {
                 PixelFormat.TRANSLUCENT);
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        overlayView = inflater.inflate(R.layout.overlay_view, null);
+        overlayView = inflater.inflate(R.layout.window_overlay, null);
         windowManager.addView(overlayView, params);
 
         return params;
