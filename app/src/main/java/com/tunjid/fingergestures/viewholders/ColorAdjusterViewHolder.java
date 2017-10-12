@@ -6,6 +6,8 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.graphics.Palette;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -23,16 +25,29 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
 
     private static final int COLOR_WHEEL_DENSITY = 12;
 
-    private View backgroundIndicator;
-    private View sliderIndicator;
+    private final View backgroundIndicator;
+    private final View sliderIndicator;
+    private final View[] wallpaperColorIndicators;
+    private final CharSequence[] targetOptions;
     private final BrightnessGestureConsumer brightnessGestureConsumer;
 
     public ColorAdjusterViewHolder(View itemView) {
         super(itemView);
 
+        Context context = itemView.getContext();
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         backgroundIndicator = itemView.findViewById(R.id.slider_background_color_indicator);
         sliderIndicator = itemView.findViewById(R.id.slider_color_indicator);
+        targetOptions = new CharSequence[]{context.getString(R.string.slider_background), context.getString(R.string.slider)};
+        wallpaperColorIndicators = new View[]{
+                itemView.findViewById(R.id.color_1),
+                itemView.findViewById(R.id.color_2),
+                itemView.findViewById(R.id.color_3),
+                itemView.findViewById(R.id.color_4),
+                itemView.findViewById(R.id.color_5),
+                itemView.findViewById(R.id.color_6),
+                itemView.findViewById(R.id.color_7),
+        };
 
         TextView backgroundText = itemView.findViewById(R.id.slider_background_color);
         TextView sliderText = itemView.findViewById(R.id.slider_color);
@@ -53,6 +68,12 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
         sliderText.setOnClickListener(sliderPicker);
     }
 
+    @Override
+    public void bind() {
+        super.bind();
+        brightnessGestureConsumer.extractPalette().subscribe(this::onPaletterExtracted, error -> {});
+    }
+
     private void setBackgroundColor(int color) {
         brightnessGestureConsumer.setBackgroundColor(color);
         backgroundIndicator.setBackground(tint(R.drawable.color_indicator, color));
@@ -61,6 +82,27 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
     private void setSliderColor(int color) {
         brightnessGestureConsumer.setSliderColor(color);
         sliderIndicator.setBackground(tint(R.drawable.color_indicator, color));
+    }
+
+    private void onPaletterExtracted(Palette palette) {
+        OnClickListener pickWallpaper = this::getColorFromWallpaper;
+        int defaultColor = brightnessGestureConsumer.getSliderColor();
+        final int[] colors = {
+                palette.getDominantColor(defaultColor),
+                palette.getVibrantColor(defaultColor),
+                palette.getMutedColor(defaultColor),
+                palette.getDarkVibrantColor(defaultColor),
+                palette.getDarkMutedColor(defaultColor),
+                palette.getLightVibrantColor(defaultColor),
+                palette.getLightMutedColor(defaultColor)
+        };
+
+        for (int i = 0; i < wallpaperColorIndicators.length; i++) {
+            View indicator = wallpaperColorIndicators[i];
+            indicator.setTag(colors[i]);
+            indicator.setBackground(tint(R.drawable.color_indicator, colors[i]));
+            indicator.setOnClickListener(pickWallpaper);
+        }
     }
 
     public static Drawable tint(@DrawableRes int drawableRes, int color) {
@@ -84,6 +126,17 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
                 .showColorEdit(true)
                 .wheelType(FLOWER)
                 .build()
+                .show();
+    }
+
+    private void getColorFromWallpaper(View indicator) {
+        new AlertDialog.Builder(indicator.getContext())
+                .setTitle(R.string.choose_target)
+                .setItems(targetOptions, (dialog, position) -> {
+                    int color = (int) indicator.getTag();
+                    if (position == 0) setBackgroundColor(color);
+                    else setSliderColor(color);
+                })
                 .show();
     }
 }

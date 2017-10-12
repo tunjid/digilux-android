@@ -27,12 +27,12 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int SLIDER_DELTA = 0;
     private static final int SLIDER_POSITION = 1;
     private static final int SLIDER_COLOR = 2;
-    private static final int ADAPTIVE_BRIGHTNESS = 3;
-    private static final int MAP_UP_ICON = 4;
-    private static final int MAP_DOWN_ICON = 5;
-    private static final int MAP_LEFT_ICON = 6;
-    private static final int MAP_RIGHT_ICON = 7;
-    private static final int SCREEN_FILTER = 8;
+    private static final int SCREEN_FILTER = 3;
+    private static final int ADAPTIVE_BRIGHTNESS = 4;
+    private static final int MAP_UP_ICON = 5;
+    private static final int MAP_DOWN_ICON = 6;
+    private static final int MAP_LEFT_ICON = 7;
+    private static final int MAP_RIGHT_ICON = 8;
     private static final int NUM_ITEMS = 9;
 
     public HomeAdapter(HomeAdapterListener listener) {

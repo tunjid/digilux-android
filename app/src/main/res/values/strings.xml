@@ -19,7 +19,9 @@
     <string name="accessibility_permission_denied">Accessibility permission denied</string>
     <string name="settings_permission_denied">Settings permission denied</string>
 
-    <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures exclusively.\n\nIt will not affect the functionality of any apps depending on the finger print sensor.</string>
+    <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures and determine if the notification shade is showing to keep the 1 – 2 gesture combo to show the notification shade first and quick settings second.
+        \n\nIt will not affect the functionality of any apps depending on the fingerprint sensor; gestures will be tempoarily unavailable while fingerprint authentication is requested by any app,
+        and will become available again after fingerprint authentication is complete.</string>
 
     <!-- Delta Viewholder-->
     <string name="delta_percent">%1$d%% per swipe</string>
@@ -31,9 +33,13 @@
 
     <!-- Color Adjuster Viewholder-->
     <string name="choose_color">Choose Color</string>
+    <string name="choose_target">Choose Target</string>
     <string name="edit_slider_apperance">Edit Slider Appearance</string>
     <string name="change_slider_background_color">Change slider background color</string>
     <string name="change_slider_color">Change slider color</string>
+    <string name="wallpaper_color">Colors from wallpaper (Incompatible with Live Wallpapers):</string>
+    <string name="slider">Slider</string>
+    <string name="slider_background">Slider Background</string>
 
     <!-- Adaptive Brightness Viewholder-->
     <string name="adaptive_brightness">Restore adaptive brightness when the screen is turned off and on</string>

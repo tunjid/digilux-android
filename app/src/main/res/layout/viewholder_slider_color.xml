@@ -6,10 +6,22 @@
     android:layout_height="wrap_content"
     android:padding="@dimen/single_margin">
 
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/single_margin"
+        android:layout_marginTop="@dimen/single_margin"
+        android:text="@string/edit_slider_apperance"
+        android:textColor="@color/colorAccent"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <View
         android:id="@+id/slider_background_color_indicator"
-        android:layout_width="@dimen/single_margin"
-        android:layout_height="@dimen/single_margin"
+        android:layout_width="@dimen/indicator_size"
+        android:layout_height="@dimen/indicator_size"
         android:background="@drawable/color_indicator"
         app:layout_constraintBottom_toBottomOf="@+id/slider_background_color"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -23,12 +35,12 @@
         android:textColor="@color/colorAccent"
         app:layout_constraintLeft_toRightOf="@+id/slider_background_color_indicator"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <View
         android:id="@+id/slider_color_indicator"
-        android:layout_width="@dimen/single_margin"
-        android:layout_height="@dimen/single_margin"
+        android:layout_width="@dimen/indicator_size"
+        android:layout_height="@dimen/indicator_size"
         android:background="@drawable/color_indicator"
         app:layout_constraintBottom_toBottomOf="@+id/slider_color"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -43,6 +55,81 @@
         app:layout_constraintLeft_toRightOf="@+id/slider_background_color_indicator"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/slider_background_color" />
+
+    <TextView
+        android:id="@+id/wallpaper_color"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/single_margin"
+        android:paddingTop="@dimen/single_margin"
+        android:text="@string/wallpaper_color"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/slider_color" />
+
+    <View
+        android:id="@+id/color_1"
+        android:layout_width="@dimen/indicator_size"
+        android:layout_height="@dimen/indicator_size"
+        android:background="@drawable/color_indicator"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/color_2"
+        app:layout_constraintTop_toBottomOf="@+id/wallpaper_color" />
+
+    <View
+        android:id="@+id/color_2"
+        android:layout_width="@dimen/indicator_size"
+        android:layout_height="@dimen/indicator_size"
+        android:background="@drawable/color_indicator"
+        app:layout_constraintLeft_toRightOf="@+id/color_1"
+        app:layout_constraintRight_toLeftOf="@+id/color_3"
+        app:layout_constraintTop_toBottomOf="@+id/wallpaper_color" />
+
+    <View
+        android:id="@+id/color_3"
+        android:layout_width="@dimen/indicator_size"
+        android:layout_height="@dimen/indicator_size"
+        android:background="@drawable/color_indicator"
+        app:layout_constraintLeft_toRightOf="@+id/color_2"
+        app:layout_constraintRight_toLeftOf="@+id/color_4"
+        app:layout_constraintTop_toBottomOf="@+id/wallpaper_color" />
+
+    <View
+        android:id="@+id/color_4"
+        android:layout_width="@dimen/indicator_size"
+        android:layout_height="@dimen/indicator_size"
+        android:background="@drawable/color_indicator"
+        app:layout_constraintLeft_toRightOf="@+id/color_3"
+        app:layout_constraintRight_toLeftOf="@+id/color_5"
+        app:layout_constraintTop_toBottomOf="@+id/wallpaper_color" />
+
+    <View
+        android:id="@+id/color_5"
+        android:layout_width="@dimen/indicator_size"
+        android:layout_height="@dimen/indicator_size"
+        android:background="@drawable/color_indicator"
+        app:layout_constraintLeft_toRightOf="@+id/color_4"
+        app:layout_constraintRight_toLeftOf="@+id/color_6"
+        app:layout_constraintTop_toBottomOf="@+id/wallpaper_color" />
+
+    <View
+        android:id="@+id/color_6"
+        android:layout_width="@dimen/indicator_size"
+        android:layout_height="@dimen/indicator_size"
+        android:background="@drawable/color_indicator"
+        app:layout_constraintLeft_toRightOf="@+id/color_5"
+        app:layout_constraintRight_toLeftOf="@+id/color_7"
+        app:layout_constraintTop_toBottomOf="@+id/wallpaper_color" />
+
+    <View
+        android:id="@+id/color_7"
+        android:layout_width="@dimen/indicator_size"
+        android:layout_height="@dimen/indicator_size"
+        android:background="@drawable/color_indicator"
+        app:layout_constraintLeft_toRightOf="@+id/color_6"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wallpaper_color" />
 </android.support.constraint.ConstraintLayout>
 
 

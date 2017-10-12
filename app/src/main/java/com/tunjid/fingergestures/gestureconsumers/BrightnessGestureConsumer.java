@@ -1,12 +1,17 @@
 package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
+import android.app.WallpaperManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.provider.Settings;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.graphics.Palette;
 
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.BrightnessActivity;
@@ -14,6 +19,8 @@ import com.tunjid.fingergestures.activities.BrightnessActivity;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
+
+import io.reactivex.Single;
 
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
@@ -27,6 +34,10 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.REDUCE_BRI
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.getPreferences;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToFraction;
+import static io.reactivex.Single.error;
+import static io.reactivex.Single.fromCallable;
+import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
+import static io.reactivex.schedulers.Schedulers.computation;
 
 public class BrightnessGestureConsumer implements GestureConsumer {
 
@@ -225,6 +236,16 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         Intent intent = new Intent(ACTION_SCREEN_FILTER_CHANGED);
         intent.putExtra(SCREEN_FILTER_DIM_PERCENT, getScreenFilterDimPercent());
         LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
+    }
+
+    public Single<Palette> extractPalette() {
+        WallpaperManager wallpaperManager = app.getSystemService(WallpaperManager.class);
+        Drawable drawable = wallpaperManager.getDrawable();
+
+        if (!(drawable instanceof BitmapDrawable)) return error(new Exception("Not a BitmapDrawable"));
+
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+        return fromCallable(() -> Palette.from(bitmap).generate()).subscribeOn(computation()).observeOn(mainThread());
     }
 
     private static float roundDown(float d) {
