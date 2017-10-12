@@ -44,8 +44,8 @@ public class BrightnessActivity extends AppCompatActivity
     private ViewGroup seekBarbackground;
 
     private LocalTime endTime = LocalTime.now();
-    private final AtomicReference<Disposable> reference = new AtomicReference<>();
     private BrightnessGestureConsumer brightnessGestureConsumer;
+    private final AtomicReference<Disposable> reference = new AtomicReference<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +62,7 @@ public class BrightnessActivity extends AppCompatActivity
         seekBarbackground = findViewById(R.id.seekbar_background);
         seekBar = findViewById(R.id.seekbar);
         seekBarText = findViewById(R.id.seekbar_text);
+        View goToSettings = findViewById(R.id.go_to_settings);
 
         seekBarbackground.setBackground(ColorAdjusterViewHolder.tint(R.drawable.color_indicator, brightnessGestureConsumer.getBackgroundColor()));
         seekBarText.setTextColor(brightnessGestureConsumer.getSliderColor());
@@ -74,6 +75,7 @@ public class BrightnessActivity extends AppCompatActivity
         set.applyTo(layout);
 
         layout.setOnClickListener(v -> finish());
+        goToSettings.setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
 
         updateEndTime();
         handleIntent(getIntent());
@@ -88,6 +90,12 @@ public class BrightnessActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_up);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        finish();
     }
 
     @Override

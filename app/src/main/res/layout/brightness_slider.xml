@@ -9,6 +9,18 @@
     android:background="@drawable/color_indicator"
     tools:context=".activities.BrightnessActivity">
 
+    <ImageView
+        android:id="@+id/go_to_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/single_margin"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="H,1:1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_settings_white_24dp" />
+
     <SeekBar
         android:id="@+id/seekbar"
         android:layout_width="0dp"
@@ -18,7 +30,7 @@
         android:paddingBottom="@dimen/single_margin"
         android:paddingTop="@dimen/single_margin"
         app:layout_constraintBottom_toTopOf="@+id/seekbar_text"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/go_to_settings"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
