@@ -21,12 +21,12 @@ public class HomeViewHolder extends BaseViewHolder<HomeAdapter.HomeAdapterListen
 
     public void bind() {}
 
-    void goPremium(@StringRes int description) {
+    void goPremium(@StringRes int description, String sku) {
         Context context = itemView.getContext();
         new AlertDialog.Builder(context)
                 .setTitle(R.string.go_premium_title)
                 .setMessage(context.getString(R.string.go_premium_body, context.getString(description)))
-                .setPositiveButton(R.string.yes, (dialog, which) -> adapterListener.goPremium())
+                .setPositiveButton(R.string.yes, (dialog, which) -> adapterListener.purchase(sku))
                 .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                 .show();
     }

@@ -55,6 +55,13 @@
     <string name="screen_overlay_grant_permission">Grant overlay permissions</string>
     <string name="premium_prompt_dimmer">Draws a dark overlay to further dim brightness at night. Please note the overlay cannot be dawn over the notification bar and shade due to limitations in Android Oreo.</string>
 
+    <!-- Ad Free Viewholder-->
+    <string name="ad_free_basic_user">Go ad free</string>
+    <string name="ad_free_premium_user">Thanks for going premium!</string>
+    <string name="ad_free_no_ad_user">Thanks for your support!</string>
+    <string name="ad_free_basic_user_confirmation">Purchasing this will remove the banner ads at the bottom.</string>
+    <string name="ad_free_premium_user_confirmation">You\'ve already gone premium! You really don\'t have to…</string>
+
     <!-- Available gestures-->
     <string name="swipe_up">Swipe up</string>
     <string name="swipe_down">Swipe Down</string>

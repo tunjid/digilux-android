@@ -45,7 +45,6 @@ import static com.android.billingclient.api.BillingClient.BillingResponse.ITEM_A
 import static com.android.billingclient.api.BillingClient.BillingResponse.OK;
 import static com.android.billingclient.api.BillingClient.BillingResponse.SERVICE_DISCONNECTED;
 import static com.android.billingclient.api.BillingClient.BillingResponse.SERVICE_UNAVAILABLE;
-import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
 
 public class HomeFragment extends FingerGestureFragment
         implements
@@ -133,7 +132,7 @@ public class HomeFragment extends FingerGestureFragment
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        billingManager = new BillingManager(getActivity(), PurchasesManager.getInstance());
+        billingManager = new BillingManager(getActivity());
     }
 
     @Override
@@ -203,8 +202,8 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
-    public void goPremium() {
-        billingManager.initiatePurchaseFlow("android.test.canceled", INAPP)
+    public void purchase(String sku) {
+        billingManager.initiatePurchaseFlow(sku)
                 .subscribe(launchStatus -> {
                     switch (launchStatus) {
                         case OK:

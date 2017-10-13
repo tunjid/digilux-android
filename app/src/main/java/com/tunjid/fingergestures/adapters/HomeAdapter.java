@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
+import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.HomeViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
@@ -34,7 +35,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int MAP_DOWN_ICON = 7;
     private static final int MAP_LEFT_ICON = 8;
     private static final int MAP_RIGHT_ICON = 9;
-    private static final int NUM_ITEMS = 10;
+    private static final int AD_FREE = 10;
+    private static final int NUM_ITEMS = 11;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -62,6 +64,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         (percentage) -> context.getString(R.string.position_percent, percentage));
             case SLIDER_COLOR:
                 return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent), adapterListener);
+            case SCREEN_DIMMER:
+                return new ScreenDimmerViewHolder(getView(R.layout.viewholder_screen_dimmer, parent), adapterListener);
             case ADAPTIVE_BRIGHTNESS:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.adaptive_brightness,
@@ -80,8 +84,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), LEFT_GESTURE);
             case MAP_RIGHT_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE);
-            case SCREEN_DIMMER:
-                return new ScreenDimmerViewHolder(getView(R.layout.viewholder_screen_dimmer, parent), adapterListener);
+            case AD_FREE:
+                return new AdFreeViewHolder(getView(R.layout.viewholder_ad_free, parent), adapterListener);
             default:
                 return new HomeViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }
@@ -103,7 +107,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     }
 
     public interface HomeAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
-        void goPremium();
+        void purchase(String sku);
     }
 
     private View getView(@LayoutRes int res, ViewGroup viewGroup) {

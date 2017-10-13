@@ -133,7 +133,7 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
 
     private void getColorFromWallpaper(View indicator) {
         if (PurchasesManager.getInstance().isNotPremium()) {
-            goPremium(R.string.premium_prompt_slider);
+            goPremium(R.string.premium_prompt_slider, PurchasesManager.PREMIUM_SKU);
             return;
         }
         new AlertDialog.Builder(indicator.getContext())
