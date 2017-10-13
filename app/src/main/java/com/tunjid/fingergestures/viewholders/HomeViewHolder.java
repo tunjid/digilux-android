@@ -13,6 +13,10 @@ public class HomeViewHolder extends BaseViewHolder<HomeAdapter.HomeAdapterListen
         super(itemView);
     }
 
+    public HomeViewHolder(View itemView, HomeAdapter.HomeAdapterListener listener) {
+        super(itemView, listener);
+    }
+
     public void bind() {}
 
     void goPremium() {

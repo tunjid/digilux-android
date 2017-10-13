@@ -20,7 +20,6 @@ public class MapperViewHolder extends HomeViewHolder {
     private final TextView subtitle;
 
     public MapperViewHolder(View itemView, @Gesture String gesture) {
-
         super(itemView);
         this.gesture = gesture;
         GestureMapper mapper = GestureMapper.getInstance();

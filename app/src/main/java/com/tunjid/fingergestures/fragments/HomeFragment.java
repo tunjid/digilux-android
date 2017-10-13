@@ -31,7 +31,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BuildConfig;
-import com.tunjid.fingergestures.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.HomeAdapter;
 import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
@@ -40,6 +40,7 @@ import com.tunjid.fingergestures.services.FingerGestureService;
 
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
+import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
 
 public class HomeFragment extends FingerGestureFragment
         implements
@@ -195,7 +196,7 @@ public class HomeFragment extends FingerGestureFragment
 
     @Override
     public void goPremium() {
-
+        billingManager.initiatePurchaseFlow("android.test.canceled", INAPP);
     }
 
     @Override

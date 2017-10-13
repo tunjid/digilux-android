@@ -61,7 +61,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         brightnessGestureConsumer::setPositionPercentage,
                         (percentage) -> context.getString(R.string.position_percent, percentage));
             case SLIDER_COLOR:
-                return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent));
+                return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent), adapterListener);
             case ADAPTIVE_BRIGHTNESS:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.adaptive_brightness,
@@ -81,7 +81,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
             case MAP_RIGHT_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE);
             case SCREEN_DIMMER:
-                return new ScreenDimmerViewHolder(getView(R.layout.viewholder_screen_dimmer, parent));
+                return new ScreenDimmerViewHolder(getView(R.layout.viewholder_screen_dimmer, parent), adapterListener);
             default:
                 return new HomeViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }
