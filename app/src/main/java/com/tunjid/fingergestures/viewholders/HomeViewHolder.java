@@ -1,5 +1,7 @@
 package com.tunjid.fingergestures.viewholders;
 
+import android.content.Context;
+import android.support.annotation.StringRes;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 
@@ -13,16 +15,17 @@ public class HomeViewHolder extends BaseViewHolder<HomeAdapter.HomeAdapterListen
         super(itemView);
     }
 
-    public HomeViewHolder(View itemView, HomeAdapter.HomeAdapterListener listener) {
+    HomeViewHolder(View itemView, HomeAdapter.HomeAdapterListener listener) {
         super(itemView, listener);
     }
 
     public void bind() {}
 
-    void goPremium() {
-        new AlertDialog.Builder(itemView.getContext())
+    void goPremium(@StringRes int description) {
+        Context context = itemView.getContext();
+        new AlertDialog.Builder(context)
                 .setTitle(R.string.go_premium_title)
-                .setMessage(R.string.go_premium_body)
+                .setMessage(context.getString(R.string.go_premium_body, context.getString(description)))
                 .setPositiveButton(R.string.yes, (dialog, which) -> adapterListener.goPremium())
                 .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                 .show();

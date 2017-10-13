@@ -16,7 +16,6 @@
 package com.tunjid.fingergestures.billing;
 
 import android.app.Activity;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.android.billingclient.api.BillingClient;
@@ -31,59 +30,32 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
 import io.reactivex.CompletableOnSubscribe;
+import io.reactivex.Single;
+import io.reactivex.functions.Consumer;
 
 /**
  * Handles all the interactions with Play Store (via Billing library), maintains connection to
  * it through BillingClient and caches temporary states/data if needed
  */
 public class BillingManager implements PurchasesUpdatedListener {
-    // Default value of mBillingClientResponseCode until BillingManager was not yeat initialized
-    public static final int BILLING_MANAGER_NOT_INITIALIZED = -1;
 
+    //private static final int BILLING_MANAGER_NOT_INITIALIZED = -1;
     private static final String TAG = "BillingManager";
-
-    /**
-     * A reference to BillingClient
-     **/
-    private BillingClient billingClient;
-
-    /**
-     * True if billing service is connected now.
-     */
-    private boolean isServiceConnected;
-
-    private final BillingUpdatesListener billingUpdatesListener;
-
-    private final Activity activity;
-
-    private final List<Purchase> purchases = new ArrayList<>();
-
-    private int billingClientResponseCode = BILLING_MANAGER_NOT_INITIALIZED;
-
-    private Consumer<Throwable> errorHandler = throwable -> {};
-
-    /* BASE_64_ENCODED_PUBLIC_KEY should be YOUR APPLICATION'S PUBLIC KEY
-     * (that you got from the Google Play developer console). This is not your
-     * developer public key, it's the *app-specific* public key.
-     *
-     * Instead of just storing the entire literal string here embedded in the
-     * program,  construct the key at runtime from pieces or
-     * use bit manipulation (for example, XOR with some other string) to hide
-     * the actual key.  The key itself is not secret information, but we don't
-     * want to make it easy for an attacker to replace the public key with one
-     * of their own and then fake messages from the server.
-     */
     private static final String BASE_64_ENCODED_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAg+iKb4z5KHff9rF1lsiWlp1K5Q6303Uo7eBFOOT1POH9XNz7uwEQebzCdqNZdzQKx94FTgdQhS5LY4NyacgzrvO7Nj1ceqTdsecnvncjFLrQOmmRYVoVI6hUsL8/dL1JvVSHq0xRLrFQxmO3p8FHQaIEf3qj2Q0L5LD01pNBxaPPKaaFasFbIQiWwA4mCchc7vnQdcRlVU00yCLxjux4yQejt1nKpHVUcrkuQcoDBWr31oMQiwX7OOTO6wLuKBw69Wd2AlnR3ynmRYkqCQOsRDajNWDAlWm8Z2VkgDX7pUFy8y8DQXqIXXYygLa+Mam33Z1/18OpQ51TghKRS2cC9QIDAQAB";
 
-    /**
-     * Listener to the updates that happen when purchases list was updated or consumption of the
-     * item was finished
-     */
+    //private int billingClientResponseCode = BILLING_MANAGER_NOT_INITIALIZED;
+    private boolean isServiceConnected;
+
+    private BillingClient billingClient;
+    private final Activity activity;
+    private final List<Purchase> purchases = new ArrayList<>();
+    private final Consumer<Throwable> errorHandler = throwable -> {};
+    private final BillingUpdatesListener billingUpdatesListener;
+
     public interface BillingUpdatesListener {
         void onBillingClientSetupFinished();
 
@@ -91,44 +63,14 @@ public class BillingManager implements PurchasesUpdatedListener {
     }
 
     public BillingManager(Activity activity, final BillingUpdatesListener updatesListener) {
-        Log.d(TAG, "Creating Billing client.");
         this.activity = activity;
         billingUpdatesListener = updatesListener;
         billingClient = BillingClient.newBuilder(this.activity).setListener(this).build();
 
-        Log.d(TAG, "Starting setup.");
-
-        // Start setup. This is asynchronous and the specified listener will be called
-        // once setup completes.
-        // It also starts to report all the new purchases through onPurchasesUpdated() callback.
-
-        startServiceConnection(() -> {
-            // Notifying the listener that billing client is ready
+        checkClient().subscribe(() -> {
             billingUpdatesListener.onBillingClientSetupFinished();
-            // IAB is fully set up. Now, let's get an inventory of stuff we own.
-            Log.d(TAG, "Setup successful. Querying inventory.");
             queryPurchases();
-        });
-    }
-
-    private void startServiceConnection(final Runnable executeOnSuccess) {
-        billingClient.startConnection(new BillingClientStateListener() {
-            @Override
-            public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
-                Log.d(TAG, "Setup finished. Response code: " + billingResponseCode);
-
-                if (billingResponseCode == BillingResponse.OK) {
-                    isServiceConnected = true;
-                    if (executeOnSuccess != null) executeOnSuccess.run();
-                }
-                billingClientResponseCode = billingResponseCode;
-            }
-
-            @Override
-            public void onBillingServiceDisconnected() {
-                isServiceConnected = false;
-            }
-        });
+        }, errorHandler);
     }
 
     /**
@@ -136,6 +78,7 @@ public class BillingManager implements PurchasesUpdatedListener {
      */
     @Override
     public void onPurchasesUpdated(int resultCode, List<Purchase> purchases) {
+        if (purchases == null) return;
         if (resultCode == BillingResponse.OK) {
             for (Purchase purchase : purchases) handlePurchase(purchase);
             billingUpdatesListener.onPurchasesUpdated(this.purchases);
@@ -151,36 +94,22 @@ public class BillingManager implements PurchasesUpdatedListener {
     /**
      * Start a purchase flow
      */
-    public void initiatePurchaseFlow(final String skuId, final @SkuType String billingType) {
-        executeServiceRequest(getPurchaseRequest(skuId, billingType));
+    public Single<Integer> initiatePurchaseFlow(final String skuId, final @SkuType String billingType) {
+        return checkClient().andThen(Single.fromCallable(() -> {
+            Log.d(TAG, "Launching in-app purchase flow. ");
+            BillingFlowParams purchaseParams = BillingFlowParams.newBuilder()
+                    .setSku(skuId)
+                    .setType(billingType)
+                    .build();
+            return billingClient.launchBillingFlow(activity, purchaseParams);
+        }));
     }
 
-    /**
-     * Query purchases across various use cases and deliver the result in a formalized way through
-     * a listener
-     */
-    public void queryPurchases() {
-        executeServiceRequest(getPurchasesRunnable());
-    }
-
-    /**
-     * Clear the resources
-     */
-    public void destroy() {
-        Log.d(TAG, "Destroying the manager.");
-
-        if (billingClient != null && billingClient.isReady()) {
-            billingClient.endConnection();
-            billingClient = null;
-        }
-    }
-
-    /**
-     * Returns the value Billing client response code or BILLING_MANAGER_NOT_INITIALIZED if the
-     * clien connection response was not received yet.
-     */
-    public int getBillingClientResponseCode() {
-        return billingClientResponseCode;
+    private void queryPurchases() {
+        checkClient().subscribe(() -> {
+            PurchasesResult purchasesResult = billingClient.queryPurchases(SkuType.INAPP);
+            onQueryPurchasesFinished(purchasesResult);
+        }, errorHandler);
     }
 
     /**
@@ -199,7 +128,6 @@ public class BillingManager implements PurchasesUpdatedListener {
         }
 
         Log.d(TAG, "Got a verified purchase: " + purchase);
-
         purchases.add(purchase);
     }
 
@@ -221,85 +149,43 @@ public class BillingManager implements PurchasesUpdatedListener {
         onPurchasesUpdated(BillingResponse.OK, result.getPurchasesList());
     }
 
-    private void executeServiceRequest(Runnable runnable) {
-        if (isServiceConnected) runnable.run();
-            // If billing service was disconnected, we try to reconnect 1 time.
-            // (feel free to introduce your retry policy here).
-        else startServiceConnection(runnable);
-    }
-
-    @NonNull
-    private Runnable getPurchaseRequest(String skuId, @SkuType String billingType) {
-        return () -> {
-            Log.d(TAG, "Launching in-app purchase flow. ");
-            BillingFlowParams purchaseParams = BillingFlowParams.newBuilder()
-                    .setSku(skuId)
-                    .setType(billingType)
-                    .build();
-            billingClient.launchBillingFlow(activity, purchaseParams);
-        };
-    }
-
-    @NonNull
-    private Runnable getPurchasesRunnable() {
-        return () -> {
-            long time = System.currentTimeMillis();
-            PurchasesResult purchasesResult = billingClient.queryPurchases(SkuType.INAPP);
-            Log.i(TAG, "Querying purchases elapsed time: " + (System.currentTimeMillis() - time)
-                    + "ms");
-
-            if (purchasesResult.getResponseCode() == BillingResponse.OK) {
-                Log.i(TAG, "Skipped subscription purchases query since they are not supported");
-            }
-            else {
-                Log.w(TAG, "queryPurchases() got an error response code: "
-                        + purchasesResult.getResponseCode());
-            }
-            onQueryPurchasesFinished(purchasesResult);
-        };
+    @SuppressWarnings("unused")
+    public void consumeAsync(final String purchaseToken) {
+        checkClient().subscribe(() -> billingClient.consumeAsync(purchaseToken, (a, b) -> {}), errorHandler);
     }
 
     private Completable checkClient() {return Completable.create(new BillingExecutor());}
 
-    /**
-     * Verifies that the purchase was signed correctly for this developer's public key.
-     * <p>Note: It's strongly recommended to perform such check on your backend since hackers can
-     * replace this method with "constant true" if they decompile/rebuild your app.
-     * </p>
-     */
     private boolean verifyValidSignature(String signedData, String signature) {
-        // Some sanity checks to see if the developer (that's you!) really followed the
-        // instructions to run this sample (don't put these checks on your app!)
-        if (BASE_64_ENCODED_PUBLIC_KEY.contains("CONSTRUCT_YOUR")) {
-            throw new RuntimeException("Please update your app's public key at: "
-                    + "BASE_64_ENCODED_PUBLIC_KEY");
-        }
-
         try {return Security.verifyPurchase(BASE_64_ENCODED_PUBLIC_KEY, signedData, signature);}
-        catch (IOException e) {
-            Log.e(TAG, "Got an exception trying to validate a purchase: " + e);
-            return false;
-        }
+        catch (IOException e) {Log.e(TAG, "Got an exception trying to validate a purchase: " + e);}
+
+        return false;
     }
 
-    public void consumeAsync(final String purchaseToken) {
+    /**
+     * Clear the resources
+     */
+    public void destroy() {
+        Log.d(TAG, "Destroying the manager.");
 
-        // Creating a runnable from the request to use it inside our connection retry policy below
-        Runnable consumeRequest = () -> {
-            // Consume the purchase async
-            billingClient.consumeAsync(purchaseToken, (a, b) -> {});
-        };
-
-        executeServiceRequest(consumeRequest);
+        if (billingClient != null && billingClient.isReady()) {
+            billingClient.endConnection();
+            billingClient = null;
+        }
     }
 
     private class BillingExecutor implements CompletableOnSubscribe {
-
 
         private BillingExecutor() {}
 
         @Override
         public void subscribe(final CompletableEmitter emitter) throws Exception {
+            if (isServiceConnected) {
+                emitter.onComplete();
+                return;
+            }
+
             billingClient.startConnection(new BillingClientStateListener() {
                 @Override
                 public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
@@ -310,7 +196,7 @@ public class BillingManager implements PurchasesUpdatedListener {
                     if (isServiceConnected) emitter.onComplete();
                     else emitter.onError(new Exception("Inititalization Exception"));
 
-                    billingClientResponseCode = billingResponseCode;
+//                    billingClientResponseCode = billingResponseCode;
                 }
 
                 @Override

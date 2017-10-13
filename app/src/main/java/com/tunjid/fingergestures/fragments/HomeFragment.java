@@ -11,14 +11,15 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.transition.AutoTransition;
-import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.transition.AutoTransition;
+import android.transition.Transition;
+import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,15 +32,19 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BuildConfig;
-import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.HomeAdapter;
 import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
 import com.tunjid.fingergestures.billing.BillingManager;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.services.FingerGestureService;
 
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
+import static com.android.billingclient.api.BillingClient.BillingResponse.ITEM_ALREADY_OWNED;
+import static com.android.billingclient.api.BillingClient.BillingResponse.OK;
+import static com.android.billingclient.api.BillingClient.BillingResponse.SERVICE_DISCONNECTED;
+import static com.android.billingclient.api.BillingClient.BillingResponse.SERVICE_UNAVAILABLE;
 import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
 
 public class HomeFragment extends FingerGestureFragment
@@ -57,6 +62,7 @@ public class HomeFragment extends FingerGestureFragment
     private boolean fromAccessibility;
 
     private final TextLink[] infolist;
+    private AdView adView;
     private RecyclerView recyclerView;
     private BillingManager billingManager;
 
@@ -95,7 +101,7 @@ public class HomeFragment extends FingerGestureFragment
         recyclerView.setAdapter(new HomeAdapter(this));
         recyclerView.addItemDecoration(itemDecoration);
 
-        AdView adView = root.findViewById(R.id.adView);
+        adView = root.findViewById(R.id.adView);
         AdRequest.Builder builder = new AdRequest.Builder();
 
         if (BuildConfig.DEBUG) builder.addTestDevice("4853CDD3A8952349497550F27CC60ED3");
@@ -141,12 +147,14 @@ public class HomeFragment extends FingerGestureFragment
         fromAccessibility = false;
 
         recyclerView.getAdapter().notifyDataSetChanged();
+        if (!PurchasesManager.getInstance().hasAds()) hideAds();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         recyclerView = null;
+        adView = null;
     }
 
     @Override
@@ -196,7 +204,23 @@ public class HomeFragment extends FingerGestureFragment
 
     @Override
     public void goPremium() {
-        billingManager.initiatePurchaseFlow("android.test.canceled", INAPP);
+        billingManager.initiatePurchaseFlow("android.test.canceled", INAPP)
+                .subscribe(launchStatus -> {
+                    switch (launchStatus) {
+                        case OK:
+                            break;
+                        case SERVICE_UNAVAILABLE:
+                        case SERVICE_DISCONNECTED:
+                            showSnackbar(R.string.billing_not_connected);
+                            break;
+                        case ITEM_ALREADY_OWNED:
+                            showSnackbar(R.string.billing_you_own_this);
+                            break;
+                        default:
+                            showSnackbar(R.string.billing_generic_error);
+                            break;
+                    }
+                }, throwable -> showSnackbar(R.string.billing_generic_error));
     }
 
     @Override
@@ -256,6 +280,41 @@ public class HomeFragment extends FingerGestureFragment
     private void showLink(TextLink textLink) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(textLink.link));
         startActivity(browserIntent);
+    }
+
+    private void hideAds() {
+        ViewGroup root = (ViewGroup) getView();
+        if (root == null) return;
+
+        Transition hideTransition = new AutoTransition();
+        hideTransition.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(@NonNull Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionEnd(@NonNull Transition transition) {
+                showSnackbar(R.string.billing_thanks);
+            }
+
+            @Override
+            public void onTransitionCancel(@NonNull Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionPause(@NonNull Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionResume(@NonNull Transition transition) {
+
+            }
+        });
+        android.transition.TransitionManager.beginDelayedTransition(root, hideTransition);
+        adView.setVisibility(View.GONE);
     }
 
     private static class TextLink implements CharSequence {

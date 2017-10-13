@@ -40,6 +40,7 @@
     <string name="wallpaper_color">Colors from wallpaper (Incompatible with Live Wallpapers):</string>
     <string name="slider">Slider</string>
     <string name="slider_background">Slider Background</string>
+    <string name="premium_prompt_slider">Adds the immeasurable, earth shattering convenience of choosing your slider color based on the colors in your static wallpaper.</string>
 
     <!-- Adaptive Brightness Viewholder-->
     <string name="adaptive_brightness">Restore adaptive brightness when the screen is turned off and on</string>
@@ -52,6 +53,7 @@
     <string name="screen_dimmer_toggle">Enable Screen Dimmer</string>
     <string name="screen_dimmer_value">Screen dimmed %1$.0f%% </string>
     <string name="screen_overlay_grant_permission">Grant overlay permissions</string>
+    <string name="premium_prompt_dimmer">Draws a dark overlay to further dim brightness at night. Please note the overlay cannot be dawn over the notification bar and shade due to limitations in Android Oreo.</string>
 
     <!-- Available gestures-->
     <string name="swipe_up">Swipe up</string>
@@ -74,7 +76,16 @@
 
     <!-- Going Premium-->
     <string name="go_premium_title">Go Premium</string>
-    <string name="go_premium_body">This is a premium feature. Going premium also removes ads. Would you like to continue?</string>
+    <string name="go_premium_body">This is a premium feature. Going premium also removes ads,
+         however if you want to remove ads, but don\'t fancy the premium offerings,
+         you can remove ads by scrolling to the bottom of the list and choosing the "Remove ads" option.
+        \n\nWould you like to continue?\n\nAbout item:\n%1$s</string>
+
+    <!-- Billing Api Feedback-->
+    <string name="billing_thanks">Thank you so much!</string>
+    <string name="billing_not_connected">Sorry, unable to connect to Google Play</string>
+    <string name="billing_you_own_this">You\'ve already gotten this. Thank you!</string>
+    <string name="billing_generic_error">Sorry, there was an error completing your request.</string>
 
     <!-- Info dialog-->
     <string name="open_source_libraries">Open Source Libraries</string>
