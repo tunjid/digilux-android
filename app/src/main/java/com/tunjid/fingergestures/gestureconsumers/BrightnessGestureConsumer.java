@@ -3,7 +3,6 @@ package com.tunjid.fingergestures.gestureconsumers;
 import android.annotation.SuppressLint;
 import android.app.WallpaperManager;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -13,6 +12,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.graphics.Palette;
 
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.BrightnessActivity;
 
@@ -26,12 +26,6 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
-import static com.tunjid.fingergestures.Application.getContext;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.INCREASE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.MAXIMIZE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.MININIMIZE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.REDUCE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.getPreferences;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToFraction;
 import static io.reactivex.Single.error;
@@ -60,7 +54,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final String SCREEN_DIMMER_ENABLED = "screen dimmer enabled";
     private static final String SCREEN_DIMMER_DIM_PERCENT = "screen dimmer dim percent";
 
-    private final Context app;
+    private final App app;
     private final Set<Integer> gestures;
 
     @SuppressLint("StaticFieldLeak")
@@ -72,7 +66,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     private BrightnessGestureConsumer() {
-        app = getContext();
+        app = App.getInstance();
         gestures = new HashSet<>();
         gestures.add(INCREASE_BRIGHTNESS);
         gestures.add(REDUCE_BRIGHTNESS);
@@ -81,7 +75,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     @Override
-    public void onGestureActionTriggered(@GestureUtils.GestureAction int gestureAction) {
+    public void onGestureActionTriggered(@GestureAction int gestureAction) {
         int byteValue;
         int originalValue;
 
@@ -134,7 +128,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         if (restoresAdaptiveBrightness) removeDimmer();
     }
 
-    private boolean engagedDimmer(@GestureUtils.GestureAction int gestureAction, int byteValue) {
+    private boolean engagedDimmer(@GestureAction int gestureAction, int byteValue) {
         if (!isDimmerEnabled()) return false;
         if (byteValue == (int) MIN_BRIGHTNESS && gestureAction == REDUCE_BRIGHTNESS) {
             increaseScreenDimmer();
@@ -168,60 +162,60 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public void setBackgroundColor(int color) {
-        getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply();
+        app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply();
     }
 
     public void setSliderColor(int color) {
-        getPreferences().edit().putInt(SLIDER_COLOR, color).apply();
+        app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply();
     }
 
     public void setIncrementPercentage(int incrementValue) {
-        getPreferences().edit().putInt(INCREMENT_VALUE, incrementValue).apply();
+        app.getPreferences().edit().putInt(INCREMENT_VALUE, incrementValue).apply();
     }
 
     public void setPositionPercentage(int positionPercentage) {
-        getPreferences().edit().putInt(SLIDER_POSITION, positionPercentage).apply();
+        app.getPreferences().edit().putInt(SLIDER_POSITION, positionPercentage).apply();
     }
 
     private void setDimmerPercent(float percentage) {
-        getPreferences().edit().putFloat(SCREEN_DIMMER_DIM_PERCENT, percentage).apply();
+        app.getPreferences().edit().putFloat(SCREEN_DIMMER_DIM_PERCENT, percentage).apply();
     }
 
     public void shouldRestoreAdaptiveBrightnessOnDisplaySleep(boolean restore) {
-        getPreferences().edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply();
+        app.getPreferences().edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply();
     }
 
     public void setSliderVisible(boolean visible) {
-        getPreferences().edit().putBoolean(SLIDER_VISIBLE, visible).apply();
+        app.getPreferences().edit().putBoolean(SLIDER_VISIBLE, visible).apply();
     }
 
     public void setDimmerEnabled(boolean enabled) {
-        getPreferences().edit().putBoolean(SCREEN_DIMMER_ENABLED, enabled).apply();
+        app.getPreferences().edit().putBoolean(SCREEN_DIMMER_ENABLED, enabled).apply();
         if (!enabled) removeDimmer();
     }
 
     public int getBackgroundColor() {
-        return getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(getContext(), R.color.colorPrimary));
+        return app.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(App.getInstance(), R.color.colorPrimary));
     }
 
     public int getSliderColor() {
-        return getPreferences().getInt(SLIDER_COLOR, ContextCompat.getColor(getContext(), R.color.colorAccent));
+        return app.getPreferences().getInt(SLIDER_COLOR, ContextCompat.getColor(App.getInstance(), R.color.colorAccent));
     }
 
     public int getIncrementPercentage() {
-        return getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE);
+        return app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE);
     }
 
     public int getPositionPercentage() {
-        return getPreferences().getInt(SLIDER_POSITION, DEF_POSITION_VALUE);
+        return app.getPreferences().getInt(SLIDER_POSITION, DEF_POSITION_VALUE);
     }
 
     public float getScreenDimmerDimPercent() {
-        return getPreferences().getFloat(SCREEN_DIMMER_DIM_PERCENT, DEF_DIM_PERCENT);
+        return app.getPreferences().getFloat(SCREEN_DIMMER_DIM_PERCENT, DEF_DIM_PERCENT);
     }
 
     public boolean restoresAdaptiveBrightnessOnDisplaySleep() {
-        return getPreferences().getBoolean(ADAPTIVE_BRIGHTNESS, false);
+        return app.getPreferences().getBoolean(ADAPTIVE_BRIGHTNESS, false);
     }
 
     public boolean hasOverlayPermission() {
@@ -229,7 +223,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public boolean isDimmerEnabled() {
-        return hasOverlayPermission() && getPreferences().getBoolean(SCREEN_DIMMER_ENABLED, false);
+        return hasOverlayPermission() && app.getPreferences().getBoolean(SCREEN_DIMMER_ENABLED, false);
     }
 
     public boolean shouldShowDimmer() {
@@ -237,7 +231,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public boolean shouldShowSlider() {
-        return getPreferences().getBoolean(SLIDER_VISIBLE, true);
+        return app.getPreferences().getBoolean(SLIDER_VISIBLE, true);
     }
 
     public void removeDimmer() {

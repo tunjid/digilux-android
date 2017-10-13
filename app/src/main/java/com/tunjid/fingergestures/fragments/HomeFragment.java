@@ -29,11 +29,13 @@ import android.view.ViewGroup;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.tunjid.fingergestures.Application;
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BuildConfig;
+import com.tunjid.fingergestures.PurchasesManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.HomeAdapter;
 import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
+import com.tunjid.fingergestures.billing.BillingManager;
 import com.tunjid.fingergestures.services.FingerGestureService;
 
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
@@ -55,9 +57,10 @@ public class HomeFragment extends FingerGestureFragment
 
     private final TextLink[] infolist;
     private RecyclerView recyclerView;
+    private BillingManager billingManager;
 
     {
-        Context context = Application.getContext();
+        Context context = App.getInstance();
         infolist = new TextLink[]{new TextLink(context.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
                 new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
                 new TextLink(context.getString(R.string.color_picker), CLOLOR_PICKER_LINK),
@@ -97,14 +100,18 @@ public class HomeFragment extends FingerGestureFragment
         if (BuildConfig.DEBUG) builder.addTestDevice("4853CDD3A8952349497550F27CC60ED3");
 
         adView.setVisibility(View.INVISIBLE);
-        adView.loadAd(builder.build());
-        adView.setAdListener(new AdListener() {
-            @Override
-            public void onAdLoaded() {
-                TransitionManager.beginDelayedTransition(root, new AutoTransition());
-                adView.setVisibility(View.VISIBLE);
-            }
-        });
+
+        if (PurchasesManager.getInstance().hasAds()) {
+            adView.loadAd(builder.build());
+            adView.setAdListener(new AdListener() {
+                @Override
+                public void onAdLoaded() {
+                    TransitionManager.beginDelayedTransition(root, new AutoTransition());
+                    adView.setVisibility(View.VISIBLE);
+                }
+            });
+        }
+
         return root;
     }
 
@@ -114,6 +121,12 @@ public class HomeFragment extends FingerGestureFragment
 
         FloatingActionButton fab = getFab();
         fab.setImageResource(R.drawable.ic_settings_white_24dp);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        billingManager = new BillingManager(getActivity(), PurchasesManager.getInstance());
     }
 
     @Override
@@ -133,6 +146,13 @@ public class HomeFragment extends FingerGestureFragment
     public void onDestroyView() {
         super.onDestroyView();
         recyclerView = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        billingManager.destroy();
+
+        super.onDestroy();
     }
 
     @Override
@@ -174,8 +194,8 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
-    public boolean hasPurchasedPremium() {
-        return true;
+    public void goPremium() {
+
     }
 
     @Override

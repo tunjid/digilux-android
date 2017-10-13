@@ -5,7 +5,7 @@ import android.app.UiModeManager;
 import android.content.Context;
 import android.widget.Toast;
 
-import com.tunjid.fingergestures.Application;
+import com.tunjid.fingergestures.App;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -13,8 +13,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static android.app.UiModeManager.MODE_NIGHT_YES;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NIGHT_MODE_OFF;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NIGHT_MODE_ON;
 
 public class NightLightGestureConsumer implements GestureConsumer {
 
@@ -31,7 +29,7 @@ public class NightLightGestureConsumer implements GestureConsumer {
     }
 
     private NightLightGestureConsumer() {
-        app = Application.getContext();
+        app = App.getInstance();
         modeManager = app.getSystemService(UiModeManager.class);
         gestures = new HashSet<>();
         gestures.add(NIGHT_MODE_ON);
@@ -40,7 +38,7 @@ public class NightLightGestureConsumer implements GestureConsumer {
 
     @Override
     @SuppressLint("SwitchIntDef")
-    public void onGestureActionTriggered(@GestureUtils.GestureAction int gestureAction) {
+    public void onGestureActionTriggered(@GestureAction int gestureAction) {
         switch (gestureAction) {
             case NIGHT_MODE_ON:
             case NIGHT_MODE_OFF:

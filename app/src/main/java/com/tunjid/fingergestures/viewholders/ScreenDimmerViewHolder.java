@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
 
+import com.tunjid.fingergestures.PurchasesManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
@@ -41,6 +42,10 @@ public class ScreenDimmerViewHolder extends HomeViewHolder {
     }
 
     private void goToSettings(View view) {
+        if (PurchasesManager.getInstance().isNotPremium()) {
+            goPremium();
+            return;
+        }
         Intent setiingsIntent = new Intent(ACTION_MANAGE_OVERLAY_PERMISSION);
         view.getContext().startActivity(setiingsIntent);
     }

@@ -13,7 +13,8 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
-import com.tunjid.fingergestures.Application;
+import com.tunjid.fingergestures.App;
+import com.tunjid.fingergestures.PurchasesManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
@@ -106,7 +107,7 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
     }
 
     public static Drawable tint(@DrawableRes int drawableRes, int color) {
-        Context context = Application.getContext();
+        Context context = App.getInstance();
         Drawable normalDrawable = ContextCompat.getDrawable(context, drawableRes);
         Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
         DrawableCompat.setTint(wrapDrawable, color);
@@ -130,6 +131,10 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
     }
 
     private void getColorFromWallpaper(View indicator) {
+        if (PurchasesManager.getInstance().isNotPremium()) {
+            goPremium();
+            return;
+        }
         new AlertDialog.Builder(indicator.getContext())
                 .setTitle(R.string.choose_target)
                 .setItems(targetOptions, (dialog, position) -> {

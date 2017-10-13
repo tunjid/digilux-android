@@ -103,7 +103,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     }
 
     public interface HomeAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
-        boolean hasPurchasedPremium();
+        void goPremium();
     }
 
     private View getView(@LayoutRes int res, ViewGroup viewGroup) {

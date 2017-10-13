@@ -19,7 +19,7 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
-import com.tunjid.fingergestures.Application;
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
@@ -49,7 +49,7 @@ public class FingerGestureService extends AccessibilityService {
                     break;
                 case ACTION_NOTIFICATION_UP:
                     Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                    Application.getContext().sendBroadcast(closeIntent);
+                    App.getInstance().sendBroadcast(closeIntent);
                     break;
                 case BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED:
                     adjustDimmer();
