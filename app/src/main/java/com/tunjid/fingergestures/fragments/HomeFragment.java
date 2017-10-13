@@ -282,6 +282,8 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     private void hideAds() {
+        if (adView.getVisibility() == View.GONE) return;
+
         ViewGroup root = (ViewGroup) getView();
         if (root == null) return;
 

@@ -44,7 +44,7 @@ public class ScreenDimmerViewHolder extends HomeViewHolder {
 
     private void goToSettings(View view) {
         if (PurchasesManager.getInstance().isNotPremium()) {
-            goPremium(R.string.premium_prompt_dimmer, PurchasesManager.PREMIUM_SKU);
+            goPremium(R.string.premium_prompt_dimmer);
             return;
         }
         Intent setiingsIntent = new Intent(ACTION_MANAGE_OVERLAY_PERMISSION);

@@ -8,6 +8,7 @@ import android.view.View;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseViewHolder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.HomeAdapter;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 
 public class HomeViewHolder extends BaseViewHolder<HomeAdapter.HomeAdapterListener> {
 
@@ -21,12 +22,12 @@ public class HomeViewHolder extends BaseViewHolder<HomeAdapter.HomeAdapterListen
 
     public void bind() {}
 
-    void goPremium(@StringRes int description, String sku) {
+    void goPremium(@StringRes int description) {
         Context context = itemView.getContext();
         new AlertDialog.Builder(context)
                 .setTitle(R.string.go_premium_title)
                 .setMessage(context.getString(R.string.go_premium_body, context.getString(description)))
-                .setPositiveButton(R.string.yes, (dialog, which) -> adapterListener.purchase(sku))
+                .setPositiveButton(R.string.yes, (dialog, which) -> adapterListener.purchase(PurchasesManager.PREMIUM_SKU))
                 .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                 .show();
     }

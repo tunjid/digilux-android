@@ -1,5 +1,8 @@
 package com.tunjid.fingergestures.viewholders;
 
+import android.content.Context;
+import android.support.annotation.StringRes;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.TextView;
 
@@ -29,10 +32,19 @@ public class AdFreeViewHolder extends HomeViewHolder {
                 : R.string.ad_free_no_ad_user);
 
         if (purchasesManager.hasNotGoneAdFree()) {
-            itemView.setOnClickListener(v -> goPremium(purchasesManager.isNotPremium()
+            itemView.setOnClickListener(v -> removeAds(purchasesManager.isNotPremium()
                             ? R.string.ad_free_basic_user_confirmation
-                            : R.string.ad_free_premium_user_confirmation,
-                    PurchasesManager.AD_FREE_SKU));
+                            : R.string.ad_free_premium_user_confirmation));
         }
+    }
+
+    void removeAds(@StringRes int description) {
+        Context context = itemView.getContext();
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.remove_ads)
+                .setMessage(description)
+                .setPositiveButton(R.string.yes, (dialog, which) -> adapterListener.purchase(PurchasesManager.AD_FREE_SKU))
+                .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
+                .show();
     }
 }

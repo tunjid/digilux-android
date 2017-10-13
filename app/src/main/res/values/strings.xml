@@ -56,6 +56,7 @@
     <string name="premium_prompt_dimmer">Draws a dark overlay to further dim brightness at night. Please note the overlay cannot be dawn over the notification bar and shade due to limitations in Android Oreo.</string>
 
     <!-- Ad Free Viewholder-->
+    <string name="remove_ads">Remove Ads</string>
     <string name="ad_free_basic_user">Go ad free</string>
     <string name="ad_free_premium_user">Thanks for going premium!</string>
     <string name="ad_free_no_ad_user">Thanks for your support!</string>
