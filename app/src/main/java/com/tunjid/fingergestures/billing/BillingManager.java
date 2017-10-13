@@ -16,7 +16,6 @@
 package com.tunjid.fingergestures.billing;
 
 import android.app.Activity;
-import android.util.Log;
 
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClient.BillingResponse;
@@ -38,8 +37,6 @@ import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
  * it through BillingClient and caches temporary states/data if needed
  */
 public class BillingManager {
-
-    private static final String TAG = "BillingManager";
 
     private boolean isServiceConnected;
 
@@ -70,12 +67,7 @@ public class BillingManager {
     private void queryPurchases() {
         checkClient().subscribe(() -> {
             PurchasesResult result = billingClient.queryPurchases(SkuType.INAPP);
-            if (billingClient == null || result.getResponseCode() != BillingResponse.OK) {
-                Log.w(TAG, "Billing client was null or result code (" + result.getResponseCode() + ") was bad - quitting");
-                return;
-            }
-
-            Log.d(TAG, "Query inventory was successful.");
+            if (billingClient == null || result.getResponseCode() != BillingResponse.OK) return;
 
             PurchasesManager.getInstance().onPurchasesUpdated(BillingResponse.OK, result.getPurchasesList());
         }, errorHandler);
@@ -112,8 +104,6 @@ public class BillingManager {
             billingClient.startConnection(new BillingClientStateListener() {
                 @Override
                 public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
-                    Log.d(TAG, "Setup finished. Response code: " + billingResponseCode);
-
                     isServiceConnected = billingResponseCode == BillingResponse.OK;
 
                     if (isServiceConnected) emitter.onComplete();

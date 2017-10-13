@@ -31,14 +31,14 @@ public class AdFreeViewHolder extends HomeViewHolder {
                 ? R.string.ad_free_premium_user
                 : R.string.ad_free_no_ad_user);
 
-        if (purchasesManager.hasNotGoneAdFree()) {
-            itemView.setOnClickListener(v -> removeAds(purchasesManager.isNotPremium()
-                            ? R.string.ad_free_basic_user_confirmation
-                            : R.string.ad_free_premium_user_confirmation));
-        }
+        View.OnClickListener goAdFree = v -> removeAds(purchasesManager.isNotPremium()
+                ? R.string.ad_free_basic_user_confirmation
+                : R.string.ad_free_premium_user_confirmation);
+
+        itemView.setOnClickListener(purchasesManager.hasNotGoneAdFree() ? goAdFree : null);
     }
 
-    void removeAds(@StringRes int description) {
+    private void removeAds(@StringRes int description) {
         Context context = itemView.getContext();
         new AlertDialog.Builder(context)
                 .setTitle(R.string.remove_ads)
