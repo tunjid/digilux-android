@@ -86,7 +86,7 @@
     <string name="go_premium_title">Go Premium</string>
     <string name="go_premium_body">This is a premium feature. Going premium also removes ads,
          however if you want to remove ads, but don\'t fancy the premium offerings,
-         you can remove ads by scrolling to the bottom of the list and choosing the "Remove ads" option.
+         you can remove ads by scrolling to the bottom of the list and choosing the "Remove ads" option for something more modest.
         \n\nWould you like to continue?\n\nAbout item:\n%1$s</string>
 
     <!-- Billing Api Feedback-->

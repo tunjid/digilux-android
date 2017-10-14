@@ -2,6 +2,7 @@ package com.tunjid.fingergestures.viewholders;
 
 import android.content.Context;
 import android.support.annotation.StringRes;
+import android.support.v4.widget.TextViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.TextView;
@@ -24,8 +25,13 @@ public class AdFreeViewHolder extends HomeViewHolder {
     @Override
     public void bind() {
         super.bind();
+        boolean hasAds = purchasesManager.hasAds();
 
-        title.setText(purchasesManager.hasAds()
+        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(title, hasAds
+                ? R.drawable.ic_attach_money_white_24dp
+                : R.drawable.ic_check_white_24dp, 0, 0, 0);
+
+        title.setText(hasAds
                 ? R.string.ad_free_basic_user
                 : !purchasesManager.isNotPremium()
                 ? R.string.ad_free_premium_user

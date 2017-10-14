@@ -105,9 +105,10 @@ public class HomeFragment extends FingerGestureFragment
 
         if (BuildConfig.DEBUG) builder.addTestDevice("4853CDD3A8952349497550F27CC60ED3");
 
-        adView.setVisibility(View.INVISIBLE);
+        boolean hasAds = PurchasesManager.getInstance().hasAds();
+        adView.setVisibility(hasAds ? View.INVISIBLE : View.GONE);
 
-        if (PurchasesManager.getInstance().hasAds()) {
+        if (hasAds) {
             adView.loadAd(builder.build());
             adView.setAdListener(new AdListener() {
                 @Override
@@ -159,7 +160,6 @@ public class HomeFragment extends FingerGestureFragment
     @Override
     public void onDestroy() {
         billingManager.destroy();
-
         super.onDestroy();
     }
 
