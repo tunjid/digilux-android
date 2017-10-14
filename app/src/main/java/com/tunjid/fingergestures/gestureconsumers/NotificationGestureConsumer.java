@@ -4,13 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
-import com.tunjid.fingergestures.Application;
+import com.tunjid.fingergestures.App;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NOTIFICATION_DOWN;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NOTIFICATION_UP;
 
 public class NotificationGestureConsumer implements GestureConsumer {
 
@@ -34,11 +31,11 @@ public class NotificationGestureConsumer implements GestureConsumer {
 
     @Override
     @SuppressLint("SwitchIntDef")
-    public void onGestureActionTriggered(@GestureUtils.GestureAction int gestureAction) {
+    public void onGestureActionTriggered(@GestureAction int gestureAction) {
         switch (gestureAction) {
             case NOTIFICATION_UP:
             case NOTIFICATION_DOWN:
-                LocalBroadcastManager.getInstance(Application.getContext())
+                LocalBroadcastManager.getInstance(App.getInstance())
                         .sendBroadcast(new Intent(gestureAction == NOTIFICATION_UP
                                 ? ACTION_NOTIFICATION_UP
                                 : ACTION_NOTIFICATION_DOWN));

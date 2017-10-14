@@ -11,14 +11,15 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.transition.AutoTransition;
-import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.transition.AutoTransition;
+import android.transition.Transition;
+import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,15 +30,21 @@ import android.view.ViewGroup;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.tunjid.fingergestures.Application;
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BuildConfig;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.HomeAdapter;
 import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
+import com.tunjid.fingergestures.billing.BillingManager;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.services.FingerGestureService;
 
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
+import static com.android.billingclient.api.BillingClient.BillingResponse.ITEM_ALREADY_OWNED;
+import static com.android.billingclient.api.BillingClient.BillingResponse.OK;
+import static com.android.billingclient.api.BillingClient.BillingResponse.SERVICE_DISCONNECTED;
+import static com.android.billingclient.api.BillingClient.BillingResponse.SERVICE_UNAVAILABLE;
 
 public class HomeFragment extends FingerGestureFragment
         implements
@@ -54,9 +61,12 @@ public class HomeFragment extends FingerGestureFragment
     private boolean fromAccessibility;
 
     private final TextLink[] infolist;
+    private AdView adView;
+    private RecyclerView recyclerView;
+    private BillingManager billingManager;
 
     {
-        Context context = Application.getContext();
+        Context context = App.getInstance();
         infolist = new TextLink[]{new TextLink(context.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
                 new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
                 new TextLink(context.getString(R.string.color_picker), CLOLOR_PICKER_LINK),
@@ -81,29 +91,34 @@ public class HomeFragment extends FingerGestureFragment
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_home, container, false);
-        RecyclerView recyclerView = root.findViewById(R.id.options_list);
         Context context = getContext();
         DividerItemDecoration itemDecoration = new DividerItemDecoration(context, VERTICAL);
         itemDecoration.setDrawable(ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark));
 
+        recyclerView = root.findViewById(R.id.options_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(new HomeAdapter(this));
         recyclerView.addItemDecoration(itemDecoration);
 
-        AdView adView = root.findViewById(R.id.adView);
+        adView = root.findViewById(R.id.adView);
         AdRequest.Builder builder = new AdRequest.Builder();
 
         if (BuildConfig.DEBUG) builder.addTestDevice("4853CDD3A8952349497550F27CC60ED3");
 
-        adView.setVisibility(View.INVISIBLE);
-        adView.loadAd(builder.build());
-        adView.setAdListener(new AdListener() {
-            @Override
-            public void onAdLoaded() {
-                TransitionManager.beginDelayedTransition(root, new AutoTransition());
-                adView.setVisibility(View.VISIBLE);
-            }
-        });
+        boolean hasAds = PurchasesManager.getInstance().hasAds();
+        adView.setVisibility(hasAds ? View.INVISIBLE : View.GONE);
+
+        if (hasAds) {
+            adView.loadAd(builder.build());
+            adView.setAdListener(new AdListener() {
+                @Override
+                public void onAdLoaded() {
+                    TransitionManager.beginDelayedTransition(root, new AutoTransition());
+                    adView.setVisibility(View.VISIBLE);
+                }
+            });
+        }
+
         return root;
     }
 
@@ -116,6 +131,12 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        billingManager = new BillingManager(getActivity());
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
@@ -124,6 +145,22 @@ public class HomeFragment extends FingerGestureFragment
 
         fromSettings = false;
         fromAccessibility = false;
+
+        recyclerView.getAdapter().notifyDataSetChanged();
+        if (!PurchasesManager.getInstance().hasAds()) hideAds();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        recyclerView = null;
+        adView = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        billingManager.destroy();
+        super.onDestroy();
     }
 
     @Override
@@ -145,11 +182,6 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -167,6 +199,27 @@ public class HomeFragment extends FingerGestureFragment
                         : R.string.accessibility_permission_denied);
                 break;
         }
+    }
+
+    @Override
+    public void purchase(String sku) {
+        billingManager.initiatePurchaseFlow(sku)
+                .subscribe(launchStatus -> {
+                    switch (launchStatus) {
+                        case OK:
+                            break;
+                        case SERVICE_UNAVAILABLE:
+                        case SERVICE_DISCONNECTED:
+                            showSnackbar(R.string.billing_not_connected);
+                            break;
+                        case ITEM_ALREADY_OWNED:
+                            showSnackbar(R.string.billing_you_own_this);
+                            break;
+                        default:
+                            showSnackbar(R.string.billing_generic_error);
+                            break;
+                    }
+                }, throwable -> showSnackbar(R.string.billing_generic_error));
     }
 
     @Override
@@ -226,6 +279,43 @@ public class HomeFragment extends FingerGestureFragment
     private void showLink(TextLink textLink) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(textLink.link));
         startActivity(browserIntent);
+    }
+
+    private void hideAds() {
+        if (adView.getVisibility() == View.GONE) return;
+
+        ViewGroup root = (ViewGroup) getView();
+        if (root == null) return;
+
+        Transition hideTransition = new AutoTransition();
+        hideTransition.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(@NonNull Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionEnd(@NonNull Transition transition) {
+                showSnackbar(R.string.billing_thanks);
+            }
+
+            @Override
+            public void onTransitionCancel(@NonNull Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionPause(@NonNull Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionResume(@NonNull Transition transition) {
+
+            }
+        });
+        android.transition.TransitionManager.beginDelayedTransition(root, hideTransition);
+        adView.setVisibility(View.GONE);
     }
 
     private static class TextLink implements CharSequence {

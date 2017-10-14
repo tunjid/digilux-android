@@ -1,5 +1,6 @@
 package com.tunjid.fingergestures.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.tunjid.androidbootstrap.core.view.ViewHider;
@@ -19,5 +20,10 @@ public class MainActivity extends FingerGestureActivity {
         fabHider = ViewHider.of(fab).setDirection(ViewHider.BOTTOM).build();
 
         if (savedInstanceState == null) showFragment(HomeFragment.newInstance());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

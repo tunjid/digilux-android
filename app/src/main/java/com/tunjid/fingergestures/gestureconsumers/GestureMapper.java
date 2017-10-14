@@ -2,11 +2,10 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.accessibilityservice.FingerprintGestureController;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 
-import com.tunjid.fingergestures.Application;
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 
 import java.lang.annotation.Retention;
@@ -20,14 +19,13 @@ import static android.accessibilityservice.FingerprintGestureController.FINGERPR
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_LEFT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_RIGHT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_UP;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.DO_NOTHING;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.INCREASE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.MAXIMIZE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.MININIMIZE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NOTIFICATION_DOWN;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.NOTIFICATION_UP;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.REDUCE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.getPreferences;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MININIMIZE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -44,7 +42,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     @SuppressLint("StaticFieldLeak")
     private static GestureMapper instance;
 
-    private final Context app;
+    private final App app;
 
     private final Map<Integer, String> fingerGestureMap = new HashMap<>();
     private final Map<String, Integer> gestureFingerMap;
@@ -63,7 +61,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public @interface Gesture {}
 
     {
-        app = Application.getContext();
+        app = App.getInstance();
 
         fingerGestureMap.put(FINGERPRINT_GESTURE_SWIPE_UP, UP_GESTURE);
         fingerGestureMap.put(FINGERPRINT_GESTURE_SWIPE_DOWN, DOWN_GESTURE);
@@ -111,7 +109,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public String mapGestureToAction(@Gesture String gesture, int index) {
         int resource = actionResources.get(index);
         int action = actionGestureMap.get(resource);
-        getPreferences().edit().putInt(gesture, action).apply();
+        app.getPreferences().edit().putInt(gesture, action).apply();
         return app.getString(resource);
     }
 
@@ -135,22 +133,22 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public void onGestureDetected(int raw) {
         super.onGestureDetected(raw);
 
-        @GestureUtils.GestureAction int gesture = fingerPrintToGesture(raw);
+        @GestureConsumer.GestureAction int gesture = fingerPrintToGesture(raw);
         GestureConsumer consumer = consumerForGesture(gesture);
         if (consumer != null) consumer.onGestureActionTriggered(gesture);
     }
 
     @Nullable
-    private GestureConsumer consumerForGesture(@GestureUtils.GestureAction int gesture) {
+    private GestureConsumer consumerForGesture(@GestureConsumer.GestureAction int gesture) {
         for (GestureConsumer consumer : consumers)
             if (consumer.accepts(gesture)) return consumer;
         return null;
     }
 
-    @GestureUtils.GestureAction
+    @GestureConsumer.GestureAction
     private int fingerPrintToGesture(int raw) {
         String gestureKey = fingerGestureMap.get(raw);
-        int gesture = getPreferences().getInt(gestureKey, UNASSIGNED_GESTURE);
+        int gesture = app.getPreferences().getInt(gestureKey, UNASSIGNED_GESTURE);
 
         if (gesture == UNASSIGNED_GESTURE) {
             switch (gestureKey) {
