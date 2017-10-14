@@ -19,7 +19,9 @@
     <string name="accessibility_permission_denied">Accessibility permission denied</string>
     <string name="settings_permission_denied">Settings permission denied</string>
 
-    <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures exclusively.\n\nIt will not affect the functionality of any apps depending on the finger print sensor.</string>
+    <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures and determine if the notification shade is showing to keep the 1 – 2 gesture combo to show the notification shade first and quick settings second.
+        \n\nIt will not affect the functionality of any apps depending on the fingerprint sensor; gestures will be tempoarily unavailable while fingerprint authentication is requested by any app,
+        and will become available again after fingerprint authentication is complete.</string>
 
     <!-- Delta Viewholder-->
     <string name="delta_percent">%1$d%% per swipe</string>
@@ -31,12 +33,35 @@
 
     <!-- Color Adjuster Viewholder-->
     <string name="choose_color">Choose Color</string>
+    <string name="choose_target">Choose Target</string>
     <string name="edit_slider_apperance">Edit Slider Appearance</string>
     <string name="change_slider_background_color">Change slider background color</string>
     <string name="change_slider_color">Change slider color</string>
+    <string name="wallpaper_color">Colors from wallpaper (Incompatible with Live Wallpapers):</string>
+    <string name="slider">Slider</string>
+    <string name="slider_background">Slider Background</string>
+    <string name="premium_prompt_slider">Adds the immeasurable, earth shattering convenience of choosing your slider color based on the colors in your static wallpaper.</string>
 
     <!-- Adaptive Brightness Viewholder-->
     <string name="adaptive_brightness">Restore adaptive brightness when the screen is turned off and on</string>
+
+    <!-- Show Slider Viewholder-->
+    <string name="show_slider">Show the slider when adjusting brightness</string>
+
+    <!-- Screen Dimmer Viewholder-->
+    <string name="screen_dimmer">Screen Dimmer</string>
+    <string name="screen_dimmer_toggle">Enable Screen Dimmer</string>
+    <string name="screen_dimmer_value">Screen dimmed %1$.0f%% </string>
+    <string name="screen_overlay_grant_permission">Grant overlay permissions</string>
+    <string name="premium_prompt_dimmer">Draws a dark overlay to further dim brightness at night. Please note the overlay cannot be dawn over the notification bar / shade due to limitations in Android Oreo.</string>
+
+    <!-- Ad Free Viewholder-->
+    <string name="remove_ads">Remove Ads</string>
+    <string name="ad_free_basic_user">Go ad free</string>
+    <string name="ad_free_premium_user">Thanks for going premium!</string>
+    <string name="ad_free_no_ad_user">Thanks for your support!</string>
+    <string name="ad_free_basic_user_confirmation">Purchasing this will remove the banner ads at the bottom.\n\nPlease note this does not unlock premium features.</string>
+    <string name="ad_free_premium_user_confirmation">You\'ve already gone premium! You really don\'t have to…</string>
 
     <!-- Available gestures-->
     <string name="swipe_up">Swipe up</string>
@@ -57,6 +82,19 @@
     <string name="do_nothing">Do nothing</string>
     <string name="unsupported_action">Sorry! Looks like that action is unsupported on your device. Please drop me a line to fix it.</string>
 
+    <!-- Going Premium-->
+    <string name="go_premium_title">Go Premium</string>
+    <string name="go_premium_body">This is a premium feature. Going premium also removes ads,
+         however if you want to remove ads, but don\'t fancy the premium offerings,
+         you can remove ads by scrolling to the bottom of the list and choosing the "Remove ads" option for something more modest.
+        \n\nWould you like to continue?\n\nAbout item:\n%1$s</string>
+
+    <!-- Billing Api Feedback-->
+    <string name="billing_thanks">Thank you so much!</string>
+    <string name="billing_not_connected">Sorry, unable to connect to Google Play</string>
+    <string name="billing_you_own_this">You\'ve already gotten this. Thank you!</string>
+    <string name="billing_generic_error">Sorry, there was an error completing your request.</string>
+
     <!-- Info dialog-->
     <string name="open_source_libraries">Open Source Libraries</string>
     <string name="rxjava">RxJava2</string>
@@ -67,7 +105,9 @@
     <!-- Generic text-->
     <string name="ok">Okay</string>
     <string name="cancel">Cancel</string>
+    <string name="blank_emoji">😶</string>
 
+    <string name="continue_text">Continue</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
 </resources>

@@ -5,8 +5,6 @@ import android.annotation.SuppressLint;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.DO_NOTHING;
-
 public class NothingGestureConsumer implements GestureConsumer {
 
     @SuppressLint("StaticFieldLeak")
@@ -26,7 +24,7 @@ public class NothingGestureConsumer implements GestureConsumer {
 
     @Override
     @SuppressLint("SwitchIntDef")
-    public void onGestureActionTriggered(@GestureUtils.GestureAction int gestureAction) {
+    public void onGestureActionTriggered(@GestureAction int gestureAction) {
         switch (gestureAction) {
             case DO_NOTHING:
                 break;
