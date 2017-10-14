@@ -27,7 +27,7 @@ public class HomeViewHolder extends BaseViewHolder<HomeAdapter.HomeAdapterListen
         new AlertDialog.Builder(context)
                 .setTitle(R.string.go_premium_title)
                 .setMessage(context.getString(R.string.go_premium_body, context.getString(description)))
-                .setPositiveButton(R.string.yes, (dialog, which) -> adapterListener.purchase(PurchasesManager.PREMIUM_SKU))
+                .setPositiveButton(R.string.continue_text, (dialog, which) -> adapterListener.purchase(PurchasesManager.PREMIUM_SKU))
                 .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                 .show();
     }

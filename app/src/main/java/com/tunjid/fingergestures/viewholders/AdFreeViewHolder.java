@@ -49,7 +49,7 @@ public class AdFreeViewHolder extends HomeViewHolder {
         new AlertDialog.Builder(context)
                 .setTitle(R.string.remove_ads)
                 .setMessage(description)
-                .setPositiveButton(R.string.yes, (dialog, which) -> adapterListener.purchase(PurchasesManager.AD_FREE_SKU))
+                .setPositiveButton(R.string.continue_text, (dialog, which) -> adapterListener.purchase(PurchasesManager.AD_FREE_SKU))
                 .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                 .show();
     }

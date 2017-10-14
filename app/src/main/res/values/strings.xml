@@ -53,7 +53,7 @@
     <string name="screen_dimmer_toggle">Enable Screen Dimmer</string>
     <string name="screen_dimmer_value">Screen dimmed %1$.0f%% </string>
     <string name="screen_overlay_grant_permission">Grant overlay permissions</string>
-    <string name="premium_prompt_dimmer">Draws a dark overlay to further dim brightness at night. Please note the overlay cannot be dawn over the notification bar and shade due to limitations in Android Oreo.</string>
+    <string name="premium_prompt_dimmer">Draws a dark overlay to further dim brightness at night. Please note the overlay cannot be dawn over the notification bar / shade due to limitations in Android Oreo.</string>
 
     <!-- Ad Free Viewholder-->
     <string name="remove_ads">Remove Ads</string>
@@ -105,7 +105,9 @@
     <!-- Generic text-->
     <string name="ok">Okay</string>
     <string name="cancel">Cancel</string>
+    <string name="blank_emoji">😶</string>
 
+    <string name="continue_text">Continue</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
 </resources>
