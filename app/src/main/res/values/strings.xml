@@ -60,7 +60,7 @@
     <string name="ad_free_basic_user">Go ad free</string>
     <string name="ad_free_premium_user">Thanks for going premium!</string>
     <string name="ad_free_no_ad_user">Thanks for your support!</string>
-    <string name="ad_free_basic_user_confirmation">Purchasing this will remove the banner ads at the bottom.</string>
+    <string name="ad_free_basic_user_confirmation">Purchasing this will remove the banner ads at the bottom.\n\nPlease note this does not unlock premium features.</string>
     <string name="ad_free_premium_user_confirmation">You\'ve already gone premium! You really don\'t have to…</string>
 
     <!-- Available gestures-->
