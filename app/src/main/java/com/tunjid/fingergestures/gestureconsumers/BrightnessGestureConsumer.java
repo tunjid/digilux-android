@@ -98,6 +98,9 @@ public class BrightnessGestureConsumer implements GestureConsumer {
             intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
             LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
         }
+        else if (gestureAction == MININIMIZE_BRIGHTNESS || gestureAction == MAXIMIZE_BRIGHTNESS) {
+            removeDimmer();
+        }
 
         saveBrightness(byteValue);
 
