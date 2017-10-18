@@ -1,13 +1,10 @@
 package com.tunjid.fingergestures.fragments;
 
 
-import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -16,7 +13,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.transition.AutoTransition;
 import android.transition.Transition;
 import android.transition.TransitionManager;
@@ -37,9 +33,7 @@ import com.tunjid.fingergestures.adapters.HomeAdapter;
 import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
 import com.tunjid.fingergestures.billing.BillingManager;
 import com.tunjid.fingergestures.billing.PurchasesManager;
-import com.tunjid.fingergestures.services.FingerGestureService;
 
-import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 import static com.android.billingclient.api.BillingClient.BillingResponse.ITEM_ALREADY_OWNED;
 import static com.android.billingclient.api.BillingClient.BillingResponse.OK;
@@ -62,6 +56,8 @@ public class HomeFragment extends FingerGestureFragment
 
     private final TextLink[] infolist;
     private AdView adView;
+    private View accessibility;
+    private View settings;
     private RecyclerView recyclerView;
     private BillingManager billingManager;
 
@@ -100,7 +96,13 @@ public class HomeFragment extends FingerGestureFragment
         recyclerView.setAdapter(new HomeAdapter(this));
         recyclerView.addItemDecoration(itemDecoration);
 
+        accessibility = root.findViewById(R.id.accessibility_permissions);
+        settings = root.findViewById(R.id.settings_permissions);
         adView = root.findViewById(R.id.adView);
+
+        accessibility.setOnClickListener(v -> startActivity(App.accessibilityIntent()));
+        settings.setOnClickListener(v -> startActivity(App.settingsIntent()));
+
         AdRequest.Builder builder = new AdRequest.Builder();
 
         if (BuildConfig.DEBUG) builder.addTestDevice("4853CDD3A8952349497550F27CC60ED3");
@@ -140,8 +142,10 @@ public class HomeFragment extends FingerGestureFragment
     public void onResume() {
         super.onResume();
 
-        if (!fromSettings && !Settings.System.canWrite(getContext())) askForSettings();
-        else if (!fromAccessibility && !isAccessibilityServiceEnabled()) askForAccessibility();
+        if (!fromSettings && !App.canWriteToSettings()) askForSettings();
+        else if (!fromAccessibility && !App.isAccessibilityServiceEnabled()) askForAccessibility();
+
+        dismissPermissionsBar();
 
         fromSettings = false;
         fromAccessibility = false;
@@ -154,6 +158,8 @@ public class HomeFragment extends FingerGestureFragment
     public void onDestroyView() {
         super.onDestroyView();
         recyclerView = null;
+        accessibility = null;
+        settings = null;
         adView = null;
     }
 
@@ -188,13 +194,13 @@ public class HomeFragment extends FingerGestureFragment
         switch (requestCode) {
             case SETTINGS_CODE:
                 fromSettings = true;
-                showSnackbar(Settings.System.canWrite(getContext())
+                showSnackbar(App.canWriteToSettings()
                         ? R.string.settings_permission_granted
                         : R.string.settings_permission_denied);
                 break;
             case ACCESSIBILITY_CODE:
                 fromAccessibility = true;
-                showSnackbar(isAccessibilityServiceEnabled()
+                showSnackbar(App.isAccessibilityServiceEnabled()
                         ? R.string.accessibility_permission_granted
                         : R.string.accessibility_permission_denied);
                 break;
@@ -227,22 +233,13 @@ public class HomeFragment extends FingerGestureFragment
         return false;
     }
 
-    @NonNull
-    private Intent settingsIntent() {
-        return new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + getContext().getPackageName()));
-    }
-
-    @NonNull
-    private Intent accessibilityIntent() {
-        return new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-    }
-
     private void askForSettings() {
         new AlertDialog.Builder(getContext())
                 .setTitle(R.string.permission_required)
                 .setMessage(R.string.settings_permission_request)
-                .setPositiveButton(R.string.yes, (dialog, b) -> startActivityForResult(settingsIntent(), SETTINGS_CODE))
-                .setNegativeButton(R.string.no, (dialog, b) -> dialog.dismiss())
+                .setPositiveButton(R.string.yes, (dialog, b) -> startActivityForResult(App.settingsIntent(), SETTINGS_CODE))
+                .setNegativeButton(R.string.no, (dialog, b) -> onPermissionDialogDismmissed(settings))
+                .setOnCancelListener(dialog -> onPermissionDialogDismmissed(settings))
                 .show();
     }
 
@@ -250,30 +247,27 @@ public class HomeFragment extends FingerGestureFragment
         new AlertDialog.Builder(getContext())
                 .setTitle(R.string.permission_required)
                 .setMessage(R.string.accessibility_permissions_request)
-                .setPositiveButton(R.string.yes, (dialog, b) -> startActivityForResult(accessibilityIntent(), ACCESSIBILITY_CODE))
-                .setNegativeButton(R.string.no, (dialog, b) -> dialog.dismiss())
+                .setPositiveButton(R.string.yes, (dialog, b) -> startActivityForResult(App.accessibilityIntent(), ACCESSIBILITY_CODE))
+                .setNegativeButton(R.string.no, (dialog, b) -> onPermissionDialogDismmissed(accessibility))
+                .setOnCancelListener(dialog -> onPermissionDialogDismmissed(accessibility))
                 .show();
     }
 
-    public boolean isAccessibilityServiceEnabled() {
-        Context context = getContext();
-        ContentResolver contentResolver = context.getContentResolver();
-        ComponentName expectedComponentName = new ComponentName(context, FingerGestureService.class);
-        String enabledServicesSetting = Settings.Secure.getString(contentResolver, ENABLED_ACCESSIBILITY_SERVICES);
+    private void onPermissionDialogDismmissed(View prompt) {
+        ViewGroup root = getRoot();
+        if (root == null) return;
 
-        if (enabledServicesSetting == null) return false;
+        TransitionManager.beginDelayedTransition(root, new AutoTransition());
+        prompt.setVisibility(View.VISIBLE);
+    }
 
-        TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
-        colonSplitter.setString(enabledServicesSetting);
+    private void dismissPermissionsBar() {
+        ViewGroup root = getRoot();
+        if (root == null) return;
 
-        while (colonSplitter.hasNext()) {
-            String componentNameString = colonSplitter.next();
-            ComponentName enabledService = ComponentName.unflattenFromString(componentNameString);
-
-            if (enabledService != null && enabledService.equals(expectedComponentName)) return true;
-        }
-
-        return false;
+        TransitionManager.beginDelayedTransition(root, new AutoTransition());
+        accessibility.setVisibility(View.GONE);
+        settings.setVisibility(View.GONE);
     }
 
     private void showLink(TextLink textLink) {
@@ -284,7 +278,7 @@ public class HomeFragment extends FingerGestureFragment
     private void hideAds() {
         if (adView.getVisibility() == View.GONE) return;
 
-        ViewGroup root = (ViewGroup) getView();
+        ViewGroup root = getRoot();
         if (root == null) return;
 
         Transition hideTransition = new AutoTransition();
@@ -316,6 +310,11 @@ public class HomeFragment extends FingerGestureFragment
         });
         android.transition.TransitionManager.beginDelayedTransition(root, hideTransition);
         adView.setVisibility(View.GONE);
+    }
+
+    @Nullable
+    private ViewGroup getRoot() {
+        return (ViewGroup) getView();
     }
 
     private static class TextLink implements CharSequence {

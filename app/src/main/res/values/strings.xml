@@ -10,6 +10,9 @@
     <!-- Permission Dialogs-->
     <string name="permission_required">Permission Required</string>
 
+    <string name="enable_accessibility">Enable Accessibility Settings</string>
+    <string name="enable_write_settings">Enable Brightness Settings</string>
+
     <string name="accessibility_permissions_request">This app needs accessibility to listen for fingerprint gestures.\n\nGo to accessibility now?</string>
     <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.\n\nGo to settings now?</string>
 
