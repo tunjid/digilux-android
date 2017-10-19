@@ -15,6 +15,7 @@ import android.support.v7.graphics.Palette;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.BrightnessActivity;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -117,12 +118,16 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public void saveBrightness(int byteValue) {
+        if (!App.canWriteToSettings()) return;
+
         ContentResolver contentResolver = app.getContentResolver();
         Settings.System.putInt(contentResolver, SCREEN_BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_MANUAL);
         Settings.System.putInt(contentResolver, SCREEN_BRIGHTNESS, byteValue);
     }
 
     public void onScreenTurnedOff() {
+        if (!App.canWriteToSettings()) return;
+
         boolean restoresAdaptiveBrightness = restoresAdaptiveBrightnessOnDisplaySleep();
         int brightnessMode = restoresAdaptiveBrightness
                 ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC
@@ -226,7 +231,9 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public boolean isDimmerEnabled() {
-        return hasOverlayPermission() && app.getPreferences().getBoolean(SCREEN_DIMMER_ENABLED, false);
+        return hasOverlayPermission()
+                && !PurchasesManager.getInstance().isNotPremium()
+                && app.getPreferences().getBoolean(SCREEN_DIMMER_ENABLED, false);
     }
 
     public boolean shouldShowDimmer() {
