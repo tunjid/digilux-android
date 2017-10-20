@@ -87,6 +87,7 @@
 
     <!-- Going Premium-->
     <string name="go_premium_title">Go Premium</string>
+    <string name="go_premium_text">This is a premium feature. Please go premium to enable it.</string>
     <string name="go_premium_body">This is a premium feature. Going premium also removes ads,
          however if you want to remove ads, but don\'t fancy the premium offerings,
          you can remove ads by scrolling to the bottom of the list and choosing the "Remove ads" option for something more modest.

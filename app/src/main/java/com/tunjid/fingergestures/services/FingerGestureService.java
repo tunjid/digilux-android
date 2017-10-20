@@ -81,6 +81,7 @@ public class FingerGestureService extends AccessibilityService {
     public void onInterrupt() {}
 
     private void expandQuickSettings(AccessibilityNodeInfo info) {
+        if (info == null) return;
         int size = info.getChildCount();
         if (size > 0) {
             for (int i = 0; i < size; i++) expandQuickSettings(info.getChild(i));

@@ -16,10 +16,12 @@ public class ScreenDimmerViewHolder extends HomeViewHolder {
 
     private final Button goToSettings;
     private final Switch overLayToggle;
+    private final PurchasesManager purchasesManager;
     private final BrightnessGestureConsumer brightnessGestureConsumer;
 
     public ScreenDimmerViewHolder(View itemView, HomeAdapter.HomeAdapterListener listener) {
         super(itemView, listener);
+        purchasesManager = PurchasesManager.getInstance();
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
 
         goToSettings = itemView.findViewById(R.id.go_to_settings);
@@ -33,17 +35,22 @@ public class ScreenDimmerViewHolder extends HomeViewHolder {
     @Override
     public void bind() {
         super.bind();
+        boolean isPremium = !purchasesManager.isNotPremium();
         boolean hasOverlayPermission = brightnessGestureConsumer.hasOverlayPermission();
 
         goToSettings.setVisibility(hasOverlayPermission ? View.GONE : View.VISIBLE);
         goToSettings.setOnClickListener(this::goToSettings);
 
+        overLayToggle.setEnabled(isPremium);
         overLayToggle.setVisibility(hasOverlayPermission ? View.VISIBLE : View.GONE);
+        overLayToggle.setText(isPremium ? R.string.screen_dimmer_toggle : R.string.go_premium_text);
         overLayToggle.setChecked(brightnessGestureConsumer.isDimmerEnabled());
+
+        if (!isPremium) itemView.setOnClickListener(this::goToSettings);
     }
 
     private void goToSettings(View view) {
-        if (PurchasesManager.getInstance().isNotPremium()) {
+        if (purchasesManager.isNotPremium()) {
             goPremium(R.string.premium_prompt_dimmer);
             return;
         }
