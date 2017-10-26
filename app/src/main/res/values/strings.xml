@@ -66,6 +66,9 @@
     <string name="ad_free_basic_user_confirmation">Purchasing this will remove the banner ads at the bottom.\n\nPlease note this does not unlock premium features.</string>
     <string name="ad_free_premium_user_confirmation">You\'ve already gone premium! You really don\'t have to…</string>
 
+    <!-- Review Viewholder-->
+    <string name="review_app">Leave a review</string>
+
     <!-- Available gestures-->
     <string name="swipe_up">Swipe up</string>
     <string name="swipe_down">Swipe Down</string>
