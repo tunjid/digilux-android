@@ -36,7 +36,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int MAP_LEFT_ICON = 8;
     private static final int MAP_RIGHT_ICON = 9;
     private static final int AD_FREE = 10;
-    private static final int NUM_ITEMS = 11;
+    private static final int REVIEW = 11;
+    private static final int NUM_ITEMS = 12;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -86,6 +87,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE);
             case AD_FREE:
                 return new AdFreeViewHolder(getView(R.layout.viewholder_ad_free, parent), adapterListener);
+            case REVIEW:
             default:
                 return new HomeViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }

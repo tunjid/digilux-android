@@ -115,6 +115,7 @@ public class HomeFragment extends FingerGestureFragment
             adView.setAdListener(new AdListener() {
                 @Override
                 public void onAdLoaded() {
+                    if (adView == null) return;
                     TransitionManager.beginDelayedTransition(root, new AutoTransition());
                     adView.setVisibility(View.VISIBLE);
                 }
