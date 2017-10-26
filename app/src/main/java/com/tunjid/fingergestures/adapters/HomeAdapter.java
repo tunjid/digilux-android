@@ -13,6 +13,7 @@ import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.HomeViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
+import com.tunjid.fingergestures.viewholders.ReviewViewHolder;
 import com.tunjid.fingergestures.viewholders.ScreenDimmerViewHolder;
 import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.ToggleViewHolder;
@@ -36,7 +37,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int MAP_LEFT_ICON = 8;
     private static final int MAP_RIGHT_ICON = 9;
     private static final int AD_FREE = 10;
-    private static final int NUM_ITEMS = 11;
+    private static final int REVIEW = 11;
+    private static final int NUM_ITEMS = 12;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -85,7 +87,9 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
             case MAP_RIGHT_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE);
             case AD_FREE:
-                return new AdFreeViewHolder(getView(R.layout.viewholder_ad_free, parent), adapterListener);
+                return new AdFreeViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
+            case REVIEW:
+                return new ReviewViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
             default:
                 return new HomeViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }
