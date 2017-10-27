@@ -75,8 +75,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureActionMap.put(NOTIFICATION_UP, R.string.notification_up);
         gestureActionMap.put(NOTIFICATION_DOWN, R.string.notification_down);
         gestureActionMap.put(DO_NOTHING, R.string.do_nothing);
-//        gestureActionMap.put(NIGHT_MODE_ON, R.string.night_mode_on);
-//        gestureActionMap.put(NIGHT_MODE_OFF, R.string.night_mode_off);
 
         textMap.put(UP_GESTURE, R.string.swipe_up);
         textMap.put(DOWN_GESTURE, R.string.swipe_down);
@@ -91,7 +89,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
         consumers.add(NothingGestureConsumer.getInstance());
         consumers.add(BrightnessGestureConsumer.getInstance());
-//        consumers.add(NightLightGestureConsumer.getInstance());
         consumers.add(NotificationGestureConsumer.getInstance());
     }
 

@@ -115,6 +115,7 @@ public class HomeFragment extends FingerGestureFragment
             adView.setAdListener(new AdListener() {
                 @Override
                 public void onAdLoaded() {
+                    if (adView == null) return;
                     TransitionManager.beginDelayedTransition(root, new AutoTransition());
                     adView.setVisibility(View.VISIBLE);
                 }
@@ -238,8 +239,8 @@ public class HomeFragment extends FingerGestureFragment
                 .setTitle(R.string.permission_required)
                 .setMessage(R.string.settings_permission_request)
                 .setPositiveButton(R.string.yes, (dialog, b) -> startActivityForResult(App.settingsIntent(), SETTINGS_CODE))
-                .setNegativeButton(R.string.no, (dialog, b) -> onPermissionDialogDismmissed(settings))
-                .setOnCancelListener(dialog -> onPermissionDialogDismmissed(settings))
+                .setNegativeButton(R.string.no, (dialog, b) -> onPermissionDialogDismissed(settings))
+                .setOnCancelListener(dialog -> onPermissionDialogDismissed(settings))
                 .show();
     }
 
@@ -248,12 +249,12 @@ public class HomeFragment extends FingerGestureFragment
                 .setTitle(R.string.permission_required)
                 .setMessage(R.string.accessibility_permissions_request)
                 .setPositiveButton(R.string.yes, (dialog, b) -> startActivityForResult(App.accessibilityIntent(), ACCESSIBILITY_CODE))
-                .setNegativeButton(R.string.no, (dialog, b) -> onPermissionDialogDismmissed(accessibility))
-                .setOnCancelListener(dialog -> onPermissionDialogDismmissed(accessibility))
+                .setNegativeButton(R.string.no, (dialog, b) -> onPermissionDialogDismissed(accessibility))
+                .setOnCancelListener(dialog -> onPermissionDialogDismissed(accessibility))
                 .show();
     }
 
-    private void onPermissionDialogDismmissed(View prompt) {
+    private void onPermissionDialogDismissed(View prompt) {
         ViewGroup root = getRoot();
         if (root == null) return;
 
