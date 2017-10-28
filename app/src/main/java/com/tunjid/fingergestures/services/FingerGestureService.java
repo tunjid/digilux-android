@@ -32,6 +32,7 @@ public class FingerGestureService extends AccessibilityService {
 
     private static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
     private static final String QUICK_SETTINGS_DESCRIPTION = "Open quick settings";
+    private static final String SETTINGS_DESCRIPTION = "Open settings";
 
     @Nullable
     private View overlayView;
@@ -39,13 +40,15 @@ public class FingerGestureService extends AccessibilityService {
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            switch (intent.getAction()) {
+            String action = intent.getAction();
+            if (action == null) return;
+            switch (action) {
                 case Intent.ACTION_SCREEN_OFF:
                     BrightnessGestureConsumer.getInstance().onScreenTurnedOff();
                     break;
                 case ACTION_NOTIFICATION_DOWN:
-                    if (!notificationsShowing()) performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
-                    else expandQuickSettings(FingerGestureService.this.getRootInActiveWindow());
+                    if (notificationsShowing()) expandQuickSettings();
+                    else performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
                     break;
                 case ACTION_NOTIFICATION_UP:
                     Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
@@ -75,39 +78,37 @@ public class FingerGestureService extends AccessibilityService {
     }
 
     @Override
+    public void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onDestroy();
+    }
+
+    @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {}
 
     @Override
     public void onInterrupt() {}
 
-    private void expandQuickSettings(AccessibilityNodeInfo info) {
-        if (info == null) return;
-        int size = info.getChildCount();
-        if (size > 0) {
-            for (int i = 0; i < size; i++) expandQuickSettings(info.getChild(i));
-        }
-        else {
-            if (!info.getActionList().contains(ACTION_CLICK)) return;
-
-            CharSequence contentDescription = info.getContentDescription();
-            if (TextUtils.isEmpty(contentDescription)) return;
-
-            String description = contentDescription.toString();
-            if (!description.contains(QUICK_SETTINGS_DESCRIPTION)) return;
-
-            info.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-        }
+    private void expandQuickSettings() {
+        AccessibilityNodeInfo info = findNode(getRootInActiveWindow(), QUICK_SETTINGS_DESCRIPTION);
+        if (info != null) info.performAction(AccessibilityNodeInfo.ACTION_CLICK);
     }
 
     private boolean notificationsShowing() {
         AccessibilityNodeInfo info = FingerGestureService.this.getRootInActiveWindow();
-        return info != null && ANDROID_SYSTEM_UI_PACKAGE.equals(info.getPackageName());
+        return info != null && ANDROID_SYSTEM_UI_PACKAGE.equals(info.getPackageName()) && isSettingsCogVisible();
+    }
+
+    private boolean isSettingsCogVisible() {
+        return findNode(getRootInActiveWindow(), SETTINGS_DESCRIPTION) != null;
     }
 
     private void adjustDimmer() {
+        WindowManager windowManager = getSystemService(WindowManager.class);
+        if (windowManager == null) return;
+
         BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         float dimAmount = brightnessGestureConsumer.getScreenDimmerDimPercent();
-        WindowManager windowManager = getSystemService(WindowManager.class);
 
         if (brightnessGestureConsumer.shouldShowDimmer()) {
             WindowManager.LayoutParams params;
@@ -138,10 +139,34 @@ public class FingerGestureService extends AccessibilityService {
                         | WindowManager.LayoutParams.FLAG_DIM_BEHIND,
                 PixelFormat.TRANSLUCENT);
 
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = getSystemService(LayoutInflater.class);
+        if (inflater == null) return params;
+
         overlayView = inflater.inflate(R.layout.window_overlay, null);
         windowManager.addView(overlayView, params);
 
         return params;
+    }
+
+    @Nullable
+    private AccessibilityNodeInfo findNode(AccessibilityNodeInfo info, String name) {
+        if (info == null) return null;
+        int size = info.getChildCount();
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                AccessibilityNodeInfo node = findNode(info.getChild(i), name);
+                if (node != null) return node;
+            }
+        }
+        else {
+            if (!info.getActionList().contains(ACTION_CLICK)) return null;
+
+            CharSequence contentDescription = info.getContentDescription();
+            if (TextUtils.isEmpty(contentDescription)) return null;
+
+            String description = contentDescription.toString();
+            if (description.contains(name)) return info;
+        }
+        return null;
     }
 }
