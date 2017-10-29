@@ -70,7 +70,6 @@ public class BillingManager {
             if (billingClient == null || result.getResponseCode() != BillingResponse.OK) return;
 
             PurchasesManager purchasesManager = PurchasesManager.getInstance();
-
             purchasesManager.onPurchasesQueried(result.getResponseCode(), result.getPurchasesList());
         }, errorHandler);
     }
