@@ -72,7 +72,6 @@ public class BillingManager {
             PurchasesManager purchasesManager = PurchasesManager.getInstance();
 
             purchasesManager.onPurchasesQueried(result.getResponseCode(), result.getPurchasesList());
-            billingClient.queryPurchaseHistoryAsync(SkuType.INAPP, purchasesManager::onPurchasesQueried);
         }, errorHandler);
     }
 
