@@ -69,7 +69,8 @@ public class BillingManager {
             PurchasesResult result = billingClient.queryPurchases(SkuType.INAPP);
             if (billingClient == null || result.getResponseCode() != BillingResponse.OK) return;
 
-            PurchasesManager.getInstance().onPurchasesUpdated(BillingResponse.OK, result.getPurchasesList());
+            PurchasesManager purchasesManager = PurchasesManager.getInstance();
+            purchasesManager.onPurchasesQueried(result.getResponseCode(), result.getPurchasesList());
         }, errorHandler);
     }
 
