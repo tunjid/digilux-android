@@ -72,7 +72,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         gestures.add(INCREASE_BRIGHTNESS);
         gestures.add(REDUCE_BRIGHTNESS);
         gestures.add(MAXIMIZE_BRIGHTNESS);
-        gestures.add(MININIMIZE_BRIGHTNESS);
+        gestures.add(MINIMIZE_BRIGHTNESS);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         if (gestureAction == INCREASE_BRIGHTNESS) byteValue = increase(byteValue);
         else if (gestureAction == REDUCE_BRIGHTNESS) byteValue = reduce(byteValue);
         else if (gestureAction == MAXIMIZE_BRIGHTNESS) byteValue = (int) MAX_BRIGHTNESS;
-        else if (gestureAction == MININIMIZE_BRIGHTNESS) byteValue = (int) MIN_BRIGHTNESS;
+        else if (gestureAction == MINIMIZE_BRIGHTNESS) byteValue = (int) MIN_BRIGHTNESS;
 
         Intent intent = new Intent(app, BrightnessActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -99,7 +99,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
             intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
             LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
         }
-        else if (gestureAction == MININIMIZE_BRIGHTNESS || gestureAction == MAXIMIZE_BRIGHTNESS) {
+        else if (gestureAction == MINIMIZE_BRIGHTNESS || gestureAction == MAXIMIZE_BRIGHTNESS) {
             removeDimmer();
         }
 

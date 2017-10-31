@@ -20,9 +20,11 @@ import static android.accessibilityservice.FingerprintGestureController.FINGERPR
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_RIGHT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.FLASHLIGHT_OFF;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.FLASHLIGHT_ON;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MININIMIZE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
@@ -71,9 +73,11 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureActionMap.put(INCREASE_BRIGHTNESS, R.string.increase_brightness);
         gestureActionMap.put(REDUCE_BRIGHTNESS, R.string.reduce_brightness);
         gestureActionMap.put(MAXIMIZE_BRIGHTNESS, R.string.maximize_brightness);
-        gestureActionMap.put(MININIMIZE_BRIGHTNESS, R.string.minimize_brightness);
+        gestureActionMap.put(MINIMIZE_BRIGHTNESS, R.string.minimize_brightness);
         gestureActionMap.put(NOTIFICATION_UP, R.string.notification_up);
         gestureActionMap.put(NOTIFICATION_DOWN, R.string.notification_down);
+        gestureActionMap.put(FLASHLIGHT_ON, R.string.flashlight_on);
+        gestureActionMap.put(FLASHLIGHT_OFF, R.string.flashlight_off);
         gestureActionMap.put(DO_NOTHING, R.string.do_nothing);
 
         textMap.put(UP_GESTURE, R.string.swipe_up);
@@ -90,6 +94,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         consumers.add(NothingGestureConsumer.getInstance());
         consumers.add(BrightnessGestureConsumer.getInstance());
         consumers.add(NotificationGestureConsumer.getInstance());
+        consumers.add(FlashlightGestureConsumer.getInstance());
     }
 
     public static GestureMapper getInstance() {
@@ -154,7 +159,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 case DOWN_GESTURE:
                     return REDUCE_BRIGHTNESS;
                 case LEFT_GESTURE:
-                    return MININIMIZE_BRIGHTNESS;
+                    return MINIMIZE_BRIGHTNESS;
                 case RIGHT_GESTURE:
                     return MAXIMIZE_BRIGHTNESS;
                 default:

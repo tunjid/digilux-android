@@ -85,6 +85,8 @@
     <string name="night_mode_off">Night mode off</string>
     <string name="notification_up">Notification shade up</string>
     <string name="notification_down">Notification shade down</string>
+    <string name="flashlight_on">Flashlight on</string>
+    <string name="flashlight_off">Flashlight off</string>
     <string name="do_nothing">Do nothing</string>
     <string name="unsupported_action">Sorry! Looks like that action is unsupported on your device. Please drop me a line to fix it.</string>
 
