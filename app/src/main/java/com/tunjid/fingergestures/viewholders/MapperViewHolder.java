@@ -9,7 +9,7 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE;
-import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.Gesture;
+import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.GestureDirection;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
@@ -19,7 +19,7 @@ public class MapperViewHolder extends HomeViewHolder {
     private final String gesture;
     private final TextView subtitle;
 
-    public MapperViewHolder(View itemView, @Gesture String gesture) {
+    public MapperViewHolder(View itemView, @GestureDirection String gesture) {
         super(itemView);
         this.gesture = gesture;
         GestureMapper mapper = GestureMapper.getInstance();
@@ -39,7 +39,7 @@ public class MapperViewHolder extends HomeViewHolder {
                 .show();
     }
 
-    private void setIcon(ImageView icon, @Gesture String gesture) {
+    private void setIcon(ImageView icon, @GestureDirection String gesture) {
         switch (gesture) {
             case UP_GESTURE:
                 icon.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);

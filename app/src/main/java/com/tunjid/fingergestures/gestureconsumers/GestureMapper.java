@@ -48,9 +48,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private final int[] actionIds;
     private final String[] actions;
 
-    private final Map<Integer, String> fingerGestureMap = new HashMap<>();
-    private final Map<String, Integer> gestureFingerMap;
-
     private final Map<Integer, Integer> gestureActionMap = new HashMap<>();
     private final Map<Integer, Integer> actionGestureMap;
 
@@ -60,15 +57,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     @Retention(RetentionPolicy.SOURCE)
     @StringDef({UP_GESTURE, DOWN_GESTURE, LEFT_GESTURE, RIGHT_GESTURE})
-    public @interface Gesture {}
+    public @interface GestureDirection {}
 
     {
         app = App.getInstance();
-
-        fingerGestureMap.put(FINGERPRINT_GESTURE_SWIPE_UP, UP_GESTURE);
-        fingerGestureMap.put(FINGERPRINT_GESTURE_SWIPE_DOWN, DOWN_GESTURE);
-        fingerGestureMap.put(FINGERPRINT_GESTURE_SWIPE_LEFT, LEFT_GESTURE);
-        fingerGestureMap.put(FINGERPRINT_GESTURE_SWIPE_RIGHT, RIGHT_GESTURE);
 
         gestureActionMap.put(INCREASE_BRIGHTNESS, R.string.increase_brightness);
         gestureActionMap.put(REDUCE_BRIGHTNESS, R.string.reduce_brightness);
@@ -85,7 +77,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         textMap.put(LEFT_GESTURE, R.string.swipe_left);
         textMap.put(RIGHT_GESTURE, R.string.swipe_right);
 
-        gestureFingerMap = invert(fingerGestureMap);
         actionGestureMap = invert(gestureActionMap);
 
         consumers.add(NothingGestureConsumer.getInstance());
@@ -105,20 +96,20 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     private GestureMapper() {}
 
-    public String getGestureName(@Gesture String gesture) {
+    public String getGestureName(@GestureDirection String gesture) {
         return app.getString(textMap.get(gesture));
     }
 
-    public String mapGestureToAction(@Gesture String gesture, int index) {
+    public String mapGestureToAction(@GestureDirection String direction, int index) {
         int resource = actionIds[index];
         int action = actionGestureMap.get(resource);
-        app.getPreferences().edit().putInt(gesture, action).apply();
+        app.getPreferences().edit().putInt(direction, action).apply();
         return app.getString(resource);
     }
 
-    public String getMappedAction(@Gesture String gesture) {
-        int raw = gestureFingerMap.get(gesture);
-        int action = fingerPrintToGesture(raw);
+    public String getMappedAction(@GestureDirection String gestureDirection) {
+        @GestureConsumer.GestureAction
+        int action = directionToAction(gestureDirection);
         int stringResource = gestureActionMap.get(action);
         return app.getString(stringResource);
     }
@@ -136,25 +127,39 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public void onGestureDetected(int raw) {
         super.onGestureDetected(raw);
 
-        @GestureConsumer.GestureAction int gesture = fingerPrintToGesture(raw);
-        GestureConsumer consumer = consumerForGesture(gesture);
-        if (consumer != null) consumer.onGestureActionTriggered(gesture);
+        @GestureConsumer.GestureAction int action = directionToAction(rawToDirection(raw));
+        GestureConsumer consumer = consumerForAction(action);
+        if (consumer != null) consumer.onGestureActionTriggered(action);
     }
 
     @Nullable
-    private GestureConsumer consumerForGesture(@GestureConsumer.GestureAction int gesture) {
+    private GestureConsumer consumerForAction(@GestureConsumer.GestureAction int action) {
         for (GestureConsumer consumer : consumers)
-            if (consumer.accepts(gesture)) return consumer;
+            if (consumer.accepts(action)) return consumer;
         return null;
     }
 
+    @GestureDirection
+    private String rawToDirection(int raw) {
+        switch (raw) {
+            default:
+            case FINGERPRINT_GESTURE_SWIPE_UP:
+                return UP_GESTURE;
+            case FINGERPRINT_GESTURE_SWIPE_DOWN:
+                return DOWN_GESTURE;
+            case FINGERPRINT_GESTURE_SWIPE_LEFT:
+                return LEFT_GESTURE;
+            case FINGERPRINT_GESTURE_SWIPE_RIGHT:
+                return RIGHT_GESTURE;
+        }
+    }
+
     @GestureConsumer.GestureAction
-    private int fingerPrintToGesture(int raw) {
-        String gestureKey = fingerGestureMap.get(raw);
-        int gesture = app.getPreferences().getInt(gestureKey, UNASSIGNED_GESTURE);
+    private int directionToAction(@GestureDirection String direction) {
+        int gesture = app.getPreferences().getInt(direction, UNASSIGNED_GESTURE);
 
         if (gesture == UNASSIGNED_GESTURE) {
-            switch (gestureKey) {
+            switch (direction) {
                 case UP_GESTURE:
                     return INCREASE_BRIGHTNESS;
                 case DOWN_GESTURE:
