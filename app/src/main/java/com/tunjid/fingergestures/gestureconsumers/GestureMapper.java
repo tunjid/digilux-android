@@ -84,7 +84,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         consumers.add(NotificationGestureConsumer.getInstance());
         consumers.add(FlashlightGestureConsumer.getInstance());
 
-        Pair<int[], String[]> pair = m();
+        Pair<int[], String[]> pair = actionResourceNamePair();
         actionIds = pair.first;
         actions = pair.second;
     }
@@ -127,7 +127,9 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public void onGestureDetected(int raw) {
         super.onGestureDetected(raw);
 
-        @GestureConsumer.GestureAction int action = directionToAction(rawToDirection(raw));
+        @GestureConsumer.GestureAction
+        int action = directionToAction(rawToDirection(raw));
+
         GestureConsumer consumer = consumerForAction(action);
         if (consumer != null) consumer.onGestureActionTriggered(action);
     }
@@ -158,24 +160,24 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private int directionToAction(@GestureDirection String direction) {
         int gesture = app.getPreferences().getInt(direction, UNASSIGNED_GESTURE);
 
-        if (gesture == UNASSIGNED_GESTURE) {
-            switch (direction) {
-                case UP_GESTURE:
-                    return INCREASE_BRIGHTNESS;
-                case DOWN_GESTURE:
-                    return REDUCE_BRIGHTNESS;
-                case LEFT_GESTURE:
-                    return MINIMIZE_BRIGHTNESS;
-                case RIGHT_GESTURE:
-                    return MAXIMIZE_BRIGHTNESS;
-                default:
-                    return DO_NOTHING;
-            }
+        if (gesture != UNASSIGNED_GESTURE) return gesture;
+
+        // Defaults
+        switch (direction) {
+            case UP_GESTURE:
+                return INCREASE_BRIGHTNESS;
+            case DOWN_GESTURE:
+                return REDUCE_BRIGHTNESS;
+            case LEFT_GESTURE:
+                return MINIMIZE_BRIGHTNESS;
+            case RIGHT_GESTURE:
+                return MAXIMIZE_BRIGHTNESS;
+            default:
+                return DO_NOTHING;
         }
-        else return gesture;
     }
 
-    private Pair<int[], String[]> m() {
+    private Pair<int[], String[]> actionResourceNamePair() {
         TypedArray typedArray = app.getResources().obtainTypedArray(R.array.action_resources);
         int length = typedArray.length();
 
