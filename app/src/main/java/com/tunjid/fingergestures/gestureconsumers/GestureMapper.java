@@ -2,8 +2,10 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.accessibilityservice.FingerprintGestureController;
 import android.annotation.SuppressLint;
+import android.content.res.TypedArray;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
+import android.util.Pair;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
@@ -28,8 +30,6 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZ
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @SuppressLint("UseSparseArrays")
@@ -45,6 +45,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private static GestureMapper instance;
 
     private final App app;
+    private final int[] actionIds;
+    private final String[] actions;
 
     private final Map<Integer, String> fingerGestureMap = new HashMap<>();
     private final Map<String, Integer> gestureFingerMap;
@@ -54,8 +56,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     private final Map<String, Integer> textMap = new HashMap<>();
 
-    private final List<Integer> actionResources;
-    private final List<String> actions;
     private final List<GestureConsumer> consumers = new ArrayList<>();
 
     @Retention(RetentionPolicy.SOURCE)
@@ -88,13 +88,14 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureFingerMap = invert(fingerGestureMap);
         actionGestureMap = invert(gestureActionMap);
 
-        actionResources = gestureActionMap.values().stream().sorted(comparing(actionGestureMap::get)).collect(toList());
-        actions = actionResources.stream().map(app::getString).collect(toList());
-
         consumers.add(NothingGestureConsumer.getInstance());
         consumers.add(BrightnessGestureConsumer.getInstance());
         consumers.add(NotificationGestureConsumer.getInstance());
         consumers.add(FlashlightGestureConsumer.getInstance());
+
+        Pair<int[], String[]> pair = m();
+        actionIds = pair.first;
+        actions = pair.second;
     }
 
     public static GestureMapper getInstance() {
@@ -109,7 +110,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public String mapGestureToAction(@Gesture String gesture, int index) {
-        int resource = actionResources.get(index);
+        int resource = actionIds[index];
         int action = actionGestureMap.get(resource);
         app.getPreferences().edit().putInt(gesture, action).apply();
         return app.getString(resource);
@@ -123,7 +124,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public CharSequence[] getActions() {
-        return actions.toArray(new CharSequence[actions.size()]);
+        return actions;
     }
 
     @Override
@@ -167,6 +168,23 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
             }
         }
         else return gesture;
+    }
+
+    private Pair<int[], String[]> m() {
+        TypedArray typedArray = app.getResources().obtainTypedArray(R.array.action_resources);
+        int length = typedArray.length();
+
+        int[] ints = new int[length];
+        String[] strings = new String[length];
+
+        for (int i = 0; i < length; i++) {
+            ints[i] = typedArray.getResourceId(i, R.string.do_nothing);
+            strings[i] = app.getString(ints[i]);
+        }
+
+        typedArray.recycle();
+
+        return new Pair<>(ints, strings);
     }
 
     private static <V, K> Map<V, K> invert(Map<K, V> map) {
