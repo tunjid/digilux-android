@@ -70,10 +70,15 @@
     <string name="review_app">Leave a review</string>
 
     <!-- Available gestures-->
+    <string name="mapper_format">%1$s: %2$s</string>
     <string name="swipe_up">Swipe up</string>
     <string name="swipe_down">Swipe Down</string>
     <string name="swipe_left">Swipe Left</string>
     <string name="swipe_right">Swipe Right</string>
+    <string name="double_swipe_up">Double Swipe up</string>
+    <string name="double_swipe_down">Double Swipe Down</string>
+    <string name="double_swipe_left">Double Swipe Left</string>
+    <string name="double_swipe_right">Double Swipe Right</string>
 
     <!-- Available actions-->
     <string name="pick_action">Pick an action</string>

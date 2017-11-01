@@ -16,6 +16,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import io.reactivex.Flowable;
+import io.reactivex.disposables.Disposable;
 
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_DOWN;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_LEFT;
@@ -40,6 +45,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public static final String DOWN_GESTURE = "down gesture";
     public static final String LEFT_GESTURE = "left gesture";
     public static final String RIGHT_GESTURE = "right gesture";
+    private static final String DOUBLE_UP_GESTURE = "double up gesture";
+    private static final String DOUBLE_DOWN_GESTURE = "double down gesture";
+    private static final String DOUBLE_LEFT_GESTURE = "double left gesture";
+    private static final String DOUBLE_RIGHT_GESTURE = "double right gesture";
 
     @SuppressLint("StaticFieldLeak")
     private static GestureMapper instance;
@@ -48,15 +57,21 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private final int[] actionIds;
     private final String[] actions;
 
+    private final Map<String, Integer> textMap = new HashMap<>();
     private final Map<Integer, Integer> gestureActionMap = new HashMap<>();
     private final Map<Integer, Integer> actionGestureMap;
 
-    private final Map<String, Integer> textMap = new HashMap<>();
 
     private final List<GestureConsumer> consumers = new ArrayList<>();
 
+    private final AtomicReference<String> directionReference = new AtomicReference<>();
+    private Disposable isSwipingDisposable;
+    private Disposable doubleSwipeDisposable;
+    private boolean isSwiping;
+
     @Retention(RetentionPolicy.SOURCE)
-    @StringDef({UP_GESTURE, DOWN_GESTURE, LEFT_GESTURE, RIGHT_GESTURE})
+    @StringDef({UP_GESTURE, DOWN_GESTURE, LEFT_GESTURE, RIGHT_GESTURE,
+            DOUBLE_UP_GESTURE, DOUBLE_DOWN_GESTURE, DOUBLE_LEFT_GESTURE, DOUBLE_RIGHT_GESTURE})
     public @interface GestureDirection {}
 
     {
@@ -76,6 +91,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         textMap.put(DOWN_GESTURE, R.string.swipe_down);
         textMap.put(LEFT_GESTURE, R.string.swipe_left);
         textMap.put(RIGHT_GESTURE, R.string.swipe_right);
+        textMap.put(DOUBLE_UP_GESTURE, R.string.double_swipe_up);
+        textMap.put(DOUBLE_DOWN_GESTURE, R.string.double_swipe_down);
+        textMap.put(DOUBLE_LEFT_GESTURE, R.string.double_swipe_left);
+        textMap.put(DOUBLE_RIGHT_GESTURE, R.string.double_swipe_right);
 
         actionGestureMap = invert(gestureActionMap);
 
@@ -96,8 +115,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     private GestureMapper() {}
 
-    public String getGestureName(@GestureDirection String gesture) {
-        return app.getString(textMap.get(gesture));
+    public String getDirectionName(@GestureDirection String direction) {
+        return app.getString(textMap.get(direction));
     }
 
     public String mapGestureToAction(@GestureDirection String direction, int index) {
@@ -114,6 +133,11 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         return app.getString(stringResource);
     }
 
+    @GestureDirection
+    public String doubleDirection(@GestureDirection String direction) {
+        return match(direction, direction);
+    }
+
     public CharSequence[] getActions() {
         return actions;
     }
@@ -127,9 +151,51 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public void onGestureDetected(int raw) {
         super.onGestureDetected(raw);
 
-        @GestureConsumer.GestureAction
-        int action = directionToAction(rawToDirection(raw));
+        String newDirection = rawToDirection(raw);
+        String originalDirection = directionReference.get();
 
+        boolean hasPreviousSwipe = originalDirection != null;
+        boolean isOngoing = doubleSwipeDisposable != null && !doubleSwipeDisposable.isDisposed();
+
+        if (isSwiping) {
+            if (isSwipingDisposable != null) isSwipingDisposable.dispose();
+            resetIsSwiping();
+            performAction(newDirection);
+            return;
+        }
+
+        // Is canceling an existing double gesture
+        if (hasPreviousSwipe && isOngoing && isDouble(originalDirection)) {
+            doubleSwipeDisposable.dispose();
+            directionReference.set(null);
+            isSwiping = true;
+            resetIsSwiping();
+            performAction(newDirection);
+            return;
+        }
+
+        // Never a double gesture
+        if (hasPreviousSwipe && !originalDirection.equals(newDirection)) {
+            if (isOngoing) doubleSwipeDisposable.dispose();
+            directionReference.set(null);
+            performAction(newDirection);
+            return;
+        }
+
+        directionReference.set(match(originalDirection, newDirection));
+
+        if (isOngoing) doubleSwipeDisposable.dispose();
+
+        doubleSwipeDisposable = Flowable.timer(500, TimeUnit.MILLISECONDS).subscribe(ignored -> {
+            String direction = directionReference.getAndSet(null);
+            if (direction == null) return;
+            performAction(direction);
+        }, this::onError);
+    }
+
+    private void performAction(@GestureDirection String direction) {
+        @GestureConsumer.GestureAction
+        int action = directionToAction(direction);
         GestureConsumer consumer = consumerForAction(action);
         if (consumer != null) consumer.onGestureActionTriggered(action);
     }
@@ -177,6 +243,35 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         }
     }
 
+    private String match(@GestureDirection String original, @GestureDirection String updated) {
+        if (!updated.equals(original)) return updated;
+
+        switch (updated) {
+            case UP_GESTURE:
+                return DOUBLE_UP_GESTURE;
+            case DOWN_GESTURE:
+                return DOUBLE_DOWN_GESTURE;
+            case LEFT_GESTURE:
+                return DOUBLE_LEFT_GESTURE;
+            case RIGHT_GESTURE:
+                return DOUBLE_RIGHT_GESTURE;
+            default:
+                return updated;
+        }
+    }
+
+    private boolean isDouble(String direction) {
+        switch (direction) {
+            case DOUBLE_UP_GESTURE:
+            case DOUBLE_DOWN_GESTURE:
+            case DOUBLE_LEFT_GESTURE:
+            case DOUBLE_RIGHT_GESTURE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     private Pair<int[], String[]> actionResourceNamePair() {
         TypedArray typedArray = app.getResources().obtainTypedArray(R.array.action_resources);
         int length = typedArray.length();
@@ -192,6 +287,14 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         typedArray.recycle();
 
         return new Pair<>(ints, strings);
+    }
+
+    private void resetIsSwiping() {
+        isSwipingDisposable = Flowable.timer(2, TimeUnit.SECONDS).subscribe(i -> isSwiping = false, this::onError);
+    }
+
+    private void onError(Throwable throwable) {
+        throwable.printStackTrace();
     }
 
     private static <V, K> Map<V, K> invert(Map<K, V> map) {

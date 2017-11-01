@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE;
@@ -16,27 +17,45 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTUR
 
 public class MapperViewHolder extends HomeViewHolder {
 
-    private final String gesture;
+    @GestureDirection
+    private final String doubleDirection;
     private final TextView subtitle;
 
-    public MapperViewHolder(View itemView, @GestureDirection String gesture) {
+    public MapperViewHolder(View itemView, @GestureDirection String direction) {
         super(itemView);
-        this.gesture = gesture;
         GestureMapper mapper = GestureMapper.getInstance();
 
-        itemView.<TextView>findViewById(R.id.title).setText(mapper.getGestureName(gesture));
+        this.doubleDirection = mapper.doubleDirection(direction);
+
+        TextView title = itemView.findViewById(R.id.title);
         subtitle = itemView.findViewById(R.id.sub_title);
 
-        subtitle.setText(mapper.getMappedAction(gesture));
-        itemView.setOnClickListener(view -> onClick(mapper));
-        setIcon(itemView.findViewById(R.id.icon), gesture);
+        title.setText(getFormattedText(direction,  mapper.getMappedAction(direction)));
+        subtitle.setText(getFormattedText(doubleDirection,  mapper.getMappedAction(doubleDirection)));
+
+        title.setOnClickListener(view -> onClick(mapper, title, direction));
+
+        setIcon(itemView.findViewById(R.id.icon), direction);
     }
 
-    private void onClick(GestureMapper mapper) {
+    @Override
+    public void bind() {
+        super.bind();
+        PurchasesManager.getInstance();
+        GestureMapper mapper = GestureMapper.getInstance();
+        subtitle.setOnClickListener(view -> onClick(mapper, subtitle, doubleDirection));
+    }
+
+    private void onClick(GestureMapper mapper, TextView textView, @GestureDirection String direction) {
         new AlertDialog.Builder(itemView.getContext())
                 .setTitle(R.string.pick_action)
-                .setItems(mapper.getActions(), (a, index) -> subtitle.setText(mapper.mapGestureToAction(gesture, index)))
+                .setItems(mapper.getActions(), (a, index) -> textView.setText(getFormattedText(direction, mapper.mapGestureToAction(direction, index))))
                 .show();
+    }
+
+    private String getFormattedText(@GestureDirection String direction, String text) {
+        GestureMapper mapper = GestureMapper.getInstance();
+        return itemView.getContext().getString(R.string.mapper_format, mapper.getDirectionName(direction),text);
     }
 
     private void setIcon(ImageView icon, @GestureDirection String gesture) {
