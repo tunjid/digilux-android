@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.HomeViewHolder;
@@ -32,13 +33,14 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int SCREEN_DIMMER = 3;
     private static final int ADAPTIVE_BRIGHTNESS = 4;
     private static final int SHOW_SLIDER = 5;
-    private static final int MAP_UP_ICON = 6;
-    private static final int MAP_DOWN_ICON = 7;
-    private static final int MAP_LEFT_ICON = 8;
-    private static final int MAP_RIGHT_ICON = 9;
-    private static final int AD_FREE = 10;
-    private static final int REVIEW = 11;
-    private static final int NUM_ITEMS = 12;
+    private static final int DOUBLE_SWIPE_SETTINGS = 6;
+    private static final int MAP_UP_ICON = 7;
+    private static final int MAP_DOWN_ICON = 8;
+    private static final int MAP_LEFT_ICON = 9;
+    private static final int MAP_RIGHT_ICON = 10;
+    private static final int AD_FREE = 11;
+    private static final int REVIEW = 12;
+    private static final int NUM_ITEMS = 13;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -78,6 +80,14 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         R.string.show_slider,
                         brightnessGestureConsumer::shouldShowSlider,
                         brightnessGestureConsumer::setSliderVisible);
+            case DOUBLE_SWIPE_SETTINGS:
+                GestureMapper mapper = GestureMapper.getInstance();
+                return new SliderAdjusterViewHolder(
+                        getView(R.layout.viewholder_slider_delta, parent),
+                        R.string.adjust_double_swipe_settings,
+                        mapper.getDoubleSwipeDelay(),
+                        mapper::setDoubleSwipeDelay,
+                        mapper::getSwipeDelayText);
             case MAP_UP_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE);
             case MAP_DOWN_ICON:

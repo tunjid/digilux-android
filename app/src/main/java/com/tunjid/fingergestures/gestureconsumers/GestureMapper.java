@@ -16,10 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
 
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_DOWN;
@@ -35,12 +33,19 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZ
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
+import static io.reactivex.Flowable.timer;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toMap;
 
 @SuppressLint("UseSparseArrays")
 public final class GestureMapper extends FingerprintGestureController.FingerprintGestureCallback {
 
     private static final int UNASSIGNED_GESTURE = -1;
+    private static final int ONGOING_RESET_DELAY = 2;
+    private static final int MAX_DOUBLE_SWIPE_DELAY = 800;
+    private static final int DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE = 50;
+
     public static final String UP_GESTURE = "up gesture";
     public static final String DOWN_GESTURE = "down gesture";
     public static final String LEFT_GESTURE = "left gesture";
@@ -49,6 +54,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private static final String DOUBLE_DOWN_GESTURE = "double down gesture";
     private static final String DOUBLE_LEFT_GESTURE = "double left gesture";
     private static final String DOUBLE_RIGHT_GESTURE = "double right gesture";
+    private static final String DOUBLE_SWIPE_DELAY = "double swipe delay";
 
     @SuppressLint("StaticFieldLeak")
     private static GestureMapper instance;
@@ -146,6 +152,18 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         return actions;
     }
 
+    public int getDoubleSwipeDelay() {
+        return app.getPreferences().getInt(DOUBLE_SWIPE_DELAY, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE);
+    }
+
+    public void setDoubleSwipeDelay(int percentage) {
+        app.getPreferences().edit().putInt(DOUBLE_SWIPE_DELAY, percentage).apply();
+    }
+
+    public String getSwipeDelayText(int percentage) {
+        return app.getString(R.string.double_swipe_delay, delayPercentageToMillis(percentage));
+    }
+
     @Override
     public void onGestureDetectionAvailabilityChanged(boolean available) {
         super.onGestureDetectionAvailabilityChanged(available);
@@ -168,7 +186,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
             return;
         }
 
-        // User has been swiping repeatedly in a certain directiob
+        // User has been swiping repeatedly in a certain direction
         if (isOngoing) {
             if (isSwipingDisposable != null) isSwipingDisposable.dispose();
             resetIsOngoing();
@@ -198,11 +216,12 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
         if (hasPendingAction) doubleSwipeDisposable.dispose();
 
-        doubleSwipeDisposable = Flowable.timer(400, TimeUnit.MILLISECONDS).subscribe(ignored -> {
-            String direction = directionReference.getAndSet(null);
-            if (direction == null) return;
-            performAction(direction);
-        }, this::onError);
+        doubleSwipeDisposable = timer(delayPercentageToMillis(getDoubleSwipeDelay()), MILLISECONDS)
+                .subscribe(ignored -> {
+                    String direction = directionReference.getAndSet(null);
+                    if (direction == null) return;
+                    performAction(direction);
+                }, this::onError);
     }
 
     private void performAction(@GestureDirection String direction) {
@@ -214,8 +233,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     @Nullable
     private GestureConsumer consumerForAction(@GestureConsumer.GestureAction int action) {
-        for (GestureConsumer consumer : consumers)
-            if (consumer.accepts(action)) return consumer;
+        for (GestureConsumer consumer : consumers) if (consumer.accepts(action)) return consumer;
         return null;
     }
 
@@ -284,6 +302,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         }
     }
 
+    private int delayPercentageToMillis(int percentage) {
+        return (int) (percentage * MAX_DOUBLE_SWIPE_DELAY / 100F);
+    }
+
     private Pair<int[], String[]> actionResourceNamePair() {
         TypedArray typedArray = app.getResources().obtainTypedArray(R.array.action_resources);
         int length = typedArray.length();
@@ -302,7 +324,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     private void resetIsOngoing() {
-        isSwipingDisposable = Flowable.timer(2, TimeUnit.SECONDS).subscribe(i -> isOngoing = false, this::onError);
+        isSwipingDisposable = timer(ONGOING_RESET_DELAY, SECONDS).subscribe(i -> isOngoing = false, this::onError);
     }
 
     private void onError(Throwable throwable) {

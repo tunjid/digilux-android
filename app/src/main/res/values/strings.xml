@@ -58,6 +58,10 @@
     <string name="screen_overlay_grant_permission">Grant overlay permissions</string>
     <string name="premium_prompt_dimmer">Draws a dark overlay to further dim brightness at night. Please note the overlay cannot be dawn over the notification bar / shade due to limitations in Android Oreo.</string>
 
+    <!-- Swipe Delay Viewholder-->
+    <string name="adjust_double_swipe_settings">Adjust Double Swipe Duration</string>
+    <string name="double_swipe_delay">%1$d milliseconds</string>
+
     <!-- Ad Free Viewholder-->
     <string name="remove_ads">Remove Ads</string>
     <string name="ad_free_basic_user">Go ad free</string>

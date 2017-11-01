@@ -1,10 +1,12 @@
 package com.tunjid.fingergestures.viewholders;
 
+import android.content.Context;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.tunjid.androidbootstrap.core.text.SpanBuilder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
@@ -30,8 +32,8 @@ public class MapperViewHolder extends HomeViewHolder {
         TextView title = itemView.findViewById(R.id.title);
         subtitle = itemView.findViewById(R.id.sub_title);
 
-        title.setText(getFormattedText(direction,  mapper.getMappedAction(direction)));
-        subtitle.setText(getFormattedText(doubleDirection,  mapper.getMappedAction(doubleDirection)));
+        title.setText(getFormattedText(direction, mapper.getMappedAction(direction)));
+        subtitle.setText(getFormattedText(doubleDirection, mapper.getMappedAction(doubleDirection)));
 
         title.setOnClickListener(view -> onClick(mapper, title, direction));
 
@@ -53,9 +55,12 @@ public class MapperViewHolder extends HomeViewHolder {
                 .show();
     }
 
-    private String getFormattedText(@GestureDirection String direction, String text) {
+    private CharSequence getFormattedText(@GestureDirection String direction, String text) {
         GestureMapper mapper = GestureMapper.getInstance();
-        return itemView.getContext().getString(R.string.mapper_format, mapper.getDirectionName(direction),text);
+        Context context = itemView.getContext();
+        return SpanBuilder.format(context.getString(R.string.mapper_format),
+                new SpanBuilder(context, mapper.getDirectionName(direction)).bold().build(),
+                text);
     }
 
     private void setIcon(ImageView icon, @GestureDirection String gesture) {
