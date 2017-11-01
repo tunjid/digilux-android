@@ -57,17 +57,16 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private final int[] actionIds;
     private final String[] actions;
 
-    private final Map<String, Integer> textMap = new HashMap<>();
-    private final Map<Integer, Integer> gestureActionMap = new HashMap<>();
+    private final Map<String, Integer> textMap;
+    private final Map<Integer, Integer> gestureActionMap;
     private final Map<Integer, Integer> actionGestureMap;
 
+    private final List<GestureConsumer> consumers;
+    private final AtomicReference<String> directionReference;
 
-    private final List<GestureConsumer> consumers = new ArrayList<>();
-
-    private final AtomicReference<String> directionReference = new AtomicReference<>();
     private Disposable isSwipingDisposable;
     private Disposable doubleSwipeDisposable;
-    private boolean isSwiping;
+    private boolean isOngoing;
 
     @Retention(RetentionPolicy.SOURCE)
     @StringDef({UP_GESTURE, DOWN_GESTURE, LEFT_GESTURE, RIGHT_GESTURE,
@@ -76,6 +75,20 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     {
         app = App.getInstance();
+
+        textMap = new HashMap<>();
+        gestureActionMap = new HashMap<>();
+        consumers = new ArrayList<>();
+        directionReference = new AtomicReference<>();
+
+        textMap.put(UP_GESTURE, R.string.swipe_up);
+        textMap.put(DOWN_GESTURE, R.string.swipe_down);
+        textMap.put(LEFT_GESTURE, R.string.swipe_left);
+        textMap.put(RIGHT_GESTURE, R.string.swipe_right);
+        textMap.put(DOUBLE_UP_GESTURE, R.string.double_swipe_up);
+        textMap.put(DOUBLE_DOWN_GESTURE, R.string.double_swipe_down);
+        textMap.put(DOUBLE_LEFT_GESTURE, R.string.double_swipe_left);
+        textMap.put(DOUBLE_RIGHT_GESTURE, R.string.double_swipe_right);
 
         gestureActionMap.put(INCREASE_BRIGHTNESS, R.string.increase_brightness);
         gestureActionMap.put(REDUCE_BRIGHTNESS, R.string.reduce_brightness);
@@ -86,15 +99,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureActionMap.put(FLASHLIGHT_ON, R.string.flashlight_on);
         gestureActionMap.put(FLASHLIGHT_OFF, R.string.flashlight_off);
         gestureActionMap.put(DO_NOTHING, R.string.do_nothing);
-
-        textMap.put(UP_GESTURE, R.string.swipe_up);
-        textMap.put(DOWN_GESTURE, R.string.swipe_down);
-        textMap.put(LEFT_GESTURE, R.string.swipe_left);
-        textMap.put(RIGHT_GESTURE, R.string.swipe_right);
-        textMap.put(DOUBLE_UP_GESTURE, R.string.double_swipe_up);
-        textMap.put(DOUBLE_DOWN_GESTURE, R.string.double_swipe_down);
-        textMap.put(DOUBLE_LEFT_GESTURE, R.string.double_swipe_left);
-        textMap.put(DOUBLE_RIGHT_GESTURE, R.string.double_swipe_right);
 
         actionGestureMap = invert(gestureActionMap);
 
@@ -155,28 +159,28 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         String originalDirection = directionReference.get();
 
         boolean hasPreviousSwipe = originalDirection != null;
-        boolean isOngoing = doubleSwipeDisposable != null && !doubleSwipeDisposable.isDisposed();
+        boolean hasPendingAction = doubleSwipeDisposable != null && !doubleSwipeDisposable.isDisposed();
 
-        if (isSwiping) {
+        if (isOngoing) {
             if (isSwipingDisposable != null) isSwipingDisposable.dispose();
-            resetIsSwiping();
+            resetIsOngoing();
             performAction(newDirection);
             return;
         }
 
-        // Is canceling an existing double gesture
-        if (hasPreviousSwipe && isOngoing && isDouble(originalDirection)) {
+        // Is canceling an existing double gesture to continue a single gesture
+        if (hasPreviousSwipe && hasPendingAction && isDouble(originalDirection)) {
             doubleSwipeDisposable.dispose();
             directionReference.set(null);
-            isSwiping = true;
-            resetIsSwiping();
+            isOngoing = true;
+            resetIsOngoing();
             performAction(newDirection);
             return;
         }
 
-        // Never a double gesture
+        // Never completed a double gesture
         if (hasPreviousSwipe && !originalDirection.equals(newDirection)) {
-            if (isOngoing) doubleSwipeDisposable.dispose();
+            if (hasPendingAction) doubleSwipeDisposable.dispose();
             directionReference.set(null);
             performAction(newDirection);
             return;
@@ -184,7 +188,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
         directionReference.set(match(originalDirection, newDirection));
 
-        if (isOngoing) doubleSwipeDisposable.dispose();
+        if (hasPendingAction) doubleSwipeDisposable.dispose();
 
         doubleSwipeDisposable = Flowable.timer(500, TimeUnit.MILLISECONDS).subscribe(ignored -> {
             String direction = directionReference.getAndSet(null);
@@ -289,8 +293,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         return new Pair<>(ints, strings);
     }
 
-    private void resetIsSwiping() {
-        isSwipingDisposable = Flowable.timer(2, TimeUnit.SECONDS).subscribe(i -> isSwiping = false, this::onError);
+    private void resetIsOngoing() {
+        isSwipingDisposable = Flowable.timer(2, TimeUnit.SECONDS).subscribe(i -> isOngoing = false, this::onError);
     }
 
     private void onError(Throwable throwable) {
