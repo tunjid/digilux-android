@@ -160,7 +160,15 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
         boolean hasPreviousSwipe = originalDirection != null;
         boolean hasPendingAction = doubleSwipeDisposable != null && !doubleSwipeDisposable.isDisposed();
+        boolean hasNoDoubleSwipe = directionToAction(doubleDirection(newDirection)) == DO_NOTHING;
 
+        // Keep responsiveness if user has not mapped gesture to a double swipe
+        if (!hasPreviousSwipe && hasNoDoubleSwipe) {
+            performAction(newDirection);
+            return;
+        }
+
+        // User has been swiping repeatedly in a certain directiob
         if (isOngoing) {
             if (isSwipingDisposable != null) isSwipingDisposable.dispose();
             resetIsOngoing();
@@ -190,7 +198,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
         if (hasPendingAction) doubleSwipeDisposable.dispose();
 
-        doubleSwipeDisposable = Flowable.timer(500, TimeUnit.MILLISECONDS).subscribe(ignored -> {
+        doubleSwipeDisposable = Flowable.timer(400, TimeUnit.MILLISECONDS).subscribe(ignored -> {
             String direction = directionReference.getAndSet(null);
             if (direction == null) return;
             performAction(direction);
