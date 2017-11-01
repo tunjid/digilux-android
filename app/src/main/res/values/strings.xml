@@ -61,6 +61,7 @@
     <!-- Swipe Delay Viewholder-->
     <string name="adjust_double_swipe_settings">Adjust Double Swipe Duration</string>
     <string name="double_swipe_delay">%1$d milliseconds</string>
+    <string name="premium_prompt_double_swipe">Gives the ability to map double swipes to actions.</string>
 
     <!-- Ad Free Viewholder-->
     <string name="remove_ads">Remove Ads</string>

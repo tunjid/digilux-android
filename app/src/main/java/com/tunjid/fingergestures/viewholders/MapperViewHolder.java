@@ -43,9 +43,12 @@ public class MapperViewHolder extends HomeViewHolder {
     @Override
     public void bind() {
         super.bind();
-        PurchasesManager.getInstance();
         GestureMapper mapper = GestureMapper.getInstance();
-        subtitle.setOnClickListener(view -> onClick(mapper, subtitle, doubleDirection));
+        subtitle.setOnClickListener(view -> {
+            boolean notPremium = PurchasesManager.getInstance().isNotPremium();
+            if (notPremium) goPremium(R.string.premium_prompt_double_swipe);
+            else onClick(mapper, subtitle, doubleDirection);
+        });
     }
 
     private void onClick(GestureMapper mapper, TextView textView, @GestureDirection String direction) {
