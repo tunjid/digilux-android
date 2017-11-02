@@ -22,14 +22,13 @@ import static android.accessibilityservice.FingerprintGestureController.FINGERPR
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_RIGHT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.FLASHLIGHT_OFF;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.FLASHLIGHT_ON;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT;
 import static java.util.stream.Collectors.toMap;
 
 @SuppressLint("UseSparseArrays")
@@ -68,8 +67,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureActionMap.put(MINIMIZE_BRIGHTNESS, R.string.minimize_brightness);
         gestureActionMap.put(NOTIFICATION_UP, R.string.notification_up);
         gestureActionMap.put(NOTIFICATION_DOWN, R.string.notification_down);
-        gestureActionMap.put(FLASHLIGHT_ON, R.string.flashlight_on);
-        gestureActionMap.put(FLASHLIGHT_OFF, R.string.flashlight_off);
+        gestureActionMap.put(TOGGLE_FLASHLIGHT, R.string.toggle_flashlight);
         gestureActionMap.put(DO_NOTHING, R.string.do_nothing);
 
         textMap.put(UP_GESTURE, R.string.swipe_up);

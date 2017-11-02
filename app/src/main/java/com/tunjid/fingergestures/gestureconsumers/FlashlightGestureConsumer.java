@@ -2,6 +2,8 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
 import android.hardware.camera2.CameraManager;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 
 import com.tunjid.fingergestures.App;
 
@@ -12,6 +14,7 @@ public class FlashlightGestureConsumer implements GestureConsumer {
 
     private final Set<Integer> gestures;
     private final App app;
+    private boolean isTorchOn;
 
     private static FlashlightGestureConsumer instance;
 
@@ -23,22 +26,28 @@ public class FlashlightGestureConsumer implements GestureConsumer {
     private FlashlightGestureConsumer() {
         app = App.getInstance();
         gestures = new HashSet<>();
-        gestures.add(FLASHLIGHT_ON);
-        gestures.add(FLASHLIGHT_OFF);
+        gestures.add(TOGGLE_FLASHLIGHT);
+
+        CameraManager cameraManager = app.getSystemService(CameraManager.class);
+        if (cameraManager == null) return;
+
+        cameraManager.registerTorchCallback(new CameraManager.TorchCallback() {
+            @Override
+            public void onTorchModeChanged(@NonNull String cameraId, boolean enabled) {
+                isTorchOn = enabled;
+            }
+        }, new Handler());
     }
 
     @Override
     @SuppressLint("SwitchIntDef")
     public void onGestureActionTriggered(@GestureAction int gestureAction) {
         switch (gestureAction) {
-            case FLASHLIGHT_ON:
-            case FLASHLIGHT_OFF:
+            case TOGGLE_FLASHLIGHT:
                 CameraManager cameraManager = app.getSystemService(CameraManager.class);
                 if (cameraManager == null) return;
 
-                boolean state = gestureAction == FLASHLIGHT_ON;
-
-                try {cameraManager.setTorchMode(cameraManager.getCameraIdList()[0], state);}
+                try {cameraManager.setTorchMode(cameraManager.getCameraIdList()[0], !isTorchOn);}
                 catch (Exception e) {e.printStackTrace();}
                 break;
         }
