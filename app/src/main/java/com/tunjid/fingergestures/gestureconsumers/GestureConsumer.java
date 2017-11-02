@@ -4,7 +4,6 @@ import android.support.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Set;
 
 public interface GestureConsumer {
 
@@ -27,9 +26,5 @@ public interface GestureConsumer {
 
     void onGestureActionTriggered(@GestureAction int gestureAction);
 
-    Set<Integer> gestures();
-
-    default boolean accepts(@GestureAction int gesture) {
-        return gestures().contains(gesture);
-    }
+    boolean accepts(@GestureAction int gesture);
 }

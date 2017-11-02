@@ -7,12 +7,8 @@ import android.support.annotation.NonNull;
 
 import com.tunjid.fingergestures.App;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class FlashlightGestureConsumer implements GestureConsumer {
 
-    private final Set<Integer> gestures;
     private final App app;
     private boolean isTorchOn;
 
@@ -25,8 +21,6 @@ public class FlashlightGestureConsumer implements GestureConsumer {
 
     private FlashlightGestureConsumer() {
         app = App.getInstance();
-        gestures = new HashSet<>();
-        gestures.add(TOGGLE_FLASHLIGHT);
 
         CameraManager cameraManager = app.getSystemService(CameraManager.class);
         if (cameraManager == null) return;
@@ -41,6 +35,17 @@ public class FlashlightGestureConsumer implements GestureConsumer {
 
     @Override
     @SuppressLint("SwitchIntDef")
+    public boolean accepts(@GestureAction int gesture) {
+        switch (gesture) {
+            case TOGGLE_FLASHLIGHT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    @Override
+    @SuppressLint("SwitchIntDef")
     public void onGestureActionTriggered(@GestureAction int gestureAction) {
         switch (gestureAction) {
             case TOGGLE_FLASHLIGHT:
@@ -51,11 +56,6 @@ public class FlashlightGestureConsumer implements GestureConsumer {
                 catch (Exception e) {e.printStackTrace();}
                 break;
         }
-    }
-
-    @Override
-    public Set<Integer> gestures() {
-        return gestures;
     }
 
 //     try {

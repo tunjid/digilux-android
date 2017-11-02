@@ -2,24 +2,27 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class NothingGestureConsumer implements GestureConsumer {
 
     @SuppressLint("StaticFieldLeak")
     private static NothingGestureConsumer instance;
-
-    private final Set<Integer> gestures;
 
     static NothingGestureConsumer getInstance() {
         if (instance == null) instance = new NothingGestureConsumer();
         return instance;
     }
 
-    private NothingGestureConsumer() {
-        gestures = new HashSet<>();
-        gestures.add(DO_NOTHING);
+    private NothingGestureConsumer() {}
+
+    @Override
+    @SuppressLint("SwitchIntDef")
+    public boolean accepts(@GestureAction int gesture) {
+        switch (gesture) {
+            case DO_NOTHING:
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -29,11 +32,6 @@ public class NothingGestureConsumer implements GestureConsumer {
             case DO_NOTHING:
                 break;
         }
-    }
-
-    @Override
-    public Set<Integer> gestures() {
-        return gestures;
     }
 }
 
