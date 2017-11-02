@@ -6,15 +6,10 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.App;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class NotificationGestureConsumer implements GestureConsumer {
 
     public static final String ACTION_NOTIFICATION_UP = "NotificationGestureConsumer up";
     public static final String ACTION_NOTIFICATION_DOWN = "NotificationGestureConsumer down";
-
-    private final Set<Integer> gestures;
 
     private static NotificationGestureConsumer instance;
 
@@ -23,10 +18,18 @@ public class NotificationGestureConsumer implements GestureConsumer {
         return instance;
     }
 
-    private NotificationGestureConsumer() {
-        gestures = new HashSet<>();
-        gestures.add(NOTIFICATION_UP);
-        gestures.add(NOTIFICATION_DOWN);
+    private NotificationGestureConsumer() {}
+
+    @Override
+    @SuppressLint("SwitchIntDef")
+    public boolean accepts(@GestureAction int gesture) {
+        switch (gesture) {
+            case NOTIFICATION_UP:
+            case NOTIFICATION_DOWN:
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -41,11 +44,6 @@ public class NotificationGestureConsumer implements GestureConsumer {
                                 : ACTION_NOTIFICATION_DOWN));
                 break;
         }
-    }
-
-    @Override
-    public Set<Integer> gestures() {
-        return gestures;
     }
 }
 
