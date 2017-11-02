@@ -57,16 +57,16 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_delta,
-                        brightnessGestureConsumer.getIncrementPercentage(),
                         brightnessGestureConsumer::setIncrementPercentage,
+                        brightnessGestureConsumer::getIncrementPercentage,
                         () -> true,
                         (increment) -> context.getString(R.string.delta_percent, increment));
             case SLIDER_POSITION:
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_position,
-                        brightnessGestureConsumer.getPositionPercentage(),
                         brightnessGestureConsumer::setPositionPercentage,
+                        brightnessGestureConsumer::getPositionPercentage,
                         () -> true,
                         (percentage) -> context.getString(R.string.position_percent, percentage));
             case SLIDER_COLOR:
@@ -88,8 +88,8 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_double_swipe_settings,
-                        mapper.getDoubleSwipeDelay(),
                         mapper::setDoubleSwipeDelay,
+                        mapper::getDoubleSwipeDelay,
                         () -> !PurchasesManager.getInstance().isNotPremium(),
                         mapper::getSwipeDelayText);
             case MAP_UP_ICON:
