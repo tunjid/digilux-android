@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.tunjid.androidbootstrap.core.text.SpanBuilder;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.adapters.HomeAdapter;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
@@ -23,8 +24,9 @@ public class MapperViewHolder extends HomeViewHolder {
     private final String doubleDirection;
     private final TextView subtitle;
 
-    public MapperViewHolder(View itemView, @GestureDirection String direction) {
-        super(itemView);
+    public MapperViewHolder(View itemView, @GestureDirection String direction,
+                            HomeAdapter.HomeAdapterListener listener) {
+        super(itemView, listener);
         GestureMapper mapper = GestureMapper.getInstance();
 
         this.doubleDirection = mapper.doubleDirection(direction);

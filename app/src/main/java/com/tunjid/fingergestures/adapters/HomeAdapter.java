@@ -93,13 +93,13 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         () -> !PurchasesManager.getInstance().isNotPremium(),
                         mapper::getSwipeDelayText);
             case MAP_UP_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE);
+                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE, adapterListener);
             case MAP_DOWN_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), DOWN_GESTURE);
+                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), DOWN_GESTURE, adapterListener);
             case MAP_LEFT_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), LEFT_GESTURE);
+                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), LEFT_GESTURE, adapterListener);
             case MAP_RIGHT_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE);
+                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE, adapterListener);
             case AD_FREE:
                 return new AdFreeViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
             case REVIEW:
