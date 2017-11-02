@@ -9,21 +9,26 @@ import com.tunjid.fingergestures.R;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class SliderAdjusterViewHolder extends HomeViewHolder
         implements SeekBar.OnSeekBarChangeListener {
 
     private final TextView value;
+    private final SeekBar seekBar;
     private final Consumer<Integer> consumer;
+    private final Supplier<Boolean> enabledSupplier;
     private final Function<Integer, String> function;
 
     public SliderAdjusterViewHolder(View itemView,
                                     @StringRes int titleRes,
                                     int initialPercentage,
                                     Consumer<Integer> consumer,
+                                    Supplier<Boolean> enabledSupplier,
                                     Function<Integer, String> function) {
         super(itemView);
         this.consumer = consumer;
+        this.enabledSupplier = enabledSupplier;
         this.function = function;
 
         value = itemView.findViewById(R.id.value);
@@ -31,9 +36,17 @@ public class SliderAdjusterViewHolder extends HomeViewHolder
 
         itemView.<TextView>findViewById(R.id.title).setText(titleRes);
 
-        SeekBar seekBar = itemView.findViewById(R.id.seekbar);
+        seekBar = itemView.findViewById(R.id.seekbar);
         seekBar.setProgress(initialPercentage);
         seekBar.setOnSeekBarChangeListener(this);
+    }
+
+    @Override
+    public void bind() {
+        super.bind();
+        boolean enabled = enabledSupplier.get();
+        value.setEnabled(enabled);
+        seekBar.setEnabled(enabled);
     }
 
     @Override

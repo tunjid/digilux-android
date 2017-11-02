@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
@@ -58,6 +59,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         R.string.adjust_slider_delta,
                         brightnessGestureConsumer.getIncrementPercentage(),
                         brightnessGestureConsumer::setIncrementPercentage,
+                        () -> true,
                         (increment) -> context.getString(R.string.delta_percent, increment));
             case SLIDER_POSITION:
                 return new SliderAdjusterViewHolder(
@@ -65,6 +67,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         R.string.adjust_slider_position,
                         brightnessGestureConsumer.getPositionPercentage(),
                         brightnessGestureConsumer::setPositionPercentage,
+                        () -> true,
                         (percentage) -> context.getString(R.string.position_percent, percentage));
             case SLIDER_COLOR:
                 return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent), adapterListener);
@@ -87,6 +90,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         R.string.adjust_double_swipe_settings,
                         mapper.getDoubleSwipeDelay(),
                         mapper::setDoubleSwipeDelay,
+                        () -> !PurchasesManager.getInstance().isNotPremium(),
                         mapper::getSwipeDelayText);
             case MAP_UP_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE);
