@@ -5,8 +5,6 @@
         <item> @string/reduce_brightness</item>
         <item> @string/maximize_brightness</item>
         <item> @string/minimize_brightness</item>
-        <item> @string/night_mode_on</item>
-        <item> @string/night_mode_off</item>
         <item> @string/notification_up</item>
         <item> @string/notification_down</item>
         <item>@string/toggle_flashlight</item>

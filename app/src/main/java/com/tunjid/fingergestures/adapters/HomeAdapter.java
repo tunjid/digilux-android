@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.HomeViewHolder;
@@ -32,13 +34,14 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int SCREEN_DIMMER = 3;
     private static final int ADAPTIVE_BRIGHTNESS = 4;
     private static final int SHOW_SLIDER = 5;
-    private static final int MAP_UP_ICON = 6;
-    private static final int MAP_DOWN_ICON = 7;
-    private static final int MAP_LEFT_ICON = 8;
-    private static final int MAP_RIGHT_ICON = 9;
-    private static final int AD_FREE = 10;
-    private static final int REVIEW = 11;
-    private static final int NUM_ITEMS = 12;
+    private static final int DOUBLE_SWIPE_SETTINGS = 6;
+    private static final int MAP_UP_ICON = 7;
+    private static final int MAP_DOWN_ICON = 8;
+    private static final int MAP_LEFT_ICON = 9;
+    private static final int MAP_RIGHT_ICON = 10;
+    private static final int AD_FREE = 11;
+    private static final int REVIEW = 12;
+    private static final int NUM_ITEMS = 13;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -54,15 +57,17 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_delta,
-                        brightnessGestureConsumer.getIncrementPercentage(),
                         brightnessGestureConsumer::setIncrementPercentage,
+                        brightnessGestureConsumer::getIncrementPercentage,
+                        () -> true,
                         (increment) -> context.getString(R.string.delta_percent, increment));
             case SLIDER_POSITION:
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_position,
-                        brightnessGestureConsumer.getPositionPercentage(),
                         brightnessGestureConsumer::setPositionPercentage,
+                        brightnessGestureConsumer::getPositionPercentage,
+                        () -> true,
                         (percentage) -> context.getString(R.string.position_percent, percentage));
             case SLIDER_COLOR:
                 return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent), adapterListener);
@@ -78,14 +83,23 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         R.string.show_slider,
                         brightnessGestureConsumer::shouldShowSlider,
                         brightnessGestureConsumer::setSliderVisible);
+            case DOUBLE_SWIPE_SETTINGS:
+                GestureMapper mapper = GestureMapper.getInstance();
+                return new SliderAdjusterViewHolder(
+                        getView(R.layout.viewholder_slider_delta, parent),
+                        R.string.adjust_double_swipe_settings,
+                        mapper::setDoubleSwipeDelay,
+                        mapper::getDoubleSwipeDelay,
+                        () -> !PurchasesManager.getInstance().isNotPremium(),
+                        mapper::getSwipeDelayText);
             case MAP_UP_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE);
+                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE, adapterListener);
             case MAP_DOWN_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), DOWN_GESTURE);
+                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), DOWN_GESTURE, adapterListener);
             case MAP_LEFT_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), LEFT_GESTURE);
+                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), LEFT_GESTURE, adapterListener);
             case MAP_RIGHT_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE);
+                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE, adapterListener);
             case AD_FREE:
                 return new AdFreeViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
             case REVIEW:
