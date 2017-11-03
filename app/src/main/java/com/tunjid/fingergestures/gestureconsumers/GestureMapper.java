@@ -43,7 +43,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     private static final int UNASSIGNED_GESTURE = -1;
     private static final int ONGOING_RESET_DELAY = 2;
-    private static final int MAX_DOUBLE_SWIPE_DELAY = 800;
+    private static final int MAX_DOUBLE_SWIPE_DELAY = 1000;
     private static final int DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE = 50;
 
     public static final String UP_GESTURE = "up gesture";
