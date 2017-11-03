@@ -10,8 +10,8 @@
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/single_margin"
-        android:layout_marginTop="@dimen/single_margin"
+        android:paddingBottom="@dimen/single_margin"
+        android:paddingTop="@dimen/single_margin"
         android:text="@string/edit_slider_apperance"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -26,13 +26,21 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="@+id/slider_background_color" />
 
+    <View
+        android:id="@+id/slider_background_color_indicator_spacing"
+        android:layout_width="@dimen/half_margin"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/slider_background_color"
+        app:layout_constraintLeft_toRightOf="@+id/slider_background_color_indicator"
+        app:layout_constraintTop_toTopOf="@+id/slider_background_color" />
+
     <TextView
         android:id="@+id/slider_background_color"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
         android:padding="@dimen/single_margin"
-        app:layout_constraintLeft_toRightOf="@+id/slider_background_color_indicator"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/slider_background_color_indicator_spacing"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <View
@@ -44,13 +52,21 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="@+id/slider_color" />
 
+    <View
+        android:id="@+id/slider_color_indicator_spacing"
+        android:layout_width="@dimen/half_margin"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/slider_color"
+        app:layout_constraintLeft_toRightOf="@+id/slider_color_indicator"
+        app:layout_constraintTop_toTopOf="@+id/slider_color" />
+
     <TextView
         android:id="@+id/slider_color"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
         android:padding="@dimen/single_margin"
-        app:layout_constraintLeft_toRightOf="@+id/slider_background_color_indicator"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/slider_color_indicator_spacing"
         app:layout_constraintTop_toBottomOf="@+id/slider_background_color" />
 
     <TextView
