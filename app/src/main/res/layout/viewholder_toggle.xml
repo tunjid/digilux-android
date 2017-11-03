@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/single_margin"
         android:layout_marginTop="@dimen/single_margin"
-        android:textColor="@color/colorAccent"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintHorizontal_weight="85"
         app:layout_constraintLeft_toLeftOf="parent"

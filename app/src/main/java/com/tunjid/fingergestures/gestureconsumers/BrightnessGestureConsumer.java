@@ -18,8 +18,6 @@ import com.tunjid.fingergestures.activities.BrightnessActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
 
 import io.reactivex.Single;
 
@@ -56,7 +54,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final String SCREEN_DIMMER_DIM_PERCENT = "screen dimmer dim percent";
 
     private final App app;
-    private final Set<Integer> gestures;
 
     @SuppressLint("StaticFieldLeak")
     private static BrightnessGestureConsumer instance;
@@ -68,11 +65,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     private BrightnessGestureConsumer() {
         app = App.getInstance();
-        gestures = new HashSet<>();
-        gestures.add(INCREASE_BRIGHTNESS);
-        gestures.add(REDUCE_BRIGHTNESS);
-        gestures.add(MAXIMIZE_BRIGHTNESS);
-        gestures.add(MININIMIZE_BRIGHTNESS);
     }
 
     @Override
@@ -88,7 +80,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         if (gestureAction == INCREASE_BRIGHTNESS) byteValue = increase(byteValue);
         else if (gestureAction == REDUCE_BRIGHTNESS) byteValue = reduce(byteValue);
         else if (gestureAction == MAXIMIZE_BRIGHTNESS) byteValue = (int) MAX_BRIGHTNESS;
-        else if (gestureAction == MININIMIZE_BRIGHTNESS) byteValue = (int) MIN_BRIGHTNESS;
+        else if (gestureAction == MINIMIZE_BRIGHTNESS) byteValue = (int) MIN_BRIGHTNESS;
 
         Intent intent = new Intent(app, BrightnessActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -99,7 +91,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
             intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
             LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
         }
-        else if (gestureAction == MININIMIZE_BRIGHTNESS || gestureAction == MAXIMIZE_BRIGHTNESS) {
+        else if (gestureAction == MINIMIZE_BRIGHTNESS || gestureAction == MAXIMIZE_BRIGHTNESS) {
             removeDimmer();
         }
 
@@ -111,10 +103,18 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         if (shouldShowSlider()) app.startActivity(intent);
     }
 
-
     @Override
-    public Set<Integer> gestures() {
-        return gestures;
+    @SuppressLint("SwitchIntDef")
+    public boolean accepts(@GestureAction int gesture) {
+        switch (gesture) {
+            case INCREASE_BRIGHTNESS:
+            case REDUCE_BRIGHTNESS:
+            case MAXIMIZE_BRIGHTNESS:
+            case MINIMIZE_BRIGHTNESS:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public void saveBrightness(int byteValue) {
@@ -253,10 +253,10 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     public Single<Palette> extractPalette() {
         WallpaperManager wallpaperManager = app.getSystemService(WallpaperManager.class);
-        Drawable drawable = wallpaperManager.getDrawable();
+        if (wallpaperManager == null) return error(new Exception("No Wallpaper manager"));
 
-        if (!(drawable instanceof BitmapDrawable))
-            return error(new Exception("Not a BitmapDrawable"));
+        Drawable drawable = wallpaperManager.getDrawable();
+        if (!(drawable instanceof BitmapDrawable)) return error(new Exception("Not a Bitmap"));
 
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
         return fromCallable(() -> Palette.from(bitmap).generate()).subscribeOn(computation()).observeOn(mainThread());

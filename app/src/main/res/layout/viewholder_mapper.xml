@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout android:id="@+id/container"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/single_margin">
@@ -10,9 +11,9 @@
         android:id="@+id/icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/sub_title"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/title"
         app:srcCompat="@drawable/ic_chevron_right_white_24dp" />
 
     <TextView
@@ -21,10 +22,16 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/half_margin"
         android:layout_marginRight="@dimen/half_margin"
-        android:padding="@dimen/half_margin"
-        android:textColor="@color/colorAccent"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="left|center_vertical"
+        android:paddingBottom="@dimen/single_margin"
+        android:paddingLeft="@dimen/half_margin"
+        android:paddingRight="@dimen/half_margin"
+        android:paddingTop="@dimen/single_margin"
+        app:layout_constraintBottom_toTopOf="@+id/sub_title"
         app:layout_constraintLeft_toRightOf="@+id/icon"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Test" />
 
     <TextView
         android:id="@+id/sub_title"
@@ -32,11 +39,16 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/half_margin"
         android:layout_marginRight="@dimen/half_margin"
-        android:padding="@dimen/half_margin"
-        android:textColor="@color/colorAccent"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="left|center_vertical"
+        android:paddingBottom="@dimen/single_margin"
+        android:paddingLeft="@dimen/half_margin"
+        android:paddingRight="@dimen/half_margin"
+        android:paddingTop="@dimen/single_margin"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/icon"
-        app:layout_constraintTop_toBottomOf="@+id/title" />
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        tools:text="Test" />
 </android.support.constraint.ConstraintLayout>
 
 
