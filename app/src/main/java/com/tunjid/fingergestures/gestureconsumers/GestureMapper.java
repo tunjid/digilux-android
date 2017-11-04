@@ -42,7 +42,7 @@ import static java.util.stream.Collectors.toMap;
 public final class GestureMapper extends FingerprintGestureController.FingerprintGestureCallback {
 
     private static final int UNASSIGNED_GESTURE = -1;
-    private static final int ONGOING_RESET_DELAY = 2;
+    private static final int ONGOING_RESET_DELAY = 1;
     private static final int MAX_DOUBLE_SWIPE_DELAY = 1000;
     private static final int DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE = 50;
 
