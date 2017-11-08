@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -31,8 +33,12 @@ import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureCons
 public class FingerGestureService extends AccessibilityService {
 
     private static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
-    private static final String QUICK_SETTINGS_DESCRIPTION = "Open quick settings";
-    private static final String SETTINGS_DESCRIPTION = "Open settings";
+    private static final String RESOURCE_OPEN_SETTINGS = "accessibility_quick_settings_settings";
+    private static final String RESOURCE_EXPAND_QUICK_SETTINGS = "accessibility_quick_settings_expand";
+    private static final String DEFAULT_OPEN_SETTINGS = "Open settings";
+    private static final String DEFAULT_EXPAND_QUICK_SETTINGS = "Open quick settings";
+    private static final String STRING_RESOURCE = "string";
+    private static final int INVALID_RESOURCE = 0;
 
     @Nullable
     private View overlayView;
@@ -90,7 +96,7 @@ public class FingerGestureService extends AccessibilityService {
     public void onInterrupt() {}
 
     private void expandQuickSettings() {
-        AccessibilityNodeInfo info = findNode(getRootInActiveWindow(), QUICK_SETTINGS_DESCRIPTION);
+        AccessibilityNodeInfo info = findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_EXPAND_QUICK_SETTINGS, DEFAULT_EXPAND_QUICK_SETTINGS));
         if (info != null) info.performAction(AccessibilityNodeInfo.ACTION_CLICK);
     }
 
@@ -100,7 +106,7 @@ public class FingerGestureService extends AccessibilityService {
     }
 
     private boolean isSettingsCogVisible() {
-        return findNode(getRootInActiveWindow(), SETTINGS_DESCRIPTION) != null;
+        return findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_OPEN_SETTINGS, DEFAULT_OPEN_SETTINGS)) != null;
     }
 
     private void adjustDimmer() {
@@ -146,6 +152,24 @@ public class FingerGestureService extends AccessibilityService {
         windowManager.addView(overlayView, params);
 
         return params;
+    }
+
+    private String getSystemUiString(String resourceID, String defaultValue) {
+        Resources resources = getSystemUiResources();
+        if (resources == null) return defaultValue;
+
+        int id = resources.getIdentifier(resourceID, STRING_RESOURCE, ANDROID_SYSTEM_UI_PACKAGE);
+
+        if (id == INVALID_RESOURCE) return defaultValue;
+        else return resources.getString(id);
+    }
+
+    @Nullable
+    private Resources getSystemUiResources() {
+        PackageManager packageManager = getPackageManager();
+
+        try {return packageManager.getResourcesForApplication(ANDROID_SYSTEM_UI_PACKAGE);}
+        catch (Exception e) {return null;}
     }
 
     @Nullable
