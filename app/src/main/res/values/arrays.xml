@@ -10,4 +10,9 @@
         <item>@string/toggle_flashlight</item>
         <item> @string/do_nothing</item>
     </array>
+
+    <array name="purchase_options">
+        <item> @string/remove_ads_only</item>
+        <item> @string/remove_ads_and_go_premium</item>
+    </array>
 </resources>

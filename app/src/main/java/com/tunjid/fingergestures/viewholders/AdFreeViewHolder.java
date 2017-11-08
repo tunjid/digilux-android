@@ -26,30 +26,60 @@ public class AdFreeViewHolder extends HomeViewHolder {
     public void bind() {
         super.bind();
         boolean hasAds = purchasesManager.hasAds();
+        boolean notAdFree = purchasesManager.hasNotGoneAdFree();
+        boolean notPremium = purchasesManager.isNotPremium();
 
         TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(title, hasAds
                 ? R.drawable.ic_attach_money_white_24dp
                 : R.drawable.ic_check_white_24dp, 0, 0, 0);
 
         title.setText(hasAds
-                ? R.string.ad_free_basic_user
-                : !purchasesManager.isNotPremium()
-                ? R.string.ad_free_premium_user
-                : R.string.ad_free_no_ad_user);
+                ? R.string.go_ad_free_title
+                : notPremium
+                ? R.string.ad_free_no_ad_user
+                : R.string.ad_free_premium_user);
 
-        View.OnClickListener goAdFree = v -> removeAds(purchasesManager.isNotPremium()
-                ? R.string.ad_free_basic_user_confirmation
-                : R.string.ad_free_premium_user_confirmation);
+        View.OnClickListener goAdFree = v -> {
+            if (hasAds) showPurchaseOptions();
+            else showRemainingPurchaseOption();
+        };
 
-        itemView.setOnClickListener(purchasesManager.hasNotGoneAdFree() ? goAdFree : null);
+        itemView.setOnClickListener(notAdFree || notPremium ? goAdFree : null);
     }
 
-    private void removeAds(@StringRes int description) {
+    private void showPurchaseOptions() {
         Context context = itemView.getContext();
         new AlertDialog.Builder(context)
-                .setTitle(R.string.remove_ads)
+                .setTitle(R.string.purchase_options)
+                .setItems(R.array.purchase_options, (dialog, index) ->
+                        adapterListener.purchase(index == 0
+                                ? PurchasesManager.AD_FREE_SKU
+                                : PurchasesManager.PREMIUM_SKU)
+                )
+                .show();
+    }
+
+    private void showRemainingPurchaseOption() {
+
+        boolean notPremium = purchasesManager.isNotPremium();
+
+        Runnable action = notPremium
+                ? () -> adapterListener.purchase(PurchasesManager.PREMIUM_SKU)
+                : () -> adapterListener.purchase(PurchasesManager.AD_FREE_SKU);
+
+        @StringRes int title = notPremium
+                ? R.string.go_premium_title
+                : R.string.premium_generosity_title;
+
+        @StringRes int description = notPremium
+                ? R.string.go_premium_confirmation
+                : R.string.premium_generosity_confirmation;
+
+        Context context = itemView.getContext();
+        new AlertDialog.Builder(context)
+                .setTitle(title)
                 .setMessage(description)
-                .setPositiveButton(R.string.continue_text, (dialog, which) -> adapterListener.purchase(PurchasesManager.AD_FREE_SKU))
+                .setPositiveButton(R.string.continue_text, (dialog, which) -> action.run())
                 .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                 .show();
     }
