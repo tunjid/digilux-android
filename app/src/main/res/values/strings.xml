@@ -64,12 +64,15 @@
     <string name="premium_prompt_double_swipe">Gives the ability to map double swipes to actions.</string>
 
     <!-- Ad Free Viewholder-->
-    <string name="remove_ads">Remove Ads</string>
-    <string name="ad_free_basic_user">Go ad free</string>
+    <string name="purchase_options">Purchase Options</string>
+    <string name="remove_ads_only">Remove ads only</string>
+    <string name="remove_ads_and_go_premium">Remove ads and get premium features</string>
     <string name="ad_free_premium_user">Thanks for going premium!</string>
     <string name="ad_free_no_ad_user">Thanks for your support!</string>
-    <string name="ad_free_basic_user_confirmation">Purchasing this will remove the banner ads at the bottom.\n\nNOTE: This does not unlock premium features. To unlock premium features, please tap on a premium feature, and follow the prompts provided.</string>
-    <string name="ad_free_premium_user_confirmation">You\'ve already gone premium! You really don\'t have to…</string>
+    <string name="go_ad_free_title">Go Ad Free</string>
+    <string name="go_premium_confirmation">Purchasing this will grant access to premium features.</string>
+    <string name="premium_generosity_title">You\'re already premium…</string>
+    <string name="premium_generosity_confirmation">Shut up and take my money!</string>
 
     <!-- Review Viewholder-->
     <string name="review_app">Leave a review</string>
