@@ -35,7 +35,7 @@ import static io.reactivex.schedulers.Schedulers.computation;
 public class BrightnessGestureConsumer implements GestureConsumer {
 
     static final float MAX_BRIGHTNESS = 255F;
-    private static final float MIN_BRIGHTNESS = 1F;
+    private static final float MIN_BRIGHTNESS = 0F;
     private static final float MIN_DIM_PERCENT = 0F;
     private static final float MAX_DIM_PERCENT = 0.8F;
     private static final float DEF_DIM_PERCENT = MIN_DIM_PERCENT;
