@@ -13,9 +13,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -62,12 +60,11 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private final App app;
     private final int[] actionIds;
     private final String[] actions;
+    private final GestureConsumer[] consumers;
 
-    private final Map<String, Integer> textMap;
     private final Map<Integer, Integer> gestureActionMap;
     private final Map<Integer, Integer> actionGestureMap;
 
-    private final List<GestureConsumer> consumers;
     private final AtomicReference<String> directionReference;
 
     private Disposable isSwipingDisposable;
@@ -82,19 +79,14 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     {
         app = App.getInstance();
 
-        textMap = new HashMap<>();
         gestureActionMap = new HashMap<>();
-        consumers = new ArrayList<>();
         directionReference = new AtomicReference<>();
 
-        textMap.put(UP_GESTURE, R.string.swipe_up);
-        textMap.put(DOWN_GESTURE, R.string.swipe_down);
-        textMap.put(LEFT_GESTURE, R.string.swipe_left);
-        textMap.put(RIGHT_GESTURE, R.string.swipe_right);
-        textMap.put(DOUBLE_UP_GESTURE, R.string.double_swipe_up);
-        textMap.put(DOUBLE_DOWN_GESTURE, R.string.double_swipe_down);
-        textMap.put(DOUBLE_LEFT_GESTURE, R.string.double_swipe_left);
-        textMap.put(DOUBLE_RIGHT_GESTURE, R.string.double_swipe_right);
+        consumers = new GestureConsumer[]{
+                NothingGestureConsumer.getInstance(),
+                BrightnessGestureConsumer.getInstance(),
+                NotificationGestureConsumer.getInstance(),
+                FlashlightGestureConsumer.getInstance()};
 
         gestureActionMap.put(INCREASE_BRIGHTNESS, R.string.increase_brightness);
         gestureActionMap.put(REDUCE_BRIGHTNESS, R.string.reduce_brightness);
@@ -106,11 +98,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureActionMap.put(DO_NOTHING, R.string.do_nothing);
 
         actionGestureMap = invert(gestureActionMap);
-
-        consumers.add(NothingGestureConsumer.getInstance());
-        consumers.add(BrightnessGestureConsumer.getInstance());
-        consumers.add(NotificationGestureConsumer.getInstance());
-        consumers.add(FlashlightGestureConsumer.getInstance());
 
         Pair<int[], String[]> pair = actionResourceNamePair();
         actionIds = pair.first;
@@ -125,7 +112,26 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private GestureMapper() {}
 
     public String getDirectionName(@GestureDirection String direction) {
-        return app.getString(textMap.get(direction));
+        switch (direction) {
+            case UP_GESTURE:
+                return app.getString(R.string.swipe_up);
+            case DOWN_GESTURE:
+                return app.getString(R.string.swipe_down);
+            case LEFT_GESTURE:
+                return app.getString(R.string.swipe_left);
+            case RIGHT_GESTURE:
+                return app.getString(R.string.swipe_right);
+            case DOUBLE_UP_GESTURE:
+                return app.getString(R.string.double_swipe_up);
+            case DOUBLE_DOWN_GESTURE:
+                return app.getString(R.string.double_swipe_down);
+            case DOUBLE_LEFT_GESTURE:
+                return app.getString(R.string.double_swipe_left);
+            case DOUBLE_RIGHT_GESTURE:
+                return app.getString(R.string.double_swipe_right);
+            default:
+                return "";
+        }
     }
 
     public String mapGestureToAction(@GestureDirection String direction, int index) {

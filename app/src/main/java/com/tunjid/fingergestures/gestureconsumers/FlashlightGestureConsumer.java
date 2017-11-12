@@ -4,12 +4,13 @@ import android.annotation.SuppressLint;
 import android.hardware.camera2.CameraManager;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.tunjid.fingergestures.App;
 
 public class FlashlightGestureConsumer implements GestureConsumer {
 
-    private final App app;
+    private boolean isCallbackRegistered;
     private boolean isTorchOn;
 
     private static FlashlightGestureConsumer instance;
@@ -20,28 +21,13 @@ public class FlashlightGestureConsumer implements GestureConsumer {
     }
 
     private FlashlightGestureConsumer() {
-        app = App.getInstance();
-
-        CameraManager cameraManager = app.getSystemService(CameraManager.class);
-        if (cameraManager == null) return;
-
-        cameraManager.registerTorchCallback(new CameraManager.TorchCallback() {
-            @Override
-            public void onTorchModeChanged(@NonNull String cameraId, boolean enabled) {
-                isTorchOn = enabled;
-            }
-        }, new Handler());
+        isCallbackRegistered = registerTorchCallback(App.getInstance());
     }
 
     @Override
     @SuppressLint("SwitchIntDef")
     public boolean accepts(@GestureAction int gesture) {
-        switch (gesture) {
-            case TOGGLE_FLASHLIGHT:
-                return true;
-            default:
-                return false;
-        }
+        return gesture == TOGGLE_FLASHLIGHT;
     }
 
     @Override
@@ -49,6 +35,10 @@ public class FlashlightGestureConsumer implements GestureConsumer {
     public void onGestureActionTriggered(@GestureAction int gestureAction) {
         switch (gestureAction) {
             case TOGGLE_FLASHLIGHT:
+                App app = App.getInstance();
+                if (!isCallbackRegistered) isCallbackRegistered = registerTorchCallback(app);
+                if (!isCallbackRegistered) return;
+
                 CameraManager cameraManager = app.getSystemService(CameraManager.class);
                 if (cameraManager == null) return;
 
@@ -56,6 +46,22 @@ public class FlashlightGestureConsumer implements GestureConsumer {
                 catch (Exception e) {e.printStackTrace();}
                 break;
         }
+    }
+
+    private boolean registerTorchCallback(@Nullable App app) {
+        if (app == null) return false;
+
+        CameraManager cameraManager = app.getSystemService(CameraManager.class);
+        if (cameraManager == null) return false;
+
+        cameraManager.registerTorchCallback(new CameraManager.TorchCallback() {
+            @Override
+            public void onTorchModeChanged(@NonNull String cameraId, boolean enabled) {
+                isTorchOn = enabled;
+            }
+        }, new Handler());
+
+        return true;
     }
 
 //     try {
