@@ -76,7 +76,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
             DOUBLE_UP_GESTURE, DOUBLE_DOWN_GESTURE, DOUBLE_LEFT_GESTURE, DOUBLE_RIGHT_GESTURE})
     public @interface GestureDirection {}
 
-    {
+    private GestureMapper() {
         app = App.getInstance();
 
         gestureActionMap = new HashMap<>();
@@ -108,8 +108,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         if (instance == null) instance = new GestureMapper();
         return instance;
     }
-
-    private GestureMapper() {}
 
     public String getDirectionName(@GestureDirection String direction) {
         switch (direction) {
