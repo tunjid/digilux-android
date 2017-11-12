@@ -21,9 +21,11 @@
 
     <string name="accessibility_permission_denied">Accessibility permission denied</string>
     <string name="settings_permission_denied">Settings permission denied</string>
-
-    <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures and determine if the notification shade is showing to keep the 1 – 2 gesture combo to show the notification shade first and quick settings second.
-        \n\nIt will not affect the functionality of any apps depending on the fingerprint sensor; gestures will be tempoarily unavailable while fingerprint authentication is requested by any app,
+    <string name="accessibility_service_summary">Enable this to ease one handed phone brightness control by using fingerprint sensor gestures</string>
+    <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures to aid in one handed usage of your device. Accessibility is used for the following:\n
+        \n1. To listen for gestures on the fingerprint sensor.
+        \n2. To determine if the notification shade is showing to keep the 1 – 2 gesture combo to show the notification shade first and quick settings second.
+        \n\nEnabling this not affect the functionality of any apps depending on the fingerprint sensor; gestures will be temporarily unavailable while fingerprint authentication is requested by any app,
         and will become available again after fingerprint authentication is complete.</string>
 
     <!-- Delta Viewholder-->
@@ -37,7 +39,7 @@
     <!-- Color Adjuster Viewholder-->
     <string name="choose_color">Choose Color</string>
     <string name="choose_target">Choose Target</string>
-    <string name="edit_slider_apperance">Edit Slider Appearance</string>
+    <string name="edit_slider_appearance">Edit Slider Appearance</string>
     <string name="change_slider_background_color">Change slider background color</string>
     <string name="change_slider_color">Change slider color</string>
     <string name="wallpaper_color">Colors from wallpaper (Incompatible with Live Wallpapers):</string>

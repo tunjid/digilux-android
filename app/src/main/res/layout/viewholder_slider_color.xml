@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:paddingBottom="@dimen/single_margin"
         android:paddingTop="@dimen/single_margin"
-        android:text="@string/edit_slider_apperance"
+        android:text="@string/edit_slider_appearance"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

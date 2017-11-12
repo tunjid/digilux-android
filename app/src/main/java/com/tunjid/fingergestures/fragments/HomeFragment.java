@@ -54,7 +54,7 @@ public class HomeFragment extends FingerGestureFragment
     private boolean fromSettings;
     private boolean fromAccessibility;
 
-    private final TextLink[] infolist;
+    private final TextLink[] links;
     private AdView adView;
     private View accessibility;
     private View settings;
@@ -63,7 +63,7 @@ public class HomeFragment extends FingerGestureFragment
 
     {
         Context context = App.getInstance();
-        infolist = new TextLink[]{new TextLink(context.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
+        links = new TextLink[]{new TextLink(context.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
                 new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
                 new TextLink(context.getString(R.string.color_picker), CLOLOR_PICKER_LINK),
                 new TextLink(context.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
@@ -181,7 +181,7 @@ public class HomeFragment extends FingerGestureFragment
             case R.id.info:
                 new AlertDialog.Builder(getContext())
                         .setTitle(R.string.open_source_libraries)
-                        .setItems(infolist, (a, b) -> showLink(infolist[b]))
+                        .setItems(links, (dialog, index) -> showLink(links[index]))
                         .show();
                 return true;
         }
