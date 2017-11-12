@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.util.Pair;
+import android.util.SparseIntArray;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
@@ -13,8 +14,6 @@ import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.reactivex.disposables.Disposable;
@@ -34,7 +33,6 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_
 import static io.reactivex.Flowable.timer;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.stream.Collectors.toMap;
 
 @SuppressLint("UseSparseArrays")
 public final class GestureMapper extends FingerprintGestureController.FingerprintGestureCallback {
@@ -58,12 +56,13 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private static GestureMapper instance;
 
     private final App app;
+
     private final int[] actionIds;
     private final String[] actions;
     private final GestureConsumer[] consumers;
 
-    private final Map<Integer, Integer> gestureActionMap;
-    private final Map<Integer, Integer> actionGestureMap;
+    private final SparseIntArray gestureActionMap;
+    private final SparseIntArray actionGestureMap;
 
     private final AtomicReference<String> directionReference;
 
@@ -79,7 +78,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private GestureMapper() {
         app = App.getInstance();
 
-        gestureActionMap = new HashMap<>();
+        gestureActionMap = new SparseIntArray();
         directionReference = new AtomicReference<>();
 
         consumers = new GestureConsumer[]{
@@ -337,7 +336,12 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         throwable.printStackTrace();
     }
 
-    private static <V, K> Map<V, K> invert(Map<K, V> map) {
-        return map.entrySet().stream().collect(toMap(Map.Entry::getValue, Map.Entry::getKey));
+    private static SparseIntArray invert(SparseIntArray source) {
+        int size = source.size();
+        SparseIntArray array = new SparseIntArray(size);
+
+        for (int i = 0; i < size; i++) array.put(source.valueAt(i), source.keyAt(i));
+
+        return array;
     }
 }
