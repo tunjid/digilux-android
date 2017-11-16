@@ -85,10 +85,8 @@ public class BillingManager {
      * Clear the resources
      */
     public void destroy() {
-        if (billingClient != null && billingClient.isReady()) {
-            billingClient.endConnection();
-            billingClient = null;
-        }
+        if (billingClient != null) billingClient.endConnection();
+        billingClient = null;
     }
 
     private class BillingExecutor implements CompletableOnSubscribe {

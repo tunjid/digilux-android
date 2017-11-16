@@ -13,12 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
-import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 
 import java.time.LocalTime;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,8 +28,9 @@ import io.reactivex.disposables.Disposable;
 
 import static android.graphics.PorterDuff.Mode.SRC_IN;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.BRIGHTNESS_FRACTION;
+import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
+import static com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder.tint;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BrightnessActivity extends AppCompatActivity
@@ -41,7 +42,7 @@ public class BrightnessActivity extends AppCompatActivity
 
     private SeekBar seekBar;
     private TextView seekBarText;
-    private ViewGroup seekBarbackground;
+    private ViewGroup seekBarBackground;
 
     private LocalTime endTime = LocalTime.now();
     private BrightnessGestureConsumer brightnessGestureConsumer;
@@ -54,28 +55,32 @@ public class BrightnessActivity extends AppCompatActivity
 
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
 
+        int sliderColor = brightnessGestureConsumer.getSliderColor();
+        int sliderBackgroundColor = brightnessGestureConsumer.getBackgroundColor();
+
         Window window = getWindow();
         window.setLayout(MATCH_PARENT, MATCH_PARENT);
         window.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 
         ConstraintLayout layout = findViewById(R.id.constraint_layout);
-        seekBarbackground = findViewById(R.id.seekbar_background);
+        seekBarBackground = findViewById(R.id.seekbar_background);
         seekBar = findViewById(R.id.seekbar);
         seekBarText = findViewById(R.id.seekbar_text);
-        View goToSettings = findViewById(R.id.go_to_settings);
+        ImageView settingsIcon = findViewById(R.id.go_to_settings);
 
-        seekBarbackground.setBackground(ColorAdjusterViewHolder.tint(R.drawable.color_indicator, brightnessGestureConsumer.getBackgroundColor()));
-        seekBarText.setTextColor(brightnessGestureConsumer.getSliderColor());
-        seekBar.getProgressDrawable().setColorFilter(brightnessGestureConsumer.getSliderColor(), SRC_IN);
-        seekBar.getThumb().setColorFilter(brightnessGestureConsumer.getSliderColor(), SRC_IN);
+        seekBarText.setTextColor(sliderColor);
+        seekBar.getThumb().setColorFilter(sliderColor, SRC_IN);
+        seekBar.getProgressDrawable().setColorFilter(sliderColor, SRC_IN);
+        settingsIcon.setImageDrawable(tint(R.drawable.ic_settings_white_24dp, sliderColor));
+        seekBarBackground.setBackground(tint(R.drawable.color_indicator, sliderBackgroundColor));
 
         ConstraintSet set = new ConstraintSet();
         set.clone(layout);
-        set.setVerticalBias(seekBarbackground.getId(), brightnessGestureConsumer.getPositionPercentage() / 100F);
+        set.setVerticalBias(seekBarBackground.getId(), brightnessGestureConsumer.getPositionPercentage() / 100F);
         set.applyTo(layout);
 
         layout.setOnClickListener(v -> finish());
-        goToSettings.setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        settingsIcon.setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
 
         updateEndTime();
         handleIntent(getIntent());
@@ -120,7 +125,7 @@ public class BrightnessActivity extends AppCompatActivity
         brightnessGestureConsumer.saveBrightness(brightnessByte);
 
         if (seekBarText.getVisibility() == View.VISIBLE) {
-            TransitionManager.beginDelayedTransition(seekBarbackground, new AutoTransition());
+            TransitionManager.beginDelayedTransition(seekBarBackground, new AutoTransition());
             seekBarText.setVisibility(View.GONE);
         }
 
@@ -128,7 +133,7 @@ public class BrightnessActivity extends AppCompatActivity
     }
 
     private void handleIntent(Intent intent) {
-        TransitionManager.beginDelayedTransition(seekBarbackground, new AutoTransition());
+        TransitionManager.beginDelayedTransition(seekBarBackground, new AutoTransition());
 
         float brightness = intent.getFloatExtra(BRIGHTNESS_FRACTION, 0);
         int percentage = (int) (brightness * 100);
