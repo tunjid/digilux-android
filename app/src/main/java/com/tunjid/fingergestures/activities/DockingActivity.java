@@ -4,22 +4,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer;
+
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Flowable;
+
+import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 
 public class DockingActivity extends AppCompatActivity {
 
+    public static final int DELAY = 500;
     private boolean isConfigurationChange;
-    private View root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_docking);
         isConfigurationChange = savedInstanceState != null;
-        root = findViewById(R.id.constraint_layout);
 
         handleIntent(false);
     }
@@ -43,7 +46,7 @@ public class DockingActivity extends AppCompatActivity {
             finish();
             return;
         }
-        root.postDelayed(() -> LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(DockingGestureConsumer.ACTION_TOGGLE_DOCK)),
-                1000);
+
+        Flowable.timer(DELAY, TimeUnit.MILLISECONDS).subscribe(ignored -> LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_TOGGLE_DOCK)), throwable -> {});
     }
 }
