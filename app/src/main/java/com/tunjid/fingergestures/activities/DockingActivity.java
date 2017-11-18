@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -23,6 +24,7 @@ public class DockingActivity extends AppCompatActivity {
         isConfigurationChange = savedInstanceState != null;
         setContentView(R.layout.activity_docking);
         findViewById(R.id.logo).setVisibility(isInMultiWindowMode() ? View.VISIBLE : View.GONE);
+        findViewById(R.id.constraint_layout).setBackgroundColor(BrightnessGestureConsumer.getInstance().getBackgroundColor());
         handleIntent(false);
     }
 
