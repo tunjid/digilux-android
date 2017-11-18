@@ -59,6 +59,7 @@ public class HomeFragment extends FingerGestureFragment
     private View accessibility;
     private View settings;
     private RecyclerView recyclerView;
+    @Nullable
     private BillingManager billingManager;
 
     {
@@ -134,14 +135,9 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        billingManager = new BillingManager(getActivity());
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
+        if (getActivity() != null) billingManager = new BillingManager(getActivity());
 
         if (!fromSettings && !App.canWriteToSettings()) askForSettings();
         else if (!fromAccessibility && !App.isAccessibilityServiceEnabled()) askForAccessibility();
@@ -165,9 +161,10 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
-    public void onDestroy() {
-        billingManager.destroy();
-        super.onDestroy();
+    public void onStop() {
+        if (billingManager != null) billingManager.destroy();
+        billingManager = null;
+        super.onStop();
     }
 
     @Override
@@ -210,7 +207,8 @@ public class HomeFragment extends FingerGestureFragment
 
     @Override
     public void purchase(String sku) {
-        billingManager.initiatePurchaseFlow(sku)
+        if (billingManager == null) showSnackbar(R.string.billing_generic_error);
+        else billingManager.initiatePurchaseFlow(sku)
                 .subscribe(launchStatus -> {
                     switch (launchStatus) {
                         case OK:
