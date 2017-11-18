@@ -26,12 +26,11 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
-import java.util.concurrent.TimeUnit;
-
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK;
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_UP;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class FingerGestureService extends AccessibilityService {
 
@@ -42,6 +41,7 @@ public class FingerGestureService extends AccessibilityService {
     private static final String DEFAULT_EXPAND_QUICK_SETTINGS = "Open quick settings";
     private static final String STRING_RESOURCE = "string";
     private static final int INVALID_RESOURCE = 0;
+    private static final int DELAY = 50;
 
     @Nullable
     private View overlayView;
@@ -68,7 +68,7 @@ public class FingerGestureService extends AccessibilityService {
                     break;
                 case ACTION_TOGGLE_DOCK:
                     performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN);
-                    App.delay(250, TimeUnit.MILLISECONDS, () -> performGlobalAction(GLOBAL_ACTION_RECENTS));
+                    App.delay(DELAY, MILLISECONDS, () -> performGlobalAction(GLOBAL_ACTION_RECENTS));
                     break;
             }
         }
