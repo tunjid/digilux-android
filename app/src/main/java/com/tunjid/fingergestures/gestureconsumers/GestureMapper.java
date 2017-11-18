@@ -332,7 +332,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     private void resetIsOngoing() {
-        isSwipingDisposable = timer(ONGOING_RESET_DELAY, SECONDS).subscribe(i -> isOngoing = false, this::onError);
+        isSwipingDisposable = App.delay(ONGOING_RESET_DELAY, SECONDS, () -> isOngoing = false);
     }
 
     private void onError(Throwable throwable) {

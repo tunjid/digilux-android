@@ -26,6 +26,8 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
+import java.util.concurrent.TimeUnit;
+
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK;
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_DOWN;
@@ -66,6 +68,7 @@ public class FingerGestureService extends AccessibilityService {
                     break;
                 case ACTION_TOGGLE_DOCK:
                     performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN);
+                    App.delay(250, TimeUnit.MILLISECONDS, () -> performGlobalAction(GLOBAL_ACTION_RECENTS));
                     break;
             }
         }

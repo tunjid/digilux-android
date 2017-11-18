@@ -4,26 +4,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.Flowable;
-
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class DockingActivity extends AppCompatActivity {
 
-    public static final int DELAY = 500;
+    public static final int DELAY = 200;
     private boolean isConfigurationChange;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_docking);
         isConfigurationChange = savedInstanceState != null;
-
+        setContentView(R.layout.activity_docking);
+        findViewById(R.id.logo).setVisibility(isInMultiWindowMode() ? View.VISIBLE : View.GONE);
         handleIntent(false);
     }
 
@@ -35,18 +34,17 @@ public class DockingActivity extends AppCompatActivity {
 
     protected void onResume() {
         super.onResume();
-        overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_up);
+        overridePendingTransition(R.anim.slide_in_down_quick, R.anim.slide_out_up);
     }
 
 
     private void handleIntent(boolean force) {
         if (isInMultiWindowMode() && !force) return;
+        if (isConfigurationChange) finish();
+        else App.delay(DELAY, MILLISECONDS, this::toggleDock);
+    }
 
-        if (isConfigurationChange) {
-            finish();
-            return;
-        }
-
-        Flowable.timer(DELAY, TimeUnit.MILLISECONDS).subscribe(ignored -> LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_TOGGLE_DOCK)), throwable -> {});
+    private void toggleDock() {
+         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_TOGGLE_DOCK));
     }
 }
