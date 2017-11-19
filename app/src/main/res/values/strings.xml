@@ -36,6 +36,10 @@
     <string name="adjust_slider_position">Adjust Slider Position</string>
     <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
+    <!-- Duration Viewholder-->
+    <string name="adjust_slider_duration">Adjust Slider Pop Up Duration</string>
+    <string name="duration_value">%1$.2f seconds</string>
+
     <!-- Color Adjuster Viewholder-->
     <string name="choose_color">Choose Color</string>
     <string name="choose_target">Choose Target</string>

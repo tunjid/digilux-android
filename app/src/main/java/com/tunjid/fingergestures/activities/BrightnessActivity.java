@@ -21,6 +21,7 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.reactivex.Flowable;
@@ -31,12 +32,10 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.BRIGHTNESS_FRACTION;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
 import static com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder.tint;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class BrightnessActivity extends AppCompatActivity
         implements SeekBar.OnSeekBarChangeListener {
-
-    private static final int DISMISS_DELAY = 3;
 
     private int brightnessByte;
 
@@ -160,7 +159,7 @@ public class BrightnessActivity extends AppCompatActivity
 
     @NonNull
     private Disposable countdownDisposable() {
-        return Flowable.interval(DISMISS_DELAY, SECONDS).subscribe(i -> {
+        return Flowable.interval(brightnessGestureConsumer.getSliderDurationMillis(), MILLISECONDS).subscribe(i -> {
             if (LocalTime.now().isBefore(endTime)) return;
             reference.get().dispose();
             finish();
@@ -168,7 +167,7 @@ public class BrightnessActivity extends AppCompatActivity
     }
 
     private void updateEndTime() {
-        endTime = LocalTime.now().plusSeconds(DISMISS_DELAY);
+        endTime = LocalTime.now().plus(brightnessGestureConsumer.getSliderDurationMillis(), ChronoUnit.MILLIS);
     }
 
     private WindowManager.LayoutParams getWindowLayoutParams(Window window) {
