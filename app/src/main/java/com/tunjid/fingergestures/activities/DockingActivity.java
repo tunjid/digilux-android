@@ -15,13 +15,13 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class DockingActivity extends AppCompatActivity {
 
-    public static final int DELAY = 200;
-    private boolean isConfigurationChange;
+    public static final String CONFIGURATION_CHANGE_KEY = "isConfigurationChange";
+    private boolean wasMultiWindowMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        isConfigurationChange = savedInstanceState != null;
+        wasMultiWindowMode = savedInstanceState != null && savedInstanceState.getBoolean(CONFIGURATION_CHANGE_KEY);
         setContentView(R.layout.activity_docking);
         findViewById(R.id.logo).setVisibility(isInMultiWindowMode() ? View.VISIBLE : View.GONE);
         findViewById(R.id.constraint_layout).setBackgroundColor(BrightnessGestureConsumer.getInstance().getBackgroundColor());
@@ -34,19 +34,29 @@ public class DockingActivity extends AppCompatActivity {
         handleIntent(true);
     }
 
+    @Override
     protected void onResume() {
         super.onResume();
         overridePendingTransition(R.anim.slide_in_down_quick, R.anim.slide_out_up);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(CONFIGURATION_CHANGE_KEY, isInMultiWindowMode());
+        super.onSaveInstanceState(outState);
+    }
 
-    private void handleIntent(boolean force) {
-        if (isInMultiWindowMode() && !force) return;
-        if (isConfigurationChange) finish();
-        else App.delay(DELAY, MILLISECONDS, this::toggleDock);
+    private void handleIntent(boolean fromNewIntent) {
+        if (isInMultiWindowMode() && !fromNewIntent) return;
+        if (wasMultiWindowMode) finish();
+        else App.delay(getDockingAnimationDuration(), MILLISECONDS, this::toggleDock);
+    }
+
+    private int getDockingAnimationDuration() {
+        return getResources().getInteger(R.integer.docking_animation_duration);
     }
 
     private void toggleDock() {
-         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_TOGGLE_DOCK));
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_TOGGLE_DOCK));
     }
 }
