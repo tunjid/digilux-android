@@ -197,7 +197,6 @@ public class FingerGestureService extends AccessibilityService {
             if (TextUtils.isEmpty(contentDescription)) return null;
 
             String description = contentDescription.toString();
-            System.out.println(description);
             if (description.contains(name)) return info;
         }
         return null;

@@ -7,8 +7,8 @@ android {
         applicationId "com.tunjid.fingergestures"
         minSdkVersion 26
         targetSdkVersion 26
-        versionCode 20
-        versionName "3.0.5"
+        versionCode 23
+        versionName "4.0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {

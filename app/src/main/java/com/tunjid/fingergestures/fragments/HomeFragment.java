@@ -137,7 +137,8 @@ public class HomeFragment extends FingerGestureFragment
     @Override
     public void onResume() {
         super.onResume();
-        if (getActivity() != null) billingManager = new BillingManager(getActivity());
+        adView.resume();
+        billingManager = new BillingManager();
 
         if (!fromSettings && !App.canWriteToSettings()) askForSettings();
         else if (!fromAccessibility && !App.isAccessibilityServiceEnabled()) askForAccessibility();
@@ -152,8 +153,15 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
+    public void onPause() {
+        adView.pause();
+        super.onPause();
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (adView != null) adView.destroy();
         recyclerView = null;
         accessibility = null;
         settings = null;
@@ -208,7 +216,7 @@ public class HomeFragment extends FingerGestureFragment
     @Override
     public void purchase(String sku) {
         if (billingManager == null) showSnackbar(R.string.billing_generic_error);
-        else billingManager.initiatePurchaseFlow(sku)
+        else billingManager.initiatePurchaseFlow(getActivity(), sku)
                 .subscribe(launchStatus -> {
                     switch (launchStatus) {
                         case OK:

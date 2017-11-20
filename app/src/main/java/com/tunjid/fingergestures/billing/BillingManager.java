@@ -23,6 +23,7 @@ import com.android.billingclient.api.BillingClient.SkuType;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase.PurchasesResult;
+import com.tunjid.fingergestures.App;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
@@ -41,20 +42,17 @@ public class BillingManager {
     private boolean isServiceConnected;
 
     private BillingClient billingClient;
-    private final Activity activity;
     private final Consumer<Throwable> errorHandler = throwable -> {};
 
-    public BillingManager(Activity activity) {
-        this.activity = activity;
-        billingClient = BillingClient.newBuilder(this.activity).setListener(PurchasesManager.getInstance()).build();
-
+    public BillingManager() {
+        billingClient = BillingClient.newBuilder(App.getInstance()).setListener(PurchasesManager.getInstance()).build();
         checkClient().subscribe(this::queryPurchases, errorHandler);
     }
 
     /**
      * Start a purchase flow
      */
-    public Single<Integer> initiatePurchaseFlow(final String skuId) {
+    public Single<Integer> initiatePurchaseFlow(Activity activity, final String skuId) {
         return checkClient().andThen(Single.fromCallable(() -> {
             BillingFlowParams purchaseParams = BillingFlowParams.newBuilder()
                     .setSku(skuId)
