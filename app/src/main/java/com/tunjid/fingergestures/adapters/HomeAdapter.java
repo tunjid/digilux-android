@@ -30,18 +30,19 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
 
     private static final int SLIDER_DELTA = 0;
     private static final int SLIDER_POSITION = 1;
-    private static final int SLIDER_COLOR = 2;
-    private static final int SCREEN_DIMMER = 3;
-    private static final int ADAPTIVE_BRIGHTNESS = 4;
-    private static final int SHOW_SLIDER = 5;
-    private static final int DOUBLE_SWIPE_SETTINGS = 6;
-    private static final int MAP_UP_ICON = 7;
-    private static final int MAP_DOWN_ICON = 8;
-    private static final int MAP_LEFT_ICON = 9;
-    private static final int MAP_RIGHT_ICON = 10;
-    private static final int AD_FREE = 11;
-    private static final int REVIEW = 12;
-    private static final int NUM_ITEMS = 13;
+    private static final int SLIDER_DURATION = 2;
+    private static final int SLIDER_COLOR = 3;
+    private static final int SCREEN_DIMMER = 4;
+    private static final int ADAPTIVE_BRIGHTNESS = 5;
+    private static final int SHOW_SLIDER = 6;
+    private static final int DOUBLE_SWIPE_SETTINGS = 7;
+    private static final int MAP_UP_ICON = 8;
+    private static final int MAP_DOWN_ICON = 9;
+    private static final int MAP_LEFT_ICON = 10;
+    private static final int MAP_RIGHT_ICON = 11;
+    private static final int AD_FREE = 12;
+    private static final int REVIEW = 13;
+    private static final int NUM_ITEMS = 14;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -69,6 +70,14 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         brightnessGestureConsumer::getPositionPercentage,
                         () -> true,
                         (percentage) -> context.getString(R.string.position_percent, percentage));
+            case SLIDER_DURATION:
+                return new SliderAdjusterViewHolder(
+                        getView(R.layout.viewholder_slider_delta, parent),
+                        R.string.adjust_slider_duration,
+                        brightnessGestureConsumer::setSliderDurationPercentage,
+                        brightnessGestureConsumer::getSliderDurationPercentage,
+                        () -> true,
+                        brightnessGestureConsumer::getSliderDurationText);
             case SLIDER_COLOR:
                 return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent), adapterListener);
             case SCREEN_DIMMER:

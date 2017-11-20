@@ -59,6 +59,7 @@ public class HomeFragment extends FingerGestureFragment
     private View accessibility;
     private View settings;
     private RecyclerView recyclerView;
+    @Nullable
     private BillingManager billingManager;
 
     {
@@ -134,14 +135,10 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        billingManager = new BillingManager(getActivity());
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
+        adView.resume();
+        billingManager = new BillingManager();
 
         if (!fromSettings && !App.canWriteToSettings()) askForSettings();
         else if (!fromAccessibility && !App.isAccessibilityServiceEnabled()) askForAccessibility();
@@ -156,8 +153,15 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
+    public void onPause() {
+        adView.pause();
+        super.onPause();
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (adView != null) adView.destroy();
         recyclerView = null;
         accessibility = null;
         settings = null;
@@ -165,9 +169,10 @@ public class HomeFragment extends FingerGestureFragment
     }
 
     @Override
-    public void onDestroy() {
-        billingManager.destroy();
-        super.onDestroy();
+    public void onStop() {
+        if (billingManager != null) billingManager.destroy();
+        billingManager = null;
+        super.onStop();
     }
 
     @Override
@@ -210,7 +215,8 @@ public class HomeFragment extends FingerGestureFragment
 
     @Override
     public void purchase(String sku) {
-        billingManager.initiatePurchaseFlow(sku)
+        if (billingManager == null) showSnackbar(R.string.billing_generic_error);
+        else billingManager.initiatePurchaseFlow(getActivity(), sku)
                 .subscribe(launchStatus -> {
                     switch (launchStatus) {
                         case OK:
