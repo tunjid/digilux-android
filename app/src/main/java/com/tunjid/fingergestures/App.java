@@ -13,7 +13,12 @@ import android.text.TextUtils;
 import com.google.android.gms.ads.MobileAds;
 import com.tunjid.fingergestures.services.FingerGestureService;
 
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.disposables.Disposable;
+
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
+import static io.reactivex.Flowable.timer;
 
 public class App extends android.app.Application {
 
@@ -44,6 +49,10 @@ public class App extends android.app.Application {
     @NonNull
     public static Intent accessibilityIntent() {
         return new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+    }
+
+    public static Disposable delay(long interval, TimeUnit timeUnit, Runnable runnable) {
+        return timer(interval, timeUnit).subscribe(ignored -> runnable.run(), Throwable::printStackTrace);
     }
 
     public static boolean canWriteToSettings() {

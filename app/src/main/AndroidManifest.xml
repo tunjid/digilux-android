@@ -45,5 +45,10 @@
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:theme="@style/BrightnessDialogTheme" />
+        <activity
+            android:name=".activities.DockingActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/DockingActivityTheme" />
     </application>
 </manifest>

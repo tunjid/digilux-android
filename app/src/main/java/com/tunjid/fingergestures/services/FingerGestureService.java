@@ -27,8 +27,10 @@ import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK;
+import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_UP;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class FingerGestureService extends AccessibilityService {
 
@@ -39,6 +41,7 @@ public class FingerGestureService extends AccessibilityService {
     private static final String DEFAULT_EXPAND_QUICK_SETTINGS = "Open quick settings";
     private static final String STRING_RESOURCE = "string";
     private static final int INVALID_RESOURCE = 0;
+    private static final int DELAY = 50;
 
     @Nullable
     private View overlayView;
@@ -63,6 +66,10 @@ public class FingerGestureService extends AccessibilityService {
                 case BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED:
                     adjustDimmer();
                     break;
+                case ACTION_TOGGLE_DOCK:
+                    performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN);
+                    App.delay(DELAY, MILLISECONDS, () -> performGlobalAction(GLOBAL_ACTION_RECENTS));
+                    break;
             }
         }
     };
@@ -77,6 +84,7 @@ public class FingerGestureService extends AccessibilityService {
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(ACTION_NOTIFICATION_DOWN);
         filter.addAction(ACTION_NOTIFICATION_UP);
+        filter.addAction(ACTION_TOGGLE_DOCK);
         filter.addAction(BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
@@ -189,6 +197,7 @@ public class FingerGestureService extends AccessibilityService {
             if (TextUtils.isEmpty(contentDescription)) return null;
 
             String description = contentDescription.toString();
+            System.out.println(description);
             if (description.contains(name)) return info;
         }
         return null;

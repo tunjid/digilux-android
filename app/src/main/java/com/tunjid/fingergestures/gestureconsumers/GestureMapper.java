@@ -29,6 +29,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZ
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT;
 import static io.reactivex.Flowable.timer;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -85,7 +86,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 NothingGestureConsumer.getInstance(),
                 BrightnessGestureConsumer.getInstance(),
                 NotificationGestureConsumer.getInstance(),
-                FlashlightGestureConsumer.getInstance()};
+                FlashlightGestureConsumer.getInstance(),
+                DockingGestureConsumer.getInstance()};
 
         gestureActionMap.put(INCREASE_BRIGHTNESS, R.string.increase_brightness);
         gestureActionMap.put(REDUCE_BRIGHTNESS, R.string.reduce_brightness);
@@ -94,6 +96,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureActionMap.put(NOTIFICATION_UP, R.string.notification_up);
         gestureActionMap.put(NOTIFICATION_DOWN, R.string.notification_down);
         gestureActionMap.put(TOGGLE_FLASHLIGHT, R.string.toggle_flashlight);
+        gestureActionMap.put(TOGGLE_DOCK, R.string.toggle_dock);
         gestureActionMap.put(DO_NOTHING, R.string.do_nothing);
 
         actionGestureMap = invert(gestureActionMap);
@@ -329,7 +332,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     private void resetIsOngoing() {
-        isSwipingDisposable = timer(ONGOING_RESET_DELAY, SECONDS).subscribe(i -> isOngoing = false, this::onError);
+        isSwipingDisposable = App.delay(ONGOING_RESET_DELAY, SECONDS, () -> isOngoing = false);
     }
 
     private void onError(Throwable throwable) {
