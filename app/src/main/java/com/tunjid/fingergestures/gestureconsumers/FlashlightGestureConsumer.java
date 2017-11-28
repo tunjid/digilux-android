@@ -2,7 +2,6 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
 import android.hardware.camera2.CameraManager;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -59,7 +58,7 @@ public class FlashlightGestureConsumer implements GestureConsumer {
             public void onTorchModeChanged(@NonNull String cameraId, boolean enabled) {
                 isTorchOn = enabled;
             }
-        }, new Handler());
+        }, null);
 
         return true;
     }

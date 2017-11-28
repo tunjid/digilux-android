@@ -25,10 +25,13 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase.PurchasesResult;
 import com.tunjid.fingergestures.App;
 
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
 import io.reactivex.CompletableOnSubscribe;
 import io.reactivex.Single;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 
 import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
@@ -39,14 +42,16 @@ import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
  */
 public class BillingManager {
 
+    private static final int CONNECTION_TIMEOUT = 5;
     private boolean isServiceConnected;
 
     private BillingClient billingClient;
+    private CompositeDisposable disposables = new CompositeDisposable();
     private final Consumer<Throwable> errorHandler = throwable -> {};
 
     public BillingManager() {
         billingClient = BillingClient.newBuilder(App.getInstance()).setListener(PurchasesManager.getInstance()).build();
-        checkClient().subscribe(this::queryPurchases, errorHandler);
+        disposables.add(checkClient().subscribe(this::queryPurchases, errorHandler));
     }
 
     /**
@@ -63,21 +68,21 @@ public class BillingManager {
     }
 
     private void queryPurchases() {
-        checkClient().subscribe(() -> {
+        disposables.add(checkClient().subscribe(() -> {
             PurchasesResult result = billingClient.queryPurchases(SkuType.INAPP);
             if (billingClient == null || result.getResponseCode() != BillingResponse.OK) return;
 
             PurchasesManager purchasesManager = PurchasesManager.getInstance();
             purchasesManager.onPurchasesQueried(result.getResponseCode(), result.getPurchasesList());
-        }, errorHandler);
+        }, errorHandler));
     }
 
     @SuppressWarnings("unused")
     public void consumeAsync(final String purchaseToken) {
-        checkClient().subscribe(() -> billingClient.consumeAsync(purchaseToken, (a, b) -> {}), errorHandler);
+        disposables.add(checkClient().subscribe(() -> billingClient.consumeAsync(purchaseToken, (a, b) -> {}), errorHandler));
     }
 
-    private Completable checkClient() {return Completable.create(new BillingExecutor());}
+    private Completable checkClient() {return Completable.create(new BillingExecutor()).timeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS);}
 
     /**
      * Clear the resources
@@ -85,6 +90,7 @@ public class BillingManager {
     public void destroy() {
         if (billingClient != null) billingClient.endConnection();
         billingClient = null;
+        disposables.dispose();
     }
 
     private class BillingExecutor implements CompletableOnSubscribe {

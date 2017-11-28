@@ -34,6 +34,8 @@ import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
 import com.tunjid.fingergestures.billing.BillingManager;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
+import io.reactivex.disposables.CompositeDisposable;
+
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 import static com.android.billingclient.api.BillingClient.BillingResponse.ITEM_ALREADY_OWNED;
 import static com.android.billingclient.api.BillingClient.BillingResponse.OK;
@@ -59,6 +61,7 @@ public class HomeFragment extends FingerGestureFragment
     private View accessibility;
     private View settings;
     private RecyclerView recyclerView;
+    private CompositeDisposable disposables = new CompositeDisposable();
     @Nullable
     private BillingManager billingManager;
 
@@ -172,6 +175,7 @@ public class HomeFragment extends FingerGestureFragment
     public void onStop() {
         if (billingManager != null) billingManager.destroy();
         billingManager = null;
+        disposables.dispose();
         super.onStop();
     }
 
@@ -216,7 +220,7 @@ public class HomeFragment extends FingerGestureFragment
     @Override
     public void purchase(String sku) {
         if (billingManager == null) showSnackbar(R.string.billing_generic_error);
-        else billingManager.initiatePurchaseFlow(getActivity(), sku)
+        else disposables.add(billingManager.initiatePurchaseFlow(getActivity(), sku)
                 .subscribe(launchStatus -> {
                     switch (launchStatus) {
                         case OK:
@@ -232,7 +236,7 @@ public class HomeFragment extends FingerGestureFragment
                             showSnackbar(R.string.billing_generic_error);
                             break;
                     }
-                }, throwable -> showSnackbar(R.string.billing_generic_error));
+                }, throwable -> showSnackbar(R.string.billing_generic_error)));
     }
 
     @Override

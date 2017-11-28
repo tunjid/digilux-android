@@ -10,7 +10,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -78,7 +77,7 @@ public class FingerGestureService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         FingerprintGestureController gestureController = getFingerprintGestureController();
-        gestureController.registerFingerprintGestureCallback(GestureMapper.getInstance(), new Handler());
+        gestureController.registerFingerprintGestureCallback(GestureMapper.getInstance(), null);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_OFF);
