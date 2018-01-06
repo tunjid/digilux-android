@@ -3,7 +3,6 @@ package com.tunjid.fingergestures.viewholders;
 import android.support.annotation.StringRes;
 import android.view.View;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import com.tunjid.fingergestures.R;
 
@@ -17,8 +16,8 @@ public class ToggleViewHolder extends HomeViewHolder {
                             Supplier<Boolean> supplier,
                             Consumer<Boolean> consumer) {
         super(itemView);
-        itemView.<TextView>findViewById(R.id.title).setText(titleRes);
         Switch toggle = itemView.findViewById(R.id.toggle);
+        toggle.setText(titleRes);
         toggle.setChecked(supplier.get());
         toggle.setOnCheckedChangeListener((view, isChecked) -> consumer.accept(isChecked));
     }
