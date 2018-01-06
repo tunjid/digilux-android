@@ -60,6 +60,7 @@ public class FingerGestureService extends AccessibilityService {
                     break;
                 case ACTION_NOTIFICATION_UP:
                     Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                    closeIntent.setPackage(ANDROID_SYSTEM_UI_PACKAGE);
                     App.getInstance().sendBroadcast(closeIntent);
                     break;
                 case BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED:
