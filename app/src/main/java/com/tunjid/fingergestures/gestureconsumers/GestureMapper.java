@@ -269,13 +269,13 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         // Defaults
         switch (direction) {
             case UP_GESTURE:
-                return INCREASE_BRIGHTNESS;
+                return NOTIFICATION_UP;
             case DOWN_GESTURE:
-                return REDUCE_BRIGHTNESS;
+                return NOTIFICATION_DOWN;
             case LEFT_GESTURE:
-                return MINIMIZE_BRIGHTNESS;
+                return REDUCE_BRIGHTNESS;
             case RIGHT_GESTURE:
-                return MAXIMIZE_BRIGHTNESS;
+                return INCREASE_BRIGHTNESS;
             default:
                 return DO_NOTHING;
         }
