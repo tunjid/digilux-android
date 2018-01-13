@@ -88,7 +88,8 @@ public class BillingManager {
      * Clear the resources
      */
     public void destroy() {
-        if (billingClient != null) billingClient.endConnection();
+        try {if (billingClient != null) billingClient.endConnection();}
+        catch (Exception e) {e.printStackTrace();}
         billingClient = null;
         disposables.dispose();
     }

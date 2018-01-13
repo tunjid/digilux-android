@@ -51,8 +51,8 @@ public class FingerGestureService extends AccessibilityService {
             String action = intent.getAction();
             if (action == null) return;
             switch (action) {
-                case Intent.ACTION_SCREEN_OFF:
-                    BrightnessGestureConsumer.getInstance().onScreenTurnedOff();
+                case Intent.ACTION_SCREEN_ON:
+                    BrightnessGestureConsumer.getInstance().onScreenTurnedOn();
                     break;
                 case ACTION_NOTIFICATION_DOWN:
                     if (notificationsShowing()) expandQuickSettings();
@@ -81,8 +81,8 @@ public class FingerGestureService extends AccessibilityService {
         gestureController.registerFingerprintGestureCallback(GestureMapper.getInstance(), null);
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(ACTION_NOTIFICATION_DOWN);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(ACTION_NOTIFICATION_UP);
         filter.addAction(ACTION_TOGGLE_DOCK);
         filter.addAction(BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED);
