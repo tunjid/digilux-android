@@ -294,6 +294,12 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return app.getPreferences().getBoolean(ADAPTIVE_BRIGHTNESS, false);
     }
 
+    public boolean supportsAmbientThreshold() {
+        return !PurchasesManager.getInstance().isNotPremium()
+                && restoresAdaptiveBrightnessOnDisplaySleep()
+                && hasBrightnessSensor();
+    }
+
     public boolean hasOverlayPermission() {
         return Settings.canDrawOverlays(app);
     }
@@ -319,6 +325,9 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public String getAdaptiveBrightnessThresholdText(@IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT) int percent) {
+        if (!hasBrightnessSensor())
+            return app.getString(R.string.unavailable_brightness_sensor);
+
         if (PurchasesManager.getInstance().isNotPremium())
             return app.getString(R.string.go_premium_text);
 
@@ -371,5 +380,13 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         BigDecimal bd = new BigDecimal(Float.toString(d));
         bd = bd.setScale(2, BigDecimal.ROUND_HALF_DOWN);
         return bd.floatValue();
+    }
+
+    private boolean hasBrightnessSensor() {
+        SensorManager sensorManager = (SensorManager) app.getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager == null) return false;
+
+        final Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        return lightSensor != null;
     }
 }

@@ -102,7 +102,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         R.string.adjust_adaptive_threshold,
                         brightnessGestureConsumer::setAdaptiveBrightnessThreshold,
                         brightnessGestureConsumer::getAdaptiveBrightnessThreshold,
-                        () -> !PurchasesManager.getInstance().isNotPremium() && brightnessGestureConsumer.restoresAdaptiveBrightnessOnDisplaySleep(),
+                        brightnessGestureConsumer::supportsAmbientThreshold,
                         brightnessGestureConsumer::getAdaptiveBrightnessThresholdText);
             case DOUBLE_SWIPE_SETTINGS:
                 GestureMapper mapper = GestureMapper.getInstance();

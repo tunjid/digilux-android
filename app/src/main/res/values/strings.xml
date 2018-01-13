@@ -56,6 +56,7 @@
     <string name="adaptive_brightness">Restore adaptive brightness when the screen is turned off and on</string>
     <string name="adjust_adaptive_threshold">Adjust Adaptive Brightness Restoration Threshold</string>
     <string name="adjust_adaptive_threshold_prompt">Please enable the adaptive brightness setting to use this feature</string>
+    <string name="unavailable_brightness_sensor">Your device does not appear to have an ambient light sensor</string>
     <string name="adaptive_threshold">%1$d lux\n\n%2$s</string>
     <string name="adaptive_threshold_low">Dark, night sky - Bedside and dinner lights</string>
     <string name="adaptive_threshold_medium">Family living room lights - Overcast day</string>
