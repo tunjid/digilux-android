@@ -33,16 +33,17 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
     private static final int SLIDER_DURATION = 2;
     private static final int SLIDER_COLOR = 3;
     private static final int SCREEN_DIMMER = 4;
-    private static final int ADAPTIVE_BRIGHTNESS = 5;
-    private static final int SHOW_SLIDER = 6;
-    private static final int DOUBLE_SWIPE_SETTINGS = 7;
-    private static final int MAP_UP_ICON = 8;
-    private static final int MAP_DOWN_ICON = 9;
-    private static final int MAP_LEFT_ICON = 10;
-    private static final int MAP_RIGHT_ICON = 11;
-    private static final int AD_FREE = 12;
-    private static final int REVIEW = 13;
-    private static final int NUM_ITEMS = 14;
+    private static final int SHOW_SLIDER = 5;
+    private static final int ADAPTIVE_BRIGHTNESS = 6;
+    private static final int ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS = 7;
+    private static final int DOUBLE_SWIPE_SETTINGS = 8;
+    private static final int MAP_UP_ICON = 9;
+    private static final int MAP_DOWN_ICON = 10;
+    private static final int MAP_LEFT_ICON = 11;
+    private static final int MAP_RIGHT_ICON = 12;
+    private static final int AD_FREE = 13;
+    private static final int REVIEW = 14;
+    private static final int NUM_ITEMS = 15;
 
     public HomeAdapter(HomeAdapterListener listener) {
         super(listener);
@@ -86,12 +87,24 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.adaptive_brightness,
                         brightnessGestureConsumer::restoresAdaptiveBrightnessOnDisplaySleep,
-                        brightnessGestureConsumer::shouldRestoreAdaptiveBrightnessOnDisplaySleep);
+                        (flag) -> {
+                            brightnessGestureConsumer.shouldRestoreAdaptiveBrightnessOnDisplaySleep(flag);
+                            notifyItemChanged(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS);
+                        });
             case SHOW_SLIDER:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.show_slider,
                         brightnessGestureConsumer::shouldShowSlider,
                         brightnessGestureConsumer::setSliderVisible);
+            case ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS:
+                return new SliderAdjusterViewHolder(
+                        getView(R.layout.viewholder_slider_delta, parent),
+                        R.string.adjust_adaptive_threshold,
+                        R.string.adjust_adaptive_threshold_description,
+                        brightnessGestureConsumer::setAdaptiveBrightnessThreshold,
+                        brightnessGestureConsumer::getAdaptiveBrightnessThreshold,
+                        brightnessGestureConsumer::supportsAmbientThreshold,
+                        brightnessGestureConsumer::getAdaptiveBrightnessThresholdText);
             case DOUBLE_SWIPE_SETTINGS:
                 GestureMapper mapper = GestureMapper.getInstance();
                 return new SliderAdjusterViewHolder(
