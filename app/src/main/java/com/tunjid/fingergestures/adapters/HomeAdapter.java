@@ -100,6 +100,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_adaptive_threshold,
+                        R.string.adjust_adaptive_threshold_description,
                         brightnessGestureConsumer::setAdaptiveBrightnessThreshold,
                         brightnessGestureConsumer::getAdaptiveBrightnessThreshold,
                         brightnessGestureConsumer::supportsAmbientThreshold,

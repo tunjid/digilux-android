@@ -1,6 +1,7 @@
 package com.tunjid.fingergestures.viewholders;
 
 import android.support.annotation.StringRes;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -23,6 +24,7 @@ public class SliderAdjusterViewHolder extends HomeViewHolder
 
     public SliderAdjusterViewHolder(View itemView,
                                     @StringRes int titleRes,
+                                    @StringRes int infoRes,
                                     Consumer<Integer> consumer,
                                     Supplier<Integer> valueSupplier,
                                     Supplier<Boolean> enabledSupplier,
@@ -35,11 +37,28 @@ public class SliderAdjusterViewHolder extends HomeViewHolder
 
         value = itemView.findViewById(R.id.value);
 
-        itemView.<TextView>findViewById(R.id.title).setText(titleRes);
+        TextView title = itemView.findViewById(R.id.title);
+        title.setText(titleRes);
 
         seekBar = itemView.findViewById(R.id.seekbar);
         seekBar.setProgress(valueSupplier.get());
         seekBar.setOnSeekBarChangeListener(this);
+
+        if (infoRes != 0) {
+            title.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_info_outline_white_24dp, 0);
+            itemView.setOnClickListener(v -> new AlertDialog.Builder(itemView.getContext())
+                    .setMessage(infoRes)
+                    .show());
+        }
+    }
+
+    public SliderAdjusterViewHolder(View itemView,
+                                    @StringRes int titleRes,
+                                    Consumer<Integer> consumer,
+                                    Supplier<Integer> valueSupplier,
+                                    Supplier<Boolean> enabledSupplier,
+                                    Function<Integer, String> function) {
+        this(itemView, titleRes, 0, consumer, valueSupplier, enabledSupplier, function);
     }
 
     @Override
