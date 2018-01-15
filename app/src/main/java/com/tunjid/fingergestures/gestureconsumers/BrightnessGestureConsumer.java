@@ -147,9 +147,11 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
         final int threshold = adaptiveThresholdToLux(getAdaptiveBrightnessThreshold());
         final boolean restoresAdaptiveBrightness = restoresAdaptiveBrightnessOnDisplaySleep();
-        final boolean returnImmediately = restoresAdaptiveBrightness && PurchasesManager.getInstance().isNotPremium();
+        final boolean toggleAndLeave = restoresAdaptiveBrightness && PurchasesManager.getInstance().isNotPremium();
 
-        if (threshold == 0 || returnImmediately) {
+        if (!restoresAdaptiveBrightness) return;
+
+        if (threshold == 0 || toggleAndLeave) {
             toggleAdaptiveBrightness(true);
             return;
         }
