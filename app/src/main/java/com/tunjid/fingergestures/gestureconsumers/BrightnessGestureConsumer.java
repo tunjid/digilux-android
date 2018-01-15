@@ -145,7 +145,11 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     public void onScreenTurnedOn() {
         if (!App.canWriteToSettings()) return;
 
-        if (restoresAdaptiveBrightnessOnDisplaySleep() && PurchasesManager.getInstance().isNotPremium()) {
+        final int threshold = adaptiveThresholdToLux(getAdaptiveBrightnessThreshold());
+        final boolean restoresAdaptiveBrightness = restoresAdaptiveBrightnessOnDisplaySleep();
+        final boolean returnImmediately = restoresAdaptiveBrightness && PurchasesManager.getInstance().isNotPremium();
+
+        if (threshold == 0 || returnImmediately) {
             toggleAdaptiveBrightness(true);
             return;
         }
@@ -160,14 +164,12 @@ public class BrightnessGestureConsumer implements GestureConsumer {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 sensorManager.unregisterListener(this, lightSensor);
-                boolean restoresAdaptiveBrightness = restoresAdaptiveBrightnessOnDisplaySleep();
 
                 if (!restoresAdaptiveBrightness) return;
 
                 float[] values = event.values;
                 float lux = values != null && values.length > 0 ? values[0] : -1;
-                int threshold = adaptiveThresholdToLux(getAdaptiveBrightnessThreshold());
-                boolean restoredBrightness = lux > threshold;
+                boolean restoredBrightness = lux >= threshold;
 
                 toggleAdaptiveBrightness(restoredBrightness);
                 if (restoredBrightness) removeDimmer();
