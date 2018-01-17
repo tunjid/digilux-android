@@ -52,6 +52,8 @@ public class MainActivity extends FingerGestureActivity {
 
     private static final int SETTINGS_CODE = 200;
     private static final int ACCESSIBILITY_CODE = 300;
+    private static final int WALLPAPER_PICK_CODE = 400;
+
     private static final String RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava";
     private static final String COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker";
     private static final String ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap";
@@ -67,9 +69,9 @@ public class MainActivity extends FingerGestureActivity {
     private ConstraintLayout constraintLayout;
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW};
-    private final int[] SLIDER_ITEMS = {PADDING, SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
+    private final int[] SLIDER_ITEMS = {PADDING, SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SCREEN_DIMMER,
             SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
-    private final int[] WALLPAPER_ITEMS = {PADDING, WALLPAPER_PICKER};
+    private final int[] WALLPAPER_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER};
 
     {
         Context context = App.getInstance();

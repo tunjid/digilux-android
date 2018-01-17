@@ -141,8 +141,9 @@
     <string name="get_set_icon">Getseticons</string>
 
     <!-- Bottom Navigation-->
-    <string name="direction">Directions</string>
-    <string name="wallpaper">Wallpaper</string>
+    <string name="gestures">Gestures</string>
+    <string name="adjustments">Adjustments</string>
+    <string name="appearance">Appearance</string>
 
     <!-- Generic text-->
     <string name="ok">Okay</string>
