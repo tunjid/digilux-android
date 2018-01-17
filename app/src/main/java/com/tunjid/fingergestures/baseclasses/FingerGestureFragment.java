@@ -3,7 +3,6 @@ package com.tunjid.fingergestures.baseclasses;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 
@@ -14,7 +13,6 @@ public abstract class FingerGestureFragment extends BaseFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         toggleFab(showsFab());
     }
 
@@ -22,8 +20,12 @@ public abstract class FingerGestureFragment extends BaseFragment {
         ((FingerGestureActivity) getActivity()).toggleFab(visible);
     }
 
-    protected void showSnackbar(@StringRes int resource) {
-        ((FingerGestureActivity) getActivity()).showSnackbar(resource);
+    protected void toggleToolbar(boolean visible) {
+        ((FingerGestureActivity) getActivity()).toggleToolbar(visible);
+    }
+
+    public void purchase(String sku) {
+        ((FingerGestureActivity) getActivity()).purchase(sku);
     }
 
     protected FloatingActionButton getFab() {

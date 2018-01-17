@@ -8,15 +8,15 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.adapters.HomeAdapter;
+import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
-public class AdFreeViewHolder extends HomeViewHolder {
+public class AdFreeViewHolder extends AppViewHolder {
 
     private final PurchasesManager purchasesManager;
     private final TextView title;
 
-    public AdFreeViewHolder(View itemView, HomeAdapter.HomeAdapterListener listener) {
+    public AdFreeViewHolder(View itemView, AppAdapter.HomeAdapterListener listener) {
         super(itemView, listener);
         purchasesManager = PurchasesManager.getInstance();
         title = itemView.findViewById(R.id.title);

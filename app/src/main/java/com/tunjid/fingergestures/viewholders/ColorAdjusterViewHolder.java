@@ -16,14 +16,14 @@ import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.adapters.HomeAdapter;
+import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
 import java.util.function.Consumer;
 
 import static com.flask.colorpicker.ColorPickerView.WHEEL_TYPE.FLOWER;
 
-public class ColorAdjusterViewHolder extends HomeViewHolder {
+public class ColorAdjusterViewHolder extends AppViewHolder {
 
     private static final int COLOR_WHEEL_DENSITY = 12;
 
@@ -33,7 +33,7 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
     private final CharSequence[] targetOptions;
     private final BrightnessGestureConsumer brightnessGestureConsumer;
 
-    public ColorAdjusterViewHolder(View itemView, HomeAdapter.HomeAdapterListener listener) {
+    public ColorAdjusterViewHolder(View itemView, AppAdapter.HomeAdapterListener listener) {
         super(itemView, listener);
 
         Context context = itemView.getContext();

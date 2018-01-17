@@ -8,26 +8,29 @@
     android:background="@color/colorBackground"
     tools:context="com.tunjid.fingergestures.activities.MainActivity">
 
-    <include
-        layout="@layout/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize" />
-
     <android.support.constraint.ConstraintLayout
         android:id="@+id/constraint_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="?android:attr/actionBarSize"
         app:layout_behavior="com.tunjid.fingergestures.behaviors.SnackBarBehavior">
 
         <FrameLayout
             android:id="@+id/main_fragment_container"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@+id/adView"
+            app:layout_constraintBottom_toTopOf="@+id/permissions_layout"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <include
+            android:id="@+id/permissions_layout"
+            layout="@layout/permissions_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/adView"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
 
         <TextView
             android:layout_width="0dp"
@@ -45,10 +48,28 @@
             android:layout_height="wrap_content"
             app:adSize="BANNER"
             app:adUnitId="@string/ad_unit_id"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
+
+        <android.support.design.widget.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            app:elevation="@dimen/half_margin"
+            app:itemIconTint="@color/toggle_text"
+            app:itemTextColor="@color/toggle_text"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:menu="@menu/main_navigation" />
     </android.support.constraint.ConstraintLayout>
+
+    <include
+        layout="@layout/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

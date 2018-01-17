@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 import com.tunjid.androidbootstrap.core.text.SpanBuilder;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.adapters.HomeAdapter;
+import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
@@ -18,14 +18,14 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GEST
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
 
-public class MapperViewHolder extends HomeViewHolder {
+public class MapperViewHolder extends AppViewHolder {
 
     @GestureDirection
     private final String doubleDirection;
     private final TextView subtitle;
 
     public MapperViewHolder(View itemView, @GestureDirection String direction,
-                            HomeAdapter.HomeAdapterListener listener) {
+                            AppAdapter.HomeAdapterListener listener) {
         super(itemView, listener);
         GestureMapper mapper = GestureMapper.getInstance();
 

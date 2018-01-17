@@ -6,13 +6,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.adapters.HomeAdapter;
+import com.tunjid.fingergestures.adapters.AppAdapter;
 
-public class ReviewViewHolder extends HomeViewHolder {
+public class ReviewViewHolder extends AppViewHolder {
 
     private static final String APP_URI = "market://details?id=com.tunjid.fingergestures";
 
-    public ReviewViewHolder(View itemView, HomeAdapter.HomeAdapterListener listener) {
+    public ReviewViewHolder(View itemView, AppAdapter.HomeAdapterListener listener) {
         super(itemView, listener);
         TextView title = itemView.findViewById(R.id.title);
 

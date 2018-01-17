@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class SliderAdjusterViewHolder extends HomeViewHolder
+public class SliderAdjusterViewHolder extends AppViewHolder
         implements SeekBar.OnSeekBarChangeListener {
 
     private final TextView value;

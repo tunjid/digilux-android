@@ -140,6 +140,10 @@
     <string name="android_bootstrap">Android Bootstrap</string>
     <string name="get_set_icon">Getseticons</string>
 
+    <!-- Bottom Navigation-->
+    <string name="direction">Directions</string>
+    <string name="wallpaper">Wallpaper</string>
+
     <!-- Generic text-->
     <string name="ok">Okay</string>
     <string name="cancel">Cancel</string>
