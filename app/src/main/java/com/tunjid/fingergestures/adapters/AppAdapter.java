@@ -145,7 +145,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             case REVIEW:
                 return new ReviewViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
             case WALLPAPER_PICKER:
-                return new WallpaperViewHolder(getView(R.layout.viewholder_wallpaper_choice, parent), adapterListener);
+                return new WallpaperViewHolder(getView(R.layout.viewholder_wallpaper_pick, parent), adapterListener);
             default:
                 return new AppViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }
