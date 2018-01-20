@@ -25,7 +25,7 @@ public class MapperViewHolder extends AppViewHolder {
     private final TextView subtitle;
 
     public MapperViewHolder(View itemView, @GestureDirection String direction,
-                            AppAdapter.HomeAdapterListener listener) {
+                            AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
         GestureMapper mapper = GestureMapper.getInstance();
 

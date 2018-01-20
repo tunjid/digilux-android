@@ -1,31 +1,68 @@
 package com.tunjid.fingergestures.viewholders;
 
 import android.app.WallpaperManager;
+import android.content.Context;
+import android.support.constraint.ConstraintLayout;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.Picasso;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.WallpaperUtils;
+import com.tunjid.fingergestures.adapters.AppAdapter;
+
+import java.io.File;
 
 public class WallpaperViewHolder extends AppViewHolder {
 
-   private ImageView main;
-   private ImageView alt;
+    private ImageView current;
+    private ImageView main;
+    private ImageView alt;
 
-    public WallpaperViewHolder(View itemView) {
-        super(itemView);
+    public WallpaperViewHolder(View itemView, AppAdapter.AppAdapterListener appAdapterListener) {
+        super(itemView, appAdapterListener);
+        current = itemView.findViewById(R.id.current_wallpaper);
         main = itemView.findViewById(R.id.main_wallpaper);
         alt = itemView.findViewById(R.id.alt_wallpaper);
+
+        main.setOnClickListener(view -> adapterListener.pickWallpaper(WallpaperUtils.MAIN_WALLPAPER_PICK_CODE));
+        alt.setOnClickListener(view -> adapterListener.pickWallpaper(WallpaperUtils.ALT_WALLPAPER_PICK_CODE));
+
+        setAspectRatio(current);
+        setAspectRatio(main);
+        setAspectRatio(alt);
     }
 
     @Override
     public void bind() {
         super.bind();
+        Context context = itemView.getContext();
 
-        WallpaperManager wallpaperManager = itemView.getContext().getSystemService(WallpaperManager.class);
+        WallpaperManager wallpaperManager = context.getSystemService(WallpaperManager.class);
         if (wallpaperManager == null) return;
 
-        main.setImageDrawable(wallpaperManager.getDrawable());
+        current.setImageDrawable(wallpaperManager.getDrawable());
         wallpaperManager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM);
         wallpaperManager.getWallpaperInfo();
+
+        loadImage(WallpaperUtils.MAIN_WALLPAPER_PICK_CODE, main);
+        loadImage(WallpaperUtils.ALT_WALLPAPER_PICK_CODE, alt);
+    }
+
+    private void setAspectRatio(ImageView imageView) {
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) imageView.getLayoutParams();
+        params.dimensionRatio = WallpaperUtils.getScreenDimensionRatio();
+    }
+
+    private void loadImage(@WallpaperUtils.WallpaperSelection int selection, ImageView imageView) {
+        File file = WallpaperUtils.getWallpaperFile(selection);
+        if (!file.exists()) return;
+
+        Picasso.with(itemView.getContext()).load(file)
+                .memoryPolicy(MemoryPolicy.NO_CACHE)
+                .fit()
+                .centerCrop()
+                .into(imageView);
     }
 }

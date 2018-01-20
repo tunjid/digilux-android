@@ -10,13 +10,13 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
-public class AppViewHolder extends BaseViewHolder<AppAdapter.HomeAdapterListener> {
+public class AppViewHolder extends BaseViewHolder<AppAdapter.AppAdapterListener> {
 
     public AppViewHolder(View itemView) {
         super(itemView);
     }
 
-    AppViewHolder(View itemView, AppAdapter.HomeAdapterListener listener) {
+    AppViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
     }
 

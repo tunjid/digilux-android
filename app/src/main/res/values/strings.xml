@@ -93,6 +93,12 @@
     <!-- Review Viewholder-->
     <string name="review_app">Leave a review</string>
 
+    <!-- Wallpaper Viewholder-->
+    <string name="alternate_wallpaper">Alternate Wallpaper</string>
+    <string name="current_wallpaper">Current</string>
+    <string name="main_wallpaper">Main</string>
+    <string name="dark_wallpaper">Dark</string>
+
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>
     <string name="swipe_up">Swipe up</string>

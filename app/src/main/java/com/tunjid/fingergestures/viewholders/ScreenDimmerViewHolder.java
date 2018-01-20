@@ -19,7 +19,7 @@ public class ScreenDimmerViewHolder extends AppViewHolder {
     private final PurchasesManager purchasesManager;
     private final BrightnessGestureConsumer brightnessGestureConsumer;
 
-    public ScreenDimmerViewHolder(View itemView, AppAdapter.HomeAdapterListener listener) {
+    public ScreenDimmerViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
         purchasesManager = PurchasesManager.getInstance();
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();

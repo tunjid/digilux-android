@@ -33,7 +33,7 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
     private final CharSequence[] targetOptions;
     private final BrightnessGestureConsumer brightnessGestureConsumer;
 
-    public ColorAdjusterViewHolder(View itemView, AppAdapter.HomeAdapterListener listener) {
+    public ColorAdjusterViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
 
         Context context = itemView.getContext();

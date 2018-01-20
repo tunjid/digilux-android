@@ -52,7 +52,6 @@ public class MainActivity extends FingerGestureActivity {
 
     private static final int SETTINGS_CODE = 200;
     private static final int ACCESSIBILITY_CODE = 300;
-    private static final int WALLPAPER_PICK_CODE = 400;
 
     private static final String RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava";
     private static final String COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker";

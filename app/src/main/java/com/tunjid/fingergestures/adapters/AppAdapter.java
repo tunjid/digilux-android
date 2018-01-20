@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.WallpaperUtils;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
@@ -30,7 +31,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GES
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
 
 
-public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapter.HomeAdapterListener> {
+public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
 
     public static final int PADDING = -1;
     public static final int SLIDER_DELTA = 0;
@@ -59,7 +60,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
 
     private final int[] items;
 
-    public AppAdapter(int[] items, HomeAdapterListener listener) {
+    public AppAdapter(int[] items, AppAdapterListener listener) {
         super(listener);
         this.items = items;
     }
@@ -144,7 +145,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             case REVIEW:
                 return new ReviewViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
             case WALLPAPER_PICKER:
-                return new WallpaperViewHolder(getView(R.layout.viewholder_wallpaper_choice, parent));
+                return new WallpaperViewHolder(getView(R.layout.viewholder_wallpaper_choice, parent), adapterListener);
             default:
                 return new AppViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }
@@ -159,8 +160,10 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     @Override
     public int getItemViewType(int position) {return items[position];}
 
-    public interface HomeAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
+    public interface AppAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
         void purchase(String sku);
+
+        void pickWallpaper(@WallpaperUtils.WallpaperSelection int selection);
     }
 
     private View getView(@LayoutRes int res, ViewGroup viewGroup) {

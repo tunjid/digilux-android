@@ -16,7 +16,7 @@ public class AdFreeViewHolder extends AppViewHolder {
     private final PurchasesManager purchasesManager;
     private final TextView title;
 
-    public AdFreeViewHolder(View itemView, AppAdapter.HomeAdapterListener listener) {
+    public AdFreeViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
         purchasesManager = PurchasesManager.getInstance();
         title = itemView.findViewById(R.id.title);

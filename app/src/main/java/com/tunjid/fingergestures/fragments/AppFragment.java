@@ -2,7 +2,11 @@ package com.tunjid.fingergestures.fragments;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -14,21 +18,26 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.theartofdev.edmodo.cropper.CropImage;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.WallpaperUtils;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
 
+import java.io.File;
 import java.util.Arrays;
 
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
 public class AppFragment extends FingerGestureFragment
         implements
-        AppAdapter.HomeAdapterListener {
+        AppAdapter.AppAdapterListener {
 
     private static final String ARGS_ITEM = "items";
+    private static final String IMAGE_SELECTION = "image/*";
 
     private int[] items;
     private RecyclerView recyclerView;
@@ -91,6 +100,32 @@ public class AppFragment extends FingerGestureFragment
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Activity activity = getActivity();
+        if (activity == null) return;
+
+        if (resultCode != Activity.RESULT_OK) {
+            Toast.makeText(activity, R.string.cancel, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (requestCode == WallpaperUtils.MAIN_WALLPAPER_PICK_CODE || requestCode == WallpaperUtils.ALT_WALLPAPER_PICK_CODE) {
+            int[] aspectRatio = WallpaperUtils.getScreenAspectRatio();
+            File file = WallpaperUtils.getWallpaperFile(requestCode);
+            Uri uri = Uri.fromFile(file);
+            CropImage.activity(data.getData())
+                    .setOutputUri(uri)
+                    .setFixAspectRatio(true)
+                    .setAspectRatio(aspectRatio[0], aspectRatio[1])
+                    .setMinCropWindowSize(100, 100)
+                    .setOutputCompressFormat(Bitmap.CompressFormat.PNG)
+                    .start(activity, this);
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         recyclerView = null;
@@ -99,6 +134,14 @@ public class AppFragment extends FingerGestureFragment
     @Override
     protected boolean showsFab() {
         return false;
+    }
+
+    @Override
+    public void pickWallpaper(@WallpaperUtils.WallpaperSelection int selection) {
+        Intent intent = new Intent();
+        intent.setType(IMAGE_SELECTION);
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, ""), selection);
     }
 
     @Nullable
