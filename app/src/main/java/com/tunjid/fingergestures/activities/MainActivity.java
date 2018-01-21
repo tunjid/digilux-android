@@ -57,6 +57,7 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_DELTA;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_DURATION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_POSITION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_PICKER;
+import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_TRIGGER;
 
 public class MainActivity extends FingerGestureActivity {
 
@@ -82,7 +83,7 @@ public class MainActivity extends FingerGestureActivity {
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW};
-    private final int[] WALLPAPER_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER};
+    private final int[] WALLPAPER_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER};
     private final int[] SLIDER_ITEMS = {PADDING, SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SCREEN_DIMMER,
             SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
 

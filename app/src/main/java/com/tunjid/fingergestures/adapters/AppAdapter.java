@@ -21,6 +21,7 @@ import com.tunjid.fingergestures.viewholders.ReviewViewHolder;
 import com.tunjid.fingergestures.viewholders.ScreenDimmerViewHolder;
 import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.ToggleViewHolder;
+import com.tunjid.fingergestures.viewholders.WallpaperTriggerViewHolder;
 import com.tunjid.fingergestures.viewholders.WallpaperViewHolder;
 
 import java.util.Arrays;
@@ -51,6 +52,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int AD_FREE = 13;
     public static final int REVIEW = 14;
     public static final int WALLPAPER_PICKER = 15;
+    public static final int WALLPAPER_TRIGGER = 16;
 
 
 //    @Retention(RetentionPolicy.SOURCE)
@@ -147,6 +149,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                 return new ReviewViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
             case WALLPAPER_PICKER:
                 return new WallpaperViewHolder(getView(R.layout.viewholder_wallpaper_pick, parent), adapterListener);
+            case WALLPAPER_TRIGGER:
+                return new WallpaperTriggerViewHolder(getView(R.layout.viewholder_wallpaper_trigger, parent), adapterListener);
             default:
                 return new AppViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }

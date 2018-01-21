@@ -7,28 +7,41 @@
     android:padding="@dimen/single_margin">
 
     <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/single_margin"
+        android:text="@string/wallpaper_trigger"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
         android:id="@+id/start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/single_margin"
         android:layout_marginTop="@dimen/single_margin"
+        android:text="@string/light_time"
         android:textColor="@color/toggle_text"
-        app:layout_constraintLeft_toRightOf="@+id/to"
-        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintLeft_toRightOf="@+id/to"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <TextView
         android:id="@+id/to"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/single_margin"
         android:layout_marginTop="@dimen/single_margin"
+        android:gravity="center"
+        android:text="@string/to"
         android:textColor="@color/toggle_text"
-        app:layout_constraintLeft_toRightOf="@+id/start"
         app:layout_constraintBottom_toBottomOf="@+id/start"
+        app:layout_constraintLeft_toRightOf="@+id/start"
         app:layout_constraintRight_toLeftOf="@+id/end"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/start" />
 
     <TextView
         android:id="@+id/end"
@@ -36,10 +49,12 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/single_margin"
         android:layout_marginTop="@dimen/single_margin"
+        android:text="@string/dark_time"
         android:textColor="@color/toggle_text"
+        app:layout_constraintBottom_toBottomOf="@+id/start"
         app:layout_constraintLeft_toRightOf="@+id/to"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/start" />
 </android.support.constraint.ConstraintLayout>
 
 

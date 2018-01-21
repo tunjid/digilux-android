@@ -101,6 +101,12 @@
     <string name="main_wallpaper">Main</string>
     <string name="dark_wallpaper">Dark</string>
 
+    <!-- Wallpaper Trigger Viewholder-->
+    <string name="wallpaper_trigger">Wallpaper Trigger</string>
+    <string name="light_time">Light: %1%s</string>
+    <string name="dark_time">Dark: %1$s</string>
+    <string name="to">to</string>
+
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>
     <string name="swipe_up">Swipe up</string>
