@@ -1,10 +1,14 @@
 package com.tunjid.fingergestures.activities;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.content.ContextCompat;
@@ -18,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -29,6 +34,11 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.AppFragment;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
@@ -50,27 +60,31 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_PICKER;
 
 public class MainActivity extends FingerGestureActivity {
 
-    private static final int SETTINGS_CODE = 200;
-    private static final int ACCESSIBILITY_CODE = 300;
+    public static final int STORAGE_CODE = 100;
+    public static final int SETTINGS_CODE = 200;
+    public static final int ACCESSIBILITY_CODE = 300;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({STORAGE_CODE, SETTINGS_CODE, ACCESSIBILITY_CODE})
+    public @interface PermissionRequest {}
 
     private static final String RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava";
     private static final String COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker";
     private static final String ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap";
     private static final String GET_SET_ICON_LINK = "http://www.myiconfinder.com/getseticons";
+    private static final String[] STORAGE_PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE};
 
-    private boolean fromSettings;
-    private boolean fromAccessibility;
-
-    private final TextLink[] links;
-    private View accessibility;
-    private View settings;
     private AdView adView;
+    private TextView permissionText;
     private ConstraintLayout constraintLayout;
 
+    private final TextLink[] links;
+    private final Deque<Integer> permissionsStack = new ArrayDeque<>();
+
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW};
+    private final int[] WALLPAPER_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER};
     private final int[] SLIDER_ITEMS = {PADDING, SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SCREEN_DIMMER,
             SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
-    private final int[] WALLPAPER_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER};
 
     {
         Context context = App.getInstance();
@@ -88,7 +102,7 @@ public class MainActivity extends FingerGestureActivity {
         Window window = getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.setStatusBarColor(ContextCompat.getColor(this,R.color.colorBackground));
+        window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorBackground));
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
@@ -100,11 +114,8 @@ public class MainActivity extends FingerGestureActivity {
         fabHider = ViewHider.of(fab).setDirection(ViewHider.BOTTOM).build();
         barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build();
 
-        accessibility = findViewById(R.id.accessibility_permissions);
-        settings = findViewById(R.id.settings_permissions);
-
-        accessibility.setOnClickListener(v -> startActivity(App.accessibilityIntent()));
-        settings.setOnClickListener(v -> startActivity(App.settingsIntent()));
+        permissionText = findViewById(R.id.permission_view);
+        permissionText.setOnClickListener(view -> onPermissionClicked());
 
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected);
         setSupportActionBar(toolbar);
@@ -115,15 +126,6 @@ public class MainActivity extends FingerGestureActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (!fromSettings && !App.canWriteToSettings()) askForSettings();
-        else if (!fromAccessibility && !App.isAccessibilityServiceEnabled()) askForAccessibility();
-
-        dismissPermissionsBar();
-
-        fromSettings = false;
-        fromAccessibility = false;
-
         adView.resume();
 
         AdRequest.Builder builder = new AdRequest.Builder();
@@ -186,57 +188,102 @@ public class MainActivity extends FingerGestureActivity {
         super.onDestroy();
         if (adView != null) adView.destroy();
         adView = null;
+        permissionsStack.clear();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        boolean shouldRemove = false;
         switch (requestCode) {
             case SETTINGS_CODE:
-                fromSettings = true;
-                showSnackbar(App.canWriteToSettings()
+                showSnackbar((shouldRemove = App.canWriteToSettings())
                         ? R.string.settings_permission_granted
                         : R.string.settings_permission_denied);
+
                 break;
             case ACCESSIBILITY_CODE:
-                fromAccessibility = true;
-                showSnackbar(App.isAccessibilityServiceEnabled()
+                showSnackbar((shouldRemove = App.accessibilityServiceEnabled())
                         ? R.string.accessibility_permission_granted
                         : R.string.accessibility_permission_denied);
                 break;
         }
+        if (shouldRemove) permissionsStack.remove(requestCode);
+        dismissPermissionsBar();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == STORAGE_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            permissionsStack.remove(requestCode);
+            dismissPermissionsBar();
+            AppFragment fragment = (AppFragment) getCurrentFragment();
+            if (fragment != null) fragment.refresh();
+        }
+    }
+
+    public void requestPermission(@PermissionRequest int permission) {
+        if (permissionsStack.contains(permission)) permissionsStack.remove(permission);
+        permissionsStack.push(permission);
+        onPermissionAdded();
+    }
+
+    private void askForStorage() {
+        showPermissionDialog(R.string.wallpaper_permission_request, () -> requestPermissions(STORAGE_PERMISSIONS, STORAGE_CODE));
     }
 
     private void askForSettings() {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.permission_required)
-                .setMessage(R.string.settings_permission_request)
-                .setPositiveButton(R.string.yes, (dialog, b) -> startActivityForResult(App.settingsIntent(), SETTINGS_CODE))
-                .setNegativeButton(R.string.no, (dialog, b) -> onPermissionDialogDismissed(settings))
-                .setOnCancelListener(dialog -> onPermissionDialogDismissed(settings))
-                .show();
+        showPermissionDialog(R.string.settings_permission_request, () -> startActivityForResult(App.settingsIntent(), SETTINGS_CODE));
     }
 
     private void askForAccessibility() {
+        showPermissionDialog(R.string.accessibility_permissions_request, () -> startActivityForResult(App.accessibilityIntent(), ACCESSIBILITY_CODE));
+    }
+
+    private void showPermissionDialog(@StringRes int stringRes, Runnable yesAction) {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.permission_required)
-                .setMessage(R.string.accessibility_permissions_request)
-                .setPositiveButton(R.string.yes, (dialog, b) -> startActivityForResult(App.accessibilityIntent(), ACCESSIBILITY_CODE))
-                .setNegativeButton(R.string.no, (dialog, b) -> onPermissionDialogDismissed(accessibility))
-                .setOnCancelListener(dialog -> onPermissionDialogDismissed(accessibility))
+                .setMessage(stringRes)
+                .setPositiveButton(R.string.yes, (dialog, b) -> yesAction.run())
+                .setNegativeButton(R.string.no, (dialog, b) -> dialog.dismiss())
                 .show();
     }
 
-    private void onPermissionDialogDismissed(View prompt) {
+    private void onPermissionAdded() {
+        if (permissionsStack.isEmpty()) return;
+        int permissionRequest = permissionsStack.peek();
+        int text = 0;
+
+        if (permissionRequest == ACCESSIBILITY_CODE) text = R.string.enable_accessibility;
+        else if (permissionRequest == SETTINGS_CODE) text = R.string.enable_write_settings;
+        else if (permissionRequest == STORAGE_CODE) text = R.string.enable_storage_settings;
+
+        if (text != 0) permissionText.setText(text);
         TransitionManager.beginDelayedTransition(constraintLayout, new AutoTransition());
-        prompt.setVisibility(View.VISIBLE);
+        permissionText.setVisibility(View.VISIBLE);
     }
 
     private void dismissPermissionsBar() {
+        if (!permissionsStack.isEmpty()) {
+            onPermissionAdded();
+            return;
+        }
         TransitionManager.beginDelayedTransition(constraintLayout, new AutoTransition());
-        accessibility.setVisibility(View.GONE);
-        settings.setVisibility(View.GONE);
+        permissionText.setVisibility(View.GONE);
+    }
+
+    private void onPermissionClicked() {
+        if (permissionsStack.isEmpty()) {
+            dismissPermissionsBar();
+            return;
+        }
+        int permissionRequest = permissionsStack.peek();
+
+        if (permissionRequest == ACCESSIBILITY_CODE) askForAccessibility();
+        else if (permissionRequest == SETTINGS_CODE) askForSettings();
+        else if (permissionRequest == STORAGE_CODE) askForStorage();
     }
 
     private void showLink(TextLink textLink) {

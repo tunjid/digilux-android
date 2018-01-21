@@ -12,6 +12,10 @@ import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
+import static com.tunjid.fingergestures.App.canWriteToSettings;
+import static com.tunjid.fingergestures.App.accessibilityServiceEnabled;
+import static com.tunjid.fingergestures.activities.MainActivity.ACCESSIBILITY_CODE;
+import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.GestureDirection;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
@@ -45,6 +49,10 @@ public class MapperViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
+
+        if (!accessibilityServiceEnabled()) adapterListener.requestPermission(ACCESSIBILITY_CODE);
+        if (!canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+
         GestureMapper mapper = GestureMapper.getInstance();
         subtitle.setOnClickListener(view -> {
             boolean notPremium = PurchasesManager.getInstance().isNotPremium();

@@ -12,9 +12,11 @@
 
     <string name="enable_accessibility">Enable Accessibility Settings</string>
     <string name="enable_write_settings">Enable Brightness Settings</string>
+    <string name="enable_storage_settings">Enable Storage Settings</string>
 
     <string name="accessibility_permissions_request">This app needs accessibility to listen for fingerprint gestures.\n\nGo to accessibility now?</string>
     <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.\n\nGo to settings now?</string>
+    <string name="wallpaper_permission_request">This app needs permission to read from storage to access wallpaper colors and change them.\n\nGo to settings now?</string>
 
     <string name="accessibility_permission_granted">Accessibility permission granted</string>
     <string name="settings_permission_granted">Settings permission granted</string>

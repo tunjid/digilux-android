@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import com.google.android.gms.ads.MobileAds;
@@ -17,6 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.disposables.Disposable;
 
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
 import static io.reactivex.Flowable.timer;
 
@@ -59,7 +62,11 @@ public class App extends android.app.Application {
         return Settings.System.canWrite(getInstance());
     }
 
-    public static boolean isAccessibilityServiceEnabled() {
+    public static boolean hasStoragePermission() {
+        return ContextCompat.checkSelfPermission(getInstance(), READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED;
+    }
+
+    public static boolean accessibilityServiceEnabled() {
         Context context = getInstance();
         ContentResolver contentResolver = context.getContentResolver();
         ComponentName expectedComponentName = new ComponentName(context, FingerGestureService.class);

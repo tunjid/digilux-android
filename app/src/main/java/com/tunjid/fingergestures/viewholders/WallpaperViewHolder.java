@@ -8,8 +8,10 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.WallpaperUtils;
+import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 
 import java.io.File;
@@ -37,15 +39,19 @@ public class WallpaperViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        Context context = itemView.getContext();
+        if (App.hasStoragePermission()) {
+            Context context = itemView.getContext();
 
-        WallpaperManager wallpaperManager = context.getSystemService(WallpaperManager.class);
-        if (wallpaperManager == null) return;
+            WallpaperManager wallpaperManager = context.getSystemService(WallpaperManager.class);
+            if (wallpaperManager == null) return;
 
-        current.setImageDrawable(wallpaperManager.getDrawable());
-        wallpaperManager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM);
-        wallpaperManager.getWallpaperInfo();
-
+            current.setImageDrawable(wallpaperManager.getDrawable());
+            wallpaperManager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM);
+            wallpaperManager.getWallpaperInfo();
+        }
+        else {
+            adapterListener.requestPermission(MainActivity.STORAGE_CODE);
+        }
         loadImage(WallpaperUtils.MAIN_WALLPAPER_PICK_CODE, main);
         loadImage(WallpaperUtils.ALT_WALLPAPER_PICK_CODE, alt);
     }

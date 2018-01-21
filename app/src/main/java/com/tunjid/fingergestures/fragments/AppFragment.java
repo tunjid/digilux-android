@@ -6,10 +6,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DividerItemDecoration;
@@ -25,14 +26,14 @@ import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.WallpaperUtils;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.baseclasses.FingerGestureFragment;
+import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 
 import java.io.File;
 import java.util.Arrays;
 
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
-public class AppFragment extends FingerGestureFragment
+public class AppFragment extends MainActivityFragment
         implements
         AppAdapter.AppAdapterListener {
 
@@ -52,11 +53,13 @@ public class AppFragment extends FingerGestureFragment
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public String getStableTag() {
         return Arrays.toString(getArguments().getIntArray(ARGS_ITEM));
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         items = getArguments().getIntArray(ARGS_ITEM);
@@ -64,11 +67,12 @@ public class AppFragment extends FingerGestureFragment
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_home, container, false);
-        Context context = getContext();
+        Context context = inflater.getContext();
         DividerItemDecoration itemDecoration = new DividerItemDecoration(context, VERTICAL);
-        itemDecoration.setDrawable(ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark));
+        Drawable decoration = ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark);
+        if (decoration != null) itemDecoration.setDrawable(decoration);
 
         recyclerView = root.findViewById(R.id.options_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -86,17 +90,14 @@ public class AppFragment extends FingerGestureFragment
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        FloatingActionButton fab = getFab();
-        fab.setImageResource(R.drawable.ic_settings_white_24dp);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        recyclerView.getAdapter().notifyDataSetChanged();
+        refresh();
     }
 
     @Override
@@ -147,9 +148,14 @@ public class AppFragment extends FingerGestureFragment
     @Nullable
     @Override
     @SuppressLint("CommitTransaction")
+    @SuppressWarnings("ConstantConditions")
     public FragmentTransaction provideFragmentTransaction(BaseFragment fragmentTo) {
         return getFragmentManager().beginTransaction()
                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
                         android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
+    public void refresh() {
+        if (recyclerView != null) recyclerView.getAdapter().notifyDataSetChanged();
     }
 }

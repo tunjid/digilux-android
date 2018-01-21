@@ -31,7 +31,7 @@ import static android.graphics.PorterDuff.Mode.SRC_IN;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.BRIGHTNESS_FRACTION;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
-import static com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder.tint;
+import static com.tunjid.fingergestures.WallpaperUtils.tint;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class BrightnessActivity extends AppCompatActivity
