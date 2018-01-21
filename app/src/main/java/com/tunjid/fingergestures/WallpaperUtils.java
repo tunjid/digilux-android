@@ -80,8 +80,8 @@ public class WallpaperUtils {
 
         if (isLiveWallpaper(wallpaperManager)) {
             List<Palette.Swatch> swatches = getLiveWallpaperWatches(wallpaperManager);
-            if (!swatches.isEmpty())
-                return fromCallable(() -> Palette.from(swatches)).subscribeOn(computation()).observeOn(mainThread());
+            if (!swatches.isEmpty()) return fromCallable(() -> Palette.from(swatches))
+                    .subscribeOn(computation()).observeOn(mainThread());
         }
 
         Drawable drawable = wallpaperManager.getDrawable();
@@ -109,6 +109,6 @@ public class WallpaperUtils {
     }
 
     private static boolean isLiveWallpaper(WallpaperManager wallpaperManager) {
-        return Build.VERSION.SDK_INT > Build.VERSION_CODES.O && wallpaperManager.getWallpaperInfo() != null;
+        return Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1 && wallpaperManager.getWallpaperInfo() != null;
     }
 }

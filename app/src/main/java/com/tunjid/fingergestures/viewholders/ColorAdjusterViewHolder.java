@@ -24,6 +24,7 @@ import static com.tunjid.fingergestures.App.hasStoragePermission;
 public class ColorAdjusterViewHolder extends AppViewHolder {
 
     private static final int COLOR_WHEEL_DENSITY = 12;
+    private static final int INVALID_COLOR = -1;
 
     private final View backgroundIndicator;
     private final View sliderIndicator;
@@ -72,7 +73,7 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
     public void bind() {
         super.bind();
         if (!hasStoragePermission()) adapterListener.requestPermission(MainActivity.STORAGE_CODE);
-        else WallpaperUtils.extractPalette().subscribe(this::onPaletterExtracted, error -> {});
+        else WallpaperUtils.extractPalette().subscribe(this::onPaletteExtracted, error -> {});
     }
 
     private void setBackgroundColor(int color) {
@@ -85,21 +86,24 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
         sliderIndicator.setBackground(WallpaperUtils.tint(R.drawable.color_indicator, color));
     }
 
-    private void onPaletterExtracted(Palette palette) {
+    private void onPaletteExtracted(Palette palette) {
         OnClickListener pickWallpaper = this::getColorFromWallpaper;
-        int defaultColor = brightnessGestureConsumer.getSliderColor();
         final int[] colors = {
-                palette.getDominantColor(defaultColor),
-                palette.getVibrantColor(defaultColor),
-                palette.getMutedColor(defaultColor),
-                palette.getDarkVibrantColor(defaultColor),
-                palette.getDarkMutedColor(defaultColor),
-                palette.getLightVibrantColor(defaultColor),
-                palette.getLightMutedColor(defaultColor)
+                palette.getDominantColor(INVALID_COLOR),
+                palette.getVibrantColor(INVALID_COLOR),
+                palette.getMutedColor(INVALID_COLOR),
+                palette.getDarkVibrantColor(INVALID_COLOR),
+                palette.getDarkMutedColor(INVALID_COLOR),
+                palette.getLightVibrantColor(INVALID_COLOR),
+                palette.getLightMutedColor(INVALID_COLOR)
         };
 
         for (int i = 0; i < wallpaperColorIndicators.length; i++) {
+            int color = colors[i];
             View indicator = wallpaperColorIndicators[i];
+            indicator.setVisibility(color == INVALID_COLOR ? View.GONE : View.VISIBLE);
+            if (color == INVALID_COLOR) continue;
+
             indicator.setTag(colors[i]);
             indicator.setBackground(WallpaperUtils.tint(R.drawable.color_indicator, colors[i]));
             indicator.setOnClickListener(pickWallpaper);
@@ -129,7 +133,10 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
         new AlertDialog.Builder(indicator.getContext())
                 .setTitle(R.string.choose_target)
                 .setItems(targetOptions, (dialog, position) -> {
-                    int color = (int) indicator.getTag();
+                    Object tag = indicator.getTag();
+                    if(tag == null || !(tag instanceof Integer))return;
+
+                    int color = (int) tag;
                     if (position == 0) setBackgroundColor(color);
                     else setSliderColor(color);
                 })

@@ -49,7 +49,7 @@
     <string name="edit_slider_appearance">Edit Slider Appearance</string>
     <string name="change_slider_background_color">Change slider background color</string>
     <string name="change_slider_color">Change slider color</string>
-    <string name="wallpaper_color">Colors from wallpaper (Incompatible with Live Wallpapers):</string>
+    <string name="wallpaper_color">Colors from wallpaper (Works with some Live Wallpapers):</string>
     <string name="slider">Slider</string>
     <string name="slider_background">Slider Background</string>
     <string name="premium_prompt_slider">Adds the immeasurable, earth shattering convenience of choosing your slider color based on the colors in your static wallpaper.</string>
