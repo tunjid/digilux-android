@@ -3,7 +3,6 @@ package com.tunjid.fingergestures.activities;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
@@ -40,6 +39,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
@@ -216,12 +216,13 @@ public class MainActivity extends FingerGestureActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == STORAGE_CODE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            permissionsStack.remove(requestCode);
-            dismissPermissionsBar();
-            AppFragment fragment = (AppFragment) getCurrentFragment();
-            if (fragment != null) fragment.refresh();
-        }
+        if (requestCode != STORAGE_CODE || grantResults.length == 0 || grantResults[0] != PERMISSION_GRANTED)
+            return;
+
+        permissionsStack.remove(requestCode);
+        dismissPermissionsBar();
+        AppFragment fragment = (AppFragment) getCurrentFragment();
+        if (fragment != null) fragment.refresh();
     }
 
     public void requestPermission(@PermissionRequest int permission) {
