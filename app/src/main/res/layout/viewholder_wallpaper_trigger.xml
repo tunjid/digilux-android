@@ -18,16 +18,18 @@
 
     <TextView
         android:id="@+id/start"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/single_margin"
         android:layout_marginTop="@dimen/single_margin"
         android:text="@string/light_time"
         android:textColor="@color/toggle_text"
-        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/to"
-        app:layout_constraintTop_toBottomOf="@+id/title" />
+        app:layout_constraintRight_toLeftOf="@+id/to"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintWidth_default="wrap" />
 
     <TextView
         android:id="@+id/to"
@@ -41,20 +43,23 @@
         app:layout_constraintBottom_toBottomOf="@+id/start"
         app:layout_constraintLeft_toRightOf="@+id/start"
         app:layout_constraintRight_toLeftOf="@+id/end"
-        app:layout_constraintTop_toTopOf="@+id/start" />
+        app:layout_constraintTop_toTopOf="@+id/start"
+        app:layout_constraintWidth_default="wrap" />
 
     <TextView
         android:id="@+id/end"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/single_margin"
         android:layout_marginTop="@dimen/single_margin"
         android:text="@string/dark_time"
         android:textColor="@color/toggle_text"
+        app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/start"
         app:layout_constraintLeft_toRightOf="@+id/to"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/start" />
+        app:layout_constraintTop_toTopOf="@+id/start"
+        app:layout_constraintWidth_default="wrap" />
 </android.support.constraint.ConstraintLayout>
 
 

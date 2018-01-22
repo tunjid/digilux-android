@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.WallpaperColors;
 import android.app.WallpaperManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -21,6 +22,7 @@ import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import io.reactivex.Single;
@@ -37,6 +39,10 @@ public class WallpaperUtils {
     private static final String ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager";
     private static final String ERROR_NO_DRAWABLE_FOUND = "No Drawable found";
     private static final String ERROR_NOT_A_BITMAP = "Not a Bitmap";
+    private static final String MAIN_WALLPAPER_HOUR = "main wallpaper hour";
+    private static final String MAIN_WALLPAPER_MINUTE = "main wallpaper minute";
+    private static final String ALT_WALLPAPER_HOUR = "alt wallpaper hour";
+    private static final String ALT_WALLPAPER_MINUTE = "alt wallpaper minute";
 
     public static final int MAIN_WALLPAPER_PICK_CODE = 0;
     public static final int ALT_WALLPAPER_PICK_CODE = 1;
@@ -92,6 +98,33 @@ public class WallpaperUtils {
         return fromCallable(() -> Palette.from(bitmap).generate()).subscribeOn(computation()).observeOn(mainThread());
     }
 
+    public static void setLightTme(@WallpaperSelection int selection, int hourOfDay, int minute) {
+        int hour = hourOfDay;
+        if (hourOfDay > 12 && selection == MAIN_WALLPAPER_PICK_CODE) hour -= 12;
+        if (hourOfDay < 12 && selection == ALT_WALLPAPER_PICK_CODE) hour += 12;
+
+        getPreferences().edit()
+                .putInt(selection == MAIN_WALLPAPER_PICK_CODE ? MAIN_WALLPAPER_HOUR : ALT_WALLPAPER_HOUR, hour)
+                .putInt(selection == MAIN_WALLPAPER_PICK_CODE ? MAIN_WALLPAPER_MINUTE : ALT_WALLPAPER_MINUTE, minute)
+                .apply();
+    }
+
+    public static Calendar getMainWallpaperCalendar(@WallpaperSelection int selection) {
+        SharedPreferences preferences = getPreferences();
+
+        int defHour = selection == MAIN_WALLPAPER_PICK_CODE ? 7 : 19;
+        int hour = preferences.getInt(selection == MAIN_WALLPAPER_PICK_CODE ? MAIN_WALLPAPER_HOUR : ALT_WALLPAPER_HOUR, defHour);
+        int minute = preferences.getInt(selection == MAIN_WALLPAPER_PICK_CODE ? MAIN_WALLPAPER_MINUTE : ALT_WALLPAPER_MINUTE, 0);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar;
+    }
+
     @TargetApi(Build.VERSION_CODES.O_MR1)
     private static List<Palette.Swatch> getLiveWallpaperWatches(WallpaperManager wallpaperManager) {
         WallpaperColors colors = wallpaperManager.getWallpaperColors(FLAG_SYSTEM);
@@ -110,5 +143,9 @@ public class WallpaperUtils {
 
     private static boolean isLiveWallpaper(WallpaperManager wallpaperManager) {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1 && wallpaperManager.getWallpaperInfo() != null;
+    }
+
+    private static SharedPreferences getPreferences() {
+        return App.getInstance().getPreferences();
     }
 }
