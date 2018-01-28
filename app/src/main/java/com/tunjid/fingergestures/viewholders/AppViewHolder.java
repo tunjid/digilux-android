@@ -7,16 +7,16 @@ import android.view.View;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseViewHolder;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.adapters.HomeAdapter;
+import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
-public class HomeViewHolder extends BaseViewHolder<HomeAdapter.HomeAdapterListener> {
+public class AppViewHolder extends BaseViewHolder<AppAdapter.AppAdapterListener> {
 
-    public HomeViewHolder(View itemView) {
+    public AppViewHolder(View itemView) {
         super(itemView);
     }
 
-    HomeViewHolder(View itemView, HomeAdapter.HomeAdapterListener listener) {
+    AppViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
     }
 

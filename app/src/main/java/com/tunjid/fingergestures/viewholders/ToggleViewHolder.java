@@ -9,7 +9,7 @@ import com.tunjid.fingergestures.R;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class ToggleViewHolder extends HomeViewHolder {
+public class ToggleViewHolder extends AppViewHolder {
 
     public ToggleViewHolder(View itemView,
                             @StringRes int titleRes,
