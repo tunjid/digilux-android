@@ -1,6 +1,8 @@
 package com.tunjid.fingergestures.viewholders;
 
 import android.app.TimePickerDialog;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.TextView;
@@ -55,6 +57,8 @@ public class WallpaperTriggerViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
+        start.setCompoundDrawablesWithIntrinsicBounds(null, getTopDrawable(DAY_WALLPAPER_PICK_CODE), null, null);
+        end.setCompoundDrawablesWithIntrinsicBounds(null, getTopDrawable(NIGHT_WALLPAPER_PICK_CODE), null, null);
         start.setText(getCalendarString(backgroundManager.getMainWallpaperCalendar(DAY_WALLPAPER_PICK_CODE)));
         end.setText(getCalendarString(backgroundManager.getMainWallpaperCalendar(NIGHT_WALLPAPER_PICK_CODE)));
         start.setTextColor(getTextColor(DAY_WALLPAPER_PICK_CODE));
@@ -73,5 +77,10 @@ public class WallpaperTriggerViewHolder extends AppViewHolder {
         return ContextCompat.getColor(itemView.getContext(), backgroundManager.willChangeWallpaper(selection)
                 ? R.color.toggle_text
                 : R.color.dark_grey);
+    }
+
+    private Drawable getTopDrawable(@BackgroundManager.WallpaperSelection int selection) {
+        @DrawableRes int drawableRes = selection == DAY_WALLPAPER_PICK_CODE ? R.drawable.ic_day_24dp : R.drawable.ic_night_24dp;
+        return backgroundManager.tint(drawableRes, getTextColor(selection));
     }
 }

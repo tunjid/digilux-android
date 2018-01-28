@@ -96,17 +96,18 @@
     <string name="review_app">Leave a review</string>
 
     <!-- Wallpaper Viewholder-->
-    <string name="alternate_wallpaper">Alternate Wallpaper</string>
+    <string name="alternate_wallpaper">Day and Night Wallpaper</string>
     <string name="current_wallpaper">Current</string>
     <string name="day_wallpaper">Day</string>
     <string name="night_wallpaper">Night</string>
+    <string name="reset">Reset</string>
     <string name="choose_edit_source">Choose Edit Source</string>
     <string name="cancel_wallpaper">Wallpaper pick cancelled</string>
     <string name="error_wallpaper">Sorry, there was an error picking the wallpaper</string>
     <string name="error_wallpaper_not_created">You haven\'t selected a wallpaper for this yet.</string>
 
     <!-- Wallpaper Trigger Viewholder-->
-    <string name="wallpaper_trigger">Wallpaper Trigger</string>
+    <string name="wallpaper_trigger">Wallpaper Change Time</string>
     <string name="light_time">Light: %1%s</string>
     <string name="dark_time">Dark: %1$s</string>
     <string name="to">to</string>
