@@ -28,7 +28,7 @@ public abstract class MainActivityFragment extends BaseFragment {
         if (activity != null) activity.toggleToolbar(visible);
     }
 
-    protected void showSnackbar(@StringRes int resource) {
+    public void showSnackbar(@StringRes int resource) {
         MainActivity activity = ((MainActivity) getActivity());
         if (activity != null) activity.showSnackbar(resource);
     }

@@ -74,6 +74,12 @@ public class WallpaperViewHolder extends AppViewHolder {
     private void requestEdit(@BackgroundManager.WallpaperSelection int selection) {
         Context context = itemView.getContext();
         File file = backgroundManager.getWallpaperFile(selection);
+
+        if (!file.exists()) {
+            adapterListener.showSnackbar(R.string.error_wallpaper_not_created);
+            return;
+        }
+
         Uri uri = FileProvider.getUriForFile(context, context.getPackageName() + ".com.tunjid.fingergestures.wallpaperprovider", file);
         Intent editIntent = new Intent(Intent.ACTION_EDIT);
 

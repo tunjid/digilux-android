@@ -103,6 +103,7 @@
     <string name="choose_edit_source">Choose Edit Source</string>
     <string name="cancel_wallpaper">Wallpaper pick cancelled</string>
     <string name="error_wallpaper">Sorry, there was an error picking the wallpaper</string>
+    <string name="error_wallpaper_not_created">You haven\'t selected a wallpaper for this yet.</string>
 
     <!-- Wallpaper Trigger Viewholder-->
     <string name="wallpaper_trigger">Wallpaper Trigger</string>

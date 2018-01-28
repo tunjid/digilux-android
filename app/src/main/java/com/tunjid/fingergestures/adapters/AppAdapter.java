@@ -2,6 +2,7 @@ package com.tunjid.fingergestures.adapters;
 
 import android.content.Context;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -171,6 +172,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
         void pickWallpaper(@BackgroundManager.WallpaperSelection int selection);
 
         void requestPermission(@MainActivity.PermissionRequest int permission);
+
+        void showSnackbar(@StringRes int message);
     }
 
     private View getView(@LayoutRes int res, ViewGroup viewGroup) {
