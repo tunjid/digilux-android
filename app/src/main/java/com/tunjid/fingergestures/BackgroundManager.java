@@ -47,16 +47,22 @@ public class BackgroundManager {
     private static final String ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager";
     private static final String ERROR_NO_DRAWABLE_FOUND = "No Drawable found";
     private static final String ERROR_NOT_A_BITMAP = "Not a Bitmap";
-    private static final String DAY_WALLPAPER_HOUR = "main wallpaper hour";
-    private static final String DAY_WALLPAPER_MINUTE = "main wallpaper minute";
-    private static final String NIGHT_WALLPAPER_HOUR = "alt wallpaper hour";
-    private static final String NIGHT_WALLPAPER_MINUTE = "alt wallpaper minute";
+
+    private static final String DAY_WALLPAPER_NAME = "day";
+    private static final String DAY_WALLPAPER_HOUR = "day wallpaper hour";
+    private static final String DAY_WALLPAPER_MINUTE = "day wallpaper minute";
+
+    private static final String NIGHT_WALLPAPER_NAME = "night";
+    private static final String NIGHT_WALLPAPER_HOUR = "night wallpaper hour";
+    private static final String NIGHT_WALLPAPER_MINUTE = "night wallpaper minute";
+
     private static final String EXTRA_CHANGE_WALLPAPER = "com.tunjid.fingergestures.extra.changeWallpaper";
     private static final String ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper";
 
-    private static final int INVALID_WALLPAPER_PICK_CODE = -1;
     public static final int DAY_WALLPAPER_PICK_CODE = 0;
     public static final int NIGHT_WALLPAPER_PICK_CODE = 1;
+    private static final int INVALID_WALLPAPER_PICK_CODE = -1;
+
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({INVALID_WALLPAPER_PICK_CODE, DAY_WALLPAPER_PICK_CODE, NIGHT_WALLPAPER_PICK_CODE})
@@ -77,7 +83,7 @@ public class BackgroundManager {
     }
 
     public int[] getScreenAspectRatio() {
-        DisplayMetrics displayMetrics = App.getInstance().getResources().getDisplayMetrics();
+        DisplayMetrics displayMetrics = app.getResources().getDisplayMetrics();
         return new int[]{displayMetrics.widthPixels, displayMetrics.heightPixels};
     }
 
@@ -87,11 +93,11 @@ public class BackgroundManager {
     }
 
     public File getWallpaperFile(@WallpaperSelection int selection) {
-        return new File(App.getInstance().getFilesDir(), getFileName(selection));
+        return new File(app.getFilesDir(), getFileName(selection));
     }
 
     private String getFileName(@WallpaperSelection int selection) {
-        return selection == DAY_WALLPAPER_PICK_CODE ? "main" : "alt";
+        return selection == DAY_WALLPAPER_PICK_CODE ? DAY_WALLPAPER_NAME : NIGHT_WALLPAPER_NAME;
     }
 
     public Drawable tint(@DrawableRes int drawableRes, int color) {
