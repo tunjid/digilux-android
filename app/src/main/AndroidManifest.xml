@@ -42,7 +42,15 @@
                 <action android:name="com.tunjid.fingergestures.action.changeWallpaper" />
             </intent-filter>
         </receiver>
-
+        <provider
+            android:name=".WallpaperFileProvider"
+            android:authorities="${applicationId}.com.tunjid.fingergestures.wallpaperprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
         <activity
             android:name=".activities.MainActivity"
             android:launchMode="singleInstance">

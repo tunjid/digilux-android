@@ -69,7 +69,6 @@
         android:backgroundTint="@color/colorPrimary"
         android:text="@string/cancel"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/start" />
 </android.support.constraint.ConstraintLayout>
 

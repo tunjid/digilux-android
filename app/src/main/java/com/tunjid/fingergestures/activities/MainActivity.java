@@ -29,6 +29,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.tunjid.androidbootstrap.core.view.ViewHider;
 import com.tunjid.fingergestures.App;
+import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.BuildConfig;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
@@ -41,8 +42,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static com.tunjid.fingergestures.BackgroundManager.DAY_WALLPAPER_PICK_CODE;
-import static com.tunjid.fingergestures.BackgroundManager.NIGHT_WALLPAPER_PICK_CODE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
@@ -83,7 +82,6 @@ public class MainActivity extends FingerGestureActivity {
     private ConstraintLayout constraintLayout;
 
     private final TextLink[] links;
-    private final String[] wallpaperTargets;
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW};
@@ -97,7 +95,6 @@ public class MainActivity extends FingerGestureActivity {
                 new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
                 new TextLink(context.getString(R.string.color_picker), COLOR_PICKER_LINK),
                 new TextLink(context.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
-        wallpaperTargets = new String[]{context.getString(R.string.day_wallpaper), context.getString(R.string.night_wallpaper)};
     }
 
     @Override
@@ -262,14 +259,11 @@ public class MainActivity extends FingerGestureActivity {
 
         showFragment(toShow);
 
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.choose_target)
-                .setItems(wallpaperTargets, (dialog, index) -> {
-                    AppFragment shown = (AppFragment) getSupportFragmentManager().findFragmentByTag(tag);
-                    int selection = index == 0 ? DAY_WALLPAPER_PICK_CODE : NIGHT_WALLPAPER_PICK_CODE;
-                    if (shown != null && shown.isVisible()) shown.cropImage(imageUri, selection);
-                })
-                .show();
+        BackgroundManager.getInstance().requestWallPaperConstant(R.string.choose_target, this, selection -> {
+            AppFragment shown = (AppFragment) getSupportFragmentManager().findFragmentByTag(tag);
+            if (shown != null && shown.isVisible()) shown.cropImage(imageUri, selection);
+            else showSnackbar(R.string.error_wallpaper);
+        });
     }
 
     private void askForStorage() {

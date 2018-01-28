@@ -7,6 +7,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.WallpaperColors;
 import android.app.WallpaperManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -16,8 +17,10 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
+import android.support.annotation.StringRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.graphics.Palette;
 import android.util.DisplayMetrics;
 import android.util.Pair;
@@ -29,6 +32,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.function.IntConsumer;
 
 import io.reactivex.Single;
 
@@ -58,6 +62,7 @@ public class BackgroundManager {
 
     private static final String EXTRA_CHANGE_WALLPAPER = "com.tunjid.fingergestures.extra.changeWallpaper";
     private static final String ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper";
+    private final String[] wallpaperTargets;
 
     public static final int DAY_WALLPAPER_PICK_CODE = 0;
     public static final int NIGHT_WALLPAPER_PICK_CODE = 1;
@@ -80,11 +85,21 @@ public class BackgroundManager {
 
     private BackgroundManager() {
         app = App.getInstance();
+        wallpaperTargets = new String[]{app.getString(R.string.day_wallpaper), app.getString(R.string.night_wallpaper)};
     }
 
     public int[] getScreenAspectRatio() {
         DisplayMetrics displayMetrics = app.getResources().getDisplayMetrics();
         return new int[]{displayMetrics.widthPixels, displayMetrics.heightPixels};
+    }
+
+    public void requestWallPaperConstant(@StringRes int titleRes, Context context, IntConsumer consumer) {
+        new AlertDialog.Builder(context)
+                .setTitle(titleRes)
+                .setItems(wallpaperTargets, (dialog, index) -> consumer.accept(index == 0
+                        ? DAY_WALLPAPER_PICK_CODE
+                        : NIGHT_WALLPAPER_PICK_CODE))
+                .show();
     }
 
     public String getScreenDimensionRatio() {

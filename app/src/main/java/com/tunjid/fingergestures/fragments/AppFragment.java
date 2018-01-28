@@ -19,7 +19,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
@@ -114,7 +113,7 @@ public class AppFragment extends MainActivityFragment
         if (activity == null) return;
 
         if (resultCode != Activity.RESULT_OK) {
-            Toast.makeText(activity, R.string.cancel, Toast.LENGTH_SHORT).show();
+            showSnackbar(R.string.cancel_wallpaper);
             return;
         }
 
