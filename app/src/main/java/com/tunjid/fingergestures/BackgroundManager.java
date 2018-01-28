@@ -19,7 +19,6 @@ import android.support.annotation.IntDef;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.graphics.Palette;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 
@@ -33,7 +32,10 @@ import java.util.List;
 
 import io.reactivex.Single;
 
+import static android.app.AlarmManager.INTERVAL_DAY;
+import static android.app.AlarmManager.RTC_WAKEUP;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
+import static android.text.TextUtils.isEmpty;
 import static io.reactivex.Single.error;
 import static io.reactivex.Single.fromCallable;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
@@ -108,8 +110,8 @@ public class BackgroundManager {
 
         if (isLiveWallpaper(wallpaperManager)) {
             List<Palette.Swatch> swatches = getLiveWallpaperWatches(wallpaperManager);
-            if (!swatches.isEmpty()) return fromCallable(() -> Palette.from(swatches))
-                    .subscribeOn(computation()).observeOn(mainThread());
+            if (!swatches.isEmpty())
+                return fromCallable(() -> Palette.from(swatches)).subscribeOn(computation()).observeOn(mainThread());
         }
 
         Drawable drawable = wallpaperManager.getDrawable();
@@ -134,27 +136,26 @@ public class BackgroundManager {
         AlarmManager alarmManager = app.getSystemService(AlarmManager.class);
         if (alarmManager == null) return;
 
-        PendingIntent alarmIntent = getWallpaperIntent(selection);
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
-                AlarmManager.INTERVAL_DAY, alarmIntent);
+        PendingIntent alarmIntent = getWallpaperPendingIntent(selection);
+        alarmManager.setRepeating(RTC_WAKEUP, calendar.getTimeInMillis(), INTERVAL_DAY, alarmIntent);
     }
 
     public void cancelAutoWallpaper() {
         AlarmManager alarmManager = app.getSystemService(AlarmManager.class);
         if (alarmManager == null) return;
 
-        PendingIntent day = getWallpaperIntent(DAY_WALLPAPER_PICK_CODE);
-        PendingIntent night = getWallpaperIntent(NIGHT_WALLPAPER_PICK_CODE);
+        PendingIntent day = getWallpaperPendingIntent(DAY_WALLPAPER_PICK_CODE);
+        PendingIntent night = getWallpaperPendingIntent(NIGHT_WALLPAPER_PICK_CODE);
 
         Pair<Integer, Integer> dayTimePair = getDefaultTime(DAY_WALLPAPER_PICK_CODE);
         Pair<Integer, Integer> nightTimePair = getDefaultTime(NIGHT_WALLPAPER_PICK_CODE);
 
-        day.cancel();
-        night.cancel();
-        alarmManager.cancel(day);
-        alarmManager.cancel(night);
-        setWallpaperChangeTime(DAY_WALLPAPER_PICK_CODE, dayTimePair.first, dayTimePair.second);
         setWallpaperChangeTime(NIGHT_WALLPAPER_PICK_CODE, nightTimePair.first, nightTimePair.second);
+        setWallpaperChangeTime(DAY_WALLPAPER_PICK_CODE, dayTimePair.first, dayTimePair.second);
+        alarmManager.cancel(night);
+        alarmManager.cancel(day);
+        night.cancel();
+        day.cancel();
     }
 
     public Calendar getMainWallpaperCalendar(@WallpaperSelection int selection) {
@@ -167,12 +168,8 @@ public class BackgroundManager {
         return calendarForTime(hour, minute);
     }
 
-    private PendingIntent getWallpaperIntent(@WallpaperSelection int selection) {
-        Intent intent = new Intent(app, WallpaperBroadcastReceiver.class);
-        intent.setAction(ACTION_CHANGE_WALLPAPER);
-        intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection);
-
-        return PendingIntent.getBroadcast(app, selection, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    private PendingIntent getWallpaperPendingIntent(@WallpaperSelection int selection) {
+        return PendingIntent.getBroadcast(app, selection, getWallPaperChangeIntent(selection), PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private Calendar calendarForTime(int hourOfDay, int minute) {
@@ -186,13 +183,11 @@ public class BackgroundManager {
     }
 
     void onIntentReceived(Intent intent) {
-        @WallpaperSelection
         int selection = selectionFromIntent(intent);
-
         if (selection == INVALID_WALLPAPER_PICK_CODE) return;
-        WallpaperManager wallpaperManager = app.getSystemService(WallpaperManager.class);
 
         File wallpaperFile = getWallpaperFile(selection);
+        WallpaperManager wallpaperManager = app.getSystemService(WallpaperManager.class);
         if (wallpaperManager == null || !wallpaperFile.exists()) return;
 
         try { wallpaperManager.setStream(new FileInputStream(wallpaperFile));}
@@ -202,7 +197,7 @@ public class BackgroundManager {
     @WallpaperSelection
     private int selectionFromIntent(Intent intent) {
         String action = intent.getAction();
-        return !TextUtils.isEmpty(action) && action.equals(ACTION_CHANGE_WALLPAPER)
+        return !isEmpty(action) && action.equals(ACTION_CHANGE_WALLPAPER)
                 ? intent.getIntExtra(EXTRA_CHANGE_WALLPAPER, INVALID_WALLPAPER_PICK_CODE)
                 : INVALID_WALLPAPER_PICK_CODE;
     }
@@ -217,6 +212,7 @@ public class BackgroundManager {
         Color tertiary = colors.getTertiaryColor();
 
         result.add(new Palette.Swatch(primary.toArgb(), 3));
+
         if (secondary != null) result.add(new Palette.Swatch(secondary.toArgb(), 2));
         if (tertiary != null) result.add(new Palette.Swatch(tertiary.toArgb(), 2));
 
@@ -227,12 +223,27 @@ public class BackgroundManager {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1 && wallpaperManager.getWallpaperInfo() != null;
     }
 
-    private Pair<Integer, Integer> getDefaultTime(@WallpaperSelection int selection) {
-        return new Pair<>(selection == DAY_WALLPAPER_PICK_CODE ? 7 : 19, 0);
+    public boolean willChangeWallpaper(@WallpaperSelection int selection) {
+        Intent intent = new Intent(app, WallpaperBroadcastReceiver.class);
+        intent.setAction(ACTION_CHANGE_WALLPAPER);
+        intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection);
+
+        return PendingIntent.getBroadcast(app, selection, getWallPaperChangeIntent(selection), PendingIntent.FLAG_NO_CREATE) != null;
     }
 
     private SharedPreferences getPreferences() {
         return app.getPreferences();
     }
 
+    private Pair<Integer, Integer> getDefaultTime(@WallpaperSelection int selection) {
+        return new Pair<>(selection == DAY_WALLPAPER_PICK_CODE ? 7 : 19, 0);
+    }
+
+    private Intent getWallPaperChangeIntent(@WallpaperSelection int selection) {
+        Intent intent = new Intent(app, WallpaperBroadcastReceiver.class);
+        intent.setAction(ACTION_CHANGE_WALLPAPER);
+        intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection);
+
+        return intent;
+    }
 }

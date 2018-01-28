@@ -1,6 +1,7 @@
 package com.tunjid.fingergestures.viewholders;
 
 import android.app.TimePickerDialog;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.TextView;
 
@@ -56,6 +57,8 @@ public class WallpaperTriggerViewHolder extends AppViewHolder {
         super.bind();
         start.setText(getCalendarString(backgroundManager.getMainWallpaperCalendar(DAY_WALLPAPER_PICK_CODE)));
         end.setText(getCalendarString(backgroundManager.getMainWallpaperCalendar(NIGHT_WALLPAPER_PICK_CODE)));
+        start.setTextColor(getTextColor(DAY_WALLPAPER_PICK_CODE));
+        end.setTextColor(getTextColor(NIGHT_WALLPAPER_PICK_CODE));
     }
 
     private void showTimePicker(Calendar calendar, TimePickerDialog.OnTimeSetListener listener) {
@@ -64,5 +67,11 @@ public class WallpaperTriggerViewHolder extends AppViewHolder {
 
     private String getCalendarString(Calendar calendar) {
         return dateFormat.format(calendar.getTime());
+    }
+
+    private int getTextColor(@BackgroundManager.WallpaperSelection int selection) {
+        return ContextCompat.getColor(itemView.getContext(), backgroundManager.willChangeWallpaper(selection)
+                ? R.color.toggle_text
+                : R.color.dark_grey);
     }
 }
