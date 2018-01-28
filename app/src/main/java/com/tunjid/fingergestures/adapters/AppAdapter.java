@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.WallpaperUtils;
+import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
@@ -168,7 +168,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public interface AppAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
         void purchase(String sku);
 
-        void pickWallpaper(@WallpaperUtils.WallpaperSelection int selection);
+        void pickWallpaper(@BackgroundManager.WallpaperSelection int selection);
 
         void requestPermission(@MainActivity.PermissionRequest int permission);
     }

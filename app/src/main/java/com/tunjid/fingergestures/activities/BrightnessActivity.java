@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
@@ -31,7 +32,6 @@ import static android.graphics.PorterDuff.Mode.SRC_IN;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.BRIGHTNESS_FRACTION;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
-import static com.tunjid.fingergestures.WallpaperUtils.tint;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class BrightnessActivity extends AppCompatActivity
@@ -53,6 +53,7 @@ public class BrightnessActivity extends AppCompatActivity
         setContentView(R.layout.activity_brightness);
 
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
+        BackgroundManager backgroundManager = BackgroundManager.getInstance();
 
         int sliderColor = brightnessGestureConsumer.getSliderColor();
         int sliderBackgroundColor = brightnessGestureConsumer.getBackgroundColor();
@@ -70,8 +71,8 @@ public class BrightnessActivity extends AppCompatActivity
         seekBarText.setTextColor(sliderColor);
         seekBar.getThumb().setColorFilter(sliderColor, SRC_IN);
         seekBar.getProgressDrawable().setColorFilter(sliderColor, SRC_IN);
-        settingsIcon.setImageDrawable(tint(R.drawable.ic_settings_white_24dp, sliderColor));
-        seekBarBackground.setBackground(tint(R.drawable.color_indicator, sliderBackgroundColor));
+        settingsIcon.setImageDrawable(backgroundManager.tint(R.drawable.ic_settings_white_24dp, sliderColor));
+        seekBarBackground.setBackground(backgroundManager.tint(R.drawable.color_indicator, sliderBackgroundColor));
 
         ConstraintSet set = new ConstraintSet();
         set.clone(layout);

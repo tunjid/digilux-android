@@ -24,7 +24,7 @@ import android.widget.Toast;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.WallpaperUtils;
+import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 
@@ -112,9 +112,10 @@ public class AppFragment extends MainActivityFragment
             return;
         }
 
-        if (requestCode == WallpaperUtils.MAIN_WALLPAPER_PICK_CODE || requestCode == WallpaperUtils.ALT_WALLPAPER_PICK_CODE) {
-            int[] aspectRatio = WallpaperUtils.getScreenAspectRatio();
-            File file = WallpaperUtils.getWallpaperFile(requestCode);
+        if (requestCode == BackgroundManager.MAIN_WALLPAPER_PICK_CODE || requestCode == BackgroundManager.ALT_WALLPAPER_PICK_CODE) {
+            BackgroundManager backgroundManager = BackgroundManager.getInstance();
+            int[] aspectRatio = backgroundManager.getScreenAspectRatio();
+            File file = backgroundManager.getWallpaperFile(requestCode);
             Uri uri = Uri.fromFile(file);
             CropImage.activity(data.getData())
                     .setOutputUri(uri)
@@ -138,7 +139,7 @@ public class AppFragment extends MainActivityFragment
     }
 
     @Override
-    public void pickWallpaper(@WallpaperUtils.WallpaperSelection int selection) {
+    public void pickWallpaper(@BackgroundManager.WallpaperSelection int selection) {
         Intent intent = new Intent();
         intent.setType(IMAGE_SELECTION);
         intent.setAction(Intent.ACTION_GET_CONTENT);

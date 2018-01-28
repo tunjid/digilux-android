@@ -11,8 +11,8 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
 
     <application
@@ -34,6 +34,13 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/gesture_accessibility_service" />
         </service>
+        <receiver
+            android:name=".WallpaperBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.tunjid.fingergestures.action.changeWallpaper" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name=".activities.MainActivity"

@@ -9,7 +9,7 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
-import com.tunjid.fingergestures.WallpaperUtils;
+import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.R;
@@ -30,12 +30,14 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
     private final View sliderIndicator;
     private final View[] wallpaperColorIndicators;
     private final CharSequence[] targetOptions;
+    private final BackgroundManager backgroundManager;
     private final BrightnessGestureConsumer brightnessGestureConsumer;
 
     public ColorAdjusterViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
 
         Context context = itemView.getContext();
+        backgroundManager = BackgroundManager.getInstance();
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         backgroundIndicator = itemView.findViewById(R.id.slider_background_color_indicator);
         sliderIndicator = itemView.findViewById(R.id.slider_color_indicator);
@@ -73,17 +75,17 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
     public void bind() {
         super.bind();
         if (!hasStoragePermission()) adapterListener.requestPermission(MainActivity.STORAGE_CODE);
-        else WallpaperUtils.extractPalette().subscribe(this::onPaletteExtracted, error -> {});
+        else backgroundManager.extractPalette().subscribe(this::onPaletteExtracted, error -> {});
     }
 
     private void setBackgroundColor(int color) {
         brightnessGestureConsumer.setBackgroundColor(color);
-        backgroundIndicator.setBackground(WallpaperUtils.tint(R.drawable.color_indicator, color));
+        backgroundIndicator.setBackground(backgroundManager.tint(R.drawable.color_indicator, color));
     }
 
     private void setSliderColor(int color) {
         brightnessGestureConsumer.setSliderColor(color);
-        sliderIndicator.setBackground(WallpaperUtils.tint(R.drawable.color_indicator, color));
+        sliderIndicator.setBackground(backgroundManager.tint(R.drawable.color_indicator, color));
     }
 
     private void onPaletteExtracted(Palette palette) {
@@ -105,7 +107,7 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
             if (color == INVALID_COLOR) continue;
 
             indicator.setTag(colors[i]);
-            indicator.setBackground(WallpaperUtils.tint(R.drawable.color_indicator, colors[i]));
+            indicator.setBackground(backgroundManager.tint(R.drawable.color_indicator, colors[i]));
             indicator.setOnClickListener(pickWallpaper);
         }
     }
@@ -134,7 +136,7 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
                 .setTitle(R.string.choose_target)
                 .setItems(targetOptions, (dialog, position) -> {
                     Object tag = indicator.getTag();
-                    if(tag == null || !(tag instanceof Integer))return;
+                    if (tag == null || !(tag instanceof Integer)) return;
 
                     int color = (int) tag;
                     if (position == 0) setBackgroundColor(color);
