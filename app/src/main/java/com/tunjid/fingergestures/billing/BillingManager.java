@@ -84,14 +84,13 @@ public class BillingManager {
     }
 
     @SuppressWarnings("unused")
-    private void consumeAll(final String purchaseToken) {
+    private void consumeAll() {
         disposables.add(checkClient().subscribe(() -> {
             PurchasesManager.getInstance().clearPurchases();
             PurchasesResult result = billingClient.queryPurchases(SkuType.INAPP);
             if (billingClient == null || result.getResponseCode() != BillingResponse.OK) return;
             for (Purchase item : result.getPurchasesList()) consume(item.getPurchaseToken());
         }, errorHandler));
-        disposables.add(checkClient().subscribe(() -> billingClient.consumeAsync(purchaseToken, (a, b) -> {}), errorHandler));
     }
 
     private Completable checkClient() {return Completable.create(new BillingExecutor()).timeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS);}

@@ -21,10 +21,23 @@ android {
             keyPassword keystoreProps['aliasPassword']
             storePassword keystoreProps['keystorePassword']
         }
+        staging {
+            def keystoreProps = new Properties()
+            def propertiesFile = file("keystore.properties")
+            keystoreProps.load(new FileInputStream(propertiesFile))
+            storeFile file("release.keystore")
+            keyAlias keystoreProps['alias']
+            keyPassword keystoreProps['aliasPassword']
+            storePassword keystoreProps['keystorePassword']
+        }
     }
     buildTypes {
         debug {
             applicationIdSuffix ".dev"
+        }
+        staging {
+            debuggable true
+            signingConfig signingConfigs.staging
         }
         release {
             minifyEnabled true
@@ -40,8 +53,8 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "android.arch.lifecycle:runtime:1.0.3"
-    implementation "android.arch.lifecycle:extensions:1.0.0"
+    implementation "android.arch.lifecycle:runtime:1.1.0"
+    implementation "android.arch.lifecycle:extensions:1.1.0"
     implementation "android.arch.persistence.room:runtime:1.0.0"
     implementation "android.arch.persistence.room:rxjava2:1.0.0"
 
@@ -71,7 +84,7 @@ dependencies {
         exclude module: 'design'
     }
 
-    implementation(group: "com.tunjid.android-bootstrap", name: "core", version: "1.0.2-SNAPSHOT", changing: true) {
+    implementation(group: "com.tunjid.android-bootstrap", name: "core", version: "2.0.0", changing: true) {
         exclude module: 'appcompat-v7'
         exclude module: 'support-annotations'
         exclude module: 'support-v4'
