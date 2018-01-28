@@ -23,8 +23,8 @@ import android.widget.Toast;
 
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
-import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.BackgroundManager;
+import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 
@@ -119,17 +119,7 @@ public class AppFragment extends MainActivityFragment
         }
 
         if (requestCode == BackgroundManager.DAY_WALLPAPER_PICK_CODE || requestCode == BackgroundManager.NIGHT_WALLPAPER_PICK_CODE) {
-            BackgroundManager backgroundManager = BackgroundManager.getInstance();
-            int[] aspectRatio = backgroundManager.getScreenAspectRatio();
-            File file = backgroundManager.getWallpaperFile(requestCode);
-            Uri uri = Uri.fromFile(file);
-            CropImage.activity(data.getData())
-                    .setOutputUri(uri)
-                    .setFixAspectRatio(true)
-                    .setAspectRatio(aspectRatio[0], aspectRatio[1])
-                    .setMinCropWindowSize(100, 100)
-                    .setOutputCompressFormat(Bitmap.CompressFormat.PNG)
-                    .start(activity, this);
+            cropImage(data.getData(), requestCode);
         }
     }
 
@@ -164,5 +154,24 @@ public class AppFragment extends MainActivityFragment
 
     public void refresh() {
         if (recyclerView != null) recyclerView.getAdapter().notifyDataSetChanged();
+    }
+
+    public void cropImage(Uri source, @BackgroundManager.WallpaperSelection int selection) {
+        BackgroundManager backgroundManager = BackgroundManager.getInstance();
+        int[] aspectRatio = backgroundManager.getScreenAspectRatio();
+
+        File file = backgroundManager.getWallpaperFile(selection);
+        Uri destination = Uri.fromFile(file);
+
+        Activity activity = getActivity();
+        if (activity == null) return;
+
+        CropImage.activity(source)
+                .setOutputUri(destination)
+                .setFixAspectRatio(true)
+                .setAspectRatio(aspectRatio[0], aspectRatio[1])
+                .setMinCropWindowSize(100, 100)
+                .setOutputCompressFormat(Bitmap.CompressFormat.PNG)
+                .start(activity, this);
     }
 }

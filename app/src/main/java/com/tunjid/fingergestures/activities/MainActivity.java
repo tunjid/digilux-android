@@ -13,6 +13,7 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.transition.AutoTransition;
 import android.transition.Transition;
 import android.transition.TransitionManager;
@@ -40,6 +41,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static com.tunjid.fingergestures.BackgroundManager.DAY_WALLPAPER_PICK_CODE;
+import static com.tunjid.fingergestures.BackgroundManager.NIGHT_WALLPAPER_PICK_CODE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
@@ -80,6 +83,7 @@ public class MainActivity extends FingerGestureActivity {
     private ConstraintLayout constraintLayout;
 
     private final TextLink[] links;
+    private final String[] wallpaperTargets;
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW};
@@ -93,6 +97,7 @@ public class MainActivity extends FingerGestureActivity {
                 new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
                 new TextLink(context.getString(R.string.color_picker), COLOR_PICKER_LINK),
                 new TextLink(context.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
+        wallpaperTargets = new String[]{context.getString(R.string.day_wallpaper), context.getString(R.string.night_wallpaper)};
     }
 
     @Override
@@ -121,7 +126,11 @@ public class MainActivity extends FingerGestureActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected);
         setSupportActionBar(toolbar);
 
-        if (savedInstanceState == null) showFragment(AppFragment.newInstance(GESTURE_ITEMS));
+        Intent startIntent = getIntent();
+        boolean isPickIntent = startIntent != null && Intent.ACTION_SEND.equals(startIntent.getAction());
+
+        if (savedInstanceState == null && isPickIntent) handleIntent(startIntent);
+        else if (savedInstanceState == null) showFragment(AppFragment.newInstance(GESTURE_ITEMS));
     }
 
     @Override
@@ -226,10 +235,41 @@ public class MainActivity extends FingerGestureActivity {
         if (fragment != null) fragment.refresh();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
+    }
+
     public void requestPermission(@PermissionRequest int permission) {
         if (permissionsStack.contains(permission)) permissionsStack.remove(permission);
         permissionsStack.push(permission);
         onPermissionAdded();
+    }
+
+    private void handleIntent(Intent intent) {
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (!Intent.ACTION_SEND.equals(action) || TextUtils.isEmpty(type) || !type.startsWith("image/"))
+            return;
+
+        Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        if (imageUri == null) return;
+
+        AppFragment toShow = AppFragment.newInstance(WALLPAPER_ITEMS);
+        final String tag = toShow.getStableTag();
+
+        showFragment(toShow);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.choose_target)
+                .setItems(wallpaperTargets, (dialog, index) -> {
+                    AppFragment shown = (AppFragment) getSupportFragmentManager().findFragmentByTag(tag);
+                    int selection = index == 0 ? DAY_WALLPAPER_PICK_CODE : NIGHT_WALLPAPER_PICK_CODE;
+                    if (shown != null && shown.isVisible()) shown.cropImage(imageUri, selection);
+                })
+                .show();
     }
 
     private void askForStorage() {
