@@ -98,8 +98,8 @@
     <!-- Wallpaper Viewholder-->
     <string name="alternate_wallpaper">Alternate Wallpaper</string>
     <string name="current_wallpaper">Current</string>
-    <string name="main_wallpaper">Main</string>
-    <string name="dark_wallpaper">Dark</string>
+    <string name="day_wallpaper">Day</string>
+    <string name="night_wallpaper">Night</string>
 
     <!-- Wallpaper Trigger Viewholder-->
     <string name="wallpaper_trigger">Wallpaper Trigger</string>

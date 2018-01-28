@@ -13,8 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import static com.tunjid.fingergestures.BackgroundManager.ALT_WALLPAPER_PICK_CODE;
-import static com.tunjid.fingergestures.BackgroundManager.MAIN_WALLPAPER_PICK_CODE;
+import static com.tunjid.fingergestures.BackgroundManager.NIGHT_WALLPAPER_PICK_CODE;
+import static com.tunjid.fingergestures.BackgroundManager.DAY_WALLPAPER_PICK_CODE;
 import static java.util.Calendar.HOUR_OF_DAY;
 import static java.util.Calendar.MINUTE;
 
@@ -33,24 +33,29 @@ public class WallpaperTriggerViewHolder extends AppViewHolder {
         end = itemView.findViewById(R.id.end);
         backgroundManager = BackgroundManager.getInstance();
 
-        start.setOnClickListener(view -> showTimePicker(backgroundManager.getMainWallpaperCalendar(MAIN_WALLPAPER_PICK_CODE),
+        start.setOnClickListener(view -> showTimePicker(backgroundManager.getMainWallpaperCalendar(DAY_WALLPAPER_PICK_CODE),
                 (dialog, hour, minute) -> {
-                    backgroundManager.setWallpaperChangeTime(MAIN_WALLPAPER_PICK_CODE, hour, minute);
+                    backgroundManager.setWallpaperChangeTime(DAY_WALLPAPER_PICK_CODE, hour, minute);
                     bind();
                 }));
 
-        end.setOnClickListener(view -> showTimePicker(backgroundManager.getMainWallpaperCalendar(ALT_WALLPAPER_PICK_CODE),
+        end.setOnClickListener(view -> showTimePicker(backgroundManager.getMainWallpaperCalendar(NIGHT_WALLPAPER_PICK_CODE),
                 (dialog, hour, minute) -> {
-                    backgroundManager.setWallpaperChangeTime(ALT_WALLPAPER_PICK_CODE, hour, minute);
+                    backgroundManager.setWallpaperChangeTime(NIGHT_WALLPAPER_PICK_CODE, hour, minute);
                     bind();
                 }));
+
+        itemView.findViewById(R.id.cancel_auto_wallpaper).setOnClickListener(view -> {
+            backgroundManager.cancelAutoWallpaper();
+            bind();
+        });
     }
 
     @Override
     public void bind() {
         super.bind();
-        start.setText(getCalendarString(backgroundManager.getMainWallpaperCalendar(MAIN_WALLPAPER_PICK_CODE)));
-        end.setText(getCalendarString(backgroundManager.getMainWallpaperCalendar(ALT_WALLPAPER_PICK_CODE)));
+        start.setText(getCalendarString(backgroundManager.getMainWallpaperCalendar(DAY_WALLPAPER_PICK_CODE)));
+        end.setText(getCalendarString(backgroundManager.getMainWallpaperCalendar(NIGHT_WALLPAPER_PICK_CODE)));
     }
 
     private void showTimePicker(Calendar calendar, TimePickerDialog.OnTimeSetListener listener) {

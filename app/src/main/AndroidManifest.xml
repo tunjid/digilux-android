@@ -36,7 +36,8 @@
         </service>
         <receiver
             android:name=".WallpaperBroadcastReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:permission="android.permission.SET_WALLPAPER">
             <intent-filter>
                 <action android:name="com.tunjid.fingergestures.action.changeWallpaper" />
             </intent-filter>

@@ -101,6 +101,12 @@ public class AppFragment extends MainActivityFragment
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        toggleToolbar(true);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -112,7 +118,7 @@ public class AppFragment extends MainActivityFragment
             return;
         }
 
-        if (requestCode == BackgroundManager.MAIN_WALLPAPER_PICK_CODE || requestCode == BackgroundManager.ALT_WALLPAPER_PICK_CODE) {
+        if (requestCode == BackgroundManager.DAY_WALLPAPER_PICK_CODE || requestCode == BackgroundManager.NIGHT_WALLPAPER_PICK_CODE) {
             BackgroundManager backgroundManager = BackgroundManager.getInstance();
             int[] aspectRatio = backgroundManager.getScreenAspectRatio();
             File file = backgroundManager.getWallpaperFile(requestCode);

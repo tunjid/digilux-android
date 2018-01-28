@@ -21,6 +21,7 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.graphics.Palette;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Pair;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,19 +45,19 @@ public class BackgroundManager {
     private static final String ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager";
     private static final String ERROR_NO_DRAWABLE_FOUND = "No Drawable found";
     private static final String ERROR_NOT_A_BITMAP = "Not a Bitmap";
-    private static final String MAIN_WALLPAPER_HOUR = "main wallpaper hour";
-    private static final String MAIN_WALLPAPER_MINUTE = "main wallpaper minute";
-    private static final String ALT_WALLPAPER_HOUR = "alt wallpaper hour";
-    private static final String ALT_WALLPAPER_MINUTE = "alt wallpaper minute";
+    private static final String DAY_WALLPAPER_HOUR = "main wallpaper hour";
+    private static final String DAY_WALLPAPER_MINUTE = "main wallpaper minute";
+    private static final String NIGHT_WALLPAPER_HOUR = "alt wallpaper hour";
+    private static final String NIGHT_WALLPAPER_MINUTE = "alt wallpaper minute";
     private static final String EXTRA_CHANGE_WALLPAPER = "com.tunjid.fingergestures.extra.changeWallpaper";
     private static final String ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper";
 
     private static final int INVALID_WALLPAPER_PICK_CODE = -1;
-    public static final int MAIN_WALLPAPER_PICK_CODE = 0;
-    public static final int ALT_WALLPAPER_PICK_CODE = 1;
+    public static final int DAY_WALLPAPER_PICK_CODE = 0;
+    public static final int NIGHT_WALLPAPER_PICK_CODE = 1;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({INVALID_WALLPAPER_PICK_CODE, MAIN_WALLPAPER_PICK_CODE, ALT_WALLPAPER_PICK_CODE})
+    @IntDef({INVALID_WALLPAPER_PICK_CODE, DAY_WALLPAPER_PICK_CODE, NIGHT_WALLPAPER_PICK_CODE})
     public @interface WallpaperSelection {}
 
     private final App app;
@@ -88,7 +89,7 @@ public class BackgroundManager {
     }
 
     private String getFileName(@WallpaperSelection int selection) {
-        return selection == MAIN_WALLPAPER_PICK_CODE ? "main" : "alt";
+        return selection == DAY_WALLPAPER_PICK_CODE ? "main" : "alt";
     }
 
     public Drawable tint(@DrawableRes int drawableRes, int color) {
@@ -120,34 +121,48 @@ public class BackgroundManager {
     }
 
     public void setWallpaperChangeTime(@WallpaperSelection int selection, int hourOfDay, int minute) {
-        if (hourOfDay > 12 && selection == MAIN_WALLPAPER_PICK_CODE) hourOfDay -= 12;
-        if (hourOfDay < 12 && selection == ALT_WALLPAPER_PICK_CODE) hourOfDay += 12;
+        if (hourOfDay > 12 && selection == DAY_WALLPAPER_PICK_CODE) hourOfDay -= 12;
+        if (hourOfDay < 12 && selection == NIGHT_WALLPAPER_PICK_CODE) hourOfDay += 12;
 
         getPreferences().edit()
-                .putInt(selection == MAIN_WALLPAPER_PICK_CODE ? MAIN_WALLPAPER_HOUR : ALT_WALLPAPER_HOUR, hourOfDay)
-                .putInt(selection == MAIN_WALLPAPER_PICK_CODE ? MAIN_WALLPAPER_MINUTE : ALT_WALLPAPER_MINUTE, minute)
+                .putInt(selection == DAY_WALLPAPER_PICK_CODE ? DAY_WALLPAPER_HOUR : NIGHT_WALLPAPER_HOUR, hourOfDay)
+                .putInt(selection == DAY_WALLPAPER_PICK_CODE ? DAY_WALLPAPER_MINUTE : NIGHT_WALLPAPER_MINUTE, minute)
                 .apply();
 
-        // Set the alarm to start at approximately 2:00 p.m.
         Calendar calendar = calendarForTime(hourOfDay, minute);
 
         AlarmManager alarmManager = app.getSystemService(AlarmManager.class);
         if (alarmManager == null) return;
 
         PendingIntent alarmIntent = getWallpaperIntent(selection);
-        // With setInexactRepeating(), you have to use one of the AlarmManager interval
-        // constants--in this case, AlarmManager.INTERVAL_DAY.
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                 AlarmManager.INTERVAL_DAY, alarmIntent);
     }
 
+    public void cancelAutoWallpaper() {
+        AlarmManager alarmManager = app.getSystemService(AlarmManager.class);
+        if (alarmManager == null) return;
+
+        PendingIntent day = getWallpaperIntent(DAY_WALLPAPER_PICK_CODE);
+        PendingIntent night = getWallpaperIntent(NIGHT_WALLPAPER_PICK_CODE);
+
+        Pair<Integer, Integer> dayTimePair = getDefaultTime(DAY_WALLPAPER_PICK_CODE);
+        Pair<Integer, Integer> nightTimePair = getDefaultTime(NIGHT_WALLPAPER_PICK_CODE);
+
+        day.cancel();
+        night.cancel();
+        alarmManager.cancel(day);
+        alarmManager.cancel(night);
+        setWallpaperChangeTime(DAY_WALLPAPER_PICK_CODE, dayTimePair.first, dayTimePair.second);
+        setWallpaperChangeTime(NIGHT_WALLPAPER_PICK_CODE, nightTimePair.first, nightTimePair.second);
+    }
+
     public Calendar getMainWallpaperCalendar(@WallpaperSelection int selection) {
+        Pair<Integer, Integer> timePair = getDefaultTime(selection);
         SharedPreferences preferences = getPreferences();
 
-        int defHour = selection == MAIN_WALLPAPER_PICK_CODE ? 7 : 19;
-        int hour = preferences.getInt(selection == MAIN_WALLPAPER_PICK_CODE ? MAIN_WALLPAPER_HOUR : ALT_WALLPAPER_HOUR, defHour);
-        int minute = preferences.getInt(selection == MAIN_WALLPAPER_PICK_CODE ? MAIN_WALLPAPER_MINUTE : ALT_WALLPAPER_MINUTE, 0);
-
+        int hour = preferences.getInt(selection == DAY_WALLPAPER_PICK_CODE ? DAY_WALLPAPER_HOUR : NIGHT_WALLPAPER_HOUR, timePair.first);
+        int minute = preferences.getInt(selection == DAY_WALLPAPER_PICK_CODE ? DAY_WALLPAPER_MINUTE : NIGHT_WALLPAPER_MINUTE, timePair.second);
 
         return calendarForTime(hour, minute);
     }
@@ -210,6 +225,10 @@ public class BackgroundManager {
 
     private boolean isLiveWallpaper(WallpaperManager wallpaperManager) {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1 && wallpaperManager.getWallpaperInfo() != null;
+    }
+
+    private Pair<Integer, Integer> getDefaultTime(@WallpaperSelection int selection) {
+        return new Pair<>(selection == DAY_WALLPAPER_PICK_CODE ? 7 : 19, 0);
     }
 
     private SharedPreferences getPreferences() {

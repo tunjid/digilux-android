@@ -30,8 +30,8 @@ public class WallpaperViewHolder extends AppViewHolder {
         alt = itemView.findViewById(R.id.alt_wallpaper);
         backgroundManager = BackgroundManager.getInstance();
 
-        main.setOnClickListener(view -> adapterListener.pickWallpaper(BackgroundManager.MAIN_WALLPAPER_PICK_CODE));
-        alt.setOnClickListener(view -> adapterListener.pickWallpaper(BackgroundManager.ALT_WALLPAPER_PICK_CODE));
+        main.setOnClickListener(view -> adapterListener.pickWallpaper(BackgroundManager.DAY_WALLPAPER_PICK_CODE));
+        alt.setOnClickListener(view -> adapterListener.pickWallpaper(BackgroundManager.NIGHT_WALLPAPER_PICK_CODE));
 
         setAspectRatio(current);
         setAspectRatio(main);
@@ -54,8 +54,8 @@ public class WallpaperViewHolder extends AppViewHolder {
         else {
             adapterListener.requestPermission(MainActivity.STORAGE_CODE);
         }
-        loadImage(BackgroundManager.MAIN_WALLPAPER_PICK_CODE, main);
-        loadImage(BackgroundManager.ALT_WALLPAPER_PICK_CODE, alt);
+        loadImage(BackgroundManager.DAY_WALLPAPER_PICK_CODE, main);
+        loadImage(BackgroundManager.NIGHT_WALLPAPER_PICK_CODE, alt);
     }
 
     private void setAspectRatio(ImageView imageView) {
