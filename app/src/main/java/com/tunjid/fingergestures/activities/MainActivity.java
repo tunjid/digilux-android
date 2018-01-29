@@ -1,8 +1,10 @@
 package com.tunjid.fingergestures.activities;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
@@ -11,6 +13,7 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -46,6 +49,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static android.support.design.widget.Snackbar.LENGTH_INDEFINITE;
 import static android.support.design.widget.Snackbar.LENGTH_SHORT;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
@@ -108,6 +112,15 @@ public class MainActivity extends FingerGestureActivity {
                 new TextLink(context.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
     }
 
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (ACTION_EDIT_WALLPAPER.equals(action))
+                showSnackbar(R.string.error_wallpaper_google_photos);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -162,8 +175,14 @@ public class MainActivity extends FingerGestureActivity {
             });
         }
         else hideAds();
+
         if (!App.accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
         invalidateOptionsMenu();
+
+        IntentFilter filter = new IntentFilter(ACTION_EDIT_WALLPAPER);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+
+        registerReceiver(receiver, filter);
     }
 
     @Override
@@ -218,8 +237,9 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();
         adView.pause();
+        unregisterReceiver(receiver);
+        super.onPause();
     }
 
     @Override

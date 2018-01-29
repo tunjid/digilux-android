@@ -105,10 +105,11 @@
     <string name="choose_edit_source">Choose Edit Source</string>
     <string name="cancel_wallpaper">Wallpaper pick cancelled</string>
     <string name="error_wallpaper">Sorry, there was an error picking the wallpaper</string>
+    <string name="error_wallpaper_google_photos">Google Photos has an issue with images from other apps, please try Snapseed.</string>
     <string name="error_wallpaper_not_created">You haven\'t selected a wallpaper for this yet.</string>
     <string name="choose_edit_source_message">Choose the image to edit in an image editing app.
-        \n\nRemember to tap the share icon in the app you pick after editing to share th edited image to DigiLux.
-        \n\nSnapseed and Photo Editor by dev.mcgyver work great; others should as well with Google Photos as the only known exception.</string>
+        \n\nRemember to tap the share icon in the app you pick after editing to share the edited image with DigiLux.
+        \n\nSnapseed and Photo Editor by dev.mcgyver work great; others should as well with Google Photos being the only known exception.</string>
     <!-- Wallpaper Trigger Viewholder-->
     <string name="wallpaper_trigger">Wallpaper Change Time</string>
     <string name="light_time">Light: %1%s</string>

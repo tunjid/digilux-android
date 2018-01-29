@@ -7,6 +7,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.WallpaperColors;
 import android.app.WallpaperManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,6 +20,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.graphics.Palette;
@@ -60,8 +62,11 @@ public class BackgroundManager {
     private static final String NIGHT_WALLPAPER_HOUR = "night wallpaper hour";
     private static final String NIGHT_WALLPAPER_MINUTE = "night wallpaper minute";
 
+    private static final String EXTRA_CHOSEN_COMPONENT = "android.intent.extra.CHOSEN_COMPONENT";
     private static final String EXTRA_CHANGE_WALLPAPER = "com.tunjid.fingergestures.extra.changeWallpaper";
     private static final String ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper";
+    public static final String ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper";
+
     private final String[] wallpaperTargets;
 
     public static final int DAY_WALLPAPER_PICK_CODE = 0;
@@ -204,6 +209,8 @@ public class BackgroundManager {
     }
 
     void onIntentReceived(Intent intent) {
+        if (handledEditPick(intent)) return;
+
         int selection = selectionFromIntent(intent);
         if (selection == INVALID_WALLPAPER_PICK_CODE) return;
 
@@ -261,11 +268,29 @@ public class BackgroundManager {
         return new Pair<>(selection == DAY_WALLPAPER_PICK_CODE ? 7 : 19, 0);
     }
 
+    public PendingIntent getWallpaperEditPendingIntent() {
+        Intent intent = new Intent(app, WallpaperBroadcastReceiver.class);
+        intent.setAction(ACTION_EDIT_WALLPAPER);
+        return PendingIntent.getBroadcast(app, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
     private Intent getWallPaperChangeIntent(@WallpaperSelection int selection) {
         Intent intent = new Intent(app, WallpaperBroadcastReceiver.class);
         intent.setAction(ACTION_CHANGE_WALLPAPER);
         intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection);
 
         return intent;
+    }
+
+    private boolean handledEditPick(Intent intent) {
+        if (!ACTION_EDIT_WALLPAPER.equals(intent.getAction())) return false;
+
+        ComponentName componentName = intent.getParcelableExtra(EXTRA_CHOSEN_COMPONENT);
+        if (componentName == null) return false;
+
+        boolean handled = componentName.getPackageName().equals("com.google.android.apps.photos");
+        if (handled) LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
+
+        return handled;
     }
 }
