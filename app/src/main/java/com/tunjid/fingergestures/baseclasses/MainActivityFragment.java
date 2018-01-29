@@ -16,12 +16,6 @@ public abstract class MainActivityFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        toggleFab(showsFab());
-    }
-
-    protected void toggleFab(boolean visible) {
-        MainActivity activity = ((MainActivity) getActivity());
-        if (activity != null) activity.toggleFab(visible);
     }
 
     protected void toggleToolbar(boolean visible) {
@@ -43,6 +37,4 @@ public abstract class MainActivityFragment extends BaseFragment {
         MainActivity activity = ((MainActivity) getActivity());
         if (activity != null) activity.requestPermission(permission);
     }
-
-    protected abstract boolean showsFab();
 }

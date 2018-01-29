@@ -60,6 +60,8 @@ public class TrialView extends FrameLayout {
                 })
                 .observeOn(mainThread())
                 .subscribe(textView::setText, Throwable::printStackTrace);
+
+        CheatSheet.setup(this, menuItem.getTitle());
     }
 
     @Override

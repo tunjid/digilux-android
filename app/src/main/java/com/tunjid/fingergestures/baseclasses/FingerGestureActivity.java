@@ -3,7 +3,6 @@ package com.tunjid.fingergestures.baseclasses;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.ViewGroup;
 
@@ -25,8 +24,6 @@ public abstract class FingerGestureActivity extends BaseActivity {
 
     protected ViewHider fabHider;
     protected ViewHider barHider;
-    protected FloatingActionButton fab;
-
     private CompositeDisposable disposables = new CompositeDisposable();
 
     @Nullable
@@ -50,11 +47,6 @@ public abstract class FingerGestureActivity extends BaseActivity {
         ViewGroup root = findViewById(R.id.container);
         if (root == null) return;
         Snackbar.make(root, resource, LENGTH_SHORT).show();
-    }
-
-    public void toggleFab(boolean visible) {
-        if (visible) fabHider.show();
-        else fabHider.hide();
     }
 
     public void toggleToolbar(boolean visible) {

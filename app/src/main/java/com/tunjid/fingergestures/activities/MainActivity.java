@@ -110,11 +110,9 @@ public class MainActivity extends FingerGestureActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        fab = findViewById(R.id.fab);
         adView = findViewById(R.id.adView);
         constraintLayout = findViewById(R.id.constraint_layout);
 
-        fabHider = ViewHider.of(fab).setDirection(ViewHider.BOTTOM).build();
         barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build();
 
         permissionText = findViewById(R.id.permission_view);

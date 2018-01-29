@@ -129,11 +129,6 @@ public class AppFragment extends MainActivityFragment
     }
 
     @Override
-    protected boolean showsFab() {
-        return false;
-    }
-
-    @Override
     public void pickWallpaper(@BackgroundManager.WallpaperSelection int selection) {
         Intent intent = new Intent();
         intent.setType(IMAGE_SELECTION);
