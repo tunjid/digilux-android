@@ -159,6 +159,8 @@
     <string name="open_source_libraries">Open Source Libraries</string>
     <string name="rxjava">RxJava2</string>
     <string name="color_picker">Color Picker</string>
+    <string name="image_cropper">Image Cropper</string>
+    <string name="material_design_icons">Material Design Icons</string>
     <string name="android_bootstrap">Android Bootstrap</string>
     <string name="get_set_icon">Getseticons</string>
 

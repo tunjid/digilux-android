@@ -75,6 +75,9 @@ public class MainActivity extends FingerGestureActivity {
     private static final String COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker";
     private static final String ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap";
     private static final String GET_SET_ICON_LINK = "http://www.myiconfinder.com/getseticons";
+    private static final String IMAGE_CROPPER_LINK = "https://github.com/ArthurHub/Android-Image-Cropper";
+    private static final String MATERIAL_DESIGN_ICONS_LINK = "https://materialdesignicons.com/";
+
     private static final String[] STORAGE_PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE};
 
     private AdView adView;
@@ -94,6 +97,8 @@ public class MainActivity extends FingerGestureActivity {
         links = new TextLink[]{new TextLink(context.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
                 new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
                 new TextLink(context.getString(R.string.color_picker), COLOR_PICKER_LINK),
+                new TextLink(context.getString(R.string.image_cropper), IMAGE_CROPPER_LINK),
+                new TextLink(context.getString(R.string.material_design_icons), MATERIAL_DESIGN_ICONS_LINK),
                 new TextLink(context.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
     }
 
