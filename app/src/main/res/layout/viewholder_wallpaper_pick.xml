@@ -16,14 +16,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/edit_wallpaper"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_launch_toggle_grey_24dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
         android:id="@+id/current_wallpaper"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -63,6 +55,38 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@+id/main_wallpaper"
         app:layout_constraintWidth_percent="0.3" />
+
+    <ImageView
+        android:id="@+id/share_day_wallpaper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_edit_24dp"
+        app:layout_constraintRight_toRightOf="@+id/main_wallpaper"
+        app:layout_constraintBottom_toBottomOf="@+id/main_wallpaper" />
+
+    <ImageView
+        android:id="@+id/share_night_wallpaper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_edit_24dp"
+        app:layout_constraintRight_toRightOf="@+id/alt_wallpaper"
+        app:layout_constraintBottom_toBottomOf="@+id/alt_wallpaper" />
+
+    <ImageView
+        android:id="@+id/pick_day_wallpaper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_launch_toggle_grey_24dp"
+        app:layout_constraintRight_toRightOf="@+id/main_wallpaper"
+        app:layout_constraintTop_toTopOf="@+id/main_wallpaper" />
+
+    <ImageView
+        android:id="@+id/pick_night_wallpaper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_launch_toggle_grey_24dp"
+        app:layout_constraintRight_toRightOf="@+id/alt_wallpaper"
+        app:layout_constraintTop_toTopOf="@+id/alt_wallpaper" />
 
     <TextView
         android:layout_width="0dp"
