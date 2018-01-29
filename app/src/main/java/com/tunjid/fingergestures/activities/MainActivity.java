@@ -157,13 +157,16 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.fragment_home, menu);
+        getMenuInflater().inflate(R.menu.activity_main, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_start_trial:
+                if (PurchasesManager.getInstance().startTrial()) recreate();
+                break;
             case R.id.action_directions:
                 showFragment(AppFragment.newInstance(GESTURE_ITEMS));
                 return true;

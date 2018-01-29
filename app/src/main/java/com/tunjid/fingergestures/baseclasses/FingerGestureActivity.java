@@ -11,6 +11,7 @@ import com.tunjid.androidbootstrap.core.abstractclasses.BaseActivity;
 import com.tunjid.androidbootstrap.core.view.ViewHider;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.billing.BillingManager;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import io.reactivex.disposables.CompositeDisposable;
 
@@ -51,10 +52,6 @@ public abstract class FingerGestureActivity extends BaseActivity {
         Snackbar.make(root, resource, LENGTH_SHORT).show();
     }
 
-    public FloatingActionButton getFab() {
-        return fab;
-    }
-
     public void toggleFab(boolean visible) {
         if (visible) fabHider.show();
         else fabHider.hide();
@@ -65,7 +62,7 @@ public abstract class FingerGestureActivity extends BaseActivity {
         else barHider.hide();
     }
 
-    public void purchase(String sku) {
+    public void purchase(@PurchasesManager.SKU String sku) {
         if (billingManager == null) showSnackbar(R.string.billing_generic_error);
         else disposables.add(billingManager.initiatePurchaseFlow(this, sku)
                 .subscribe(launchStatus -> {

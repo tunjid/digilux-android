@@ -2,6 +2,7 @@
     <!-- App strings-->
     <string name="app_name">DigiLux</string>
     <string name="about_app">About App</string>
+    <string name="start_trial">Start Trial</string>
 
     <!-- Ad config-->
     <string name="ad_id">ca-app-pub-1045955192336233~2688100802</string>

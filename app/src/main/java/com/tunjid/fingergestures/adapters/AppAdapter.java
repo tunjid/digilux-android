@@ -167,7 +167,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public int getItemViewType(int position) {return items[position];}
 
     public interface AppAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
-        void purchase(String sku);
+        void purchase(@PurchasesManager.SKU String sku);
 
         void pickWallpaper(@BackgroundManager.WallpaperSelection int selection);
 
