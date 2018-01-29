@@ -289,6 +289,11 @@ public class MainActivity extends FingerGestureActivity {
         if (!Intent.ACTION_SEND.equals(action) || TextUtils.isEmpty(type) || !type.startsWith("image/"))
             return;
 
+        if (!App.hasStoragePermission()) {
+            showSnackbar(R.string.enable_storage_settings);
+            return;
+        }
+
         Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri == null) return;
 
