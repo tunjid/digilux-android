@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
@@ -130,6 +131,10 @@ public class AppFragment extends MainActivityFragment
 
     @Override
     public void pickWallpaper(@BackgroundManager.WallpaperSelection int selection) {
+        if (!App.hasStoragePermission()) {
+            showSnackbar(R.string.enable_storage_settings);
+            return;
+        }
         Intent intent = new Intent();
         intent.setType(IMAGE_SELECTION);
         intent.setAction(Intent.ACTION_GET_CONTENT);

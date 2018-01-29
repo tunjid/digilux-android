@@ -40,8 +40,7 @@ public class WallpaperViewHolder extends AppViewHolder {
         night.setOnClickListener(view -> adapterListener.pickWallpaper(NIGHT_WALLPAPER_PICK_CODE));
         itemView.findViewById(R.id.share_day_wallpaper).setOnClickListener(view -> requestEdit(DAY_WALLPAPER_PICK_CODE));
         itemView.findViewById(R.id.share_night_wallpaper).setOnClickListener(view -> requestEdit(NIGHT_WALLPAPER_PICK_CODE));
-
-
+        
         setAspectRatio(current);
         setAspectRatio(day);
         setAspectRatio(night);

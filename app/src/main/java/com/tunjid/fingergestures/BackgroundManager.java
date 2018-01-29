@@ -211,6 +211,7 @@ public class BackgroundManager {
         WallpaperManager wallpaperManager = app.getSystemService(WallpaperManager.class);
         if (wallpaperManager == null || !wallpaperFile.exists()) return;
 
+        if (!App.hasStoragePermission()) return;
         try { wallpaperManager.setStream(new FileInputStream(wallpaperFile));}
         catch (Exception e) {e.printStackTrace();}
     }

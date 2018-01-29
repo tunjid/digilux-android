@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.TextView;
 
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.adapters.AppAdapter;
@@ -66,7 +67,9 @@ public class WallpaperTriggerViewHolder extends AppViewHolder {
     }
 
     private void showTimePicker(Calendar calendar, TimePickerDialog.OnTimeSetListener listener) {
-        new TimePickerDialog(itemView.getContext(), listener, calendar.get(HOUR_OF_DAY), calendar.get(MINUTE), false).show();
+        if (App.hasStoragePermission())
+            new TimePickerDialog(itemView.getContext(), listener, calendar.get(HOUR_OF_DAY), calendar.get(MINUTE), false).show();
+        else adapterListener.showSnackbar(R.string.enable_storage_settings);
     }
 
     private String getCalendarString(Calendar calendar) {
