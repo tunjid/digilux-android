@@ -162,6 +162,7 @@ public class MainActivity extends FingerGestureActivity {
         }
         else hideAds();
         if (!App.accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
+        invalidateOptionsMenu();
     }
 
     @Override
