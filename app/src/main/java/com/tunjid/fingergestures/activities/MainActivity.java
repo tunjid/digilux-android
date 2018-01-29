@@ -291,6 +291,7 @@ public class MainActivity extends FingerGestureActivity {
 
         if (!App.hasStoragePermission()) {
             showSnackbar(R.string.enable_storage_settings);
+            showFragment(AppFragment.newInstance(GESTURE_ITEMS));
             return;
         }
 
