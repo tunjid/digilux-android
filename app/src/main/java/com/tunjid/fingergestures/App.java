@@ -1,15 +1,11 @@
 package com.tunjid.fingergestures;
 
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
-import android.text.TextUtils;
 
 import com.google.android.gms.ads.MobileAds;
 import com.tunjid.fingergestures.services.FingerGestureService;
@@ -20,7 +16,6 @@ import io.reactivex.disposables.Disposable;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
 import static io.reactivex.Flowable.timer;
 
 public class App extends android.app.Application {
@@ -67,23 +62,24 @@ public class App extends android.app.Application {
     }
 
     public static boolean accessibilityServiceEnabled() {
-        Context context = getInstance();
-        ContentResolver contentResolver = context.getContentResolver();
-        ComponentName expectedComponentName = new ComponentName(context, FingerGestureService.class);
-        String enabledServicesSetting = Settings.Secure.getString(contentResolver, ENABLED_ACCESSIBILITY_SERVICES);
-
-        if (enabledServicesSetting == null) return false;
-
-        TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
-        colonSplitter.setString(enabledServicesSetting);
-
-        while (colonSplitter.hasNext()) {
-            String componentNameString = colonSplitter.next();
-            ComponentName enabledService = ComponentName.unflattenFromString(componentNameString);
-
-            if (enabledService != null && enabledService.equals(expectedComponentName)) return true;
-        }
-
-        return false;
+        return FingerGestureService.isEnabled;
+//        Context context = getInstance();
+//        ContentResolver contentResolver = context.getContentResolver();
+//        ComponentName expectedComponentName = new ComponentName(context, FingerGestureService.class);
+//        String enabledServicesSetting = Settings.Secure.getString(contentResolver, ENABLED_ACCESSIBILITY_SERVICES);
+//
+//        if (enabledServicesSetting == null) return false;
+//
+//        TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
+//        colonSplitter.setString(enabledServicesSetting);
+//
+//        while (colonSplitter.hasNext()) {
+//            String componentNameString = colonSplitter.next();
+//            ComponentName enabledService = ComponentName.unflattenFromString(componentNameString);
+//
+//            if (enabledService != null && enabledService.equals(expectedComponentName)) return true;
+//        }
+//
+//        return false;
     }
 }

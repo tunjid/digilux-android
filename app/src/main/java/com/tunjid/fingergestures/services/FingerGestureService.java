@@ -42,6 +42,8 @@ public class FingerGestureService extends AccessibilityService {
     private static final int INVALID_RESOURCE = 0;
     private static final int DELAY = 50;
 
+    public static boolean isEnabled;
+
     @Nullable
     private View overlayView;
 
@@ -89,10 +91,12 @@ public class FingerGestureService extends AccessibilityService {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         registerReceiver(receiver, filter);
+        isEnabled = true;
     }
 
     @Override
     public void onDestroy() {
+        isEnabled = false;
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         super.onDestroy();
     }
