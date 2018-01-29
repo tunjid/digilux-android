@@ -97,7 +97,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
             intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
             LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
         }
-        else if (gestureAction == MINIMIZE_BRIGHTNESS || gestureAction == MAXIMIZE_BRIGHTNESS) {
+        else if (shouldRemoveDimmerOnChange(gestureAction)) {
             removeDimmer();
         }
 
@@ -370,5 +370,10 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
         final Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         return lightSensor != null;
+    }
+
+    private boolean shouldRemoveDimmerOnChange(@GestureAction int gestureAction) {
+        return gestureAction == MINIMIZE_BRIGHTNESS || gestureAction == MAXIMIZE_BRIGHTNESS
+                || (shouldShowDimmer() && PurchasesManager.getInstance().isNotPremium());
     }
 }
