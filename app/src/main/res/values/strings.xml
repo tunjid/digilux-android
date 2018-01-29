@@ -2,6 +2,7 @@
     <!-- App strings-->
     <string name="app_name">DigiLux</string>
     <string name="about_app">About App</string>
+    <string name="start_trial">Start Trial</string>
 
     <!-- Ad config-->
     <string name="ad_id">ca-app-pub-1045955192336233~2688100802</string>
@@ -105,7 +106,9 @@
     <string name="cancel_wallpaper">Wallpaper pick cancelled</string>
     <string name="error_wallpaper">Sorry, there was an error picking the wallpaper</string>
     <string name="error_wallpaper_not_created">You haven\'t selected a wallpaper for this yet.</string>
-
+    <string name="choose_edit_source_message">Choose the image to edit in an image editing app.
+        \n\nRemember to tap the share icon in the app you pick after editing to share th edited image to DigiLux.
+        \n\nSnapseed and Photo Editor by dev.mcgyver work great; others should as well with Google Photos as the only known exception.</string>
     <!-- Wallpaper Trigger Viewholder-->
     <string name="wallpaper_trigger">Wallpaper Change Time</string>
     <string name="light_time">Light: %1%s</string>
@@ -156,6 +159,8 @@
     <string name="open_source_libraries">Open Source Libraries</string>
     <string name="rxjava">RxJava2</string>
     <string name="color_picker">Color Picker</string>
+    <string name="image_cropper">Image Cropper</string>
+    <string name="material_design_icons">Material Design Icons</string>
     <string name="android_bootstrap">Android Bootstrap</string>
     <string name="get_set_icon">Getseticons</string>
 

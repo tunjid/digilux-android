@@ -9,18 +9,13 @@ import android.view.View;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.fingergestures.activities.MainActivity;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 
 public abstract class MainActivityFragment extends BaseFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        toggleFab(showsFab());
-    }
-
-    protected void toggleFab(boolean visible) {
-        MainActivity activity = ((MainActivity) getActivity());
-        if (activity != null) activity.toggleFab(visible);
     }
 
     protected void toggleToolbar(boolean visible) {
@@ -33,7 +28,7 @@ public abstract class MainActivityFragment extends BaseFragment {
         if (activity != null) activity.showSnackbar(resource);
     }
 
-    public void purchase(String sku) {
+    public void purchase(@PurchasesManager.SKU String sku) {
         MainActivity activity = ((MainActivity) getActivity());
         if (activity != null) activity.purchase(sku);
     }
@@ -42,6 +37,4 @@ public abstract class MainActivityFragment extends BaseFragment {
         MainActivity activity = ((MainActivity) getActivity());
         if (activity != null) activity.requestPermission(permission);
     }
-
-    protected abstract boolean showsFab();
 }

@@ -134,7 +134,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         R.string.adjust_double_swipe_settings,
                         mapper::setDoubleSwipeDelay,
                         mapper::getDoubleSwipeDelay,
-                        () -> !PurchasesManager.getInstance().isNotPremium(),
+                        () -> PurchasesManager.getInstance().isPremium(),
                         mapper::getSwipeDelayText);
             case MAP_UP_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE, adapterListener);
@@ -167,7 +167,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public int getItemViewType(int position) {return items[position];}
 
     public interface AppAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
-        void purchase(String sku);
+        void purchase(@PurchasesManager.SKU String sku);
 
         void pickWallpaper(@BackgroundManager.WallpaperSelection int selection);
 

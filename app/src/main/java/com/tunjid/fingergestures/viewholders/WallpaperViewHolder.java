@@ -38,9 +38,9 @@ public class WallpaperViewHolder extends AppViewHolder {
 
         day.setOnClickListener(view -> adapterListener.pickWallpaper(DAY_WALLPAPER_PICK_CODE));
         night.setOnClickListener(view -> adapterListener.pickWallpaper(NIGHT_WALLPAPER_PICK_CODE));
-        itemView.findViewById(R.id.edit_wallpaper).setOnClickListener(view ->
-                backgroundManager.requestWallPaperConstant(R.string.choose_edit_source, itemView.getContext(), this::requestEdit));
-
+        itemView.findViewById(R.id.share_day_wallpaper).setOnClickListener(view -> requestEdit(DAY_WALLPAPER_PICK_CODE));
+        itemView.findViewById(R.id.share_night_wallpaper).setOnClickListener(view -> requestEdit(NIGHT_WALLPAPER_PICK_CODE));
+        
         setAspectRatio(current);
         setAspectRatio(day);
         setAspectRatio(night);
@@ -86,7 +86,7 @@ public class WallpaperViewHolder extends AppViewHolder {
         editIntent.setDataAndType(uri, "image/*");
         editIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        context.startActivity(Intent.createChooser(editIntent, null));
+        context.startActivity(Intent.createChooser(editIntent, context.getString(R.string.choose_edit_source_message)));
     }
 
     private void loadImage(@BackgroundManager.WallpaperSelection int selection, ImageView imageView) {

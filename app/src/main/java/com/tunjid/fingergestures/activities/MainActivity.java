@@ -75,6 +75,9 @@ public class MainActivity extends FingerGestureActivity {
     private static final String COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker";
     private static final String ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap";
     private static final String GET_SET_ICON_LINK = "http://www.myiconfinder.com/getseticons";
+    private static final String IMAGE_CROPPER_LINK = "https://github.com/ArthurHub/Android-Image-Cropper";
+    private static final String MATERIAL_DESIGN_ICONS_LINK = "https://materialdesignicons.com/";
+
     private static final String[] STORAGE_PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE};
 
     private AdView adView;
@@ -94,6 +97,8 @@ public class MainActivity extends FingerGestureActivity {
         links = new TextLink[]{new TextLink(context.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
                 new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
                 new TextLink(context.getString(R.string.color_picker), COLOR_PICKER_LINK),
+                new TextLink(context.getString(R.string.image_cropper), IMAGE_CROPPER_LINK),
+                new TextLink(context.getString(R.string.material_design_icons), MATERIAL_DESIGN_ICONS_LINK),
                 new TextLink(context.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
     }
 
@@ -110,11 +115,9 @@ public class MainActivity extends FingerGestureActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        fab = findViewById(R.id.fab);
         adView = findViewById(R.id.adView);
         constraintLayout = findViewById(R.id.constraint_layout);
 
-        fabHider = ViewHider.of(fab).setDirection(ViewHider.BOTTOM).build();
         barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build();
 
         permissionText = findViewById(R.id.permission_view);
@@ -157,13 +160,20 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.fragment_home, menu);
+        getMenuInflater().inflate(R.menu.activity_main, menu);
+
+        MenuItem item = menu.findItem(R.id.action_start_trial);
+        if (item != null) item.setVisible(!PurchasesManager.getInstance().isPremiumNotTrial());
+
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_start_trial:
+                if (PurchasesManager.getInstance().startTrial()) recreate();
+                break;
             case R.id.action_directions:
                 showFragment(AppFragment.newInstance(GESTURE_ITEMS));
                 return true;

@@ -288,7 +288,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public boolean supportsAmbientThreshold() {
-        return !PurchasesManager.getInstance().isNotPremium()
+        return PurchasesManager.getInstance().isPremium()
                 && restoresAdaptiveBrightnessOnDisplaySleep()
                 && hasBrightnessSensor();
     }
@@ -299,7 +299,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     public boolean isDimmerEnabled() {
         return hasOverlayPermission()
-                && !PurchasesManager.getInstance().isNotPremium()
+                && PurchasesManager.getInstance().isPremium()
                 && app.getPreferences().getBoolean(SCREEN_DIMMER_ENABLED, false);
     }
 

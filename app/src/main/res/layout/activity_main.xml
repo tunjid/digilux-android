@@ -70,11 +70,4 @@
         layout="@layout/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/single_margin" />
 </android.support.design.widget.CoordinatorLayout>

@@ -3,7 +3,6 @@ package com.tunjid.fingergestures.baseclasses;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.ViewGroup;
 
@@ -11,6 +10,7 @@ import com.tunjid.androidbootstrap.core.abstractclasses.BaseActivity;
 import com.tunjid.androidbootstrap.core.view.ViewHider;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.billing.BillingManager;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import io.reactivex.disposables.CompositeDisposable;
 
@@ -24,8 +24,6 @@ public abstract class FingerGestureActivity extends BaseActivity {
 
     protected ViewHider fabHider;
     protected ViewHider barHider;
-    protected FloatingActionButton fab;
-
     private CompositeDisposable disposables = new CompositeDisposable();
 
     @Nullable
@@ -51,21 +49,12 @@ public abstract class FingerGestureActivity extends BaseActivity {
         Snackbar.make(root, resource, LENGTH_SHORT).show();
     }
 
-    public FloatingActionButton getFab() {
-        return fab;
-    }
-
-    public void toggleFab(boolean visible) {
-        if (visible) fabHider.show();
-        else fabHider.hide();
-    }
-
     public void toggleToolbar(boolean visible) {
         if (visible) barHider.show();
         else barHider.hide();
     }
 
-    public void purchase(String sku) {
+    public void purchase(@PurchasesManager.SKU String sku) {
         if (billingManager == null) showSnackbar(R.string.billing_generic_error);
         else disposables.add(billingManager.initiatePurchaseFlow(this, sku)
                 .subscribe(launchStatus -> {
