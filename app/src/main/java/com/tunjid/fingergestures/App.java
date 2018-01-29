@@ -1,14 +1,12 @@
 package com.tunjid.fingergestures;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
-import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 
 import com.google.android.gms.ads.MobileAds;
@@ -20,6 +18,7 @@ import io.reactivex.disposables.Disposable;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK;
 import static io.reactivex.Flowable.timer;
 
 public class App extends android.app.Application {
@@ -67,14 +66,14 @@ public class App extends android.app.Application {
 
     public static boolean accessibilityServiceEnabled() {
         App app = getInstance();
-        String packageName = app.getPackageName();
+        String key = app.getPackageName();
 
-        AccessibilityManager accessibilityManager = ((AccessibilityManager) app.getSystemService(Context.ACCESSIBILITY_SERVICE));
+        AccessibilityManager accessibilityManager = ((AccessibilityManager) app.getSystemService(ACCESSIBILITY_SERVICE));
         if (accessibilityManager == null) return false;
 
-        List<AccessibilityServiceInfo> sevices = accessibilityManager.getEnabledAccessibilityServiceList(AccessibilityEvent.TYPES_ALL_MASK);
+        List<AccessibilityServiceInfo> list = accessibilityManager.getEnabledAccessibilityServiceList(TYPES_ALL_MASK);
 
-        for (AccessibilityServiceInfo info : sevices) if (info.getId().contains(packageName)) return true;
+        for (AccessibilityServiceInfo info : list) if (info.getId().contains(key)) return true;
         return false;
     }
 }
