@@ -35,6 +35,7 @@ import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.BuildConfig;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.TrialView;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.AppFragment;
@@ -168,11 +169,17 @@ public class MainActivity extends FingerGestureActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
-
-        MenuItem item = menu.findItem(R.id.action_start_trial);
-        if (item != null) item.setVisible(!PurchasesManager.getInstance().isPremiumNotTrial());
-
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_start_trial);
+        boolean isTrialVisible = !PurchasesManager.getInstance().isPremiumNotTrial();
+
+        if (item != null) item.setVisible(isTrialVisible);
+        if (isTrialVisible && item != null) item.setActionView(new TrialView(this, item));
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -208,7 +215,6 @@ public class MainActivity extends FingerGestureActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 
     @Override
     protected void onPause() {

@@ -49,7 +49,7 @@ public class TrialView extends FrameLayout {
         if (flowable == null) changeState(false);
         else disposable = flowable.map(String::valueOf)
                 .doOnSubscribe(subscription -> changeState(true))
-                .doFinally(() -> {
+                .doOnComplete(() -> {
                     Activity activity = getActivity(getContext());
                     if (activity == null) return;
 
