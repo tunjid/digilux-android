@@ -12,6 +12,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.transition.AutoTransition;
@@ -150,7 +151,7 @@ public class MainActivity extends FingerGestureActivity {
                 @Override
                 public void onAdLoaded() {
                     if (adView == null) return;
-                    TransitionManager.beginDelayedTransition(constraintLayout, new AutoTransition());
+                    TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
                     adView.setVisibility(View.VISIBLE);
                 }
             });
@@ -307,7 +308,7 @@ public class MainActivity extends FingerGestureActivity {
         else if (permissionRequest == STORAGE_CODE) text = R.string.enable_storage_settings;
 
         if (text != 0) permissionText.setText(text);
-        TransitionManager.beginDelayedTransition(constraintLayout, new AutoTransition());
+        TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
         permissionText.setVisibility(View.VISIBLE);
     }
 
@@ -316,7 +317,7 @@ public class MainActivity extends FingerGestureActivity {
             onPermissionAdded();
             return;
         }
-        TransitionManager.beginDelayedTransition(constraintLayout, new AutoTransition());
+        TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
         permissionText.setVisibility(View.GONE);
     }
 
@@ -340,7 +341,7 @@ public class MainActivity extends FingerGestureActivity {
     private void hideAds() {
         if (adView.getVisibility() == View.GONE) return;
 
-        Transition hideTransition = new AutoTransition();
+        Transition hideTransition = getTransition();
         hideTransition.addListener(new Transition.TransitionListener() {
             @Override
             public void onTransitionStart(@NonNull Transition transition) {
@@ -369,6 +370,10 @@ public class MainActivity extends FingerGestureActivity {
         });
         android.transition.TransitionManager.beginDelayedTransition(constraintLayout, hideTransition);
         adView.setVisibility(View.GONE);
+    }
+
+    private Transition getTransition() {
+        return new AutoTransition().excludeTarget(RecyclerView.class, true);
     }
 
     private static class TextLink implements CharSequence {

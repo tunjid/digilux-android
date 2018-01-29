@@ -7,8 +7,8 @@ android {
         applicationId "com.tunjid.fingergestures"
         minSdkVersion 26
         targetSdkVersion 27
-        versionCode 26
-        versionName "4.0.4"
+        versionCode 25
+        versionName "5.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
@@ -53,11 +53,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "android.arch.lifecycle:runtime:1.1.0"
-    implementation "android.arch.lifecycle:extensions:1.1.0"
-    implementation "android.arch.persistence.room:runtime:1.0.0"
-    implementation "android.arch.persistence.room:rxjava2:1.0.0"
-
     implementation 'com.android.billingclient:billing:1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0-beta4'
     implementation 'com.android.support:exifinterface:27.0.2'
@@ -72,7 +67,6 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
 
     implementation 'com.squareup.picasso:picasso:2.5.2'
-    implementation 'jp.wasabeef:picasso-transformations:2.1.2'
 
     implementation('com.theartofdev.edmodo:android-image-cropper:2.6.0') {
         exclude module: 'support-annotations'
