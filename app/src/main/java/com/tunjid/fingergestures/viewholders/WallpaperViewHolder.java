@@ -86,7 +86,7 @@ public class WallpaperViewHolder extends AppViewHolder {
         editIntent.setDataAndType(uri, "image/*");
         editIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        context.startActivity(Intent.createChooser(editIntent, context.getString(R.string.choose_edit_source_message)));
+        context.startActivity(Intent.createChooser(editIntent, context.getString(R.string.choose_edit_source_message), backgroundManager.getWallpaperEditPendingIntent().getIntentSender()));
     }
 
     private void loadImage(@BackgroundManager.WallpaperSelection int selection, ImageView imageView) {
