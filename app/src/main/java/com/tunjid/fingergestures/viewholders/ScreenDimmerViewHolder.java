@@ -35,7 +35,7 @@ public class ScreenDimmerViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        boolean isPremium = !purchasesManager.isNotPremium();
+        boolean isPremium = purchasesManager.isPremium();
         boolean hasOverlayPermission = brightnessGestureConsumer.hasOverlayPermission();
 
         goToSettings.setVisibility(hasOverlayPermission ? View.GONE : View.VISIBLE);

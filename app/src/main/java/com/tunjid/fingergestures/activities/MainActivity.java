@@ -156,6 +156,10 @@ public class MainActivity extends FingerGestureActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
+
+        MenuItem item = menu.findItem(R.id.action_start_trial);
+        if (item != null) item.setVisible(!PurchasesManager.getInstance().isPremiumNotTrial());
+
         return super.onCreateOptionsMenu(menu);
     }
 

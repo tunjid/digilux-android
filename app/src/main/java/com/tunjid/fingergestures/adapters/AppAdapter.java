@@ -134,7 +134,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         R.string.adjust_double_swipe_settings,
                         mapper::setDoubleSwipeDelay,
                         mapper::getDoubleSwipeDelay,
-                        () -> !PurchasesManager.getInstance().isNotPremium(),
+                        () -> PurchasesManager.getInstance().isPremium(),
                         mapper::getSwipeDelayText);
             case MAP_UP_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE, adapterListener);
