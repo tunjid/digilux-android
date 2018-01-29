@@ -1,23 +1,24 @@
 package com.tunjid.fingergestures;
 
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
+import android.support.v4.content.ContextCompat;
+import android.view.accessibility.AccessibilityManager;
 
 import com.google.android.gms.ads.MobileAds;
-import com.tunjid.fingergestures.services.FingerGestureService;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.disposables.Disposable;
 
-import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK;
 import static io.reactivex.Flowable.timer;
 
 public class App extends android.app.Application {
@@ -59,24 +60,20 @@ public class App extends android.app.Application {
         return Settings.System.canWrite(getInstance());
     }
 
-    public static boolean isAccessibilityServiceEnabled() {
-        Context context = getInstance();
-        ContentResolver contentResolver = context.getContentResolver();
-        ComponentName expectedComponentName = new ComponentName(context, FingerGestureService.class);
-        String enabledServicesSetting = Settings.Secure.getString(contentResolver, ENABLED_ACCESSIBILITY_SERVICES);
+    public static boolean hasStoragePermission() {
+        return ContextCompat.checkSelfPermission(getInstance(), READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED;
+    }
 
-        if (enabledServicesSetting == null) return false;
+    public static boolean accessibilityServiceEnabled() {
+        App app = getInstance();
+        String key = app.getPackageName();
 
-        TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
-        colonSplitter.setString(enabledServicesSetting);
+        AccessibilityManager accessibilityManager = ((AccessibilityManager) app.getSystemService(ACCESSIBILITY_SERVICE));
+        if (accessibilityManager == null) return false;
 
-        while (colonSplitter.hasNext()) {
-            String componentNameString = colonSplitter.next();
-            ComponentName enabledService = ComponentName.unflattenFromString(componentNameString);
+        List<AccessibilityServiceInfo> list = accessibilityManager.getEnabledAccessibilityServiceList(TYPES_ALL_MASK);
 
-            if (enabledService != null && enabledService.equals(expectedComponentName)) return true;
-        }
-
+        for (AccessibilityServiceInfo info : list) if (info.getId().contains(key)) return true;
         return false;
     }
 }

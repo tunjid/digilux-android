@@ -2,6 +2,7 @@
     <!-- App strings-->
     <string name="app_name">DigiLux</string>
     <string name="about_app">About App</string>
+    <string name="start_trial">Start Trial</string>
 
     <!-- Ad config-->
     <string name="ad_id">ca-app-pub-1045955192336233~2688100802</string>
@@ -12,9 +13,11 @@
 
     <string name="enable_accessibility">Enable Accessibility Settings</string>
     <string name="enable_write_settings">Enable Brightness Settings</string>
+    <string name="enable_storage_settings">Enable Storage Settings</string>
 
     <string name="accessibility_permissions_request">This app needs accessibility to listen for fingerprint gestures.\n\nGo to accessibility now?</string>
     <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.\n\nGo to settings now?</string>
+    <string name="wallpaper_permission_request">This app needs permission to read from storage to access wallpaper colors and change them.\n\nGo to settings now?</string>
 
     <string name="accessibility_permission_granted">Accessibility permission granted</string>
     <string name="settings_permission_granted">Settings permission granted</string>
@@ -47,7 +50,7 @@
     <string name="edit_slider_appearance">Edit Slider Appearance</string>
     <string name="change_slider_background_color">Change slider background color</string>
     <string name="change_slider_color">Change slider color</string>
-    <string name="wallpaper_color">Colors from wallpaper (Incompatible with Live Wallpapers):</string>
+    <string name="wallpaper_color">Colors from wallpaper (Works with some Live Wallpapers):</string>
     <string name="slider">Slider</string>
     <string name="slider_background">Slider Background</string>
     <string name="premium_prompt_slider">Adds the immeasurable, earth shattering convenience of choosing your slider color based on the colors in your static wallpaper.</string>
@@ -93,6 +96,25 @@
     <!-- Review Viewholder-->
     <string name="review_app">Leave a review</string>
 
+    <!-- Wallpaper Viewholder-->
+    <string name="alternate_wallpaper">Day and Night Wallpaper</string>
+    <string name="current_wallpaper">Current</string>
+    <string name="day_wallpaper">Day</string>
+    <string name="night_wallpaper">Night</string>
+    <string name="reset">Reset</string>
+    <string name="choose_edit_source">Choose Edit Source</string>
+    <string name="cancel_wallpaper">Wallpaper pick cancelled</string>
+    <string name="error_wallpaper">Sorry, there was an error picking the wallpaper</string>
+    <string name="error_wallpaper_not_created">You haven\'t selected a wallpaper for this yet.</string>
+    <string name="choose_edit_source_message">Choose the image to edit in an image editing app.
+        \n\nRemember to tap the share icon in the app you pick after editing to share th edited image to DigiLux.
+        \n\nSnapseed and Photo Editor by dev.mcgyver work great; others should as well with Google Photos as the only known exception.</string>
+    <!-- Wallpaper Trigger Viewholder-->
+    <string name="wallpaper_trigger">Wallpaper Change Time</string>
+    <string name="light_time">Light: %1%s</string>
+    <string name="dark_time">Dark: %1$s</string>
+    <string name="to">to</string>
+
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>
     <string name="swipe_up">Swipe up</string>
@@ -137,8 +159,19 @@
     <string name="open_source_libraries">Open Source Libraries</string>
     <string name="rxjava">RxJava2</string>
     <string name="color_picker">Color Picker</string>
+    <string name="image_cropper">Image Cropper</string>
+    <string name="material_design_icons">Material Design Icons</string>
     <string name="android_bootstrap">Android Bootstrap</string>
     <string name="get_set_icon">Getseticons</string>
+
+    <!-- Bottom Navigation-->
+    <string name="gestures">Gestures</string>
+    <string name="adjustments">Adjustments</string>
+    <string name="appearance">Appearance</string>
+
+    <!-- Trial-->
+    <string name="trial_text">Start trial for %1$s? Swipe to dismiss.</string>
+    <string name="trial_running">Trial is already running.</string>
 
     <!-- Generic text-->
     <string name="ok">Okay</string>

@@ -6,10 +6,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
 
     <application
@@ -31,13 +34,34 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/gesture_accessibility_service" />
         </service>
-
+        <receiver
+            android:name=".WallpaperBroadcastReceiver"
+            android:exported="false"
+            android:permission="android.permission.SET_WALLPAPER">
+            <intent-filter>
+                <action android:name="com.tunjid.fingergestures.action.changeWallpaper" />
+            </intent-filter>
+        </receiver>
+        <provider
+            android:name=".WallpaperFileProvider"
+            android:authorities="${applicationId}.com.tunjid.fingergestures.wallpaperprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
         <activity
             android:name=".activities.MainActivity"
             android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
         <activity
@@ -50,5 +74,8 @@
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:theme="@style/DockingActivityTheme" />
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
     </application>
 </manifest>

@@ -8,24 +8,28 @@ import android.widget.TextView;
 
 import com.tunjid.androidbootstrap.core.text.SpanBuilder;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.adapters.HomeAdapter;
+import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
+import static com.tunjid.fingergestures.App.canWriteToSettings;
+import static com.tunjid.fingergestures.App.accessibilityServiceEnabled;
+import static com.tunjid.fingergestures.activities.MainActivity.ACCESSIBILITY_CODE;
+import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.GestureDirection;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
 
-public class MapperViewHolder extends HomeViewHolder {
+public class MapperViewHolder extends AppViewHolder {
 
     @GestureDirection
     private final String doubleDirection;
     private final TextView subtitle;
 
     public MapperViewHolder(View itemView, @GestureDirection String direction,
-                            HomeAdapter.HomeAdapterListener listener) {
+                            AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
         GestureMapper mapper = GestureMapper.getInstance();
 
@@ -45,6 +49,10 @@ public class MapperViewHolder extends HomeViewHolder {
     @Override
     public void bind() {
         super.bind();
+
+        if (!accessibilityServiceEnabled()) adapterListener.requestPermission(ACCESSIBILITY_CODE);
+        if (!canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+
         GestureMapper mapper = GestureMapper.getInstance();
         subtitle.setOnClickListener(view -> {
             boolean notPremium = PurchasesManager.getInstance().isNotPremium();

@@ -2,10 +2,6 @@ package com.tunjid.fingergestures.viewholders;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.drawable.Drawable;
-import android.support.annotation.DrawableRes;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.graphics.Palette;
 import android.view.View;
@@ -13,30 +9,35 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
-import com.tunjid.fingergestures.App;
+import com.tunjid.fingergestures.BackgroundManager;
+import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.adapters.HomeAdapter;
+import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
 import java.util.function.Consumer;
 
 import static com.flask.colorpicker.ColorPickerView.WHEEL_TYPE.FLOWER;
+import static com.tunjid.fingergestures.App.hasStoragePermission;
 
-public class ColorAdjusterViewHolder extends HomeViewHolder {
+public class ColorAdjusterViewHolder extends AppViewHolder {
 
     private static final int COLOR_WHEEL_DENSITY = 12;
+    private static final int INVALID_COLOR = -1;
 
     private final View backgroundIndicator;
     private final View sliderIndicator;
     private final View[] wallpaperColorIndicators;
     private final CharSequence[] targetOptions;
+    private final BackgroundManager backgroundManager;
     private final BrightnessGestureConsumer brightnessGestureConsumer;
 
-    public ColorAdjusterViewHolder(View itemView, HomeAdapter.HomeAdapterListener listener) {
+    public ColorAdjusterViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
 
         Context context = itemView.getContext();
+        backgroundManager = BackgroundManager.getInstance();
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         backgroundIndicator = itemView.findViewById(R.id.slider_background_color_indicator);
         sliderIndicator = itemView.findViewById(R.id.slider_color_indicator);
@@ -73,47 +74,42 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
     @Override
     public void bind() {
         super.bind();
-        brightnessGestureConsumer.extractPalette().subscribe(this::onPaletterExtracted, error -> {});
+        if (!hasStoragePermission()) adapterListener.requestPermission(MainActivity.STORAGE_CODE);
+        else backgroundManager.extractPalette().subscribe(this::onPaletteExtracted, error -> {});
     }
 
     private void setBackgroundColor(int color) {
         brightnessGestureConsumer.setBackgroundColor(color);
-        backgroundIndicator.setBackground(tint(R.drawable.color_indicator, color));
+        backgroundIndicator.setBackground(backgroundManager.tint(R.drawable.color_indicator, color));
     }
 
     private void setSliderColor(int color) {
         brightnessGestureConsumer.setSliderColor(color);
-        sliderIndicator.setBackground(tint(R.drawable.color_indicator, color));
+        sliderIndicator.setBackground(backgroundManager.tint(R.drawable.color_indicator, color));
     }
 
-    private void onPaletterExtracted(Palette palette) {
+    private void onPaletteExtracted(Palette palette) {
         OnClickListener pickWallpaper = this::getColorFromWallpaper;
-        int defaultColor = brightnessGestureConsumer.getSliderColor();
         final int[] colors = {
-                palette.getDominantColor(defaultColor),
-                palette.getVibrantColor(defaultColor),
-                palette.getMutedColor(defaultColor),
-                palette.getDarkVibrantColor(defaultColor),
-                palette.getDarkMutedColor(defaultColor),
-                palette.getLightVibrantColor(defaultColor),
-                palette.getLightMutedColor(defaultColor)
+                palette.getDominantColor(INVALID_COLOR),
+                palette.getVibrantColor(INVALID_COLOR),
+                palette.getMutedColor(INVALID_COLOR),
+                palette.getDarkVibrantColor(INVALID_COLOR),
+                palette.getDarkMutedColor(INVALID_COLOR),
+                palette.getLightVibrantColor(INVALID_COLOR),
+                palette.getLightMutedColor(INVALID_COLOR)
         };
 
         for (int i = 0; i < wallpaperColorIndicators.length; i++) {
+            int color = colors[i];
             View indicator = wallpaperColorIndicators[i];
+            indicator.setVisibility(color == INVALID_COLOR ? View.GONE : View.VISIBLE);
+            if (color == INVALID_COLOR) continue;
+
             indicator.setTag(colors[i]);
-            indicator.setBackground(tint(R.drawable.color_indicator, colors[i]));
+            indicator.setBackground(backgroundManager.tint(R.drawable.color_indicator, colors[i]));
             indicator.setOnClickListener(pickWallpaper);
         }
-    }
-
-    public static Drawable tint(@DrawableRes int drawableRes, int color) {
-        Context context = App.getInstance();
-        Drawable normalDrawable = ContextCompat.getDrawable(context, drawableRes);
-        Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
-        DrawableCompat.setTint(wrapDrawable, color);
-
-        return wrapDrawable;
     }
 
     private void pickColor(int initialColor, Consumer<Integer> consumer) {
@@ -139,7 +135,10 @@ public class ColorAdjusterViewHolder extends HomeViewHolder {
         new AlertDialog.Builder(indicator.getContext())
                 .setTitle(R.string.choose_target)
                 .setItems(targetOptions, (dialog, position) -> {
-                    int color = (int) indicator.getTag();
+                    Object tag = indicator.getTag();
+                    if (tag == null || !(tag instanceof Integer)) return;
+
+                    int color = (int) tag;
                     if (position == 0) setBackgroundColor(color);
                     else setSliderColor(color);
                 })

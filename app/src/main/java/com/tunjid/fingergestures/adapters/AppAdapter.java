@@ -2,23 +2,31 @@ package com.tunjid.fingergestures.adapters;
 
 import android.content.Context;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.BackgroundManager;
+import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
+import com.tunjid.fingergestures.viewholders.AppViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
-import com.tunjid.fingergestures.viewholders.HomeViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
 import com.tunjid.fingergestures.viewholders.ReviewViewHolder;
 import com.tunjid.fingergestures.viewholders.ScreenDimmerViewHolder;
 import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.ToggleViewHolder;
+import com.tunjid.fingergestures.viewholders.WallpaperTriggerViewHolder;
+import com.tunjid.fingergestures.viewholders.WallpaperViewHolder;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
@@ -26,35 +34,49 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GES
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
 
 
-public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAdapter.HomeAdapterListener> {
+public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
 
-    private static final int SLIDER_DELTA = 0;
-    private static final int SLIDER_POSITION = 1;
-    private static final int SLIDER_DURATION = 2;
-    private static final int SLIDER_COLOR = 3;
-    private static final int SCREEN_DIMMER = 4;
-    private static final int SHOW_SLIDER = 5;
-    private static final int ADAPTIVE_BRIGHTNESS = 6;
-    private static final int ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS = 7;
-    private static final int DOUBLE_SWIPE_SETTINGS = 8;
-    private static final int MAP_UP_ICON = 9;
-    private static final int MAP_DOWN_ICON = 10;
-    private static final int MAP_LEFT_ICON = 11;
-    private static final int MAP_RIGHT_ICON = 12;
-    private static final int AD_FREE = 13;
-    private static final int REVIEW = 14;
-    private static final int NUM_ITEMS = 15;
+    public static final int PADDING = -1;
+    public static final int SLIDER_DELTA = 0;
+    public static final int SLIDER_POSITION = 1;
+    public static final int SLIDER_DURATION = 2;
+    public static final int SLIDER_COLOR = 3;
+    public static final int SCREEN_DIMMER = 4;
+    public static final int SHOW_SLIDER = 5;
+    public static final int ADAPTIVE_BRIGHTNESS = 6;
+    public static final int ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS = 7;
+    public static final int DOUBLE_SWIPE_SETTINGS = 8;
+    public static final int MAP_UP_ICON = 9;
+    public static final int MAP_DOWN_ICON = 10;
+    public static final int MAP_LEFT_ICON = 11;
+    public static final int MAP_RIGHT_ICON = 12;
+    public static final int AD_FREE = 13;
+    public static final int REVIEW = 14;
+    public static final int WALLPAPER_PICKER = 15;
+    public static final int WALLPAPER_TRIGGER = 16;
 
-    public HomeAdapter(HomeAdapterListener listener) {
+
+//    @Retention(RetentionPolicy.SOURCE)
+//    @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR,
+//            SCREEN_DIMMER, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS,
+//            MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW})
+//    @interface AdapterView {}
+
+    private final int[] items;
+
+    public AppAdapter(int[] items, AppAdapterListener listener) {
         super(listener);
+        this.items = items;
     }
 
     @Override
-    public HomeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public AppViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
 
         switch (viewType) {
+            case PADDING:
+                return new AppViewHolder(getView(R.layout.viewholder_padding, parent));
             case SLIDER_DELTA:
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
@@ -89,7 +111,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         brightnessGestureConsumer::restoresAdaptiveBrightnessOnDisplaySleep,
                         (flag) -> {
                             brightnessGestureConsumer.shouldRestoreAdaptiveBrightnessOnDisplaySleep(flag);
-                            notifyItemChanged(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS);
+                            notifyItemChanged(Arrays.stream(items).boxed().collect(Collectors.toList()).indexOf(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS));
                         });
             case SHOW_SLIDER:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
@@ -112,7 +134,7 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                         R.string.adjust_double_swipe_settings,
                         mapper::setDoubleSwipeDelay,
                         mapper::getDoubleSwipeDelay,
-                        () -> !PurchasesManager.getInstance().isNotPremium(),
+                        () -> PurchasesManager.getInstance().isPremium(),
                         mapper::getSwipeDelayText);
             case MAP_UP_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE, adapterListener);
@@ -126,28 +148,32 @@ public class HomeAdapter extends BaseRecyclerViewAdapter<HomeViewHolder, HomeAda
                 return new AdFreeViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
             case REVIEW:
                 return new ReviewViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
+            case WALLPAPER_PICKER:
+                return new WallpaperViewHolder(getView(R.layout.viewholder_wallpaper_pick, parent), adapterListener);
+            case WALLPAPER_TRIGGER:
+                return new WallpaperTriggerViewHolder(getView(R.layout.viewholder_wallpaper_trigger, parent), adapterListener);
             default:
-                return new HomeViewHolder(getView(R.layout.viewholder_slider_delta, parent));
+                return new AppViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }
     }
 
     @Override
-    public void onBindViewHolder(HomeViewHolder holder, int position) {
-        holder.bind();
-    }
+    public void onBindViewHolder(AppViewHolder holder, int position) {holder.bind();}
 
     @Override
-    public int getItemCount() {
-        return NUM_ITEMS;
-    }
+    public int getItemCount() {return items.length;}
 
     @Override
-    public int getItemViewType(int position) {
-        return position;
-    }
+    public int getItemViewType(int position) {return items[position];}
 
-    public interface HomeAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
-        void purchase(String sku);
+    public interface AppAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
+        void purchase(@PurchasesManager.SKU String sku);
+
+        void pickWallpaper(@BackgroundManager.WallpaperSelection int selection);
+
+        void requestPermission(@MainActivity.PermissionRequest int permission);
+
+        void showSnackbar(@StringRes int message);
     }
 
     private View getView(@LayoutRes int res, ViewGroup viewGroup) {

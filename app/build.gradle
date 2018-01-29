@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileSdkVersion 27
+    buildToolsVersion "26.0.3"
     defaultConfig {
         applicationId "com.tunjid.fingergestures"
         minSdkVersion 26
-        targetSdkVersion 26
-        versionCode 26
-        versionName "4.0.4"
+        targetSdkVersion 27
+        versionCode 27
+        versionName "5.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
@@ -21,10 +21,23 @@ android {
             keyPassword keystoreProps['aliasPassword']
             storePassword keystoreProps['keystorePassword']
         }
+        staging {
+            def keystoreProps = new Properties()
+            def propertiesFile = file("keystore.properties")
+            keystoreProps.load(new FileInputStream(propertiesFile))
+            storeFile file("release.keystore")
+            keyAlias keystoreProps['alias']
+            keyPassword keystoreProps['aliasPassword']
+            storePassword keystoreProps['keystorePassword']
+        }
     }
     buildTypes {
         debug {
             applicationIdSuffix ".dev"
+        }
+        staging {
+            debuggable true
+            signingConfig signingConfigs.staging
         }
         release {
             minifyEnabled true
@@ -41,18 +54,31 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.billingclient:billing:1.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support:cardview-v7:26.1.0'
-    implementation 'com.android.support:design:26.1.0'
-    implementation 'com.android.support:palette-v7:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0-beta4'
+    implementation 'com.android.support:exifinterface:27.0.2'
+    implementation 'com.android.support:appcompat-v7:27.0.2'
+    implementation 'com.android.support:cardview-v7:27.0.2'
+    implementation 'com.android.support:palette-v7:27.0.2'
+    implementation 'com.android.support:design:27.0.2'
 
-    implementation 'com.google.android.gms:play-services-ads:11.4.2'
+    implementation 'com.google.android.gms:play-services-ads:11.8.0'
 
     implementation "io.reactivex.rxjava2:rxjava:2.1.5"
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
 
-    implementation(group: "com.tunjid.android-bootstrap", name: "core", version: "1.0.2-SNAPSHOT", changing: true) {
+    implementation 'com.squareup.picasso:picasso:2.5.2'
+
+    implementation('com.theartofdev.edmodo:android-image-cropper:2.6.0') {
+        exclude module: 'support-annotations'
+        exclude module: 'recyclerview-v7'
+        exclude module: 'exifinterface'
+        exclude module: 'appcompat-v7'
+        exclude module: 'support-v13'
+        exclude module: 'support-v4'
+        exclude module: 'design'
+    }
+
+    implementation(group: "com.tunjid.android-bootstrap", name: "core", version: "2.0.0", changing: true) {
         exclude module: 'appcompat-v7'
         exclude module: 'support-annotations'
         exclude module: 'support-v4'
