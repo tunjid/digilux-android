@@ -5,7 +5,6 @@
         android:id="@+id/action_start_trial"
         android:icon="@drawable/ic_gift_24dp"
         android:title="@string/start_trial"
-        app:actionProviderClass="com.tunjid.fingergestures.TrialViewActionProvider"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/info"

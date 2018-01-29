@@ -170,6 +170,10 @@
     <string name="adjustments">Adjustments</string>
     <string name="appearance">Appearance</string>
 
+    <!-- Trial-->
+    <string name="trial_text">Start trial for %1$s? Swipe to dismiss.</string>
+    <string name="trial_running">Trial is already running.</string>
+
     <!-- Generic text-->
     <string name="ok">Okay</string>
     <string name="cancel">Cancel</string>

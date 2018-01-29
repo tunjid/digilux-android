@@ -10,11 +10,12 @@ import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.transition.AutoTransition;
@@ -23,6 +24,7 @@ import android.transition.TransitionManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -30,11 +32,13 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.androidbootstrap.core.view.ViewHider;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.BuildConfig;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.TrialView;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.AppFragment;
@@ -46,6 +50,8 @@ import java.util.Deque;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
+import static android.support.design.widget.Snackbar.LENGTH_INDEFINITE;
+import static android.support.design.widget.Snackbar.LENGTH_SHORT;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
@@ -86,7 +92,7 @@ public class MainActivity extends FingerGestureActivity {
 
     private AdView adView;
     private TextView permissionText;
-    private ConstraintLayout constraintLayout;
+    private ViewGroup container;
 
     private final TextLink[] links;
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
@@ -129,7 +135,7 @@ public class MainActivity extends FingerGestureActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         adView = findViewById(R.id.adView);
-        constraintLayout = findViewById(R.id.constraint_layout);
+        container = findViewById(R.id.container);
 
         barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build();
 
@@ -163,12 +169,15 @@ public class MainActivity extends FingerGestureActivity {
                 @Override
                 public void onAdLoaded() {
                     if (adView == null) return;
-                    TransitionManager.beginDelayedTransition(constraintLayout, new AutoTransition());
+                    TransitionManager.beginDelayedTransition(container, getTransition());
                     adView.setVisibility(View.VISIBLE);
                 }
             });
         }
         else hideAds();
+
+        if (!App.accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
+        invalidateOptionsMenu();
 
         IntentFilter filter = new IntentFilter(ACTION_EDIT_WALLPAPER);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
@@ -179,18 +188,33 @@ public class MainActivity extends FingerGestureActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
-
-        MenuItem item = menu.findItem(R.id.action_start_trial);
-        if (item != null) item.setVisible(!PurchasesManager.getInstance().isPremiumNotTrial());
-
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_start_trial);
+        boolean isTrialVisible = !PurchasesManager.getInstance().isPremiumNotTrial();
+
+        if (item != null) item.setVisible(isTrialVisible);
+        if (isTrialVisible && item != null) item.setActionView(new TrialView(this, item));
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_start_trial:
-                if (PurchasesManager.getInstance().startTrial()) recreate();
+                PurchasesManager purchasesManager = PurchasesManager.getInstance();
+                boolean isTrialRunning = purchasesManager.isTrialRunning();
+
+                Snackbar snackbar = Snackbar.make(container, purchasesManager.getTrialPeriodText(), isTrialRunning ? LENGTH_SHORT : LENGTH_INDEFINITE);
+                if (!isTrialRunning) snackbar.setAction(android.R.string.yes, view -> {
+                    purchasesManager.startTrial();
+                    recreate();
+                });
+
+                snackbar.show();
                 break;
             case R.id.action_directions:
                 showFragment(AppFragment.newInstance(GESTURE_ITEMS));
@@ -210,7 +234,6 @@ public class MainActivity extends FingerGestureActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 
     @Override
     protected void onPause() {
@@ -267,6 +290,12 @@ public class MainActivity extends FingerGestureActivity {
         handleIntent(intent);
     }
 
+    @Override
+    public boolean showFragment(BaseFragment fragment) {
+        if (permissionsStack.isEmpty()) dismissPermissionsBar();
+        return super.showFragment(fragment);
+    }
+
     public void requestPermission(@PermissionRequest int permission) {
         if (permissionsStack.contains(permission)) permissionsStack.remove(permission);
         permissionsStack.push(permission);
@@ -279,6 +308,12 @@ public class MainActivity extends FingerGestureActivity {
 
         if (!Intent.ACTION_SEND.equals(action) || TextUtils.isEmpty(type) || !type.startsWith("image/"))
             return;
+
+        if (!App.hasStoragePermission()) {
+            showSnackbar(R.string.enable_storage_settings);
+            showFragment(AppFragment.newInstance(GESTURE_ITEMS));
+            return;
+        }
 
         Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri == null) return;
@@ -326,17 +361,12 @@ public class MainActivity extends FingerGestureActivity {
         else if (permissionRequest == STORAGE_CODE) text = R.string.enable_storage_settings;
 
         if (text != 0) permissionText.setText(text);
-        TransitionManager.beginDelayedTransition(constraintLayout, new AutoTransition());
-        permissionText.setVisibility(View.VISIBLE);
+        togglePermissionText(true);
     }
 
     private void dismissPermissionsBar() {
-        if (!permissionsStack.isEmpty()) {
-            onPermissionAdded();
-            return;
-        }
-        TransitionManager.beginDelayedTransition(constraintLayout, new AutoTransition());
-        permissionText.setVisibility(View.GONE);
+        if (permissionsStack.isEmpty()) togglePermissionText(false);
+        else onPermissionAdded();
     }
 
     private void onPermissionClicked() {
@@ -359,7 +389,7 @@ public class MainActivity extends FingerGestureActivity {
     private void hideAds() {
         if (adView.getVisibility() == View.GONE) return;
 
-        Transition hideTransition = new AutoTransition();
+        Transition hideTransition = getTransition();
         hideTransition.addListener(new Transition.TransitionListener() {
             @Override
             public void onTransitionStart(@NonNull Transition transition) {
@@ -386,8 +416,19 @@ public class MainActivity extends FingerGestureActivity {
 
             }
         });
-        android.transition.TransitionManager.beginDelayedTransition(constraintLayout, hideTransition);
+        android.transition.TransitionManager.beginDelayedTransition(container, hideTransition);
         adView.setVisibility(View.GONE);
+    }
+
+    private void togglePermissionText(boolean show) {
+        TransitionManager.beginDelayedTransition(container, getTransition());
+        ViewGroup.LayoutParams params = permissionText.getLayoutParams();
+        params.height = show ? getResources().getDimensionPixelSize(R.dimen.triple_margin) : 0;
+        ((ViewGroup) permissionText.getParent()).invalidate();
+    }
+
+    private Transition getTransition() {
+        return new AutoTransition().excludeTarget(RecyclerView.class, true);
     }
 
     private static class TextLink implements CharSequence {
