@@ -1,15 +1,19 @@
 package com.tunjid.fingergestures;
 
+import android.accessibilityservice.AccessibilityServiceInfo;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityManager;
 
 import com.google.android.gms.ads.MobileAds;
-import com.tunjid.fingergestures.services.FingerGestureService;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.disposables.Disposable;
@@ -62,24 +66,15 @@ public class App extends android.app.Application {
     }
 
     public static boolean accessibilityServiceEnabled() {
-        return FingerGestureService.isEnabled;
-//        Context context = getInstance();
-//        ContentResolver contentResolver = context.getContentResolver();
-//        ComponentName expectedComponentName = new ComponentName(context, FingerGestureService.class);
-//        String enabledServicesSetting = Settings.Secure.getString(contentResolver, ENABLED_ACCESSIBILITY_SERVICES);
-//
-//        if (enabledServicesSetting == null) return false;
-//
-//        TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
-//        colonSplitter.setString(enabledServicesSetting);
-//
-//        while (colonSplitter.hasNext()) {
-//            String componentNameString = colonSplitter.next();
-//            ComponentName enabledService = ComponentName.unflattenFromString(componentNameString);
-//
-//            if (enabledService != null && enabledService.equals(expectedComponentName)) return true;
-//        }
-//
-//        return false;
+        App app = getInstance();
+        String packageName = app.getPackageName();
+
+        AccessibilityManager accessibilityManager = ((AccessibilityManager) app.getSystemService(Context.ACCESSIBILITY_SERVICE));
+        if (accessibilityManager == null) return false;
+
+        List<AccessibilityServiceInfo> sevices = accessibilityManager.getEnabledAccessibilityServiceList(AccessibilityEvent.TYPES_ALL_MASK);
+
+        for (AccessibilityServiceInfo info : sevices) if (info.getId().contains(packageName)) return true;
+        return false;
     }
 }

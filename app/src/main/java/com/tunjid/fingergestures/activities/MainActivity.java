@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -21,6 +20,7 @@ import android.transition.TransitionManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -28,6 +28,7 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.androidbootstrap.core.view.ViewHider;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
@@ -83,7 +84,7 @@ public class MainActivity extends FingerGestureActivity {
 
     private AdView adView;
     private TextView permissionText;
-    private ConstraintLayout constraintLayout;
+    private ViewGroup container;
 
     private final TextLink[] links;
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
@@ -117,7 +118,7 @@ public class MainActivity extends FingerGestureActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         adView = findViewById(R.id.adView);
-        constraintLayout = findViewById(R.id.constraint_layout);
+        container = findViewById(R.id.container);
 
         barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build();
 
@@ -151,12 +152,13 @@ public class MainActivity extends FingerGestureActivity {
                 @Override
                 public void onAdLoaded() {
                     if (adView == null) return;
-                    TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
+                    TransitionManager.beginDelayedTransition(container, getTransition());
                     adView.setVisibility(View.VISIBLE);
                 }
             });
         }
         else hideAds();
+        if (!App.accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
     }
 
     @Override
@@ -249,6 +251,12 @@ public class MainActivity extends FingerGestureActivity {
         handleIntent(intent);
     }
 
+    @Override
+    public boolean showFragment(BaseFragment fragment) {
+        if (permissionsStack.isEmpty()) dismissPermissionsBar();
+        return super.showFragment(fragment);
+    }
+
     public void requestPermission(@PermissionRequest int permission) {
         if (permissionsStack.contains(permission)) permissionsStack.remove(permission);
         permissionsStack.push(permission);
@@ -308,17 +316,12 @@ public class MainActivity extends FingerGestureActivity {
         else if (permissionRequest == STORAGE_CODE) text = R.string.enable_storage_settings;
 
         if (text != 0) permissionText.setText(text);
-        TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
-        permissionText.setVisibility(View.VISIBLE);
+        togglePermissionText(true);
     }
 
     private void dismissPermissionsBar() {
-        if (!permissionsStack.isEmpty()) {
-            onPermissionAdded();
-            return;
-        }
-        TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
-        permissionText.setVisibility(View.GONE);
+        if (permissionsStack.isEmpty()) togglePermissionText(false);
+        else onPermissionAdded();
     }
 
     private void onPermissionClicked() {
@@ -368,8 +371,15 @@ public class MainActivity extends FingerGestureActivity {
 
             }
         });
-        android.transition.TransitionManager.beginDelayedTransition(constraintLayout, hideTransition);
+        android.transition.TransitionManager.beginDelayedTransition(container, hideTransition);
         adView.setVisibility(View.GONE);
+    }
+
+    private void togglePermissionText(boolean show) {
+        TransitionManager.beginDelayedTransition(container, getTransition());
+        ViewGroup.LayoutParams params = permissionText.getLayoutParams();
+        params.height = show ? getResources().getDimensionPixelSize(R.dimen.triple_margin) : 0;
+        ((ViewGroup) permissionText.getParent()).invalidate();
     }
 
     private Transition getTransition() {
