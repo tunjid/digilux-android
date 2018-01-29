@@ -9,6 +9,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -44,6 +45,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.support.design.widget.Snackbar.LENGTH_INDEFINITE;
+import static android.support.design.widget.Snackbar.LENGTH_SHORT;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
@@ -175,7 +178,16 @@ public class MainActivity extends FingerGestureActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_start_trial:
-                if (PurchasesManager.getInstance().startTrial()) recreate();
+                PurchasesManager purchasesManager = PurchasesManager.getInstance();
+                boolean isTrialRunning = purchasesManager.isTrialRunning();
+
+                Snackbar snackbar = Snackbar.make(container, purchasesManager.getTrialPeriodText(), isTrialRunning ? LENGTH_SHORT : LENGTH_INDEFINITE);
+                if (!isTrialRunning) snackbar.setAction(android.R.string.yes, view -> {
+                    purchasesManager.startTrial();
+                    recreate();
+                });
+
+                snackbar.show();
                 break;
             case R.id.action_directions:
                 showFragment(AppFragment.newInstance(GESTURE_ITEMS));
