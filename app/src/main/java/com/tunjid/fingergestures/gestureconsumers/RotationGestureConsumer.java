@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
 import android.support.annotation.StringDef;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.tunjid.fingergestures.App;
@@ -37,10 +38,11 @@ public class RotationGestureConsumer implements GestureConsumer {
     @StringDef({ROTATION_APPS, EXCLUDED_APPS})
     public @interface PersistedSet {}
 
-
     private final App app;
     private final Map<String, List<String>> packageMap;
     private final Comparator<ApplicationInfo> applicationInfoComparator;
+
+    private String lastPackageName;
 
     private static RotationGestureConsumer instance;
 
@@ -79,12 +81,15 @@ public class RotationGestureConsumer implements GestureConsumer {
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (!App.canWriteToSettings() || event.getEventType() != TYPE_WINDOW_STATE_CHANGED) return;
 
-        Set<String> rotationApps = getSet(ROTATION_APPS);
         String packageName = event.getPackageName().toString();
+        if (packageName.equals(lastPackageName)) return;
 
+        Set<String> rotationApps = getSet(ROTATION_APPS);
         if (rotationApps.isEmpty() || getSet(EXCLUDED_APPS).contains(packageName)) return;
 
+        lastPackageName = packageName;
         setAutoRotateOn(rotationApps.contains(packageName));
+        Log.i("TEST", "Accessibility event: " + packageName);
     }
 
     public String getAddText(@PersistedSet String preferencesName) {
@@ -135,13 +140,14 @@ public class RotationGestureConsumer implements GestureConsumer {
         List<String> packageNames = packageMap.computeIfAbsent(preferencesName, k -> new ArrayList<>());
         packageNames.clear();
 
-        getSet(preferencesName).stream().map(packageName -> {
-            ApplicationInfo info = null;
-            try {info = app.getPackageManager().getApplicationInfo(packageName, 0);}
-            catch (Exception e) {e.printStackTrace();}
+        getSet(preferencesName).stream()
+                .map(packageName -> {
+                    ApplicationInfo info = null;
+                    try {info = app.getPackageManager().getApplicationInfo(packageName, 0);}
+                    catch (Exception e) {e.printStackTrace();}
 
-            return info;
-        })
+                    return info;
+                })
                 .filter(Objects::nonNull)
                 .sorted(applicationInfoComparator).forEach(applicationInfo -> packageNames.add(applicationInfo.packageName));
     }
