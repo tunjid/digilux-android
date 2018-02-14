@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 import static com.tunjid.fingergestures.services.FingerGestureService.ANDROID_SYSTEM_UI_PACKAGE;
 
 public class RotationGestureConsumer implements GestureConsumer {
@@ -44,9 +45,10 @@ public class RotationGestureConsumer implements GestureConsumer {
         packageMap = new HashMap<>();
 
         Set<String> ignored = getSet(EXCLUDED_APPS);
+        ignored.add(app.getPackageName());
         ignored.add(ANDROID_SYSTEM_UI_PACKAGE);
-        saveSet(ignored, EXCLUDED_APPS);
 
+        saveSet(ignored, EXCLUDED_APPS);
         resetPackageNames(ROTATION_APPS);
         resetPackageNames(EXCLUDED_APPS);
     }
@@ -67,7 +69,7 @@ public class RotationGestureConsumer implements GestureConsumer {
     }
 
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        if (!App.canWriteToSettings()) return;
+        if (!App.canWriteToSettings() || event.getEventType() != TYPE_WINDOW_STATE_CHANGED) return;
 
         Set<String> rotationApps = getSet(ROTATION_APPS);
         String packageName = event.getPackageName().toString();
@@ -91,6 +93,10 @@ public class RotationGestureConsumer implements GestureConsumer {
 
     public List<String> getList(@PersistedSet String preferenceName) {
         return packageMap.get(preferenceName);
+    }
+
+    public boolean isRemovable(String packageName) {
+        return !ANDROID_SYSTEM_UI_PACKAGE.equals(packageName) && !app.getPackageName().equals(packageName);
     }
 
     public boolean addToSet(String packageName, @PersistedSet String preferencesName) {

@@ -11,9 +11,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/single_margin"
+        android:drawableEnd="@drawable/ic_info_outline_white_24dp"
+        android:drawablePadding="@dimen/single_margin"
         android:text="@string/auto_rotate_apps"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.v7.widget.RecyclerView
@@ -34,7 +37,6 @@
         app:layout_constraintBottom_toBottomOf="@+id/rotation_list"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@+id/rotation_list" />
-
 </android.support.constraint.ConstraintLayout>
 
 

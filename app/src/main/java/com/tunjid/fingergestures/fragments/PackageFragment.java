@@ -111,7 +111,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
             Context context = recyclerView.getContext();
             new AlertDialog.Builder(context)
                     .setTitle(R.string.go_premium_title)
-                    .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.auto_rotate_premium_description)))
+                    .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.auto_rotate_description)))
                     .setPositiveButton(R.string.continue_text, (dialog, which) -> purchase(PurchasesManager.PREMIUM_SKU))
                     .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                     .show();

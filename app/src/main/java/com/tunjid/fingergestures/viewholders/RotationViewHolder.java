@@ -28,8 +28,15 @@ public class RotationViewHolder extends AppViewHolder {
         rotationList.setLayoutManager(new LinearLayoutManager(itemView.getContext(), HORIZONTAL, false));
         rotationList.setAdapter(new PackageAdapter(true, gestureConsumer.getList(persistedSet), getPackageClickListener(persistedSet)));
 
-        itemView.<TextView>findViewById(R.id.title).setText(ROTATION_APPS.equals(persistedSet) ? R.string.auto_rotate_apps : R.string.auto_rotate_apps_excluded);
         itemView.findViewById(R.id.add_rotation).setOnClickListener(view -> adapterListener.showBottomSheetFragment(PackageFragment.newInstance(persistedSet)));
+
+        TextView title = itemView.findViewById(R.id.title);
+        boolean isRotationList = ROTATION_APPS.equals(persistedSet);
+
+        title.setText(isRotationList ? R.string.auto_rotate_apps : R.string.auto_rotate_apps_excluded);
+        title.setOnClickListener(view -> new AlertDialog.Builder(itemView.getContext())
+                .setMessage(isRotationList ? R.string.auto_rotate_description : R.string.auto_rotate_ignored_description)
+                .show());
     }
 
     @Override
@@ -39,15 +46,22 @@ public class RotationViewHolder extends AppViewHolder {
     }
 
     private PackageAdapter.PackageClickListener getPackageClickListener(@RotationGestureConsumer.PersistedSet String preferenceName) {
-        RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
+        return packageName -> {
+            RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
 
-        return packageName -> new AlertDialog.Builder(itemView.getContext())
-                .setTitle(gestureConsumer.getRemoveText(preferenceName))
-                .setPositiveButton(R.string.yes, ((dialog, which) -> {
-                    gestureConsumer.removeFromSet(packageName, preferenceName);
-                    rotationList.getAdapter().notifyDataSetChanged();
-                }))
-                .setNegativeButton(R.string.no, ((dialog, which) -> dialog.dismiss()))
-                .show();
+            AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
+
+            if (gestureConsumer.isRemovable(packageName)) {
+                builder.setTitle(gestureConsumer.getRemoveText(preferenceName))
+                        .setPositiveButton(R.string.yes, ((dialog, which) -> {
+                            gestureConsumer.removeFromSet(packageName, preferenceName);
+                            rotationList.getAdapter().notifyDataSetChanged();
+                        }))
+                        .setNegativeButton(R.string.no, ((dialog, which) -> dialog.dismiss()));
+            }
+            else builder.setMessage(R.string.auto_rotate_cannot_remove);
+
+            builder.show();
+        };
     }
 }
