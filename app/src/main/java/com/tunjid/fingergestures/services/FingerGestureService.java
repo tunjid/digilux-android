@@ -24,6 +24,7 @@ import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
+import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK;
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
@@ -33,7 +34,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class FingerGestureService extends AccessibilityService {
 
-    private static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
+    public static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
     private static final String RESOURCE_OPEN_SETTINGS = "accessibility_quick_settings_settings";
     private static final String RESOURCE_EXPAND_QUICK_SETTINGS = "accessibility_quick_settings_expand";
     private static final String DEFAULT_OPEN_SETTINGS = "Open settings";
@@ -98,7 +99,9 @@ public class FingerGestureService extends AccessibilityService {
     }
 
     @Override
-    public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {}
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+        RotationGestureConsumer.getInstance().onAccessibilityEvent(event);
+    }
 
     @Override
     public void onInterrupt() {}

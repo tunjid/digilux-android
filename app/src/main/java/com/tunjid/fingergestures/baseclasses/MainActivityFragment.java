@@ -5,11 +5,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
+import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.fragments.AppFragment;
 
 public abstract class MainActivityFragment extends BaseFragment {
 
@@ -36,5 +39,26 @@ public abstract class MainActivityFragment extends BaseFragment {
     public void requestPermission(@MainActivity.PermissionRequest int permission) {
         MainActivity activity = ((MainActivity) getActivity());
         if (activity != null) activity.requestPermission(permission);
+    }
+
+    public void toggleBottomSheet(boolean show) {
+        MainActivity activity = ((MainActivity) getActivity());
+        if (activity != null) activity.toggleBottomSheet(show);
+    }
+
+    public void showBottomSheetFragment(MainActivityFragment fragment) {
+        FragmentManager fragmentManager = getFragmentManager();
+        if (fragmentManager == null) return;
+
+        fragmentManager.beginTransaction().replace(R.id.bottom_sheet, fragment).commit();
+        toggleBottomSheet(true);
+    }
+
+    @Nullable
+    public AppFragment getCurrentAppFragment() {
+        MainActivity activity = ((MainActivity) getActivity());
+        if (activity == null) return null;
+
+        return (AppFragment) activity.getCurrentFragment();
     }
 }
