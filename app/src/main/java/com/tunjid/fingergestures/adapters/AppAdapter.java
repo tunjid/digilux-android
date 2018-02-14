@@ -34,6 +34,8 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GEST
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
+import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.EXCLUDED_APPS;
+import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 
 
 public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
@@ -57,6 +59,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int WALLPAPER_PICKER = 15;
     public static final int WALLPAPER_TRIGGER = 16;
     public static final int ROTATION_LOCK = 17;
+    public static final int EXCLUDED_ROTATION_LOCK = 18;
 
 
 //    @Retention(RetentionPolicy.SOURCE)
@@ -157,7 +160,9 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             case WALLPAPER_TRIGGER:
                 return new WallpaperTriggerViewHolder(getView(R.layout.viewholder_wallpaper_trigger, parent), adapterListener);
             case ROTATION_LOCK:
-                return new RotationViewHolder(getView(R.layout.viewholder_rotation, parent), adapterListener);
+                return new RotationViewHolder(getView(R.layout.viewholder_rotation, parent), ROTATION_APPS, adapterListener);
+            case EXCLUDED_ROTATION_LOCK:
+                return new RotationViewHolder(getView(R.layout.viewholder_rotation, parent), EXCLUDED_APPS, adapterListener);
             default:
                 return new AppViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }

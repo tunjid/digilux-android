@@ -12,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
 import android.view.LayoutInflater;
@@ -32,7 +33,9 @@ import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
+import static com.tunjid.fingergestures.adapters.AppAdapter.EXCLUDED_ROTATION_LOCK;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ROTATION_LOCK;
+import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class PackageFragment extends MainActivityFragment implements PackageAdapter.PackageClickListener {
@@ -61,6 +64,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
 
     @Nullable
     @Override
+    @SuppressWarnings("ConstantConditions")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_packages, container, false);
         Context context = inflater.getContext();
@@ -75,6 +79,9 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(new PackageAdapter(false, packageNames, this));
         recyclerView.addItemDecoration(itemDecoration);
+
+        String persistedSet = getArguments().getString(ARG_PERSISTED_SET);
+        root.<Toolbar>findViewById(R.id.title_bar).setTitle(RotationGestureConsumer.getInstance().getAddText(persistedSet));
 
         populateList(context);
 
@@ -116,7 +123,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         AppFragment fragment = getCurrentAppFragment();
         if (fragment == null) return;
 
-        fragment.refresh(ROTATION_LOCK);
+        fragment.refresh(ROTATION_APPS.equals(persistedSet) ? ROTATION_LOCK : EXCLUDED_ROTATION_LOCK);
     }
 
     @Override

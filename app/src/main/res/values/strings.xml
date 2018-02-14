@@ -118,8 +118,9 @@
 
     <!-- Rotation Viewholder-->
     <string name="auto_rotate_apps">Auto Rotate Apps</string>
-    <string name="auto_rotate_add">Add to Auto Rotate Apps</string>
-    <string name="auto_rotate_remove">Remove from Auto Rotate Apps?</string>
+    <string name="auto_rotate_apps_excluded">Ignored Pop Up / Overlay Apps</string>
+    <string name="auto_rotate_add">Add to %1$s</string>
+    <string name="auto_rotate_remove">Remove from %1$s?</string>
     <string name="auto_rotate_premium_description">Whitelists certain apps to allow auto rotation in landscape</string>
 
 

@@ -46,13 +46,4 @@ public class PackageAdapter extends BaseRecyclerViewAdapter<PackageViewHolder, P
     public interface PackageClickListener extends BaseRecyclerViewAdapter.AdapterListener {
         void onPackageClicked(String packageName);
     }
-
-    public static PackageAdapter noTextInstance(List<String> packageNames, PackageClickListener listener) {
-        return new PackageAdapter(true, packageNames, listener) {
-            @Override
-            public PackageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                return new PackageViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.viewholder_package_excluded, parent, false), adapterListener);
-            }
-        };
-    }
 }

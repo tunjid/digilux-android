@@ -7,6 +7,7 @@ import android.support.annotation.StringDef;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.tunjid.fingergestures.App;
+import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import java.lang.annotation.Retention;
@@ -74,6 +75,18 @@ public class RotationGestureConsumer implements GestureConsumer {
         if (rotationApps.isEmpty() || getSet(EXCLUDED_APPS).contains(packageName)) return;
 
         setAutoRotateOn(rotationApps.contains(packageName));
+    }
+
+    public String getAddText(@PersistedSet String preferencesName) {
+        return app.getString(R.string.auto_rotate_add, ROTATION_APPS.equals(preferencesName)
+                ? app.getString(R.string.auto_rotate_apps)
+                : app.getString(R.string.auto_rotate_apps_excluded));
+    }
+
+    public String getRemoveText(@PersistedSet String preferencesName) {
+        return app.getString(R.string.auto_rotate_remove, ROTATION_APPS.equals(preferencesName)
+                ? app.getString(R.string.auto_rotate_apps)
+                : app.getString(R.string.auto_rotate_apps_excluded));
     }
 
     public List<String> getList(@PersistedSet String preferenceName) {
