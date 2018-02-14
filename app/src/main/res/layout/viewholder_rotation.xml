@@ -17,23 +17,42 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/package_list"
+        android:id="@+id/rotation_list"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/add"
+        app:layout_constraintRight_toLeftOf="@+id/add_rotation"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/excluded_list"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/add_excluded"
+        app:layout_constraintTop_toBottomOf="@+id/rotation_list" />
+
     <ImageButton
-        android:id="@+id/add"
+        android:id="@+id/add_rotation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
         android:padding="@dimen/half_margin"
         android:src="@drawable/ic_add_24dp"
-        app:layout_constraintBottom_toBottomOf="@+id/package_list"
+        app:layout_constraintBottom_toBottomOf="@+id/rotation_list"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/package_list" />
+        app:layout_constraintTop_toTopOf="@+id/rotation_list" />
+
+    <ImageButton
+        android:id="@+id/add_excluded"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:padding="@dimen/half_margin"
+        android:src="@drawable/ic_add_24dp"
+        app:layout_constraintBottom_toBottomOf="@+id/excluded_list"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/excluded_list" />
 </android.support.constraint.ConstraintLayout>
 
 

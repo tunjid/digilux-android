@@ -161,7 +161,6 @@
     <string name="billing_thanks">Thank you so much!</string>
     <string name="billing_not_connected">Sorry, unable to connect to Google Play</string>
     <string name="billing_you_own_this">You\'ve already gotten this. Thank you!</string>
-    <string name="billing_generic_error">Sorry, there was an error completing your request.</string>
 
     <!-- Info dialog-->
     <string name="open_source_libraries">Open Source Libraries</string>
@@ -185,6 +184,7 @@
     <string name="ok">Okay</string>
     <string name="cancel">Cancel</string>
     <string name="blank_emoji">😶</string>
+    <string name="generic_error">Sorry, there was an error completing your request.</string>
 
     <string name="continue_text">Continue</string>
     <string name="yes">Yes</string>

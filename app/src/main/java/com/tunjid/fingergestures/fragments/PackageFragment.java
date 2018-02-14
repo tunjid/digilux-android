@@ -38,14 +38,17 @@ import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 public class PackageFragment extends MainActivityFragment implements PackageAdapter.PackageClickListener {
 
 
+    private static final String ARG_PERSISTED_SET = "PERSISTED_SET";
+
     private View progressBar;
     private RecyclerView recyclerView;
     private static final List<String> packageNames = new ArrayList<>();
 
-    public static PackageFragment newInstance() {
+    public static PackageFragment newInstance(@RotationGestureConsumer.PersistedSet String preferenceName) {
         PackageFragment fragment = new PackageFragment();
         Bundle args = new Bundle();
 
+        args.putString(ARG_PERSISTED_SET, preferenceName);
         fragment.setArguments(args);
         return fragment;
     }
@@ -81,7 +84,21 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
 
     @Override
     public void onPackageClicked(String packageName) {
-        boolean added = RotationGestureConsumer.getInstance().addRotationApp(packageName);
+        Bundle args = getArguments();
+        if (args == null) {
+            showSnackbar(R.string.generic_error);
+            return;
+        }
+
+        @RotationGestureConsumer.PersistedSet
+        String persistedSet = args.getString(ARG_PERSISTED_SET);
+
+        if (persistedSet == null) {
+            showSnackbar(R.string.generic_error);
+            return;
+        }
+
+        boolean added = RotationGestureConsumer.getInstance().addToSet(packageName, persistedSet);
 
         if (!added) {
             Context context = recyclerView.getContext();

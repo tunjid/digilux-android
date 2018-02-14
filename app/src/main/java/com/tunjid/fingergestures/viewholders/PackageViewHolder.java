@@ -2,6 +2,7 @@ package com.tunjid.fingergestures.viewholders;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,7 +17,7 @@ public class PackageViewHolder extends BaseViewHolder<PackageAdapter.PackageClic
     private String packageName;
 
     private ImageView imageView;
-    private TextView textView;
+    @Nullable private TextView textView;
 
     public PackageViewHolder(View itemView, PackageAdapter.PackageClickListener clickListener) {
         super(itemView, clickListener);
@@ -38,6 +39,6 @@ public class PackageViewHolder extends BaseViewHolder<PackageAdapter.PackageClic
         if (info == null) return;
 
         imageView.setImageDrawable(packageManager.getApplicationIcon(info));
-        textView.setText(packageManager.getApplicationLabel(info));
+        if (textView != null) textView.setText(packageManager.getApplicationLabel(info));
     }
 }
