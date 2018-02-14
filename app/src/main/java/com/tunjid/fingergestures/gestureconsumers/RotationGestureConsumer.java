@@ -2,6 +2,7 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.provider.Settings;
 import android.support.annotation.StringDef;
 import android.view.accessibility.AccessibilityEvent;
@@ -13,10 +14,12 @@ import com.tunjid.fingergestures.billing.PurchasesManager;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
@@ -37,12 +40,17 @@ public class RotationGestureConsumer implements GestureConsumer {
 
     private final App app;
     private final Map<String, List<String>> packageMap;
+    private final Comparator<ApplicationInfo> applicationInfoComparator;
 
     private static RotationGestureConsumer instance;
 
     {
         app = App.getInstance();
         packageMap = new HashMap<>();
+        applicationInfoComparator = (infoA, infoB) -> {
+            PackageManager packageManager = app.getPackageManager();
+            return packageManager.getApplicationLabel(infoA).toString().compareTo(packageManager.getApplicationLabel(infoB).toString());
+        };
 
         Set<String> ignored = getSet(EXCLUDED_APPS);
         ignored.add(app.getPackageName());
@@ -65,7 +73,7 @@ public class RotationGestureConsumer implements GestureConsumer {
 
     @Override
     public boolean accepts(int gesture) {
-        return false;
+        return gesture == TOGGLE_AUTO_ROTATE;
     }
 
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -119,17 +127,23 @@ public class RotationGestureConsumer implements GestureConsumer {
         resetPackageNames(preferencesName);
     }
 
+    public Comparator<ApplicationInfo> getApplicationInfoComparator() {
+        return applicationInfoComparator;
+    }
+
     private void resetPackageNames(@PersistedSet String preferencesName) {
         List<String> packageNames = packageMap.computeIfAbsent(preferencesName, k -> new ArrayList<>());
         packageNames.clear();
 
-        getSet(preferencesName).stream().filter(packageName -> {
+        getSet(preferencesName).stream().map(packageName -> {
             ApplicationInfo info = null;
             try {info = app.getPackageManager().getApplicationInfo(packageName, 0);}
             catch (Exception e) {e.printStackTrace();}
 
-            return info != null;
-        }).sorted().forEach(packageNames::add);
+            return info;
+        })
+                .filter(Objects::nonNull)
+                .sorted(applicationInfoComparator).forEach(applicationInfo -> packageNames.add(applicationInfo.packageName));
     }
 
     private Set<String> getSet(@PersistedSet String preferencesName) {
