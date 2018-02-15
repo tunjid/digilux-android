@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 import static com.tunjid.fingergestures.services.FingerGestureService.ANDROID_SYSTEM_UI_PACKAGE;
@@ -156,9 +157,9 @@ public class RotationGestureConsumer implements GestureConsumer {
 
     private void resetPackageNames(@PersistedSet String preferencesName) {
         List<String> packageNames = packageMap.computeIfAbsent(preferencesName, k -> new ArrayList<>());
-        packageNames.clear();
 
-        getSet(preferencesName).stream()
+        packageNames.clear();
+        packageNames.addAll(getSet(preferencesName).stream()
                 .map(packageName -> {
                     ApplicationInfo info = null;
                     try {info = app.getPackageManager().getApplicationInfo(packageName, 0);}
@@ -167,7 +168,9 @@ public class RotationGestureConsumer implements GestureConsumer {
                     return info;
                 })
                 .filter(Objects::nonNull)
-                .sorted(applicationInfoComparator).forEach(applicationInfo -> packageNames.add(applicationInfo.packageName));
+                .sorted(applicationInfoComparator)
+                .map(applicationInfo -> applicationInfo.packageName)
+                .collect(Collectors.toList()));
     }
 
     private Set<String> getSet(@PersistedSet String preferencesName) {

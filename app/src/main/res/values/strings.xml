@@ -119,14 +119,14 @@
 
     <!-- Rotation Viewholder-->
     <string name="auto_rotate_apps">Auto Rotate Apps</string>
-    <string name="auto_rotate_apps_excluded">Ignored Pop Up / Overlay Apps</string>
+    <string name="auto_rotate_apps_excluded">Ignored Pop Up Overlay Apps</string>
     <string name="auto_rotate_add">Add to %1$s</string>
     <string name="auto_rotate_remove">Remove from %1$s?</string>
     <string name="auto_rotate_prompt">Please enable auto rotate on the "adjustments" page</string>
-    <string name="auto_rotate_cannot_remove">This app cannot be removed from ignored apps as it provides overlays.</string>
+    <string name="auto_rotate_cannot_remove">This app may not be removed from ignored apps as it draws over other apps.</string>
     <string name="auto_rotate_description">Whitelists certain apps to allow auto rotation in landscape</string>
     <string name="auto_rotate_ignored_description">Ignores certain apps for being considered for auto rotation.
-    \n\nThis should be used for apps that display over apps like this app, keyboards, screen filters, and so on.</string>
+    \n\nThis should be used for apps that display over apps like the System UI, this app, keyboards, screen filters, and so on.</string>
 
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>

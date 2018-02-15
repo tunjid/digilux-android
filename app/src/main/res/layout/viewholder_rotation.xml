@@ -32,7 +32,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
-        android:padding="@dimen/half_margin"
         android:src="@drawable/ic_add_24dp"
         app:layout_constraintBottom_toBottomOf="@+id/rotation_list"
         app:layout_constraintRight_toRightOf="parent"
