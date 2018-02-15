@@ -1,10 +1,12 @@
 package com.tunjid.fingergestures.gestureconsumers;
 
 
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
 import android.support.annotation.StringDef;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 
@@ -31,8 +33,11 @@ public class RotationGestureConsumer implements GestureConsumer {
     private static final int ENABLE_AUTO_ROTATION = 1;
     private static final int DISABLE_AUTO_ROTATION = 0;
 
-    public static final String ROTATION_APPS = "rotation apps";
+    public static final String ACTION_WATCH_WINDOW_CHANGES = "com.tunjid.fingergestures.watch_windows";
+    public static final String EXTRA_WATCHES_WINDOWS = "extra watches window content";
     public static final String EXCLUDED_APPS = "excluded rotation apps";
+    public static final String ROTATION_APPS = "rotation apps";
+    private static final String WATCHES_WINDOW_CONTENT = "watches window content";
 
     @Retention(RetentionPolicy.SOURCE)
     @StringDef({ROTATION_APPS, EXCLUDED_APPS})
@@ -134,6 +139,19 @@ public class RotationGestureConsumer implements GestureConsumer {
 
     public Comparator<ApplicationInfo> getApplicationInfoComparator() {
         return applicationInfoComparator;
+    }
+
+    public boolean canAutoRotateApps() {
+        return app.getPreferences().getBoolean(WATCHES_WINDOW_CONTENT, false);
+    }
+
+    public void enableWindowContentWatching(boolean enabled) {
+        app.getPreferences().edit().putBoolean(WATCHES_WINDOW_CONTENT, enabled).apply();
+
+        Intent intent = new Intent(ACTION_WATCH_WINDOW_CHANGES);
+        intent.putExtra(EXTRA_WATCHES_WINDOWS, enabled);
+
+        LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
     }
 
     private void resetPackageNames(@PersistedSet String preferencesName) {

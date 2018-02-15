@@ -75,6 +75,7 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_DURATION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_POSITION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_PICKER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_TRIGGER;
+import static com.tunjid.fingergestures.adapters.AppAdapter.WATCH_WINDOWS;
 
 public class MainActivity extends FingerGestureActivity {
 
@@ -106,7 +107,7 @@ public class MainActivity extends FingerGestureActivity {
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW};
     private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK};
     private final int[] SLIDER_ITEMS = {PADDING, SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SCREEN_DIMMER,
-            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
+            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, WATCH_WINDOWS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
 
     {
         Context context = App.getInstance();

@@ -15,6 +15,7 @@ import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
+import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
 import com.tunjid.fingergestures.viewholders.AppViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
@@ -60,6 +61,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int WALLPAPER_TRIGGER = 16;
     public static final int ROTATION_LOCK = 17;
     public static final int EXCLUDED_ROTATION_LOCK = 18;
+    public static final int WATCH_WINDOWS = 19;
 
 
 //    @Retention(RetentionPolicy.SOURCE)
@@ -80,6 +82,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public AppViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
+        RotationGestureConsumer rotationGestureConsumer = RotationGestureConsumer.getInstance();
 
         switch (viewType) {
             case PADDING:
@@ -134,6 +137,11 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         brightnessGestureConsumer::getAdaptiveBrightnessThreshold,
                         brightnessGestureConsumer::supportsAmbientThreshold,
                         brightnessGestureConsumer::getAdaptiveBrightnessThresholdText);
+            case WATCH_WINDOWS:
+                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                        R.string.auto_rotate_apps,
+                        rotationGestureConsumer::canAutoRotateApps,
+                        rotationGestureConsumer::enableWindowContentWatching);
             case DOUBLE_SWIPE_SETTINGS:
                 GestureMapper mapper = GestureMapper.getInstance();
                 return new SliderAdjusterViewHolder(
