@@ -29,6 +29,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZ
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT;
 import static io.reactivex.Flowable.timer;
@@ -87,7 +88,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 BrightnessGestureConsumer.getInstance(),
                 NotificationGestureConsumer.getInstance(),
                 FlashlightGestureConsumer.getInstance(),
-                DockingGestureConsumer.getInstance()};
+                DockingGestureConsumer.getInstance(),
+                RotationGestureConsumer.getInstance()};
 
         gestureActionMap.put(INCREASE_BRIGHTNESS, R.string.increase_brightness);
         gestureActionMap.put(REDUCE_BRIGHTNESS, R.string.reduce_brightness);
@@ -97,6 +99,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         gestureActionMap.put(NOTIFICATION_DOWN, R.string.notification_down);
         gestureActionMap.put(TOGGLE_FLASHLIGHT, R.string.toggle_flashlight);
         gestureActionMap.put(TOGGLE_DOCK, R.string.toggle_dock);
+        gestureActionMap.put(TOGGLE_AUTO_ROTATE, R.string.toggle_auto_rotate);
         gestureActionMap.put(DO_NOTHING, R.string.do_nothing);
 
         actionGestureMap = invert(gestureActionMap);

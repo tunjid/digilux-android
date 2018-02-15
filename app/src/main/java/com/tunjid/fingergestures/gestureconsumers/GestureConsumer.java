@@ -18,11 +18,12 @@ public interface GestureConsumer {
     int DO_NOTHING = 8;
     int TOGGLE_FLASHLIGHT = 9;
     int TOGGLE_DOCK = 10;
+    int TOGGLE_AUTO_ROTATE = 11;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({INCREASE_BRIGHTNESS, REDUCE_BRIGHTNESS, MAXIMIZE_BRIGHTNESS, MINIMIZE_BRIGHTNESS,
             NIGHT_MODE_ON, NIGHT_MODE_OFF, NOTIFICATION_DOWN, NOTIFICATION_UP, DO_NOTHING,
-            TOGGLE_FLASHLIGHT, TOGGLE_DOCK})
+            TOGGLE_FLASHLIGHT, TOGGLE_DOCK, TOGGLE_AUTO_ROTATE})
     @interface GestureAction {}
 
     void onGestureActionTriggered(@GestureAction int gestureAction);

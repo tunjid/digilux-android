@@ -29,6 +29,7 @@
         \n1. To listen for gestures on the fingerprint sensor.\n
         \n2. To enable the docking the current app for accessible one handed use via Android\'s multi-window feature.\n
         \n3. To determine if the notification shade is showing to keep the 1 – 2 gesture combo to show the notification shade first and quick settings second.
+        \n4. To check what app is currently showing to decide whether the phone should auto rotate the screen in landscape mode.
         \n\nEnabling this does not affect the functionality of any apps depending on the fingerprint sensor; gestures will be temporarily unavailable while fingerprint authentication is requested by any app,
         and will become available again after fingerprint authentication is complete.</string>
 
@@ -116,6 +117,17 @@
     <string name="dark_time">Dark: %1$s</string>
     <string name="to">to</string>
 
+    <!-- Rotation Viewholder-->
+    <string name="auto_rotate_apps">Auto Rotate Apps</string>
+    <string name="auto_rotate_apps_excluded">Ignored Pop Up Overlay Apps</string>
+    <string name="auto_rotate_add">Add to %1$s</string>
+    <string name="auto_rotate_remove">Remove from %1$s?</string>
+    <string name="auto_rotate_prompt">Please enable auto rotate on the "adjustments" page</string>
+    <string name="auto_rotate_cannot_remove">This app may not be removed from ignored apps as it draws over other apps.</string>
+    <string name="auto_rotate_description">Whitelists certain apps to allow auto rotation in landscape</string>
+    <string name="auto_rotate_ignored_description">Ignores certain apps for being considered for auto rotation.
+    \n\nThis should be used for apps that display over apps like the System UI, this app, keyboards, screen filters, and so on.</string>
+
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>
     <string name="swipe_up">Swipe up</string>
@@ -139,6 +151,7 @@
     <string name="notification_down">Notification shade down</string>
     <string name="toggle_flashlight">Toggle Flashlight</string>
     <string name="toggle_dock">Toggle Dock</string>
+    <string name="toggle_auto_rotate">Toggle auto rotate</string>
     <string name="do_nothing">Do nothing</string>
     <string name="unsupported_action">Sorry! Looks like that action is unsupported on your device. Please drop me a line to fix it.</string>
 
@@ -154,7 +167,6 @@
     <string name="billing_thanks">Thank you so much!</string>
     <string name="billing_not_connected">Sorry, unable to connect to Google Play</string>
     <string name="billing_you_own_this">You\'ve already gotten this. Thank you!</string>
-    <string name="billing_generic_error">Sorry, there was an error completing your request.</string>
 
     <!-- Info dialog-->
     <string name="open_source_libraries">Open Source Libraries</string>
@@ -178,6 +190,7 @@
     <string name="ok">Okay</string>
     <string name="cancel">Cancel</string>
     <string name="blank_emoji">😶</string>
+    <string name="generic_error">Sorry, there was an error completing your request.</string>
 
     <string name="continue_text">Continue</string>
     <string name="yes">Yes</string>

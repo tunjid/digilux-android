@@ -1,6 +1,7 @@
 package com.tunjid.fingergestures.services;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.FingerprintGestureController;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -24,16 +25,22 @@ import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
+import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 
+import static android.content.Intent.ACTION_SCREEN_ON;
+import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK;
+import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED;
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_UP;
+import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ACTION_WATCH_WINDOW_CHANGES;
+import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.EXTRA_WATCHES_WINDOWS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class FingerGestureService extends AccessibilityService {
 
-    private static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
+    public static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
     private static final String RESOURCE_OPEN_SETTINGS = "accessibility_quick_settings_settings";
     private static final String RESOURCE_EXPAND_QUICK_SETTINGS = "accessibility_quick_settings_expand";
     private static final String DEFAULT_OPEN_SETTINGS = "Open settings";
@@ -51,7 +58,7 @@ public class FingerGestureService extends AccessibilityService {
             String action = intent.getAction();
             if (action == null) return;
             switch (action) {
-                case Intent.ACTION_SCREEN_ON:
+                case ACTION_SCREEN_ON:
                     BrightnessGestureConsumer.getInstance().onScreenTurnedOn();
                     break;
                 case ACTION_NOTIFICATION_DOWN:
@@ -63,12 +70,15 @@ public class FingerGestureService extends AccessibilityService {
                     closeIntent.setPackage(ANDROID_SYSTEM_UI_PACKAGE);
                     App.getInstance().sendBroadcast(closeIntent);
                     break;
-                case BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED:
+                case ACTION_SCREEN_DIMMER_CHANGED:
                     adjustDimmer();
                     break;
                 case ACTION_TOGGLE_DOCK:
                     performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN);
                     App.delay(DELAY, MILLISECONDS, () -> performGlobalAction(GLOBAL_ACTION_RECENTS));
+                    break;
+                case ACTION_WATCH_WINDOW_CHANGES:
+                    setWatchesWindows(intent.getBooleanExtra(EXTRA_WATCHES_WINDOWS, false));
                     break;
             }
         }
@@ -81,14 +91,16 @@ public class FingerGestureService extends AccessibilityService {
         gestureController.registerFingerprintGestureCallback(GestureMapper.getInstance(), null);
 
         IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_SCREEN_DIMMER_CHANGED);
+        filter.addAction(ACTION_WATCH_WINDOW_CHANGES);
         filter.addAction(ACTION_NOTIFICATION_DOWN);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(ACTION_NOTIFICATION_UP);
         filter.addAction(ACTION_TOGGLE_DOCK);
-        filter.addAction(BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED);
+        filter.addAction(ACTION_SCREEN_ON);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         registerReceiver(receiver, filter);
+        setWatchesWindows(RotationGestureConsumer.getInstance().canAutoRotate());
     }
 
     @Override
@@ -98,7 +110,9 @@ public class FingerGestureService extends AccessibilityService {
     }
 
     @Override
-    public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {}
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+        RotationGestureConsumer.getInstance().onAccessibilityEvent(event);
+    }
 
     @Override
     public void onInterrupt() {}
@@ -160,6 +174,12 @@ public class FingerGestureService extends AccessibilityService {
         windowManager.addView(overlayView, params);
 
         return params;
+    }
+
+    private void setWatchesWindows(boolean enabled) {
+        AccessibilityServiceInfo info = getServiceInfo();
+        info.eventTypes = enabled ? TYPE_WINDOW_STATE_CHANGED : 0;
+        setServiceInfo(info);
     }
 
     private String getSystemUiString(String resourceID, String defaultValue) {

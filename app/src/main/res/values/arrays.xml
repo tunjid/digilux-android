@@ -9,6 +9,7 @@
         <item> @string/notification_down</item>
         <item>@string/toggle_flashlight</item>
         <item>@string/toggle_dock</item>
+        <item>@string/toggle_auto_rotate</item>
         <item> @string/do_nothing</item>
     </array>
 
