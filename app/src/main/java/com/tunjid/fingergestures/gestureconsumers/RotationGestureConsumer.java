@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.provider.Settings;
 import android.support.annotation.StringDef;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.tunjid.fingergestures.App;
@@ -94,7 +93,6 @@ public class RotationGestureConsumer implements GestureConsumer {
 
         lastPackageName = packageName;
         setAutoRotateOn(rotationApps.contains(packageName));
-        Log.i("TEST", "Accessibility event: " + packageName);
     }
 
     public String getAddText(@PersistedSet String preferencesName) {
@@ -119,7 +117,9 @@ public class RotationGestureConsumer implements GestureConsumer {
 
     public boolean addToSet(String packageName, @PersistedSet String preferencesName) {
         Set<String> set = getSet(preferencesName);
-        if (set.size() > 2 && PurchasesManager.getInstance().isNotPremium()) return false;
+
+        long count = set.stream().filter(this::isRemovable).count();
+        if (count > 2 && PurchasesManager.getInstance().isPremiumNotTrial()) return false;
 
         set.add(packageName);
 
