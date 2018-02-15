@@ -58,20 +58,20 @@ public class RotationViewHolder extends AppViewHolder {
             RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
             AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
 
-            if (!App.canWriteToSettings()) {
-                builder.setMessage(R.string.permission_required);
-            }
-            else if (!gestureConsumer.isRemovable(packageName)) {
+            if (!App.canWriteToSettings()) builder.setMessage(R.string.permission_required);
+
+            else if (!gestureConsumer.canAutoRotate())
+                builder.setMessage(R.string.auto_rotate_prompt);
+
+            else if (!gestureConsumer.isRemovable(packageName))
                 builder.setMessage(R.string.auto_rotate_cannot_remove);
-            }
-            else {
-                builder.setTitle(gestureConsumer.getRemoveText(preferenceName))
+
+            else builder.setTitle(gestureConsumer.getRemoveText(preferenceName))
                         .setPositiveButton(R.string.yes, ((dialog, which) -> {
                             gestureConsumer.removeFromSet(packageName, preferenceName);
                             rotationList.getAdapter().notifyDataSetChanged();
                         }))
                         .setNegativeButton(R.string.no, ((dialog, which) -> dialog.dismiss()));
-            }
 
             builder.show();
         };

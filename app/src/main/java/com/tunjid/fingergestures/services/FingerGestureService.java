@@ -100,7 +100,7 @@ public class FingerGestureService extends AccessibilityService {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         registerReceiver(receiver, filter);
-        setWatchesWindows(RotationGestureConsumer.getInstance().canAutoRotateApps());
+        setWatchesWindows(RotationGestureConsumer.getInstance().canAutoRotate());
     }
 
     @Override

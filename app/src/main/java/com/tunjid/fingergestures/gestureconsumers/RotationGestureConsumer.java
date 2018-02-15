@@ -141,7 +141,7 @@ public class RotationGestureConsumer implements GestureConsumer {
         return applicationInfoComparator;
     }
 
-    public boolean canAutoRotateApps() {
+    public boolean canAutoRotate() {
         return app.getPreferences().getBoolean(WATCHES_WINDOW_CONTENT, false);
     }
 

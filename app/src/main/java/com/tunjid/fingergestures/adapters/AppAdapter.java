@@ -140,7 +140,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             case WATCH_WINDOWS:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.auto_rotate_apps,
-                        rotationGestureConsumer::canAutoRotateApps,
+                        rotationGestureConsumer::canAutoRotate,
                         rotationGestureConsumer::enableWindowContentWatching);
             case DOUBLE_SWIPE_SETTINGS:
                 GestureMapper mapper = GestureMapper.getInstance();
