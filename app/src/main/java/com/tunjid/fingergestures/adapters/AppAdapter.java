@@ -1,6 +1,7 @@
 package com.tunjid.fingergestures.adapters;
 
 import android.content.Context;
+import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
@@ -28,6 +29,8 @@ import com.tunjid.fingergestures.viewholders.ToggleViewHolder;
 import com.tunjid.fingergestures.viewholders.WallpaperTriggerViewHolder;
 import com.tunjid.fingergestures.viewholders.WallpaperViewHolder;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -64,11 +67,11 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int WATCH_WINDOWS = 19;
 
 
-//    @Retention(RetentionPolicy.SOURCE)
-//    @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR,
-//            SCREEN_DIMMER, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS,
-//            MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW})
-//    @interface AdapterView {}
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR,
+            SCREEN_DIMMER, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS,
+            MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW})
+    public @interface AdapterIndex {}
 
     private final int[] items;
 

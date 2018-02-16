@@ -18,7 +18,7 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/half_margin"
         android:layout_marginRight="@dimen/half_margin"
@@ -30,12 +30,13 @@
         android:paddingTop="@dimen/single_margin"
         app:layout_constraintBottom_toTopOf="@+id/sub_title"
         app:layout_constraintLeft_toRightOf="@+id/icon"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Test" />
 
     <TextView
         android:id="@+id/sub_title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/half_margin"
         android:layout_marginRight="@dimen/half_margin"
@@ -47,6 +48,7 @@
         android:paddingTop="@dimen/single_margin"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/icon"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title"
         tools:text="Test" />
 </android.support.constraint.ConstraintLayout>
