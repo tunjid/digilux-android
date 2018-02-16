@@ -5,13 +5,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
     android:padding="@dimen/single_margin">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
         android:drawablePadding="@dimen/single_margin"
         android:paddingBottom="@dimen/half_margin"
         android:paddingTop="@dimen/half_margin"
