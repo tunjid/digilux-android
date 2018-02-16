@@ -11,7 +11,7 @@
         android:padding="@dimen/single_margin"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/title_bar" />
+        app:layout_constraintTop_toBottomOf="@+id/title_bar" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/options_list"

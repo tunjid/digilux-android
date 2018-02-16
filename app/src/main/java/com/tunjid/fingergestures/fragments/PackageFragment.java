@@ -40,12 +40,11 @@ import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class PackageFragment extends MainActivityFragment implements PackageAdapter.PackageClickListener {
 
-
     private static final String ARG_PERSISTED_SET = "PERSISTED_SET";
 
     private View progressBar;
     private RecyclerView recyclerView;
-    private static final List<String> packageNames = new ArrayList<>();
+    private final List<String> packageNames = new ArrayList<>();
 
     public static PackageFragment newInstance(@RotationGestureConsumer.PersistedSet String preferenceName) {
         PackageFragment fragment = new PackageFragment();
