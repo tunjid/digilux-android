@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.res.TypedArray;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
-import android.util.Pair;
 import android.util.SparseIntArray;
 
 import com.tunjid.fingergestures.App;
@@ -48,10 +47,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public static final String DOWN_GESTURE = "down gesture";
     public static final String LEFT_GESTURE = "left gesture";
     public static final String RIGHT_GESTURE = "right gesture";
-    private static final String DOUBLE_UP_GESTURE = "double up gesture";
-    private static final String DOUBLE_DOWN_GESTURE = "double down gesture";
-    private static final String DOUBLE_LEFT_GESTURE = "double left gesture";
-    private static final String DOUBLE_RIGHT_GESTURE = "double right gesture";
+    public static final String DOUBLE_UP_GESTURE = "double up gesture";
+    public static final String DOUBLE_DOWN_GESTURE = "double down gesture";
+    public static final String DOUBLE_LEFT_GESTURE = "double left gesture";
+    public static final String DOUBLE_RIGHT_GESTURE = "double right gesture";
     private static final String DOUBLE_SWIPE_DELAY = "double swipe delay";
 
     @SuppressLint("StaticFieldLeak")
@@ -60,7 +59,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private final App app;
 
     private final int[] actionIds;
-    private final String[] actions;
     private final GestureConsumer[] consumers;
 
     private final SparseIntArray gestureActionMap;
@@ -104,9 +102,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
         actionGestureMap = invert(gestureActionMap);
 
-        Pair<int[], String[]> pair = actionResourceNamePair();
-        actionIds = pair.first;
-        actions = pair.second;
+        actionIds = getActionIds();
     }
 
     public static GestureMapper getInstance() {
@@ -137,11 +133,9 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         }
     }
 
-    public String mapGestureToAction(@GestureDirection String direction, int index) {
-        int resource = actionIds[index];
+    public void mapGestureToAction(@GestureDirection String direction, int resource) {
         int action = actionGestureMap.get(resource);
         app.getPreferences().edit().putInt(direction, action).apply();
-        return app.getString(resource);
     }
 
     public String getMappedAction(@GestureDirection String gestureDirection) {
@@ -156,8 +150,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         return match(direction, direction);
     }
 
-    public CharSequence[] getActions() {
-        return actions;
+    public int[] getActions() {
+        return actionIds;
     }
 
     public int getDoubleSwipeDelay() {
@@ -317,21 +311,16 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         return (int) (percentage * MAX_DOUBLE_SWIPE_DELAY / 100F);
     }
 
-    private Pair<int[], String[]> actionResourceNamePair() {
+    private int[] getActionIds() {
         TypedArray typedArray = app.getResources().obtainTypedArray(R.array.action_resources);
         int length = typedArray.length();
 
         int[] ints = new int[length];
-        String[] strings = new String[length];
-
-        for (int i = 0; i < length; i++) {
-            ints[i] = typedArray.getResourceId(i, R.string.do_nothing);
-            strings[i] = app.getString(ints[i]);
-        }
+        for (int i = 0; i < length; i++) ints[i] = typedArray.getResourceId(i, R.string.do_nothing);
 
         typedArray.recycle();
 
-        return new Pair<>(ints, strings);
+        return ints;
     }
 
     private void resetIsOngoing() {

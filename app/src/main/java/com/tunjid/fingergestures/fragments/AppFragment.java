@@ -156,9 +156,9 @@ public class AppFragment extends MainActivityFragment
         if (recyclerView != null) recyclerView.getAdapter().notifyDataSetChanged();
     }
 
-    public void refresh(int position) {
+    public void refresh(@AppAdapter.AdapterIndex int position) {
         int index = IntStream.range(0, items.length).filter(i -> items[i] == position).findFirst().orElse(-1);
-        if (recyclerView != null && index != 0) recyclerView.getAdapter().notifyItemChanged(index);
+        if (recyclerView != null && index != -1) recyclerView.getAdapter().notifyItemChanged(index);
     }
 
     public void cropImage(Uri source, @BackgroundManager.WallpaperSelection int selection) {
