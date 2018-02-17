@@ -46,6 +46,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class FingerGestureService extends AccessibilityService {
 
+    public static final String ACTION_SHOW_SNACK_BAR = "action show snack bar";
+    public static final String EXTRA_SHOW_SNACK_BAR = " extrashow snack bar";
     public static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
     private static final String RESOURCE_OPEN_SETTINGS = "accessibility_quick_settings_settings";
     private static final String RESOURCE_EXPAND_QUICK_SETTINGS = "accessibility_quick_settings_expand";

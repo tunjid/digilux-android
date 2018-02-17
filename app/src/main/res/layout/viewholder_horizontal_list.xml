@@ -30,9 +30,11 @@
 
     <ImageButton
         android:id="@+id/add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
+        android:layout_width="@dimen/single_and_half_margin"
+        android:layout_height="@dimen/single_and_half_margin"
+        android:background="@drawable/circle_background"
+        android:backgroundTint="@color/colorPrimary"
+        android:elevation="@dimen/half_margin"
         android:src="@drawable/ic_add_24dp"
         app:layout_constraintBottom_toBottomOf="@+id/item_list"
         app:layout_constraintRight_toRightOf="parent"

@@ -78,6 +78,8 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_POSITION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_PICKER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_TRIGGER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ENABLE_WATCH_WINDOWS;
+import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
+import static com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR;
 
 public class MainActivity extends FingerGestureActivity {
 
@@ -128,6 +130,8 @@ public class MainActivity extends FingerGestureActivity {
             String action = intent.getAction();
             if (ACTION_EDIT_WALLPAPER.equals(action))
                 showSnackbar(R.string.error_wallpaper_google_photos);
+            else if (ACTION_SHOW_SNACK_BAR.equals(action))
+                showSnackbar(intent.getIntExtra(EXTRA_SHOW_SNACK_BAR, R.string.generic_error));
         }
     };
 
@@ -192,8 +196,9 @@ public class MainActivity extends FingerGestureActivity {
         invalidateOptionsMenu();
 
         IntentFilter filter = new IntentFilter(ACTION_EDIT_WALLPAPER);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+        filter.addAction(ACTION_SHOW_SNACK_BAR);
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         registerReceiver(receiver, filter);
     }
 
