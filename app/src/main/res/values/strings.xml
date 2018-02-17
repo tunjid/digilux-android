@@ -29,7 +29,8 @@
         \n1. To listen for gestures on the fingerprint sensor.\n
         \n2. To enable the docking the current app for accessible one handed use via Android\'s multi-window feature.\n
         \n3. To determine if the notification shade is showing to keep the 1 – 2 gesture combo to show the notification shade first and quick settings second.\n
-        \n4. To check what app is currently showing to decide whether the phone should auto rotate the screen in landscape mode.
+        \n4. To check what app is currently showing to decide whether the phone should auto rotate the screen in landscape mode.\n
+        \n5. To show the accessibility button in the navbar for access to actions if you would prefer not to use a gesture for it.
         \n\nEnabling this does not affect the functionality of any apps depending on the fingerprint sensor; gestures will be temporarily unavailable while fingerprint authentication is requested by any app,
         and will become available again after fingerprint authentication is complete.</string>
 
@@ -127,6 +128,15 @@
     <string name="auto_rotate_description">Whitelists certain apps to allow auto rotation in landscape.</string>
     <string name="auto_rotate_ignored_description">Ignores certain apps for being considered for auto rotation.
     \n\nThis should be used for apps that display over apps like the System UI, this app, keyboards, screen filters, and so on.</string>
+
+    <!-- Popup Viewholder-->
+    <string name="popup_title">Pop Up Actions</string>
+    <string name="popup_add">Add to accessibility button pop up.</string>
+    <string name="popup_remove">Remove from accessibility button pop up?</string>
+    <string name="popup_prompt">Please enable the accessibility button on the "adjustments" page.</string>
+    <string name="popup_enable">Enable accessibility button</string>
+    <string name="popup_no_actions">No pop up actions have been added yet.</string>
+    <string name="popup_description">Adds actions to the accessibility button pop up.</string>
 
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>

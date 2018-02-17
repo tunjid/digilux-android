@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.BackgroundManager;
+import com.tunjid.fingergestures.PopUpManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
@@ -21,6 +22,7 @@ import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
 import com.tunjid.fingergestures.viewholders.AppViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
+import com.tunjid.fingergestures.viewholders.PopupViewHolder;
 import com.tunjid.fingergestures.viewholders.ReviewViewHolder;
 import com.tunjid.fingergestures.viewholders.RotationViewHolder;
 import com.tunjid.fingergestures.viewholders.ScreenDimmerViewHolder;
@@ -64,14 +66,17 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int WALLPAPER_TRIGGER = 16;
     public static final int ROTATION_LOCK = 17;
     public static final int EXCLUDED_ROTATION_LOCK = 18;
-    public static final int WATCH_WINDOWS = 19;
+    public static final int ENABLE_WATCH_WINDOWS = 19;
+    public static final int POPUP_ACTION = 20;
+    public static final int ENABLE_ACCESSIBILITY_BUTTON = 21;
 
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR,
-            SCREEN_DIMMER, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS,
-            MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER,
-            ROTATION_LOCK, EXCLUDED_ROTATION_LOCK, WATCH_WINDOWS})
+    @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
+            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+            DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
+            AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
+            EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON})
     public @interface AdapterIndex {}
 
     private final int[] items;
@@ -87,6 +92,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
         Context context = parent.getContext();
         BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         RotationGestureConsumer rotationGestureConsumer = RotationGestureConsumer.getInstance();
+        PopUpManager popUpManager = PopUpManager.getInstance();
 
         switch (viewType) {
             case PADDING:
@@ -141,11 +147,16 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         brightnessGestureConsumer::getAdaptiveBrightnessThreshold,
                         brightnessGestureConsumer::supportsAmbientThreshold,
                         brightnessGestureConsumer::getAdaptiveBrightnessThresholdText);
-            case WATCH_WINDOWS:
+            case ENABLE_WATCH_WINDOWS:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.auto_rotate_apps,
                         rotationGestureConsumer::canAutoRotate,
                         rotationGestureConsumer::enableWindowContentWatching);
+            case ENABLE_ACCESSIBILITY_BUTTON:
+                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                        R.string.popup_enable,
+                        popUpManager::hasAccessibilityButton,
+                        popUpManager::enableAccessibilityButton);
             case DOUBLE_SWIPE_SETTINGS:
                 GestureMapper mapper = GestureMapper.getInstance();
                 return new SliderAdjusterViewHolder(
@@ -172,9 +183,11 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             case WALLPAPER_TRIGGER:
                 return new WallpaperTriggerViewHolder(getView(R.layout.viewholder_wallpaper_trigger, parent), adapterListener);
             case ROTATION_LOCK:
-                return new RotationViewHolder(getView(R.layout.viewholder_rotation, parent), ROTATION_APPS, adapterListener);
+                return new RotationViewHolder(getView(R.layout.viewholder_horizontal_list, parent), ROTATION_APPS, adapterListener);
             case EXCLUDED_ROTATION_LOCK:
-                return new RotationViewHolder(getView(R.layout.viewholder_rotation, parent), EXCLUDED_APPS, adapterListener);
+                return new RotationViewHolder(getView(R.layout.viewholder_horizontal_list, parent), EXCLUDED_APPS, adapterListener);
+            case POPUP_ACTION:
+                return new PopupViewHolder(getView(R.layout.viewholder_horizontal_list, parent), adapterListener);
             default:
                 return new AppViewHolder(getView(R.layout.viewholder_slider_delta, parent));
         }

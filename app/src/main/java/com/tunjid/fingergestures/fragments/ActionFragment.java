@@ -4,27 +4,28 @@ package com.tunjid.fingergestures.fragments;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.tunjid.fingergestures.PopUpManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
+import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -33,9 +34,12 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_DOWN_ICON;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_LEFT_ICON;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_RIGHT_ICON;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_UP_ICON;
+import static com.tunjid.fingergestures.adapters.AppAdapter.POPUP_ACTION;
+import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_LEFT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_RIGHT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_UP_GESTURE;
+import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
@@ -45,13 +49,21 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
     private static final String ARG_DIRECTION = "DIRECTION";
 
     private RecyclerView recyclerView;
-    private final List<Pair<Integer, Integer>> resources = new ArrayList<>();
+    private final List<String> resources = new ArrayList<>();
 
-    public static ActionFragment newInstance(@GestureMapper.GestureDirection String direction) {
+    public static ActionFragment directionInstance(@GestureMapper.GestureDirection String direction) {
         ActionFragment fragment = new ActionFragment();
         Bundle args = new Bundle();
 
         args.putString(ARG_DIRECTION, direction);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static ActionFragment actionInstance() {
+        ActionFragment fragment = new ActionFragment();
+        Bundle args = new Bundle();
+
         fragment.setArguments(args);
         return fragment;
     }
@@ -76,7 +88,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
 
         recyclerView = root.findViewById(R.id.options_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new ActionAdapter(resources, this));
+        recyclerView.setAdapter(new ActionAdapter(false, true, resources, this));
         recyclerView.addItemDecoration(itemDecoration);
 
         root.<Toolbar>findViewById(R.id.title_bar).setTitle(R.string.pick_action);
@@ -85,7 +97,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
     }
 
     @Override
-    public void onActionClicked(int actionRes) {
+    public void onActionClicked(@GestureConsumer.GestureAction int action) {
         Bundle args = getArguments();
         if (args == null) {
             showSnackbar(R.string.generic_error);
@@ -95,25 +107,36 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
         @GestureMapper.GestureDirection
         String direction = args.getString(ARG_DIRECTION);
 
-        if (direction == null) {
-            showSnackbar(R.string.generic_error);
-            return;
-        }
+        boolean isActionInstance = direction == null;
 
         toggleBottomSheet(false);
 
         AppFragment fragment = getCurrentAppFragment();
         if (fragment == null) return;
 
-        GestureMapper.getInstance().mapGestureToAction(direction, actionRes);
-        fragment.refresh(LEFT_GESTURE.equals(direction) || DOUBLE_LEFT_GESTURE.equals(direction)
-                ? MAP_LEFT_ICON
-                : UP_GESTURE.equals(direction) || DOUBLE_UP_GESTURE.equals(direction)
-                ? MAP_UP_ICON
-                : RIGHT_GESTURE.equals(direction) || DOUBLE_RIGHT_GESTURE.equals(direction)
-                ? MAP_RIGHT_ICON
-                : RIGHT_GESTURE.equals(direction) || DOUBLE_RIGHT_GESTURE.equals(direction)
-                ? MAP_DOWN_ICON : MAP_DOWN_ICON);
+        GestureMapper mapper = GestureMapper.getInstance();
+
+        if (isActionInstance) {
+            Context context = recyclerView.getContext();
+            if (PopUpManager.getInstance().addToSet(action)) fragment.refresh(POPUP_ACTION);
+            else new AlertDialog.Builder(context)
+                    .setTitle(R.string.go_premium_title)
+                    .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
+                    .setPositiveButton(R.string.continue_text, (dialog, which) -> purchase(PurchasesManager.PREMIUM_SKU))
+                    .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
+                    .show();
+        }
+        else {
+            mapper.mapGestureToAction(direction, action);
+            fragment.refresh(LEFT_GESTURE.equals(direction) || DOUBLE_LEFT_GESTURE.equals(direction)
+                    ? MAP_LEFT_ICON
+                    : UP_GESTURE.equals(direction) || DOUBLE_UP_GESTURE.equals(direction)
+                    ? MAP_UP_ICON
+                    : RIGHT_GESTURE.equals(direction) || DOUBLE_RIGHT_GESTURE.equals(direction)
+                    ? MAP_RIGHT_ICON
+                    : DOWN_GESTURE.equals(direction) || DOUBLE_DOWN_GESTURE.equals(direction)
+                    ? MAP_DOWN_ICON : MAP_DOWN_ICON);
+        }
     }
 
     @Override
@@ -124,45 +147,6 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
 
     private void buildItems() {
         resources.addAll(IntStream.of(GestureMapper.getInstance().getActions())
-                .boxed()
-                .map(actionMapper)
-                .collect(Collectors.toList()));
+                .mapToObj(String::valueOf).collect(Collectors.toList()));
     }
-
-    private Function<Integer, Pair<Integer, Integer>> actionMapper = stringRes -> {
-        @DrawableRes int drawableRes = R.drawable.ic_add_24dp;
-        switch (stringRes) {
-            case R.string.increase_brightness:
-                drawableRes = R.drawable.ic_brightness_medium_24dp;
-                break;
-            case R.string.reduce_brightness:
-                drawableRes = R.drawable.ic_brightness_4_24dp;
-                break;
-            case R.string.maximize_brightness:
-                drawableRes = R.drawable.ic_brightness_7_24dp;
-                break;
-            case R.string.minimize_brightness:
-                drawableRes = R.drawable.ic_brightness_low_24dp;
-                break;
-            case R.string.notification_up:
-                drawableRes = R.drawable.ic_boxed_arrow_up_24dp;
-                break;
-            case R.string.notification_down:
-                drawableRes = R.drawable.ic_boxed_arrow_down_24dp;
-                break;
-            case R.string.toggle_flashlight:
-                drawableRes = R.drawable.ic_brightness_flash_light_24dp;
-                break;
-            case R.string.toggle_dock:
-                drawableRes = R.drawable.ic_arrow_collapse_down_24dp;
-                break;
-            case R.string.toggle_auto_rotate:
-                drawableRes = R.drawable.ic_auto_rotate_24dp;
-                break;
-            case R.string.do_nothing:
-                drawableRes = R.drawable.ic_blank_24dp;
-                break;
-        }
-        return new Pair<>(drawableRes, stringRes);
-    };
 }

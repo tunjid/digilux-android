@@ -15,23 +15,13 @@ public class NothingGestureConsumer implements GestureConsumer {
     private NothingGestureConsumer() {}
 
     @Override
-    @SuppressLint("SwitchIntDef")
     public boolean accepts(@GestureAction int gesture) {
-        switch (gesture) {
-            case DO_NOTHING:
-                return true;
-            default:
-                return false;
-        }
+        return gesture == DO_NOTHING;
     }
 
     @Override
-    @SuppressLint("SwitchIntDef")
     public void onGestureActionTriggered(@GestureAction int gestureAction) {
-        switch (gestureAction) {
-            case DO_NOTHING:
-                break;
-        }
+        // Do nothing
     }
 }
 

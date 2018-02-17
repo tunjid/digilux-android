@@ -26,11 +26,11 @@ public class RotationViewHolder extends AppViewHolder {
 
         RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
 
-        rotationList = itemView.findViewById(R.id.rotation_list);
+        rotationList = itemView.findViewById(R.id.item_list);
         rotationList.setLayoutManager(new LinearLayoutManager(itemView.getContext(), HORIZONTAL, false));
         rotationList.setAdapter(new PackageAdapter(true, gestureConsumer.getList(persistedSet), getPackageClickListener(persistedSet)));
 
-        itemView.findViewById(R.id.add_rotation).setOnClickListener(view -> {
+        itemView.findViewById(R.id.add).setOnClickListener(view -> {
             if (App.canWriteToSettings())
                 adapterListener.showBottomSheetFragment(PackageFragment.newInstance(persistedSet));
             else
