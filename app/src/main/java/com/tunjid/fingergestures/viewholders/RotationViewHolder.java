@@ -31,10 +31,12 @@ public class RotationViewHolder extends AppViewHolder {
         rotationList.setAdapter(new PackageAdapter(true, gestureConsumer.getList(persistedSet), getPackageClickListener(persistedSet)));
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
-            if (App.canWriteToSettings())
-                adapterListener.showBottomSheetFragment(PackageFragment.newInstance(persistedSet));
-            else
+            if (!App.canWriteToSettings())
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.permission_required).show();
+            else if (!gestureConsumer.canAutoRotate())
+                new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.auto_rotate_prompt).show();
+            else
+                adapterListener.showBottomSheetFragment(PackageFragment.newInstance(persistedSet));
         });
 
         TextView title = itemView.findViewById(R.id.title);

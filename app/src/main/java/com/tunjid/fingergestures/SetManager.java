@@ -36,7 +36,7 @@ public class SetManager<T> {
     public boolean addToSet(String value, String preferencesName) {
         Set<String> set = getSet(preferencesName);
 
-        if (!addFilter.apply(value)) return false;
+        if (!addFilter.apply(preferencesName)) return false;
 
         set.add(value);
 
