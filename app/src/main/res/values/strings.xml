@@ -29,7 +29,8 @@
         \n1. To listen for gestures on the fingerprint sensor.\n
         \n2. To enable the docking the current app for accessible one handed use via Android\'s multi-window feature.\n
         \n3. To determine if the notification shade is showing to keep the 1 – 2 gesture combo to show the notification shade first and quick settings second.\n
-        \n4. To check what app is currently showing to decide whether the phone should auto rotate the screen in landscape mode.
+        \n4. To check what app is currently showing to decide whether the phone should auto rotate the screen in landscape mode.\n
+        \n5. To show the accessibility button in the navbar for access to actions if you would prefer not to use a gesture for it.
         \n\nEnabling this does not affect the functionality of any apps depending on the fingerprint sensor; gestures will be temporarily unavailable while fingerprint authentication is requested by any app,
         and will become available again after fingerprint authentication is complete.</string>
 
