@@ -93,29 +93,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         return instance;
     }
 
-    public String getDirectionName(@GestureDirection String direction) {
-        switch (direction) {
-            case UP_GESTURE:
-                return app.getString(R.string.swipe_up);
-            case DOWN_GESTURE:
-                return app.getString(R.string.swipe_down);
-            case LEFT_GESTURE:
-                return app.getString(R.string.swipe_left);
-            case RIGHT_GESTURE:
-                return app.getString(R.string.swipe_right);
-            case DOUBLE_UP_GESTURE:
-                return app.getString(R.string.double_swipe_up);
-            case DOUBLE_DOWN_GESTURE:
-                return app.getString(R.string.double_swipe_down);
-            case DOUBLE_LEFT_GESTURE:
-                return app.getString(R.string.double_swipe_left);
-            case DOUBLE_RIGHT_GESTURE:
-                return app.getString(R.string.double_swipe_right);
-            default:
-                return "";
-        }
-    }
-
     public void mapGestureToAction(@GestureDirection String direction, @GestureConsumer.GestureAction int action) {
         app.getPreferences().edit().putInt(direction, action).apply();
     }
@@ -356,6 +333,29 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return R.string.toggle_dock;
             case TOGGLE_AUTO_ROTATE:
                 return R.string.toggle_auto_rotate;
+        }
+    }
+
+    public String getDirectionName(@GestureDirection String direction) {
+        switch (direction) {
+            case UP_GESTURE:
+                return app.getString(R.string.swipe_up);
+            case DOWN_GESTURE:
+                return app.getString(R.string.swipe_down);
+            case LEFT_GESTURE:
+                return app.getString(R.string.swipe_left);
+            case RIGHT_GESTURE:
+                return app.getString(R.string.swipe_right);
+            case DOUBLE_UP_GESTURE:
+                return app.getString(R.string.double_swipe_up);
+            case DOUBLE_DOWN_GESTURE:
+                return app.getString(R.string.double_swipe_down);
+            case DOUBLE_LEFT_GESTURE:
+                return app.getString(R.string.double_swipe_left);
+            case DOUBLE_RIGHT_GESTURE:
+                return app.getString(R.string.double_swipe_right);
+            default:
+                return "";
         }
     }
 
