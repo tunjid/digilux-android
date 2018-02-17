@@ -211,7 +211,7 @@ public class FingerGestureService extends AccessibilityService {
         AccessibilityServiceInfo info = getServiceInfo();
 
         if (enabled) info.flags |= FLAG_REQUEST_ACCESSIBILITY_BUTTON;
-        else info.flags = info.flags & ~FLAG_REQUEST_ACCESSIBILITY_BUTTON;
+        else info.flags = info.flags &~ FLAG_REQUEST_ACCESSIBILITY_BUTTON;
 
         setServiceInfo(info);
         controller.registerAccessibilityButtonCallback(accessibilityButtonCallback);
