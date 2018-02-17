@@ -206,8 +206,6 @@ public class FingerGestureService extends AccessibilityService {
 
     private void setShowsAccessibilityButton(boolean enabled) {
         AccessibilityButtonController controller = getAccessibilityButtonController();
-        //if (!controller.isAccessibilityButtonAvailable()) return;
-
         AccessibilityServiceInfo info = getServiceInfo();
 
         if (enabled) info.flags |= FLAG_REQUEST_ACCESSIBILITY_BUTTON;
