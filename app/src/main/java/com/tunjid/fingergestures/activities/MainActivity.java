@@ -11,6 +11,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -49,19 +50,25 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
+import static android.support.design.widget.BottomSheetBehavior.STATE_COLLAPSED;
+import static android.support.design.widget.BottomSheetBehavior.STATE_HIDDEN;
 import static android.support.design.widget.Snackbar.LENGTH_INDEFINITE;
 import static android.support.design.widget.Snackbar.LENGTH_SHORT;
+import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.DOUBLE_SWIPE_SETTINGS;
+import static com.tunjid.fingergestures.adapters.AppAdapter.ENABLE_ACCESSIBILITY_BUTTON;
+import static com.tunjid.fingergestures.adapters.AppAdapter.EXCLUDED_ROTATION_LOCK;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_DOWN_ICON;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_LEFT_ICON;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_RIGHT_ICON;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_UP_ICON;
 import static com.tunjid.fingergestures.adapters.AppAdapter.PADDING;
+import static com.tunjid.fingergestures.adapters.AppAdapter.POPUP_ACTION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.REVIEW;
+import static com.tunjid.fingergestures.adapters.AppAdapter.ROTATION_LOCK;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SCREEN_DIMMER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SHOW_SLIDER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_COLOR;
@@ -70,6 +77,9 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_DURATION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_POSITION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_PICKER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_TRIGGER;
+import static com.tunjid.fingergestures.adapters.AppAdapter.ENABLE_WATCH_WINDOWS;
+import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
+import static com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR;
 
 public class MainActivity extends FingerGestureActivity {
 
@@ -93,14 +103,16 @@ public class MainActivity extends FingerGestureActivity {
     private AdView adView;
     private TextView permissionText;
     private ViewGroup container;
+    private BottomSheetBehavior bottomSheetBehavior;
 
     private final TextLink[] links;
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW};
-    private final int[] WALLPAPER_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER};
+    private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK, POPUP_ACTION};
     private final int[] SLIDER_ITEMS = {PADDING, SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SCREEN_DIMMER,
-            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
+            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ENABLE_WATCH_WINDOWS, ENABLE_ACCESSIBILITY_BUTTON,
+            ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
 
     {
         Context context = App.getInstance();
@@ -118,6 +130,8 @@ public class MainActivity extends FingerGestureActivity {
             String action = intent.getAction();
             if (ACTION_EDIT_WALLPAPER.equals(action))
                 showSnackbar(R.string.error_wallpaper_google_photos);
+            else if (ACTION_SHOW_SNACK_BAR.equals(action))
+                showSnackbar(intent.getIntExtra(EXTRA_SHOW_SNACK_BAR, R.string.generic_error));
         }
     };
 
@@ -141,9 +155,11 @@ public class MainActivity extends FingerGestureActivity {
 
         permissionText = findViewById(R.id.permission_view);
         permissionText.setOnClickListener(view -> onPermissionClicked());
+        bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottom_sheet));
 
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected);
         setSupportActionBar(toolbar);
+        toggleBottomSheet(false);
 
         Intent startIntent = getIntent();
         boolean isPickIntent = startIntent != null && Intent.ACTION_SEND.equals(startIntent.getAction());
@@ -180,8 +196,9 @@ public class MainActivity extends FingerGestureActivity {
         invalidateOptionsMenu();
 
         IntentFilter filter = new IntentFilter(ACTION_EDIT_WALLPAPER);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+        filter.addAction(ACTION_SHOW_SNACK_BAR);
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         registerReceiver(receiver, filter);
     }
 
@@ -223,7 +240,7 @@ public class MainActivity extends FingerGestureActivity {
                 showFragment(AppFragment.newInstance(SLIDER_ITEMS));
                 return true;
             case R.id.action_wallpaper:
-                showFragment(AppFragment.newInstance(WALLPAPER_ITEMS));
+                showFragment(AppFragment.newInstance(APPEARANCE_ITEMS));
                 return true;
             case R.id.info:
                 new AlertDialog.Builder(this)
@@ -233,6 +250,12 @@ public class MainActivity extends FingerGestureActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (bottomSheetBehavior.getState() != STATE_HIDDEN) toggleBottomSheet(false);
+        else super.onBackPressed();
     }
 
     @Override
@@ -302,6 +325,10 @@ public class MainActivity extends FingerGestureActivity {
         onPermissionAdded();
     }
 
+    public void toggleBottomSheet(boolean show) {
+        bottomSheetBehavior.setState(show ? STATE_COLLAPSED : STATE_HIDDEN);
+    }
+
     private void handleIntent(Intent intent) {
         String action = intent.getAction();
         String type = intent.getType();
@@ -318,7 +345,7 @@ public class MainActivity extends FingerGestureActivity {
         Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri == null) return;
 
-        AppFragment toShow = AppFragment.newInstance(WALLPAPER_ITEMS);
+        AppFragment toShow = AppFragment.newInstance(APPEARANCE_ITEMS);
         final String tag = toShow.getStableTag();
 
         showFragment(toShow);

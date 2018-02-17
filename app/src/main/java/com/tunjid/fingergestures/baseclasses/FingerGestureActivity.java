@@ -55,7 +55,7 @@ public abstract class FingerGestureActivity extends BaseActivity {
     }
 
     public void purchase(@PurchasesManager.SKU String sku) {
-        if (billingManager == null) showSnackbar(R.string.billing_generic_error);
+        if (billingManager == null) showSnackbar(R.string.generic_error);
         else disposables.add(billingManager.initiatePurchaseFlow(this, sku)
                 .subscribe(launchStatus -> {
                     switch (launchStatus) {
@@ -69,9 +69,9 @@ public abstract class FingerGestureActivity extends BaseActivity {
                             showSnackbar(R.string.billing_you_own_this);
                             break;
                         default:
-                            showSnackbar(R.string.billing_generic_error);
+                            showSnackbar(R.string.generic_error);
                             break;
                     }
-                }, throwable -> showSnackbar(R.string.billing_generic_error)));
+                }, throwable -> showSnackbar(R.string.generic_error)));
     }
 }
