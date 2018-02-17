@@ -27,6 +27,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREAS
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE;
@@ -300,6 +301,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return NOTIFICATION_UP;
             case R.string.notification_down:
                 return NOTIFICATION_DOWN;
+            case R.string.toggle_notifications:
+                return NOTIFICATION_TOGGLE;
             case R.string.toggle_flashlight:
                 return TOGGLE_FLASHLIGHT;
             case R.string.toggle_dock:
@@ -327,6 +330,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return R.string.notification_up;
             case NOTIFICATION_DOWN:
                 return R.string.notification_down;
+            case NOTIFICATION_TOGGLE:
+                return R.string.toggle_notifications;
             case TOGGLE_FLASHLIGHT:
                 return R.string.toggle_flashlight;
             case TOGGLE_DOCK:

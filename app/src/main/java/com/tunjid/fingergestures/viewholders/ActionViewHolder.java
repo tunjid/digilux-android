@@ -17,6 +17,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREAS
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE;
@@ -76,6 +77,9 @@ public class ActionViewHolder extends BaseViewHolder<ActionAdapter.ActionClickLi
 
             case NOTIFICATION_DOWN:
                 return R.drawable.ic_boxed_arrow_down_24dp;
+
+            case NOTIFICATION_TOGGLE:
+                return R.drawable.ic_boxed_arrow_up_down_24dp;
 
             case TOGGLE_FLASHLIGHT:
                 return R.drawable.ic_brightness_flash_light_24dp;

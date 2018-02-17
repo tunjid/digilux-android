@@ -39,6 +39,7 @@ import static com.tunjid.fingergestures.PopUpManager.EXTRA_SHOWS_ACCESSIBILITY_B
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED;
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_DOWN;
+import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ACTION_WATCH_WINDOW_CHANGES;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.EXTRA_WATCHES_WINDOWS;
@@ -51,6 +52,7 @@ public class FingerGestureService extends AccessibilityService {
     public static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
     private static final String RESOURCE_OPEN_SETTINGS = "accessibility_quick_settings_settings";
     private static final String RESOURCE_EXPAND_QUICK_SETTINGS = "accessibility_quick_settings_expand";
+    private static final String RESOURCE_COLLAPSE_QUICK_SETTINGS = "accessibility_quick_settings_collapse";
     private static final String DEFAULT_OPEN_SETTINGS = "Open settings";
     private static final String DEFAULT_EXPAND_QUICK_SETTINGS = "Open quick settings";
     private static final String STRING_RESOURCE = "string";
@@ -82,9 +84,12 @@ public class FingerGestureService extends AccessibilityService {
                     else performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
                     break;
                 case ACTION_NOTIFICATION_UP:
-                    Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                    closeIntent.setPackage(ANDROID_SYSTEM_UI_PACKAGE);
-                    App.getInstance().sendBroadcast(closeIntent);
+                    closeNotifications();
+                    break;
+                case ACTION_NOTIFICATION_TOGGLE:
+                    if (isQuickSettingsShowing()) closeNotifications();
+                    else if (notificationsShowing()) expandQuickSettings();
+                    else performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
                     break;
                 case ACTION_SCREEN_DIMMER_CHANGED:
                     adjustDimmer();
@@ -113,6 +118,7 @@ public class FingerGestureService extends AccessibilityService {
         filter.addAction(ACTION_SCREEN_DIMMER_CHANGED);
         filter.addAction(ACTION_ACCESSIBILITY_BUTTON);
         filter.addAction(ACTION_WATCH_WINDOW_CHANGES);
+        filter.addAction(ACTION_NOTIFICATION_TOGGLE);
         filter.addAction(ACTION_NOTIFICATION_DOWN);
         filter.addAction(ACTION_NOTIFICATION_UP);
         filter.addAction(ACTION_TOGGLE_DOCK);
@@ -151,6 +157,16 @@ public class FingerGestureService extends AccessibilityService {
 
     private boolean isSettingsCogVisible() {
         return findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_OPEN_SETTINGS, DEFAULT_OPEN_SETTINGS)) != null;
+    }
+
+    private boolean isQuickSettingsShowing() {
+        return findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_COLLAPSE_QUICK_SETTINGS, RESOURCE_COLLAPSE_QUICK_SETTINGS)) != null;
+    }
+
+    private void closeNotifications() {
+        Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        closeIntent.setPackage(ANDROID_SYSTEM_UI_PACKAGE);
+        App.getInstance().sendBroadcast(closeIntent);
     }
 
     private void adjustDimmer() {
@@ -209,7 +225,7 @@ public class FingerGestureService extends AccessibilityService {
         AccessibilityServiceInfo info = getServiceInfo();
 
         if (enabled) info.flags |= FLAG_REQUEST_ACCESSIBILITY_BUTTON;
-        else info.flags = info.flags &~ FLAG_REQUEST_ACCESSIBILITY_BUTTON;
+        else info.flags = info.flags & ~FLAG_REQUEST_ACCESSIBILITY_BUTTON;
 
         setServiceInfo(info);
         controller.registerAccessibilityButtonCallback(accessibilityButtonCallback);

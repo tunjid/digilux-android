@@ -10,6 +10,7 @@ public class NotificationGestureConsumer implements GestureConsumer {
 
     public static final String ACTION_NOTIFICATION_UP = "NotificationGestureConsumer up";
     public static final String ACTION_NOTIFICATION_DOWN = "NotificationGestureConsumer down";
+    public static final String ACTION_NOTIFICATION_TOGGLE = "NotificationGestureConsumer toggle";
 
     private static NotificationGestureConsumer instance;
 
@@ -26,6 +27,7 @@ public class NotificationGestureConsumer implements GestureConsumer {
         switch (gesture) {
             case NOTIFICATION_UP:
             case NOTIFICATION_DOWN:
+            case NOTIFICATION_TOGGLE:
                 return true;
             default:
                 return false;
@@ -38,10 +40,13 @@ public class NotificationGestureConsumer implements GestureConsumer {
         switch (gestureAction) {
             case NOTIFICATION_UP:
             case NOTIFICATION_DOWN:
+            case NOTIFICATION_TOGGLE:
                 LocalBroadcastManager.getInstance(App.getInstance())
                         .sendBroadcast(new Intent(gestureAction == NOTIFICATION_UP
                                 ? ACTION_NOTIFICATION_UP
-                                : ACTION_NOTIFICATION_DOWN));
+                                : gestureAction == NOTIFICATION_DOWN
+                                ? ACTION_NOTIFICATION_DOWN
+                                : ACTION_NOTIFICATION_TOGGLE));
                 break;
         }
     }

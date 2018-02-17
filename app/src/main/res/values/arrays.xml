@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="action_resources">
-        <item> @string/increase_brightness</item>
-        <item> @string/reduce_brightness</item>
-        <item> @string/maximize_brightness</item>
-        <item> @string/minimize_brightness</item>
-        <item> @string/notification_up</item>
-        <item> @string/notification_down</item>
+        <item>@string/increase_brightness</item>
+        <item>@string/reduce_brightness</item>
+        <item>@string/maximize_brightness</item>
+        <item>@string/minimize_brightness</item>
+        <item>@string/notification_up</item>
+        <item>@string/notification_down</item>
+        <item>@string/toggle_notifications</item>
         <item>@string/toggle_flashlight</item>
         <item>@string/toggle_dock</item>
         <item>@string/toggle_auto_rotate</item>
-        <item> @string/do_nothing</item>
+        <item>@string/do_nothing</item>
     </array>
-
     <array name="purchase_options">
-        <item> @string/remove_ads_only</item>
-        <item> @string/remove_ads_and_go_premium</item>
+        <item>@string/remove_ads_only</item>
+        <item>@string/remove_ads_and_go_premium</item>
     </array>
 </resources>
