@@ -23,6 +23,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.tunjid.fingergestures.App;
+import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.PopupActivity;
@@ -124,6 +125,7 @@ public class FingerGestureService extends AccessibilityService {
         filter.addAction(ACTION_TOGGLE_DOCK);
         filter.addAction(ACTION_SCREEN_ON);
 
+        BackgroundManager.getInstance().restoreWallpaperChange();
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         registerReceiver(receiver, filter);
         setWatchesWindows(RotationGestureConsumer.getInstance().canAutoRotate());
