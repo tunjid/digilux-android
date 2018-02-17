@@ -31,10 +31,14 @@ public class PopupViewHolder extends AppViewHolder {
         recyclerView.setAdapter(new ActionAdapter(true, true, buttonManager.getList(), this::onActionClicked));
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
-            if (App.canWriteToSettings())
-                adapterListener.showBottomSheetFragment(ActionFragment.actionInstance());
-            else
+            if (!App.canWriteToSettings())
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.permission_required).show();
+
+            else if (!buttonManager.hasAccessibilityButton())
+                new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.popup_prompt).show();
+
+            else
+                adapterListener.showBottomSheetFragment(ActionFragment.actionInstance());
         });
 
         TextView title = itemView.findViewById(R.id.title);

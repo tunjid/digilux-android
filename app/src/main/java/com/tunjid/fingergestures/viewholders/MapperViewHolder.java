@@ -81,7 +81,7 @@ public class MapperViewHolder extends AppViewHolder {
                 icon.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
                 break;
             case DOWN_GESTURE:
-                icon.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
+                icon.setImageResource(R.drawable.ic_app_dock_24dp);
                 break;
             case LEFT_GESTURE:
                 icon.setImageResource(R.drawable.ic_chevron_left_white_24dp);
