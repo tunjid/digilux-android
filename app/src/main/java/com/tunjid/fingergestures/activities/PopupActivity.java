@@ -1,5 +1,6 @@
 package com.tunjid.fingergestures.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -45,6 +46,12 @@ public class PopupActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        finish();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         finish();
     }
 }
