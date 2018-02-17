@@ -68,7 +68,7 @@
             android:name=".activities.BrightnessActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
-            android:theme="@style/BrightnessDialogTheme" />
+            android:theme="@style/BrightnessActivityTheme" />
         <activity
             android:name=".activities.DockingActivity"
             android:excludeFromRecents="true"
