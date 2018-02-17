@@ -75,6 +75,11 @@
             android:launchMode="singleInstance"
             android:theme="@style/DockingActivityTheme" />
         <activity
+            android:name=".activities.PopupActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/PopupActivityTheme" />
+        <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
     </application>

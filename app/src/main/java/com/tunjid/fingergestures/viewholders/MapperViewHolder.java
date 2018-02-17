@@ -64,7 +64,7 @@ public class MapperViewHolder extends AppViewHolder {
     }
 
     private void onClick(@GestureDirection String direction) {
-        adapterListener.showBottomSheetFragment(ActionFragment.newInstance(direction));
+        adapterListener.showBottomSheetFragment(ActionFragment.directionInstance(direction));
     }
 
     private CharSequence getFormattedText(@GestureDirection String direction, String text) {

@@ -11,8 +11,8 @@ public interface GestureConsumer {
     int REDUCE_BRIGHTNESS = 1;
     int MAXIMIZE_BRIGHTNESS = 2;
     int MINIMIZE_BRIGHTNESS = 3;
-    int NIGHT_MODE_ON = 4;
-    int NIGHT_MODE_OFF = 5;
+//    int NIGHT_MODE_ON = 4;
+//    int NIGHT_MODE_OFF = 5;
     int NOTIFICATION_UP = 6;
     int NOTIFICATION_DOWN = 7;
     int DO_NOTHING = 8;
@@ -22,7 +22,7 @@ public interface GestureConsumer {
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({INCREASE_BRIGHTNESS, REDUCE_BRIGHTNESS, MAXIMIZE_BRIGHTNESS, MINIMIZE_BRIGHTNESS,
-            NIGHT_MODE_ON, NIGHT_MODE_OFF, NOTIFICATION_DOWN, NOTIFICATION_UP, DO_NOTHING,
+             NOTIFICATION_DOWN, NOTIFICATION_UP, DO_NOTHING,
             TOGGLE_FLASHLIGHT, TOGGLE_DOCK, TOGGLE_AUTO_ROTATE})
     @interface GestureAction {}
 

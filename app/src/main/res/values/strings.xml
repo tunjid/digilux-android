@@ -128,6 +128,14 @@
     <string name="auto_rotate_ignored_description">Ignores certain apps for being considered for auto rotation.
     \n\nThis should be used for apps that display over apps like the System UI, this app, keyboards, screen filters, and so on.</string>
 
+    <!-- Popup Viewholder-->
+    <string name="popup_title">Pop Up Actions</string>
+    <string name="popup_add">Add to accessibility button pop up.</string>
+    <string name="popup_remove">Remove from accessibility button pop up?</string>
+    <string name="popup_prompt">Please enable the accessibility button on the "adjustments" page.</string>
+    <string name="popup_enable">Enable accessibility button</string>
+    <string name="popup_description">Adds actions to the accessibility button pop up.</string>
+
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>
     <string name="swipe_up">Swipe up</string>

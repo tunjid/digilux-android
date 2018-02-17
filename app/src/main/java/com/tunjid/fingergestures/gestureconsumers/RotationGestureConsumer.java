@@ -11,19 +11,15 @@ import android.view.accessibility.AccessibilityEvent;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.SetManager;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 import static com.tunjid.fingergestures.services.FingerGestureService.ANDROID_SYSTEM_UI_PACKAGE;
@@ -44,28 +40,40 @@ public class RotationGestureConsumer implements GestureConsumer {
     public @interface PersistedSet {}
 
     private final App app;
-    private final Map<String, List<String>> packageMap;
     private final Comparator<ApplicationInfo> applicationInfoComparator;
 
     private String lastPackageName;
+    private SetManager<ApplicationInfo> setManager;
 
     private static RotationGestureConsumer instance;
 
     {
         app = App.getInstance();
-        packageMap = new HashMap<>();
+
         applicationInfoComparator = (infoA, infoB) -> {
             PackageManager packageManager = app.getPackageManager();
             return packageManager.getApplicationLabel(infoA).toString().compareTo(packageManager.getApplicationLabel(infoB).toString());
         };
 
-        Set<String> ignored = getSet(EXCLUDED_APPS);
-        ignored.add(app.getPackageName());
-        ignored.add(ANDROID_SYSTEM_UI_PACKAGE);
+        Function<String, Boolean> addFilter = preferenceName -> {
+            Set<String> set = setManager.getSet(preferenceName);
+            long count = set.stream().filter(this::isRemovable).count();
+            return !(count > 2 && PurchasesManager.getInstance().isPremiumNotTrial());
+        };
 
-        saveSet(ignored, EXCLUDED_APPS);
-        resetPackageNames(ROTATION_APPS);
-        resetPackageNames(EXCLUDED_APPS);
+        Function<String, ApplicationInfo> stringMapper = packageName -> {
+            ApplicationInfo info = null;
+            try {info = app.getPackageManager().getApplicationInfo(packageName, 0);}
+            catch (Exception e) {e.printStackTrace();}
+
+            return info;
+        };
+
+        Function<ApplicationInfo, String> objectMapper = applicationInfo -> applicationInfo.packageName;
+
+        setManager = new SetManager<>(applicationInfoComparator, addFilter, stringMapper, objectMapper);
+        setManager.addToSet(EXCLUDED_APPS, app.getPackageName());
+        setManager.addToSet(EXCLUDED_APPS, ANDROID_SYSTEM_UI_PACKAGE);
     }
 
     public static RotationGestureConsumer getInstance() {
@@ -89,8 +97,9 @@ public class RotationGestureConsumer implements GestureConsumer {
         String packageName = event.getPackageName().toString();
         if (packageName.equals(lastPackageName)) return;
 
-        Set<String> rotationApps = getSet(ROTATION_APPS);
-        if (rotationApps.isEmpty() || getSet(EXCLUDED_APPS).contains(packageName)) return;
+        Set<String> rotationApps = setManager.getSet(ROTATION_APPS);
+        if (rotationApps.isEmpty() || setManager.getSet(EXCLUDED_APPS).contains(packageName))
+            return;
 
         lastPackageName = packageName;
         setAutoRotateOn(rotationApps.contains(packageName));
@@ -108,34 +117,20 @@ public class RotationGestureConsumer implements GestureConsumer {
                 : app.getString(R.string.auto_rotate_apps_excluded));
     }
 
-    public List<String> getList(@PersistedSet String preferenceName) {
-        return packageMap.get(preferenceName);
-    }
-
     public boolean isRemovable(String packageName) {
         return !ANDROID_SYSTEM_UI_PACKAGE.equals(packageName) && !app.getPackageName().equals(packageName);
     }
 
     public boolean addToSet(String packageName, @PersistedSet String preferencesName) {
-        Set<String> set = getSet(preferencesName);
-
-        long count = set.stream().filter(this::isRemovable).count();
-        if (count > 2 && PurchasesManager.getInstance().isPremiumNotTrial()) return false;
-
-        set.add(packageName);
-
-        saveSet(set, preferencesName);
-        resetPackageNames(preferencesName);
-
-        return true;
+        return setManager.addToSet(packageName, preferencesName);
     }
 
     public void removeFromSet(String packageName, @PersistedSet String preferencesName) {
-        Set<String> set = getSet(preferencesName);
-        set.remove(packageName);
+        setManager.removeFromSet(packageName, preferencesName);
+    }
 
-        saveSet(set, preferencesName);
-        resetPackageNames(preferencesName);
+    public List<String> getList(@PersistedSet String preferenceName) {
+        return setManager.getList(preferenceName);
     }
 
     public Comparator<ApplicationInfo> getApplicationInfoComparator() {
@@ -153,32 +148,6 @@ public class RotationGestureConsumer implements GestureConsumer {
         intent.putExtra(EXTRA_WATCHES_WINDOWS, enabled);
 
         LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
-    }
-
-    private void resetPackageNames(@PersistedSet String preferencesName) {
-        List<String> packageNames = packageMap.computeIfAbsent(preferencesName, k -> new ArrayList<>());
-
-        packageNames.clear();
-        packageNames.addAll(getSet(preferencesName).stream()
-                .map(packageName -> {
-                    ApplicationInfo info = null;
-                    try {info = app.getPackageManager().getApplicationInfo(packageName, 0);}
-                    catch (Exception e) {e.printStackTrace();}
-
-                    return info;
-                })
-                .filter(Objects::nonNull)
-                .sorted(applicationInfoComparator)
-                .map(applicationInfo -> applicationInfo.packageName)
-                .collect(Collectors.toList()));
-    }
-
-    private Set<String> getSet(@PersistedSet String preferencesName) {
-        return new HashSet<>(app.getPreferences().getStringSet(preferencesName, new HashSet<>()));
-    }
-
-    private void saveSet(Set<String> set, @PersistedSet String preferencesName) {
-        app.getPreferences().edit().putStringSet(preferencesName, set).apply();
     }
 
     private boolean isAutoRotateOn() {

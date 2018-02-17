@@ -5,7 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.res.TypedArray;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
-import android.util.SparseIntArray;
+import android.support.annotation.StringRes;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
@@ -14,6 +14,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import io.reactivex.disposables.Disposable;
 
@@ -61,9 +62,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private final int[] actionIds;
     private final GestureConsumer[] consumers;
 
-    private final SparseIntArray gestureActionMap;
-    private final SparseIntArray actionGestureMap;
-
     private final AtomicReference<String> directionReference;
 
     private Disposable isSwipingDisposable;
@@ -77,8 +75,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     private GestureMapper() {
         app = App.getInstance();
-
-        gestureActionMap = new SparseIntArray();
         directionReference = new AtomicReference<>();
 
         consumers = new GestureConsumer[]{
@@ -88,19 +84,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 FlashlightGestureConsumer.getInstance(),
                 DockingGestureConsumer.getInstance(),
                 RotationGestureConsumer.getInstance()};
-
-        gestureActionMap.put(INCREASE_BRIGHTNESS, R.string.increase_brightness);
-        gestureActionMap.put(REDUCE_BRIGHTNESS, R.string.reduce_brightness);
-        gestureActionMap.put(MAXIMIZE_BRIGHTNESS, R.string.maximize_brightness);
-        gestureActionMap.put(MINIMIZE_BRIGHTNESS, R.string.minimize_brightness);
-        gestureActionMap.put(NOTIFICATION_UP, R.string.notification_up);
-        gestureActionMap.put(NOTIFICATION_DOWN, R.string.notification_down);
-        gestureActionMap.put(TOGGLE_FLASHLIGHT, R.string.toggle_flashlight);
-        gestureActionMap.put(TOGGLE_DOCK, R.string.toggle_dock);
-        gestureActionMap.put(TOGGLE_AUTO_ROTATE, R.string.toggle_auto_rotate);
-        gestureActionMap.put(DO_NOTHING, R.string.do_nothing);
-
-        actionGestureMap = invert(gestureActionMap);
 
         actionIds = getActionIds();
     }
@@ -134,14 +117,14 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public void mapGestureToAction(@GestureDirection String direction, int resource) {
-        int action = actionGestureMap.get(resource);
+        int action = actionForResource(resource);
         app.getPreferences().edit().putInt(direction, action).apply();
     }
 
     public String getMappedAction(@GestureDirection String gestureDirection) {
         @GestureConsumer.GestureAction
         int action = directionToAction(gestureDirection);
-        int stringResource = gestureActionMap.get(action);
+        int stringResource = resourceForAction(action);
         return app.getString(stringResource);
     }
 
@@ -151,7 +134,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public int[] getActions() {
-        return actionIds;
+        return IntStream.of(actionIds).map(this::actionForResource).toArray();
     }
 
     public int getDoubleSwipeDelay() {
@@ -231,6 +214,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private void performAction(@GestureDirection String direction) {
         @GestureConsumer.GestureAction
         int action = directionToAction(direction);
+        performAction(action);
+    }
+
+    public void performAction(@GestureConsumer.GestureAction int action) {
         GestureConsumer consumer = consumerForAction(action);
         if (consumer != null) consumer.onGestureActionTriggered(action);
     }
@@ -331,12 +318,57 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         throwable.printStackTrace();
     }
 
-    private static SparseIntArray invert(SparseIntArray source) {
-        int size = source.size();
-        SparseIntArray array = new SparseIntArray(size);
+    @GestureConsumer.GestureAction
+    public int actionForResource(int resource) {
+        switch (resource) {
+            default:
+            case R.string.do_nothing:
+                return DO_NOTHING;
+            case R.string.increase_brightness:
+                return INCREASE_BRIGHTNESS;
+            case R.string.reduce_brightness:
+                return REDUCE_BRIGHTNESS;
+            case R.string.maximize_brightness:
+                return MAXIMIZE_BRIGHTNESS;
+            case R.string.minimize_brightness:
+                return MINIMIZE_BRIGHTNESS;
+            case R.string.notification_up:
+                return NOTIFICATION_UP;
+            case R.string.notification_down:
+                return NOTIFICATION_DOWN;
+            case R.string.toggle_flashlight:
+                return TOGGLE_FLASHLIGHT;
+            case R.string.toggle_dock:
+                return TOGGLE_DOCK;
+            case R.string.toggle_auto_rotate:
+                return TOGGLE_AUTO_ROTATE;
+        }
+    }
 
-        for (int i = 0; i < size; i++) array.put(source.valueAt(i), source.keyAt(i));
-
-        return array;
+    @StringRes
+    public int resourceForAction(@GestureConsumer.GestureAction int action) {
+        switch (action) {
+            default:
+            case DO_NOTHING:
+                return R.string.do_nothing;
+            case INCREASE_BRIGHTNESS:
+                return R.string.increase_brightness;
+            case REDUCE_BRIGHTNESS:
+                return R.string.reduce_brightness;
+            case MAXIMIZE_BRIGHTNESS:
+                return R.string.maximize_brightness;
+            case MINIMIZE_BRIGHTNESS:
+                return R.string.minimize_brightness;
+            case NOTIFICATION_UP:
+                return R.string.notification_up;
+            case NOTIFICATION_DOWN:
+                return R.string.notification_down;
+            case TOGGLE_FLASHLIGHT:
+                return R.string.toggle_flashlight;
+            case TOGGLE_DOCK:
+                return R.string.toggle_dock;
+            case TOGGLE_AUTO_ROTATE:
+                return R.string.toggle_auto_rotate;
+        }
     }
 }

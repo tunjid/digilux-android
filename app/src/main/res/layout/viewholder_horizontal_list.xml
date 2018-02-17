@@ -20,22 +20,23 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/rotation_list"
+        android:id="@+id/item_list"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:minHeight="@dimen/triple_and_half_margin"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/add_rotation"
+        app:layout_constraintRight_toLeftOf="@+id/add"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <ImageButton
-        android:id="@+id/add_rotation"
+        android:id="@+id/add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
         android:src="@drawable/ic_add_24dp"
-        app:layout_constraintBottom_toBottomOf="@+id/rotation_list"
+        app:layout_constraintBottom_toBottomOf="@+id/item_list"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/rotation_list" />
+        app:layout_constraintTop_toTopOf="@+id/item_list" />
 </android.support.constraint.ConstraintLayout>
 
 
