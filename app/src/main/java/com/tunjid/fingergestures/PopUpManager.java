@@ -7,10 +7,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
 public class PopUpManager {
 
@@ -19,7 +16,7 @@ public class PopUpManager {
     private static final String ACCESSIBILITY_BUTTON_ENABLED = "accessibility button enabled";
     private static final String SAVED_ACTIONS = "accessibility button apps";
 
-    private SetManager<Integer> setManager;
+    private final SetManager<Integer> setManager;
 
     private static PopUpManager instance;
 
@@ -29,14 +26,7 @@ public class PopUpManager {
     }
 
     private PopUpManager() {
-        Comparator<Integer> sorter = Integer::compare;
-
-        Function<String, Boolean> addFilter = preferenceName -> {
-            Set<String> set = setManager.getSet(preferenceName);
-            return !(set.size() > 2 && PurchasesManager.getInstance().isPremiumNotTrial());
-        };
-
-        setManager = new SetManager<>(sorter, addFilter, Integer::valueOf, String::valueOf);
+        setManager = new SetManager<>(Integer::compare, this::canAddToSet, Integer::valueOf, String::valueOf);
     }
 
     public boolean hasAccessibilityButton() {
@@ -62,5 +52,9 @@ public class PopUpManager {
         intent.putExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, enabled);
 
         LocalBroadcastManager.getInstance(App.getInstance()).sendBroadcast(intent);
+    }
+
+    private boolean canAddToSet(String preferenceName) {
+        return setManager.getSet(preferenceName).size() < 2 || PurchasesManager.getInstance().isPremiumNotTrial();
     }
 }
