@@ -21,6 +21,7 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import java.util.ArrayList;
@@ -96,7 +97,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
     }
 
     @Override
-    public void onActionClicked(int actionRes) {
+    public void onActionClicked(@GestureConsumer.GestureAction int action) {
         Bundle args = getArguments();
         if (args == null) {
             showSnackbar(R.string.generic_error);
@@ -117,7 +118,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
 
         if (isActionInstance) {
             Context context = recyclerView.getContext();
-            if (PopUpManager.getInstance().addToSet(mapper.actionForResource(actionRes))) fragment.refresh(POPUP_ACTION);
+            if (PopUpManager.getInstance().addToSet(action)) fragment.refresh(POPUP_ACTION);
             else new AlertDialog.Builder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
@@ -126,7 +127,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
                     .show();
         }
         else {
-            mapper.mapGestureToAction(direction, actionRes);
+            mapper.mapGestureToAction(direction, action);
             fragment.refresh(LEFT_GESTURE.equals(direction) || DOUBLE_LEFT_GESTURE.equals(direction)
                     ? MAP_LEFT_ICON
                     : UP_GESTURE.equals(direction) || DOUBLE_UP_GESTURE.equals(direction)

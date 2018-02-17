@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.viewholders.ActionViewHolder;
 
 import java.util.List;
@@ -15,13 +16,13 @@ public class ActionAdapter extends BaseRecyclerViewAdapter<ActionViewHolder, Act
 
     private final boolean isHorizontal;
     private final boolean showsText;
-    private final List<String> resources;
+    private final List<String> actionStrings;
 
-    public ActionAdapter(boolean isHorizontal, boolean showsText, List<String> resources, ActionClickListener listener) {
+    public ActionAdapter(boolean isHorizontal, boolean showsText, List<String> actionStrings, ActionClickListener listener) {
         super(listener);
         this.isHorizontal = isHorizontal;
         this.showsText = showsText;
-        this.resources = resources;
+        this.actionStrings = actionStrings;
         setHasStableIds(true);
     }
 
@@ -33,20 +34,20 @@ public class ActionAdapter extends BaseRecyclerViewAdapter<ActionViewHolder, Act
 
     @Override
     public void onBindViewHolder(ActionViewHolder holder, int position) {
-        holder.bind(Integer.valueOf(resources.get(position)));
+        holder.bind(Integer.valueOf(actionStrings.get(position)));
     }
 
     @Override
     public int getItemCount() {
-        return resources.size();
+        return actionStrings.size();
     }
 
     @Override
     public long getItemId(int position) {
-        return resources.get(position).hashCode();
+        return actionStrings.get(position).hashCode();
     }
 
     public interface ActionClickListener extends BaseRecyclerViewAdapter.AdapterListener {
-        void onActionClicked(int actionRes);
+        void onActionClicked(@GestureConsumer.GestureAction int actionRes);
     }
 }

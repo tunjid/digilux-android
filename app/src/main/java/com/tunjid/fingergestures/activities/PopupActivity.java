@@ -26,14 +26,13 @@ public class PopupActivity extends AppCompatActivity {
         Window window = getWindow();
         window.setLayout(MATCH_PARENT, MATCH_PARENT);
 
-        GestureMapper mapper = GestureMapper.getInstance();
         PopUpManager buttonManager = PopUpManager.getInstance();
         int sliderBackgroundColor = BrightnessGestureConsumer.getInstance().getBackgroundColor();
 
         RecyclerView recyclerView = findViewById(R.id.item_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, HORIZONTAL, false));
-        recyclerView.setAdapter(new ActionAdapter(true, false, buttonManager.getList(), resource -> mapper.performAction(mapper.actionForResource(resource))));
         recyclerView.setBackground(BackgroundManager.getInstance().tint(R.drawable.color_indicator, sliderBackgroundColor));
+        recyclerView.setAdapter(new ActionAdapter(true, false, buttonManager.getList(), GestureMapper.getInstance()::performAction));
 
         findViewById(R.id.constraint_layout).setOnClickListener(v -> finish());
     }

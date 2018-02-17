@@ -6,13 +6,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
-import com.tunjid.fingergestures.PopUpManager;
 import com.tunjid.fingergestures.App;
+import com.tunjid.fingergestures.PopUpManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.fragments.ActionFragment;
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 
 import static android.support.v7.widget.LinearLayoutManager.HORIZONTAL;
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
@@ -52,9 +52,8 @@ public class PopupViewHolder extends AppViewHolder {
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
     }
 
-    private void onActionClicked(int stringRes) {
+    private void onActionClicked(@GestureConsumer.GestureAction int action) {
         PopUpManager buttonManager = PopUpManager.getInstance();
-        GestureMapper gestureMapper = GestureMapper.getInstance();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
 
@@ -64,7 +63,7 @@ public class PopupViewHolder extends AppViewHolder {
 
         else builder.setTitle(R.string.popup_remove)
                     .setPositiveButton(R.string.yes, ((dialog, which) -> {
-                        buttonManager.removeFromSet(gestureMapper.actionForResource(stringRes));
+                        buttonManager.removeFromSet(action);
                         recyclerView.getAdapter().notifyDataSetChanged();
                     }))
                     .setNegativeButton(R.string.no, ((dialog, which) -> dialog.dismiss()));

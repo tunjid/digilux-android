@@ -116,8 +116,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         }
     }
 
-    public void mapGestureToAction(@GestureDirection String direction, int resource) {
-        int action = actionForResource(resource);
+    public void mapGestureToAction(@GestureDirection String direction, @GestureConsumer.GestureAction int action) {
         app.getPreferences().edit().putInt(direction, action).apply();
     }
 
@@ -211,21 +210,33 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 }, this::onError);
     }
 
+    public void performAction(@GestureConsumer.GestureAction int action) {
+        GestureConsumer consumer = consumerForAction(action);
+        if (consumer != null) consumer.onGestureActionTriggered(action);
+    }
+
     private void performAction(@GestureDirection String direction) {
         @GestureConsumer.GestureAction
         int action = directionToAction(direction);
         performAction(action);
     }
 
-    public void performAction(@GestureConsumer.GestureAction int action) {
-        GestureConsumer consumer = consumerForAction(action);
-        if (consumer != null) consumer.onGestureActionTriggered(action);
-    }
-
     @Nullable
     private GestureConsumer consumerForAction(@GestureConsumer.GestureAction int action) {
         for (GestureConsumer consumer : consumers) if (consumer.accepts(action)) return consumer;
         return null;
+    }
+
+    private void onError(Throwable throwable) {
+        throwable.printStackTrace();
+    }
+
+    private void resetIsOngoing() {
+        isSwipingDisposable = App.delay(ONGOING_RESET_DELAY, SECONDS, () -> isOngoing = false);
+    }
+
+    private int delayPercentageToMillis(int percentage) {
+        return (int) (percentage * MAX_DOUBLE_SWIPE_DELAY / 100F);
     }
 
     @GestureDirection
@@ -294,32 +305,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         }
     }
 
-    private int delayPercentageToMillis(int percentage) {
-        return (int) (percentage * MAX_DOUBLE_SWIPE_DELAY / 100F);
-    }
-
-    private int[] getActionIds() {
-        TypedArray typedArray = app.getResources().obtainTypedArray(R.array.action_resources);
-        int length = typedArray.length();
-
-        int[] ints = new int[length];
-        for (int i = 0; i < length; i++) ints[i] = typedArray.getResourceId(i, R.string.do_nothing);
-
-        typedArray.recycle();
-
-        return ints;
-    }
-
-    private void resetIsOngoing() {
-        isSwipingDisposable = App.delay(ONGOING_RESET_DELAY, SECONDS, () -> isOngoing = false);
-    }
-
-    private void onError(Throwable throwable) {
-        throwable.printStackTrace();
-    }
-
     @GestureConsumer.GestureAction
-    public int actionForResource(int resource) {
+    private int actionForResource(int resource) {
         switch (resource) {
             default:
             case R.string.do_nothing:
@@ -370,5 +357,17 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
             case TOGGLE_AUTO_ROTATE:
                 return R.string.toggle_auto_rotate;
         }
+    }
+
+    private int[] getActionIds() {
+        TypedArray typedArray = app.getResources().obtainTypedArray(R.array.action_resources);
+        int length = typedArray.length();
+
+        int[] ints = new int[length];
+        for (int i = 0; i < length; i++) ints[i] = typedArray.getResourceId(i, R.string.do_nothing);
+
+        typedArray.recycle();
+
+        return ints;
     }
 }
