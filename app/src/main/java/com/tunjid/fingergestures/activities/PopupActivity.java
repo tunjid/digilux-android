@@ -14,6 +14,7 @@ import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
+import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
@@ -40,6 +41,7 @@ public class PopupActivity extends AppCompatActivity {
 
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
         BrightnessGestureConsumer gestureConsumer = BrightnessGestureConsumer.getInstance();
+        DiffAdapter adapter = new ActionAdapter(true, false, PopUpManager.getInstance()::getList, GestureMapper.getInstance()::performAction);
 
         List<String> actions = PopUpManager.getInstance().getList();
         int textColor = gestureConsumer.getSliderColor();
@@ -49,11 +51,13 @@ public class PopupActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.item_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, HORIZONTAL, false));
         recyclerView.setBackground(backgroundManager.tint(R.drawable.color_indicator, sliderBackgroundColor));
-        recyclerView.setAdapter(new ActionAdapter(true, false, actions, GestureMapper.getInstance()::performAction));
+        recyclerView.setAdapter(adapter);
 
         text.setTextColor(textColor);
         text.setVisibility(actions.isEmpty() ? View.VISIBLE : View.GONE);
         text.setBackground(backgroundManager.tint(R.drawable.color_indicator, sliderBackgroundColor));
+
+        adapter.calculateDiff();
 
         findViewById(R.id.constraint_layout).setOnTouchListener((view, motionEvent) -> {
             finish();

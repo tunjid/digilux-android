@@ -8,18 +8,17 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.viewholders.PackageViewHolder;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 
-public class PackageAdapter extends BaseRecyclerViewAdapter<PackageViewHolder, PackageAdapter.PackageClickListener> {
+public class PackageAdapter extends DiffAdapter<PackageViewHolder, PackageAdapter.PackageClickListener> {
 
     private final boolean isHorizontal;
-    private final List<String> packageNames;
 
-    public PackageAdapter(boolean isHorizontal, List<String> packageNames, PackageClickListener listener) {
-        super(listener);
+    public PackageAdapter(boolean isHorizontal, Supplier<List<String>> listSupplier, PackageClickListener listener) {
+        super(listSupplier, listener);
         setHasStableIds(true);
         this.isHorizontal = isHorizontal;
-        this.packageNames = packageNames;
     }
 
     @Override
@@ -30,17 +29,7 @@ public class PackageAdapter extends BaseRecyclerViewAdapter<PackageViewHolder, P
 
     @Override
     public void onBindViewHolder(PackageViewHolder holder, int position) {
-        holder.bind(packageNames.get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        return packageNames.size();
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return packageNames.get(position).hashCode();
+        holder.bind(list.get(position));
     }
 
     public interface PackageClickListener extends BaseRecyclerViewAdapter.AdapterListener {
