@@ -266,6 +266,12 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        System.gc();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (adView != null) adView.destroy();
