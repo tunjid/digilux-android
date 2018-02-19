@@ -68,9 +68,13 @@ public class RotationGestureConsumer implements GestureConsumer {
     }
 
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        if (event == null) return;
         if (!App.canWriteToSettings() || event.getEventType() != TYPE_WINDOW_STATE_CHANGED) return;
 
-        String packageName = event.getPackageName().toString();
+        CharSequence sequence = event.getPackageName();
+        if (sequence == null) return;
+
+        String packageName = sequence.toString();
         if (packageName.equals(lastPackageName)) return;
 
         Set<String> rotationApps = setManager.getSet(ROTATION_APPS);
