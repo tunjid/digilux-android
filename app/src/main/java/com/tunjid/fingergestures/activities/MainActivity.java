@@ -140,7 +140,7 @@ public class MainActivity extends FingerGestureActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (!PurchasesManager.getInstance().isPremiumNotTrial())
+        if (PurchasesManager.getInstance().hasNoPurchases())
             MobileAds.initialize(this, getString(R.string.ad_id));
 
         Window window = getWindow();
