@@ -9,8 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.view.accessibility.AccessibilityManager;
 
-import com.google.android.gms.ads.MobileAds;
-
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +29,6 @@ public class App extends android.app.Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-        MobileAds.initialize(this, getString(R.string.ad_id));
     }
 
     public SharedPreferences getPreferences() {

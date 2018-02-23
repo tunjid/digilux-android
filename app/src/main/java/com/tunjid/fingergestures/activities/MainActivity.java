@@ -33,6 +33,7 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.androidbootstrap.core.view.ViewHider;
 import com.tunjid.fingergestures.App;
@@ -60,6 +61,7 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.DOUBLE_SWIPE_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ENABLE_ACCESSIBILITY_BUTTON;
+import static com.tunjid.fingergestures.adapters.AppAdapter.ENABLE_WATCH_WINDOWS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.EXCLUDED_ROTATION_LOCK;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_DOWN_ICON;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_LEFT_ICON;
@@ -77,7 +79,6 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_DURATION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_POSITION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_PICKER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_TRIGGER;
-import static com.tunjid.fingergestures.adapters.AppAdapter.ENABLE_WATCH_WINDOWS;
 import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
 import static com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR;
 
@@ -139,6 +140,8 @@ public class MainActivity extends FingerGestureActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (PurchasesManager.getInstance().hasNoPurchases())
+            MobileAds.initialize(this, getString(R.string.ad_id));
 
         Window window = getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -263,6 +266,12 @@ public class MainActivity extends FingerGestureActivity {
         adView.pause();
         unregisterReceiver(receiver);
         super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        System.gc();
     }
 
     @Override

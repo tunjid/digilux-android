@@ -10,19 +10,18 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.viewholders.ActionViewHolder;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 
-public class ActionAdapter extends BaseRecyclerViewAdapter<ActionViewHolder, ActionAdapter.ActionClickListener> {
+public class ActionAdapter extends DiffAdapter<ActionViewHolder, ActionAdapter.ActionClickListener> {
 
     private final boolean isHorizontal;
     private final boolean showsText;
-    private final List<String> actionStrings;
 
-    public ActionAdapter(boolean isHorizontal, boolean showsText, List<String> actionStrings, ActionClickListener listener) {
-        super(listener);
+    public ActionAdapter(boolean isHorizontal, boolean showsText, Supplier<List<String>> listSupplier, ActionClickListener listener) {
+        super(listSupplier, listener);
         this.isHorizontal = isHorizontal;
         this.showsText = showsText;
-        this.actionStrings = actionStrings;
         setHasStableIds(true);
     }
 
@@ -34,17 +33,7 @@ public class ActionAdapter extends BaseRecyclerViewAdapter<ActionViewHolder, Act
 
     @Override
     public void onBindViewHolder(ActionViewHolder holder, int position) {
-        holder.bind(Integer.valueOf(actionStrings.get(position)));
-    }
-
-    @Override
-    public int getItemCount() {
-        return actionStrings.size();
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return actionStrings.get(position).hashCode();
+        holder.bind(Integer.valueOf(list.get(position)));
     }
 
     public interface ActionClickListener extends BaseRecyclerViewAdapter.AdapterListener {

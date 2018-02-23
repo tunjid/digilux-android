@@ -19,12 +19,12 @@ import android.view.ViewGroup;
 import com.tunjid.fingergestures.PopUpManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
+import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -49,7 +49,6 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
     private static final String ARG_DIRECTION = "DIRECTION";
 
     private RecyclerView recyclerView;
-    private final List<String> resources = new ArrayList<>();
 
     public static ActionFragment directionInstance(@GestureMapper.GestureDirection String direction) {
         ActionFragment fragment = new ActionFragment();
@@ -84,15 +83,16 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
         Drawable decoration = ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark);
 
         if (decoration != null) itemDecoration.setDrawable(decoration);
-        buildItems();
 
+        DiffAdapter adapter = new ActionAdapter(false, true, this::getItems, this);
         recyclerView = root.findViewById(R.id.options_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new ActionAdapter(false, true, resources, this));
+        recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(itemDecoration);
 
         root.<Toolbar>findViewById(R.id.title_bar).setTitle(R.string.pick_action);
 
+        adapter.calculateDiff();
         return root;
     }
 
@@ -145,8 +145,8 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
         super.onDestroyView();
     }
 
-    private void buildItems() {
-        resources.addAll(IntStream.of(GestureMapper.getInstance().getActions())
-                .mapToObj(String::valueOf).collect(Collectors.toList()));
+    private List<String> getItems() {
+        return IntStream.of(GestureMapper.getInstance().getActions())
+                .mapToObj(String::valueOf).collect(Collectors.toList());
     }
 }

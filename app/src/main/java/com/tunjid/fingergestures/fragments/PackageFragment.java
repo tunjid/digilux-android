@@ -76,7 +76,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         progressBar = root.findViewById(R.id.progress_bar);
         recyclerView = root.findViewById(R.id.options_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new PackageAdapter(false, packageNames, this));
+        recyclerView.setAdapter(new PackageAdapter(false, () -> packageNames, this));
         recyclerView.addItemDecoration(itemDecoration);
 
         String persistedSet = getArguments().getString(ARG_PERSISTED_SET);
@@ -146,7 +146,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
                     packageNames.clear();
                     packageNames.addAll(list);
                     progressBar.setVisibility(View.GONE);
-                    recyclerView.getAdapter().notifyDataSetChanged();
+                    ((PackageAdapter) recyclerView.getAdapter()).calculateDiff();
                     TransitionManager.beginDelayedTransition(root, new AutoTransition());
                 }, Throwable::printStackTrace);
     }

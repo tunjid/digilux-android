@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
+import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.adapters.PackageAdapter;
 import com.tunjid.fingergestures.fragments.PackageFragment;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
@@ -28,7 +29,7 @@ public class RotationViewHolder extends AppViewHolder {
 
         rotationList = itemView.findViewById(R.id.item_list);
         rotationList.setLayoutManager(new LinearLayoutManager(itemView.getContext(), HORIZONTAL, false));
-        rotationList.setAdapter(new PackageAdapter(true, gestureConsumer.getList(persistedSet), getPackageClickListener(persistedSet)));
+        rotationList.setAdapter(new PackageAdapter(true, () -> gestureConsumer.getList(persistedSet), getPackageClickListener(persistedSet)));
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
             if (!App.canWriteToSettings())
@@ -51,7 +52,7 @@ public class RotationViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        rotationList.getAdapter().notifyDataSetChanged();
+        ((DiffAdapter) rotationList.getAdapter()).calculateDiff();
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
     }
 
@@ -71,7 +72,7 @@ public class RotationViewHolder extends AppViewHolder {
             else builder.setTitle(gestureConsumer.getRemoveText(preferenceName))
                         .setPositiveButton(R.string.yes, ((dialog, which) -> {
                             gestureConsumer.removeFromSet(packageName, preferenceName);
-                            rotationList.getAdapter().notifyDataSetChanged();
+                            bind();
                         }))
                         .setNegativeButton(R.string.no, ((dialog, which) -> dialog.dismiss()));
 
