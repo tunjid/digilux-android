@@ -18,16 +18,18 @@
             android:id="@+id/main_fragment_container"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@+id/permissions_layout"
+            app:layout_constraintBottom_toTopOf="@+id/permission_view"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <include
-            android:id="@+id/permissions_layout"
-            layout="@layout/permissions_layout"
-            android:layout_width="0dp"
+        <Button
+            android:id="@+id/permission_view"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:backgroundTint="@color/colorPrimary"
+            android:text="@string/enable_accessibility"
             app:layout_constraintBottom_toTopOf="@+id/upgrade_prompt"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
