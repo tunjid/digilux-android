@@ -115,7 +115,7 @@ public class MainActivity extends FingerGestureActivity {
     private String[] quips;
 
     private final TextLink[] links;
-    private final AtomicInteger quipCounter = new AtomicInteger(0);
+    private final AtomicInteger quipCounter = new AtomicInteger(-1);
     private final PublishProcessor<String> publishProcessor = PublishProcessor.create();
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
 
@@ -484,9 +484,8 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private String getNextQuip() {
-        int index = quipCounter.get();
-        if (quipCounter.incrementAndGet() >= (quips.length - 1)) quipCounter.set(0);
-        return quips[index];
+        if (quipCounter.incrementAndGet() >= quips.length) quipCounter.set(0);
+        return quips[quipCounter.get()];
     }
 
     private static class TextLink implements CharSequence {
