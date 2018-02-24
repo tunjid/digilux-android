@@ -28,26 +28,18 @@
             layout="@layout/permissions_layout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/adView"
+            app:layout_constraintBottom_toTopOf="@+id/upgrade_prompt"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
 
-        <TextView
+        <TextSwitcher
+            android:id="@+id/upgrade_prompt"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="@dimen/triple_margin"
             android:gravity="center"
             android:text="@string/blank_emoji"
-            app:layout_constraintBottom_toBottomOf="@+id/adView"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/adView" />
-
-        <com.google.android.gms.ads.AdView
-            android:id="@+id/adView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:adSize="BANNER"
-            app:adUnitId="@string/ad_unit_id"
+            android:textColor="@color/toggle_text"
+            android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
@@ -76,6 +68,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorBackground"
+        android:visibility="gone"
         app:behavior_hideable="true"
         app:behavior_peekHeight="500dp"
         app:layout_behavior="android.support.design.widget.BottomSheetBehavior" />
