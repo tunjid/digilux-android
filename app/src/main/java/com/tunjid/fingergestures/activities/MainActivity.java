@@ -475,8 +475,6 @@ public class MainActivity extends FingerGestureActivity {
 
     private void togglePermissionText(boolean show) {
         TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
-//        ViewGroup.LayoutParams params = permissionText.getLayoutParams();
-//        params.height = show ? getResources().getDimensionPixelSize(R.dimen.triple_margin) : 0;
         permissionText.setVisibility(show ? View.VISIBLE : View.GONE);
         ((ViewGroup) permissionText.getParent()).invalidate();
     }
