@@ -106,7 +106,7 @@ public class MainActivity extends FingerGestureActivity {
 
     private static final String[] STORAGE_PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE};
 
-    private ViewGroup container;
+    private ViewGroup constraintLayout;
     private TextSwitcher switcher;
     private TextView permissionText;
     private BottomSheetBehavior bottomSheetBehavior;
@@ -160,7 +160,7 @@ public class MainActivity extends FingerGestureActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         switcher = findViewById(R.id.upgrade_prompt);
-        container = findViewById(R.id.container);
+        constraintLayout = findViewById(R.id.constraint_layout);
 
         barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build();
 
@@ -221,7 +221,7 @@ public class MainActivity extends FingerGestureActivity {
                 PurchasesManager purchasesManager = PurchasesManager.getInstance();
                 boolean isTrialRunning = purchasesManager.isTrialRunning();
 
-                Snackbar snackbar = Snackbar.make(container, purchasesManager.getTrialPeriodText(), isTrialRunning ? LENGTH_SHORT : LENGTH_INDEFINITE);
+                Snackbar snackbar = Snackbar.make(coordinator, purchasesManager.getTrialPeriodText(), isTrialRunning ? LENGTH_SHORT : LENGTH_INDEFINITE);
                 if (!isTrialRunning) snackbar.setAction(android.R.string.yes, view -> {
                     purchasesManager.startTrial();
                     recreate();
@@ -270,7 +270,7 @@ public class MainActivity extends FingerGestureActivity {
     protected void onDestroy() {
         if (disposable != null) disposable.dispose();
         switcher = null;
-        container = null;
+        constraintLayout = null;
         permissionText = null;
         bottomSheetBehavior = null;
         permissionsStack.clear();
@@ -457,7 +457,7 @@ public class MainActivity extends FingerGestureActivity {
 
             }
         });
-        android.transition.TransitionManager.beginDelayedTransition(container, hideTransition);
+        android.transition.TransitionManager.beginDelayedTransition(constraintLayout, hideTransition);
         switcher.setVisibility(View.GONE);
     }
 
@@ -474,7 +474,7 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void togglePermissionText(boolean show) {
-        TransitionManager.beginDelayedTransition(container, getTransition());
+        TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
         ViewGroup.LayoutParams params = permissionText.getLayoutParams();
         params.height = show ? getResources().getDimensionPixelSize(R.dimen.triple_margin) : 0;
         ((ViewGroup) permissionText.getParent()).invalidate();
