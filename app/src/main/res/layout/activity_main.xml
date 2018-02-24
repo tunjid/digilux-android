@@ -18,36 +18,30 @@
             android:id="@+id/main_fragment_container"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@+id/permissions_layout"
+            app:layout_constraintBottom_toTopOf="@+id/permission_view"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <include
-            android:id="@+id/permissions_layout"
-            layout="@layout/permissions_layout"
-            android:layout_width="0dp"
+        <Button
+            android:id="@+id/permission_view"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/adView"
+            android:layout_gravity="center_horizontal"
+            android:backgroundTint="@color/colorPrimary"
+            android:text="@string/enable_accessibility"
+            app:layout_constraintBottom_toTopOf="@+id/upgrade_prompt"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
 
-        <TextView
+        <TextSwitcher
+            android:id="@+id/upgrade_prompt"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="@dimen/triple_margin"
             android:gravity="center"
             android:text="@string/blank_emoji"
-            app:layout_constraintBottom_toBottomOf="@+id/adView"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/adView" />
-
-        <com.google.android.gms.ads.AdView
-            android:id="@+id/adView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:adSize="BANNER"
-            app:adUnitId="@string/ad_unit_id"
+            android:textColor="@color/toggle_text"
+            android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />

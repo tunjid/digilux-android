@@ -22,23 +22,20 @@ import android.text.TextUtils;
 import android.transition.AutoTransition;
 import android.transition.Transition;
 import android.transition.TransitionManager;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextSwitcher;
 import android.widget.TextView;
 
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.androidbootstrap.core.view.ViewHider;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
-import com.tunjid.fingergestures.BuildConfig;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.TrialView;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
@@ -49,12 +46,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import io.reactivex.Flowable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.processors.PublishProcessor;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.support.design.widget.BottomSheetBehavior.STATE_COLLAPSED;
 import static android.support.design.widget.BottomSheetBehavior.STATE_HIDDEN;
 import static android.support.design.widget.Snackbar.LENGTH_INDEFINITE;
 import static android.support.design.widget.Snackbar.LENGTH_SHORT;
+import static android.view.animation.AnimationUtils.loadAnimation;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
@@ -81,6 +85,7 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_PICKER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_TRIGGER;
 import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
 import static com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR;
+import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class MainActivity extends FingerGestureActivity {
 
@@ -101,12 +106,17 @@ public class MainActivity extends FingerGestureActivity {
 
     private static final String[] STORAGE_PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE};
 
-    private AdView adView;
+    private ViewGroup constraintLayout;
+    private TextSwitcher switcher;
     private TextView permissionText;
-    private ViewGroup container;
     private BottomSheetBehavior bottomSheetBehavior;
 
+    private Disposable disposable;
+    private String[] quips;
+
     private final TextLink[] links;
+    private final AtomicInteger quipCounter = new AtomicInteger(0);
+    private final PublishProcessor<String> publishProcessor = PublishProcessor.create();
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW};
@@ -140,8 +150,6 @@ public class MainActivity extends FingerGestureActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (PurchasesManager.getInstance().hasNoPurchases())
-            MobileAds.initialize(this, getString(R.string.ad_id));
 
         Window window = getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -151,8 +159,8 @@ public class MainActivity extends FingerGestureActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        adView = findViewById(R.id.adView);
-        container = findViewById(R.id.container);
+        switcher = findViewById(R.id.upgrade_prompt);
+        constraintLayout = findViewById(R.id.constraint_layout);
 
         barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build();
 
@@ -169,30 +177,15 @@ public class MainActivity extends FingerGestureActivity {
 
         if (savedInstanceState == null && isPickIntent) handleIntent(startIntent);
         else if (savedInstanceState == null) showFragment(AppFragment.newInstance(GESTURE_ITEMS));
+
+        setUpSwitcher();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        adView.resume();
 
-        AdRequest.Builder builder = new AdRequest.Builder();
-        if (BuildConfig.DEBUG) builder.addTestDevice("4853CDD3A8952349497550F27CC60ED3");
-
-        boolean hasAds = PurchasesManager.getInstance().hasAds();
-        adView.setVisibility(hasAds ? View.INVISIBLE : View.GONE);
-
-        if (hasAds) {
-            adView.loadAd(builder.build());
-            adView.setAdListener(new AdListener() {
-                @Override
-                public void onAdLoaded() {
-                    if (adView == null) return;
-                    TransitionManager.beginDelayedTransition(container, getTransition());
-                    adView.setVisibility(View.VISIBLE);
-                }
-            });
-        }
+        if (PurchasesManager.getInstance().hasAds()) shill();
         else hideAds();
 
         if (!App.accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
@@ -228,7 +221,7 @@ public class MainActivity extends FingerGestureActivity {
                 PurchasesManager purchasesManager = PurchasesManager.getInstance();
                 boolean isTrialRunning = purchasesManager.isTrialRunning();
 
-                Snackbar snackbar = Snackbar.make(container, purchasesManager.getTrialPeriodText(), isTrialRunning ? LENGTH_SHORT : LENGTH_INDEFINITE);
+                Snackbar snackbar = Snackbar.make(coordinator, purchasesManager.getTrialPeriodText(), isTrialRunning ? LENGTH_SHORT : LENGTH_INDEFINITE);
                 if (!isTrialRunning) snackbar.setAction(android.R.string.yes, view -> {
                     purchasesManager.startTrial();
                     recreate();
@@ -263,7 +256,6 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     protected void onPause() {
-        adView.pause();
         unregisterReceiver(receiver);
         super.onPause();
     }
@@ -276,10 +268,13 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        if (adView != null) adView.destroy();
-        adView = null;
+        if (disposable != null) disposable.dispose();
+        switcher = null;
+        constraintLayout = null;
+        permissionText = null;
+        bottomSheetBehavior = null;
         permissionsStack.clear();
+        super.onDestroy();
     }
 
     @Override
@@ -422,8 +417,18 @@ public class MainActivity extends FingerGestureActivity {
         startActivity(browserIntent);
     }
 
+    private void shill() {
+        Flowable.interval(10, TimeUnit.SECONDS)
+                .map(value -> getNextQuip())
+                .repeat()
+                .observeOn(mainThread())
+                .subscribe(publishProcessor::onNext, Throwable::printStackTrace);
+
+        disposable = publishProcessor.subscribe(switcher::setText, Throwable::printStackTrace);
+    }
+
     private void hideAds() {
-        if (adView.getVisibility() == View.GONE) return;
+        if (switcher.getVisibility() == View.GONE) return;
 
         Transition hideTransition = getTransition();
         hideTransition.addListener(new Transition.TransitionListener() {
@@ -452,19 +457,36 @@ public class MainActivity extends FingerGestureActivity {
 
             }
         });
-        android.transition.TransitionManager.beginDelayedTransition(container, hideTransition);
-        adView.setVisibility(View.GONE);
+        android.transition.TransitionManager.beginDelayedTransition(constraintLayout, hideTransition);
+        switcher.setVisibility(View.GONE);
+    }
+
+    private void setUpSwitcher() {
+        quips = getResources().getStringArray(R.array.upsell_text);
+        switcher.setFactory(() -> {
+            View view = LayoutInflater.from(this).inflate(R.layout.text_switch, switcher, false);
+            view.setOnClickListener(clicked -> publishProcessor.onNext(getNextQuip()));
+            return view;
+        });
+
+        switcher.setInAnimation(loadAnimation(this, android.R.anim.slide_in_left));
+        switcher.setOutAnimation(loadAnimation(this, android.R.anim.slide_out_right));
     }
 
     private void togglePermissionText(boolean show) {
-        TransitionManager.beginDelayedTransition(container, getTransition());
-        ViewGroup.LayoutParams params = permissionText.getLayoutParams();
-        params.height = show ? getResources().getDimensionPixelSize(R.dimen.triple_margin) : 0;
+        TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
+        permissionText.setVisibility(show ? View.VISIBLE : View.GONE);
         ((ViewGroup) permissionText.getParent()).invalidate();
     }
 
     private Transition getTransition() {
         return new AutoTransition().excludeTarget(RecyclerView.class, true);
+    }
+
+    private String getNextQuip() {
+        int index = quipCounter.get();
+        if (quipCounter.incrementAndGet() >= (quips.length - 1)) quipCounter.set(0);
+        return quips[index];
     }
 
     private static class TextLink implements CharSequence {

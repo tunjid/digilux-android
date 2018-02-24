@@ -22,12 +22,18 @@ import static com.android.billingclient.api.BillingClient.BillingResponse.SERVIC
 
 public abstract class FingerGestureActivity extends BaseActivity {
 
-    protected ViewHider fabHider;
     protected ViewHider barHider;
+    protected ViewGroup coordinator;
     private CompositeDisposable disposables = new CompositeDisposable();
 
     @Nullable
     private BillingManager billingManager;
+
+    @Override
+    public void setContentView(int layoutResID) {
+        super.setContentView(layoutResID);
+        coordinator = findViewById(R.id.container);
+    }
 
     @Override
     protected void onResume() {
@@ -44,9 +50,7 @@ public abstract class FingerGestureActivity extends BaseActivity {
     }
 
     public void showSnackbar(@StringRes int resource) {
-        ViewGroup root = findViewById(R.id.container);
-        if (root == null) return;
-        Snackbar.make(root, resource, LENGTH_SHORT).show();
+        Snackbar.make(coordinator, resource, LENGTH_SHORT).show();
     }
 
     public void toggleToolbar(boolean visible) {
