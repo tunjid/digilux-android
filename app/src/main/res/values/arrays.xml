@@ -17,4 +17,13 @@
         <item>@string/remove_ads_only</item>
         <item>@string/remove_ads_and_go_premium</item>
     </array>
+    <array name="upsell_text">
+        <item>I uhh... need about tree fiddy 🐲</item>
+        <item>"Digilux Premium is Finger Flickin\' Good" - KFC</item>
+        <item>10 out of 10 parents agree, Digilux Premium is pretty okay.</item>
+        <item>I\'m just an ad that never grew up.</item>
+        <item>(•ㅅ•) づ [Go Premium!]</item>
+        <item>The game.</item>
+        <item>Wenger out.</item>
+    </array>
 </resources>
