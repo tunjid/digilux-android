@@ -48,8 +48,8 @@ public class RotationGestureConsumer implements GestureConsumer {
     {
         app = App.getInstance();
         setManager = new SetManager<>(this::compareApplicationInfo, this::canAddToSet, this::fromPackageName, this::fromApplicationInfo);
-        setManager.addToSet(EXCLUDED_APPS, app.getPackageName());
-        setManager.addToSet(EXCLUDED_APPS, ANDROID_SYSTEM_UI_PACKAGE);
+        setManager.addToSet(app.getPackageName(), EXCLUDED_APPS);
+        setManager.addToSet(ANDROID_SYSTEM_UI_PACKAGE, EXCLUDED_APPS);
     }
 
     public static RotationGestureConsumer getInstance() {
