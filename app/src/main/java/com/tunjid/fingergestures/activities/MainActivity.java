@@ -418,9 +418,8 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void shill() {
-        Flowable.interval(10, TimeUnit.SECONDS)
+        Flowable.interval(20, TimeUnit.SECONDS)
                 .map(value -> getNextQuip())
-                .repeat()
                 .observeOn(mainThread())
                 .subscribe(publishProcessor::onNext, Throwable::printStackTrace);
 
