@@ -94,7 +94,8 @@ public class BrightnessActivity extends AppCompatActivity
 
     protected void onResume() {
         super.onResume();
-        overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_up);
+        if (brightnessGestureConsumer.shouldAnimateSlider())
+            overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_up);
     }
 
     @Override

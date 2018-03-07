@@ -15,6 +15,7 @@ public class PopUpManager {
     public static final String EXTRA_SHOWS_ACCESSIBILITY_BUTTON = "extra shows accessibility button";
     private static final String ACCESSIBILITY_BUTTON_ENABLED = "accessibility button enabled";
     private static final String SAVED_ACTIONS = "accessibility button apps";
+    private static final String ANIMATES_POPUP = "animates popup";
 
     private final SetManager<Integer> setManager;
 
@@ -33,12 +34,22 @@ public class PopUpManager {
         return App.getInstance().getPreferences().getBoolean(ACCESSIBILITY_BUTTON_ENABLED, false);
     }
 
+    public boolean shouldAnimatePopup() {
+        App app = App.getInstance();
+        return app != null && app.getPreferences().getBoolean(ANIMATES_POPUP, true);
+    }
+
     public boolean addToSet(@GestureConsumer.GestureAction int action) {
         return setManager.addToSet(String.valueOf(action), SAVED_ACTIONS);
     }
 
     public void removeFromSet(@GestureConsumer.GestureAction int action) {
         setManager.removeFromSet(String.valueOf(action), SAVED_ACTIONS);
+    }
+
+    public void setAnimatesPopup(boolean visible) {
+        App app = App.getInstance();
+        if (app != null) app.getPreferences().edit().putBoolean(ANIMATES_POPUP, visible).apply();
     }
 
     public List<String> getList() {

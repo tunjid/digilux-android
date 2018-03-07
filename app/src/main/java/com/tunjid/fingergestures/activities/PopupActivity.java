@@ -27,7 +27,8 @@ public class PopupActivity extends AppCompatActivity {
 
     protected void onResume() {
         super.onResume();
-        overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down);
+        if (PopUpManager.getInstance().shouldAnimatePopup())
+            overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down);
     }
 
     @SuppressLint("ClickableViewAccessibility")
