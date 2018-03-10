@@ -39,6 +39,8 @@ import static com.tunjid.fingergestures.PopUpManager.ACTION_ACCESSIBILITY_BUTTON
 import static com.tunjid.fingergestures.PopUpManager.EXTRA_SHOWS_ACCESSIBILITY_BUTTON;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED;
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
+import static com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.ACTION_GLOBAL_ACTION;
+import static com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.EXTRA_GLOBAL_ACTION;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.ACTION_NOTIFICATION_UP;
@@ -105,6 +107,10 @@ public class FingerGestureService extends AccessibilityService {
                 case ACTION_ACCESSIBILITY_BUTTON:
                     setShowsAccessibilityButton(intent.getBooleanExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, false));
                     break;
+                case ACTION_GLOBAL_ACTION:
+                    int globalAction = intent.getIntExtra(EXTRA_GLOBAL_ACTION, -1);
+                    if (globalAction != -1) performGlobalAction(globalAction);
+                    break;
             }
         }
     };
@@ -122,6 +128,7 @@ public class FingerGestureService extends AccessibilityService {
         filter.addAction(ACTION_NOTIFICATION_TOGGLE);
         filter.addAction(ACTION_NOTIFICATION_DOWN);
         filter.addAction(ACTION_NOTIFICATION_UP);
+        filter.addAction(ACTION_GLOBAL_ACTION);
         filter.addAction(ACTION_TOGGLE_DOCK);
         filter.addAction(ACTION_SCREEN_ON);
 

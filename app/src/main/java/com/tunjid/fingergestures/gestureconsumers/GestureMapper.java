@@ -22,13 +22,15 @@ import static android.accessibilityservice.FingerprintGestureController.FINGERPR
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_LEFT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_RIGHT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_UP;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.VOLUME_DECREASE;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.VOLUME_INCREASE;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_HOME;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.VOLUME_MUTE;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
@@ -88,7 +90,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 FlashlightGestureConsumer.getInstance(),
                 DockingGestureConsumer.getInstance(),
                 RotationGestureConsumer.getInstance(),
-                VolumeGestureConsumer.getInstance()};
+                GlobalActionGestureConsumer.getInstance()};
 
         actionIds = getActionIds();
     }
@@ -313,12 +315,16 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return TOGGLE_DOCK;
             case R.string.toggle_auto_rotate:
                 return TOGGLE_AUTO_ROTATE;
-            case R.string.volume_up:
-                return VOLUME_INCREASE;
-            case R.string.volume_down:
-                return VOLUME_DECREASE;
-            case R.string.volume_mute:
-                return VOLUME_MUTE;
+            case R.string.global_home:
+                return GLOBAL_HOME;
+            case R.string.global_back:
+                return GLOBAL_BACK;
+            case R.string.global_recents:
+                return GLOBAL_RECENTS;
+            case R.string.global_split_screen:
+                return GLOBAL_SPLIT_SCREEN;
+            case R.string.global_power_dialog:
+                return GLOBAL_POWER_DIALOG;
         }
     }
 
@@ -348,12 +354,16 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return R.string.toggle_dock;
             case TOGGLE_AUTO_ROTATE:
                 return R.string.toggle_auto_rotate;
-            case VOLUME_INCREASE:
-                return R.string.volume_up;
-            case VOLUME_DECREASE:
-                return R.string.volume_down;
-            case VOLUME_MUTE:
-                return R.string.volume_mute;
+            case GLOBAL_HOME:
+                return R.string.global_home;
+            case GLOBAL_BACK:
+                return R.string.global_back;
+            case GLOBAL_RECENTS:
+                return R.string.global_recents;
+            case GLOBAL_SPLIT_SCREEN:
+                return R.string.global_split_screen;
+            case GLOBAL_POWER_DIALOG:
+                return R.string.global_power_dialog;
         }
     }
 
