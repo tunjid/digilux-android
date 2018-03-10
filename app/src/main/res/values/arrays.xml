@@ -11,6 +11,7 @@
         <item>@string/toggle_notifications</item>
         <item>@string/toggle_flashlight</item>
         <item>@string/toggle_dock</item>
+        <item>@string/show_popup</item>
         <item>@string/toggle_auto_rotate</item>
         <item>@string/global_home</item>
         <item>@string/global_back</item>

@@ -25,6 +25,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFIC
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.SHOW_POPUP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT;
@@ -109,6 +110,9 @@ public class ActionViewHolder extends BaseViewHolder<ActionAdapter.ActionClickLi
 
             case GLOBAL_SPLIT_SCREEN:
                 return R.drawable.ic_split_screen_24dp;
+
+            case SHOW_POPUP:
+                return R.drawable.ic_more_horizontal_24dp;
         }
     }
 }

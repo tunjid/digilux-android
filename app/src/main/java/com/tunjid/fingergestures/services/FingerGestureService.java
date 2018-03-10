@@ -24,7 +24,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
-import com.tunjid.fingergestures.PopUpManager;
+import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.PopupActivity;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
@@ -35,8 +35,9 @@ import static android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST
 import static android.content.Intent.ACTION_SCREEN_ON;
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK;
-import static com.tunjid.fingergestures.PopUpManager.ACTION_ACCESSIBILITY_BUTTON;
-import static com.tunjid.fingergestures.PopUpManager.EXTRA_SHOWS_ACCESSIBILITY_BUTTON;
+import static com.tunjid.fingergestures.PopUpGestureConsumer.ACTION_ACCESSIBILITY_BUTTON;
+import static com.tunjid.fingergestures.PopUpGestureConsumer.ACTION_SHOW_POPUP;
+import static com.tunjid.fingergestures.PopUpGestureConsumer.EXTRA_SHOWS_ACCESSIBILITY_BUTTON;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED;
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.ACTION_GLOBAL_ACTION;
@@ -67,9 +68,7 @@ public class FingerGestureService extends AccessibilityService {
     private final AccessibilityButtonController.AccessibilityButtonCallback accessibilityButtonCallback = new AccessibilityButtonController.AccessibilityButtonCallback() {
         @Override
         public void onClicked(AccessibilityButtonController controller) {
-            Intent intent = new Intent(FingerGestureService.this, PopupActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            showPopup();
         }
     };
 
@@ -111,6 +110,9 @@ public class FingerGestureService extends AccessibilityService {
                     int globalAction = intent.getIntExtra(EXTRA_GLOBAL_ACTION, -1);
                     if (globalAction != -1) performGlobalAction(globalAction);
                     break;
+                case ACTION_SHOW_POPUP:
+                    showPopup();
+                    break;
             }
         }
     };
@@ -130,13 +132,14 @@ public class FingerGestureService extends AccessibilityService {
         filter.addAction(ACTION_NOTIFICATION_UP);
         filter.addAction(ACTION_GLOBAL_ACTION);
         filter.addAction(ACTION_TOGGLE_DOCK);
+        filter.addAction(ACTION_SHOW_POPUP);
         filter.addAction(ACTION_SCREEN_ON);
 
         BackgroundManager.getInstance().restoreWallpaperChange();
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         registerReceiver(receiver, filter);
         setWatchesWindows(RotationGestureConsumer.getInstance().canAutoRotate());
-        setShowsAccessibilityButton(PopUpManager.getInstance().hasAccessibilityButton());
+        setShowsAccessibilityButton(PopUpGestureConsumer.getInstance().hasAccessibilityButton());
     }
 
     @Override
@@ -176,6 +179,12 @@ public class FingerGestureService extends AccessibilityService {
         Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         closeIntent.setPackage(ANDROID_SYSTEM_UI_PACKAGE);
         App.getInstance().sendBroadcast(closeIntent);
+    }
+
+    private void showPopup() {
+        Intent intent = new Intent(FingerGestureService.this, PopupActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     private void adjustDimmer() {
