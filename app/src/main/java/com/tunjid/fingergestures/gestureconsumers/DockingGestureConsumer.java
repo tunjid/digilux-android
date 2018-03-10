@@ -35,7 +35,6 @@ public class DockingGestureConsumer implements GestureConsumer {
 
                 Intent intent = new Intent(app, DockingActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
 
                 app.startActivity(intent);
                 break;

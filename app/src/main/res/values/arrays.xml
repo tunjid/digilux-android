@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="action_resources">
+        <item>@string/do_nothing</item>
         <item>@string/increase_brightness</item>
         <item>@string/reduce_brightness</item>
         <item>@string/maximize_brightness</item>
@@ -11,7 +12,11 @@
         <item>@string/toggle_flashlight</item>
         <item>@string/toggle_dock</item>
         <item>@string/toggle_auto_rotate</item>
-        <item>@string/do_nothing</item>
+        <item>@string/global_home</item>
+        <item>@string/global_back</item>
+        <item>@string/global_recents</item>
+        <item>@string/global_split_screen</item>
+        <item>@string/global_power_dialog</item>
     </array>
     <array name="purchase_options">
         <item>@string/remove_ads_only</item>

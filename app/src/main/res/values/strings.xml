@@ -165,6 +165,11 @@
     <string name="toggle_dock">Toggle Dock</string>
     <string name="toggle_notifications">Toggle Notifications</string>
     <string name="toggle_auto_rotate">Toggle auto rotate</string>
+    <string name="global_home">Go Home</string>
+    <string name="global_back">Go Back</string>
+    <string name="global_recents">Show Recent Apps</string>
+    <string name="global_split_screen">Toggle Split Screen</string>
+    <string name="global_power_dialog">Show Power Dialog</string>
     <string name="do_nothing">Do nothing</string>
     <string name="unsupported_action">Sorry! Looks like that action is unsupported on your device. Please drop me a line to fix it.</string>
 
