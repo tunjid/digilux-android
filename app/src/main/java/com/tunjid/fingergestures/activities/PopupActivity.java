@@ -26,10 +26,10 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 public class PopupActivity extends AppCompatActivity {
 
-    protected void onResume() {
-        super.onResume();
-        if (PopUpGestureConsumer.getInstance().shouldAnimatePopup())
-            overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down);
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        finish();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -67,6 +67,13 @@ public class PopupActivity extends AppCompatActivity {
         });
     }
 
+    protected void onResume() {
+        super.onResume();
+
+        if (PopUpGestureConsumer.getInstance().shouldAnimatePopup())
+            overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down);
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -74,9 +81,11 @@ public class PopupActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        finish();
+    public void finish() {
+        super.finish();
+        boolean shouldAnimate = PopUpGestureConsumer.getInstance().shouldAnimatePopup();
+        if (shouldAnimate) overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down);
+        else overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     private void onActionClicked(@GestureConsumer.GestureAction int action) {

@@ -71,7 +71,7 @@
 
     <!-- Show Slider Viewholder-->
     <string name="show_slider">Show the slider when adjusting brightness</string>
-    <string name="slider_animate">Animate slider\'s entrance</string>
+    <string name="slider_animate">Animate brightness slider entrance and exit</string>
 
     <!-- Screen Dimmer Viewholder-->
     <string name="screen_dimmer">Screen Dimmer</string>
@@ -138,7 +138,7 @@
     <string name="popup_enable">Enable accessibility button</string>
     <string name="popup_no_actions">No pop up actions have been added yet.</string>
     <string name="popup_description">Adds actions to the accessibility button pop up.</string>
-    <string name="popup_animate_in">Animate pop up window\'s entrance</string>
+    <string name="popup_animate_in">Animate pop up window\'s entrance and exit</string>
 
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>

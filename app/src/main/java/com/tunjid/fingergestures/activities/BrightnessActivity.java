@@ -110,6 +110,10 @@ public class BrightnessActivity extends AppCompatActivity
         if (disposable != null && !disposable.isDisposed()) disposable.dispose();
         brightnessGestureConsumer.saveBrightness(brightnessByte);
         super.finish();
+
+        boolean animateSlide = brightnessGestureConsumer.shouldAnimateSlider();
+        if (animateSlide) overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_down);
+        else overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     @Override
