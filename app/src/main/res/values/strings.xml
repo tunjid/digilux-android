@@ -71,6 +71,7 @@
 
     <!-- Show Slider Viewholder-->
     <string name="show_slider">Show the slider when adjusting brightness</string>
+    <string name="slider_animate">Animate brightness slider entrance and exit</string>
 
     <!-- Screen Dimmer Viewholder-->
     <string name="screen_dimmer">Screen Dimmer</string>
@@ -137,6 +138,7 @@
     <string name="popup_enable">Enable accessibility button</string>
     <string name="popup_no_actions">No pop up actions have been added yet.</string>
     <string name="popup_description">Adds actions to the accessibility button pop up.</string>
+    <string name="popup_animate_in">Animate pop up window\'s entrance and exit</string>
 
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>
@@ -163,6 +165,12 @@
     <string name="toggle_dock">Toggle Dock</string>
     <string name="toggle_notifications">Toggle Notifications</string>
     <string name="toggle_auto_rotate">Toggle auto rotate</string>
+    <string name="global_home">Go Home</string>
+    <string name="global_back">Go Back</string>
+    <string name="global_recents">Show Recent Apps</string>
+    <string name="global_split_screen">Toggle Split Screen</string>
+    <string name="global_power_dialog">Show Power Dialog</string>
+    <string name="show_popup">Show popup</string>
     <string name="do_nothing">Do nothing</string>
     <string name="unsupported_action">Sorry! Looks like that action is unsupported on your device. Please drop me a line to fix it.</string>
 

@@ -11,11 +11,12 @@ import android.view.Window;
 import android.widget.TextView;
 
 import com.tunjid.fingergestures.BackgroundManager;
-import com.tunjid.fingergestures.PopUpManager;
+import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
 import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import java.util.List;
@@ -25,9 +26,10 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 public class PopupActivity extends AppCompatActivity {
 
-    protected void onResume() {
-        super.onResume();
-        overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down);
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        finish();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -41,9 +43,9 @@ public class PopupActivity extends AppCompatActivity {
 
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
         BrightnessGestureConsumer gestureConsumer = BrightnessGestureConsumer.getInstance();
-        DiffAdapter adapter = new ActionAdapter(true, false, PopUpManager.getInstance()::getList, GestureMapper.getInstance()::performAction);
+        DiffAdapter adapter = new ActionAdapter(true, false, PopUpGestureConsumer.getInstance()::getList, this::onActionClicked);
 
-        List<String> actions = PopUpManager.getInstance().getList();
+        List<String> actions = PopUpGestureConsumer.getInstance().getList();
         int textColor = gestureConsumer.getSliderColor();
         int sliderBackgroundColor = gestureConsumer.getBackgroundColor();
 
@@ -65,6 +67,13 @@ public class PopupActivity extends AppCompatActivity {
         });
     }
 
+    protected void onResume() {
+        super.onResume();
+
+        if (PopUpGestureConsumer.getInstance().shouldAnimatePopup())
+            overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down);
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -72,9 +81,16 @@ public class PopupActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
+    public void finish() {
+        super.finish();
+        boolean shouldAnimate = PopUpGestureConsumer.getInstance().shouldAnimatePopup();
+        if (shouldAnimate) overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down);
+        else overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
+    private void onActionClicked(@GestureConsumer.GestureAction int action) {
         finish();
+        GestureMapper.getInstance().performAction(action);
     }
 }
 

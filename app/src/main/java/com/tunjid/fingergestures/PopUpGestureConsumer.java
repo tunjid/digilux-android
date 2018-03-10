@@ -9,28 +9,45 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 
 import java.util.List;
 
-public class PopUpManager {
+public class PopUpGestureConsumer implements GestureConsumer {
 
     public static final String ACTION_ACCESSIBILITY_BUTTON = "com.tunjid.fingergestures.action.accessibilityButton";
+    public static final String ACTION_SHOW_POPUP= "PopUpGestureConsumer shows popup";
     public static final String EXTRA_SHOWS_ACCESSIBILITY_BUTTON = "extra shows accessibility button";
     private static final String ACCESSIBILITY_BUTTON_ENABLED = "accessibility button enabled";
     private static final String SAVED_ACTIONS = "accessibility button apps";
+    private static final String ANIMATES_POPUP = "animates popup";
 
     private final SetManager<Integer> setManager;
 
-    private static PopUpManager instance;
+    private static PopUpGestureConsumer instance;
 
-    public static PopUpManager getInstance() {
-        if (instance == null) instance = new PopUpManager();
+    public static PopUpGestureConsumer getInstance() {
+        if (instance == null) instance = new PopUpGestureConsumer();
         return instance;
     }
 
-    private PopUpManager() {
+    @Override
+    public void onGestureActionTriggered(int gestureAction) {
+        LocalBroadcastManager.getInstance(App.getInstance()).sendBroadcast(new Intent(ACTION_SHOW_POPUP));
+    }
+
+    @Override
+    public boolean accepts(int gesture) {
+        return gesture == SHOW_POPUP;
+    }
+
+    private PopUpGestureConsumer() {
         setManager = new SetManager<>(Integer::compare, this::canAddToSet, Integer::valueOf, String::valueOf);
     }
 
     public boolean hasAccessibilityButton() {
         return App.getInstance().getPreferences().getBoolean(ACCESSIBILITY_BUTTON_ENABLED, false);
+    }
+
+    public boolean shouldAnimatePopup() {
+        App app = App.getInstance();
+        return app != null && app.getPreferences().getBoolean(ANIMATES_POPUP, true);
     }
 
     public boolean addToSet(@GestureConsumer.GestureAction int action) {
@@ -39,6 +56,11 @@ public class PopUpManager {
 
     public void removeFromSet(@GestureConsumer.GestureAction int action) {
         setManager.removeFromSet(String.valueOf(action), SAVED_ACTIONS);
+    }
+
+    public void setAnimatesPopup(boolean visible) {
+        App app = App.getInstance();
+        if (app != null) app.getPreferences().edit().putBoolean(ANIMATES_POPUP, visible).apply();
     }
 
     public List<String> getList() {

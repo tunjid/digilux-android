@@ -58,6 +58,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final String ADAPTIVE_BRIGHTNESS_THRESHOLD = "adaptive brightness threshold";
     private static final String SCREEN_DIMMER_ENABLED = "screen dimmer enabled";
     private static final String SCREEN_DIMMER_DIM_PERCENT = "screen dimmer dim percent";
+    private static final String ANIMATES_SLIDER = "animates slider";
 
     private final App app;
 
@@ -240,6 +241,10 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         app.getPreferences().edit().putBoolean(SLIDER_VISIBLE, visible).apply();
     }
 
+    public void setAnimatesSlider(boolean visible) {
+        app.getPreferences().edit().putBoolean(ANIMATES_SLIDER, visible).apply();
+    }
+
     public void setDimmerEnabled(boolean enabled) {
         app.getPreferences().edit().putBoolean(SCREEN_DIMMER_ENABLED, enabled).apply();
         if (!enabled) removeDimmer();
@@ -309,6 +314,10 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     public boolean shouldShowSlider() {
         return app.getPreferences().getBoolean(SLIDER_VISIBLE, true);
+    }
+
+    public boolean shouldAnimateSlider() {
+        return app.getPreferences().getBoolean(ANIMATES_SLIDER, true);
     }
 
     public String getSliderDurationText(@IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT) int duration) {

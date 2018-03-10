@@ -16,7 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.tunjid.fingergestures.PopUpManager;
+import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
 import com.tunjid.fingergestures.adapters.DiffAdapter;
@@ -118,7 +118,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
 
         if (isActionInstance) {
             Context context = recyclerView.getContext();
-            if (PopUpManager.getInstance().addToSet(action)) fragment.refresh(POPUP_ACTION);
+            if (PopUpGestureConsumer.getInstance().addToSet(action)) fragment.refresh(POPUP_ACTION);
             else new AlertDialog.Builder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))

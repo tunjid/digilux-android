@@ -13,6 +13,11 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_HOME;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS;
@@ -20,6 +25,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFIC
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.SHOW_POPUP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT;
@@ -58,7 +64,7 @@ public class ActionViewHolder extends BaseViewHolder<ActionAdapter.ActionClickLi
         switch (action) {
             default:
             case DO_NOTHING:
-                return R.drawable.ic_blank_24dp;
+                return R.drawable.ic_do_nothing_24dp;
 
             case INCREASE_BRIGHTNESS:
                 return R.drawable.ic_brightness_medium_24dp;
@@ -89,6 +95,24 @@ public class ActionViewHolder extends BaseViewHolder<ActionAdapter.ActionClickLi
 
             case TOGGLE_AUTO_ROTATE:
                 return R.drawable.ic_auto_rotate_24dp;
+
+            case GLOBAL_BACK:
+                return R.drawable.ic_back_24dp;
+
+            case GLOBAL_HOME:
+                return R.drawable.ic_home_24dp;
+
+            case GLOBAL_RECENTS:
+                return R.drawable.ic_recents_24dp;
+
+            case GLOBAL_POWER_DIALOG:
+                return R.drawable.ic_power_dialog_24dp;
+
+            case GLOBAL_SPLIT_SCREEN:
+                return R.drawable.ic_split_screen_24dp;
+
+            case SHOW_POPUP:
+                return R.drawable.ic_more_horizontal_24dp;
         }
     }
 }

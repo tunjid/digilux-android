@@ -63,6 +63,8 @@ import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
+import static com.tunjid.fingergestures.adapters.AppAdapter.ANIMATES_POPUP;
+import static com.tunjid.fingergestures.adapters.AppAdapter.ANIMATES_SLIDER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.DOUBLE_SWIPE_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ENABLE_ACCESSIBILITY_BUTTON;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ENABLE_WATCH_WINDOWS;
@@ -122,8 +124,8 @@ public class MainActivity extends FingerGestureActivity {
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW};
     private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK, POPUP_ACTION};
     private final int[] SLIDER_ITEMS = {PADDING, SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SCREEN_DIMMER,
-            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ENABLE_WATCH_WINDOWS, ENABLE_ACCESSIBILITY_BUTTON,
-            ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
+            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER, ANIMATES_POPUP, ENABLE_WATCH_WINDOWS,
+            ENABLE_ACCESSIBILITY_BUTTON, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
 
     {
         Context context = App.getInstance();

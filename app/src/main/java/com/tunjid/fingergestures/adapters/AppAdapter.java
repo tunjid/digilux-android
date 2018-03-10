@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.BackgroundManager;
-import com.tunjid.fingergestures.PopUpManager;
+import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
@@ -69,14 +69,16 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int ENABLE_WATCH_WINDOWS = 19;
     public static final int POPUP_ACTION = 20;
     public static final int ENABLE_ACCESSIBILITY_BUTTON = 21;
-
+    public static final int ANIMATES_SLIDER = 22;
+    public static final int ANIMATES_POPUP = 23;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
             SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
             DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
             AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
-            EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON})
+            EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
+            ANIMATES_SLIDER, ANIMATES_POPUP})
     public @interface AdapterIndex {}
 
     private final int[] items;
@@ -92,7 +94,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
         Context context = parent.getContext();
         BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         RotationGestureConsumer rotationGestureConsumer = RotationGestureConsumer.getInstance();
-        PopUpManager popUpManager = PopUpManager.getInstance();
+        PopUpGestureConsumer popUpManager = PopUpGestureConsumer.getInstance();
 
         switch (viewType) {
             case PADDING:
@@ -166,6 +168,16 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         mapper::getDoubleSwipeDelay,
                         () -> PurchasesManager.getInstance().isPremium(),
                         mapper::getSwipeDelayText);
+            case ANIMATES_POPUP:
+                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                        R.string.popup_animate_in,
+                        popUpManager::shouldAnimatePopup,
+                        popUpManager::setAnimatesPopup);
+            case ANIMATES_SLIDER:
+                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                        R.string.slider_animate,
+                        brightnessGestureConsumer::shouldAnimateSlider,
+                        brightnessGestureConsumer::setAnimatesSlider);
             case MAP_UP_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE, adapterListener);
             case MAP_DOWN_ICON:
