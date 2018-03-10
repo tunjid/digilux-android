@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
 import com.tunjid.fingergestures.BackgroundManager;
-import com.tunjid.fingergestures.PopUpManager;
+import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
@@ -94,7 +94,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
         Context context = parent.getContext();
         BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         RotationGestureConsumer rotationGestureConsumer = RotationGestureConsumer.getInstance();
-        PopUpManager popUpManager = PopUpManager.getInstance();
+        PopUpGestureConsumer popUpManager = PopUpGestureConsumer.getInstance();
 
         switch (viewType) {
             case PADDING:

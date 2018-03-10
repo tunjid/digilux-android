@@ -8,6 +8,7 @@ import android.support.annotation.StringDef;
 import android.support.annotation.StringRes;
 
 import com.tunjid.fingergestures.App;
+import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
@@ -35,6 +36,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFIC
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.SHOW_POPUP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT;
@@ -90,7 +92,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 FlashlightGestureConsumer.getInstance(),
                 DockingGestureConsumer.getInstance(),
                 RotationGestureConsumer.getInstance(),
-                GlobalActionGestureConsumer.getInstance()};
+                GlobalActionGestureConsumer.getInstance(),
+                PopUpGestureConsumer.getInstance()};
 
         actionIds = getActionIds();
     }
@@ -325,6 +328,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return GLOBAL_SPLIT_SCREEN;
             case R.string.global_power_dialog:
                 return GLOBAL_POWER_DIALOG;
+            case R.string.show_popup:
+                return SHOW_POPUP;
         }
     }
 
@@ -364,6 +369,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return R.string.global_split_screen;
             case GLOBAL_POWER_DIALOG:
                 return R.string.global_power_dialog;
+            case SHOW_POPUP:
+                return R.string.show_popup;
         }
     }
 
