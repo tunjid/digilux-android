@@ -11,6 +11,9 @@
         <item>@string/toggle_flashlight</item>
         <item>@string/toggle_dock</item>
         <item>@string/toggle_auto_rotate</item>
+        <item>@string/volume_up</item>
+        <item>@string/volume_down</item>
+        <item>@string/volume_mute</item>
         <item>@string/do_nothing</item>
     </array>
     <array name="purchase_options">

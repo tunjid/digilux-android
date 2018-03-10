@@ -20,11 +20,15 @@ public interface GestureConsumer {
     int TOGGLE_DOCK = 10;
     int TOGGLE_AUTO_ROTATE = 11;
     int NOTIFICATION_TOGGLE = 12;
+    int VOLUME_INCREASE = 13;
+    int VOLUME_DECREASE = 14;
+    int VOLUME_MUTE = 15;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({INCREASE_BRIGHTNESS, REDUCE_BRIGHTNESS, MAXIMIZE_BRIGHTNESS, MINIMIZE_BRIGHTNESS,
              NOTIFICATION_DOWN, NOTIFICATION_UP, NOTIFICATION_TOGGLE, DO_NOTHING,
-            TOGGLE_FLASHLIGHT, TOGGLE_DOCK, TOGGLE_AUTO_ROTATE})
+            TOGGLE_FLASHLIGHT, TOGGLE_DOCK, TOGGLE_AUTO_ROTATE,
+            VOLUME_INCREASE, VOLUME_DECREASE, VOLUME_MUTE})
     @interface GestureAction {}
 
     void onGestureActionTriggered(@GestureAction int gestureAction);
