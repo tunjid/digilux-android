@@ -1,12 +1,12 @@
 <resources>
     <!-- App strings-->
-    <string name="app_name">DigiLux</string>
+    <string name="app_name" translatable="false">DigiLux</string>
     <string name="about_app">About App</string>
     <string name="start_trial">Start Trial</string>
 
     <!-- Ad config-->
-    <string name="ad_id">ca-app-pub-1045955192336233~2688100802</string>
-    <string name="ad_unit_id">ca-app-pub-1045955192336233/5371116222</string>
+    <string name="ad_id" translatable="false">ca-app-pub-1045955192336233~2688100802</string>
+    <string name="ad_unit_id" translatable="false">ca-app-pub-1045955192336233/5371116222</string>
 
     <!-- Permission Dialogs-->
     <string name="permission_required">Permission Required</string>
@@ -205,10 +205,19 @@
     <string name="trial_text">Start trial for %1$s? Swipe to dismiss.</string>
     <string name="trial_running">Trial is already running.</string>
 
+    <!-- Upsell text-->
+    <string name="joke_loch" translatable="false">I uhh... need about tree fiddy 🐲</string>
+    <string name="joke_kfc">Digilux Premium is Finger Flickin\' Good" - KFC</string>
+    <string name="joke_parents">10 out of 10 parents agree, Digilux Premium is pretty okay.</string>
+    <string name="joke_ad">I\'m just an ad that never grew up.</string>
+    <string name="joke_bunny">(•ㅅ•) づ [Go Premium!]</string>
+    <string name="joke_game">The game.</string>
+    <string name="joke_wenger">Wenger out.</string>
+
     <!-- Generic text-->
     <string name="ok">Okay</string>
     <string name="cancel">Cancel</string>
-    <string name="blank_emoji">😶</string>
+    <string name="blank_emoji" translatable="false">😶</string>
     <string name="generic_error">Sorry, there was an error completing your request.</string>
 
     <string name="continue_text">Continue</string>
