@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/half_margin"
+    android:background="@drawable/circle_background"
+    android:drawableEnd="@drawable/ic_close_circle_24dp"
+    android:drawablePadding="@dimen/quarter_margin"
+    android:gravity="start|center_vertical"
+    android:paddingBottom="@dimen/quarter_margin"
+    android:paddingStart="@dimen/chip_start_padding"
+    android:paddingEnd="@dimen/half_margin"
+    android:paddingTop="@dimen/quarter_margin"
+    android:textSize="@dimen/small_text"
+    tools:text="Chip" />

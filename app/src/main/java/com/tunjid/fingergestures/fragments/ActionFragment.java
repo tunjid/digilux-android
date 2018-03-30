@@ -118,7 +118,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
 
         if (isActionInstance) {
             Context context = recyclerView.getContext();
-            if (PopUpGestureConsumer.getInstance().addToSet(action)) fragment.refresh(POPUP_ACTION);
+            if (PopUpGestureConsumer.getInstance().addToSet(action)) fragment.notifyItemChanged(POPUP_ACTION);
             else new AlertDialog.Builder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
@@ -128,7 +128,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
         }
         else {
             mapper.mapGestureToAction(direction, action);
-            fragment.refresh(LEFT_GESTURE.equals(direction) || DOUBLE_LEFT_GESTURE.equals(direction)
+            fragment.notifyItemChanged(LEFT_GESTURE.equals(direction) || DOUBLE_LEFT_GESTURE.equals(direction)
                     ? MAP_LEFT_ICON
                     : UP_GESTURE.equals(direction) || DOUBLE_UP_GESTURE.equals(direction)
                     ? MAP_UP_ICON

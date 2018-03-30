@@ -46,6 +46,13 @@
     <string name="adjust_slider_duration">Adjust Slider Pop Up Duration</string>
     <string name="duration_value">%1$.2f seconds</string>
 
+    <!-- Discrete Viewholder-->
+    <string name="discrete_brightness_title">Discrete brightness values</string>
+    <string name="discrete_brightness_description">Allows you to set discrete values for brightness changes instead of choosing a fixed interval per swipe</string>
+    <string name="discrete_brightness_error">Please enter a value between 1 and 99</string>
+    <string name="discrete_brightness_hint">Enter a brightness percentage</string>
+    <string name="discrete_brightness_text">%1$s%%</string>
+
     <!-- Color Adjuster Viewholder-->
     <string name="choose_color">Choose Color</string>
     <string name="choose_target">Choose Target</string>

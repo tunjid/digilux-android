@@ -21,6 +21,7 @@ import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
 import com.tunjid.fingergestures.viewholders.AppViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
+import com.tunjid.fingergestures.viewholders.DiscreteBrightnessViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
 import com.tunjid.fingergestures.viewholders.PopupViewHolder;
 import com.tunjid.fingergestures.viewholders.ReviewViewHolder;
@@ -33,8 +34,6 @@ import com.tunjid.fingergestures.viewholders.WallpaperViewHolder;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
@@ -71,6 +70,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int ENABLE_ACCESSIBILITY_BUTTON = 21;
     public static final int ANIMATES_SLIDER = 22;
     public static final int ANIMATES_POPUP = 23;
+    public static final int DISCRETE_BRIGHTNESS = 24;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
@@ -78,7 +78,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
             AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
             EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
-            ANIMATES_SLIDER, ANIMATES_POPUP})
+            ANIMATES_SLIDER, ANIMATES_POPUP, DISCRETE_BRIGHTNESS})
     public @interface AdapterIndex {}
 
     private final int[] items;
@@ -105,7 +105,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         R.string.adjust_slider_delta,
                         brightnessGestureConsumer::setIncrementPercentage,
                         brightnessGestureConsumer::getIncrementPercentage,
-                        () -> true,
+                        brightnessGestureConsumer::noDiscreteBrightness,
                         (increment) -> context.getString(R.string.delta_percent, increment));
             case SLIDER_POSITION:
                 return new SliderAdjusterViewHolder(
@@ -123,6 +123,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         brightnessGestureConsumer::getSliderDurationPercentage,
                         () -> true,
                         brightnessGestureConsumer::getSliderDurationText);
+            case DISCRETE_BRIGHTNESS:
+                return new DiscreteBrightnessViewHolder(getView(R.layout.viewholder_horizontal_list, parent), adapterListener);
             case SLIDER_COLOR:
                 return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent), adapterListener);
             case SCREEN_DIMMER:
@@ -133,7 +135,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         brightnessGestureConsumer::restoresAdaptiveBrightnessOnDisplaySleep,
                         (flag) -> {
                             brightnessGestureConsumer.shouldRestoreAdaptiveBrightnessOnDisplaySleep(flag);
-                            notifyItemChanged(Arrays.stream(items).boxed().collect(Collectors.toList()).indexOf(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS));
+                            adapterListener.notifyItemChanged(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS);
                         });
             case SHOW_SLIDER:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
@@ -227,6 +229,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
         void requestPermission(@MainActivity.PermissionRequest int permission);
 
         void showSnackbar(@StringRes int message);
+
+        void notifyItemChanged(@AdapterIndex int index);
 
         void showBottomSheetFragment(MainActivityFragment fragment);
     }

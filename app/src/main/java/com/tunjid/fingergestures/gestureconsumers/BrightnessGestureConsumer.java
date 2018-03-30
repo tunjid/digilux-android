@@ -17,10 +17,14 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.SetManager;
 import com.tunjid.fingergestures.activities.BrightnessActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
 
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
@@ -28,6 +32,8 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
 import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToFraction;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.reverseOrder;
 
 public class BrightnessGestureConsumer implements GestureConsumer {
 
@@ -45,7 +51,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final int DEF_SLIDER_DURATION_PERCENT = 60;
     private static final int DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD = 50;
 
-
     public static final String BRIGHTNESS_FRACTION = "brightness value";
     public static final String ACTION_SCREEN_DIMMER_CHANGED = "show screen dimmer";
     private static final String INCREMENT_VALUE = "increment value";
@@ -59,8 +64,10 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final String SCREEN_DIMMER_ENABLED = "screen dimmer enabled";
     private static final String SCREEN_DIMMER_DIM_PERCENT = "screen dimmer dim percent";
     private static final String ANIMATES_SLIDER = "animates slider";
+    private static final String DISCRETE_BRIGHTNESS_SET = "discrete brightness values";
 
     private final App app;
+    private SetManager<Integer> discreteBrightnessManager;
 
     @SuppressLint("StaticFieldLeak")
     private static BrightnessGestureConsumer instance;
@@ -72,6 +79,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     private BrightnessGestureConsumer() {
         app = App.getInstance();
+        discreteBrightnessManager = new SetManager<>(Integer::compareTo, s -> true, Integer::valueOf, String::valueOf);
     }
 
     @Override
@@ -198,11 +206,15 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     private int reduce(int byteValue) {
-        return Math.max(byteValue - normalizePercetageToByte(getIncrementPercentage()), (int) MIN_BRIGHTNESS);
+        return noDiscreteBrightness()
+                ? Math.max(byteValue - normalizePercetageToByte(getIncrementPercentage()), (int) MIN_BRIGHTNESS)
+                : findDiscreteBrightnessValue(byteValue, false);
     }
 
     private int increase(int byteValue) {
-        return Math.min(byteValue + normalizePercetageToByte(getIncrementPercentage()), (int) MAX_BRIGHTNESS);
+        return noDiscreteBrightness()
+                ? Math.min(byteValue + normalizePercetageToByte(getIncrementPercentage()), (int) MAX_BRIGHTNESS)
+                : findDiscreteBrightnessValue(byteValue, true);
     }
 
     public void setBackgroundColor(@ColorInt int color) {
@@ -320,6 +332,22 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return app.getPreferences().getBoolean(ANIMATES_SLIDER, true);
     }
 
+    public boolean noDiscreteBrightness() {
+        return discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).isEmpty();
+    }
+
+    public void addDiscreteBrightnessValue(String discreteValue) {
+        discreteBrightnessManager.addToSet(discreteValue, DISCRETE_BRIGHTNESS_SET);
+    }
+
+    public void removeDiscreteBrightnessValue(String discreteValue) {
+        discreteBrightnessManager.removeFromSet(discreteValue, DISCRETE_BRIGHTNESS_SET);
+    }
+
+    public List<String> getDiscreteBrightnessValues() {
+        return discreteBrightnessManager.getList(DISCRETE_BRIGHTNESS_SET);
+    }
+
     public String getSliderDurationText(@IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT) int duration) {
         int millis = durationPercentageToMillis(duration);
         float seconds = millis / 1000F;
@@ -360,6 +388,19 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return (int) (percentage * MAX_ADAPTIVE_THRESHOLD / 100F);
     }
 
+    private int findDiscreteBrightnessValue(int current, boolean increasing) {
+        int evaluated = increasing ? current + 4 : current - 4;
+        int alternative = (int) (increasing ? MAX_BRIGHTNESS : MIN_BRIGHTNESS);
+        Comparator<Integer> comparator = increasing ? naturalOrder() : reverseOrder();
+        Function<Integer, Boolean> filter = integer -> increasing ? integer > evaluated : integer < evaluated;
+
+        return discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).stream()
+                .map(BrightnessGestureConsumer::stringPercentageToBrightnessInt)
+                .filter(filter::apply)
+                .sorted(comparator)
+                .findFirst().orElse(alternative);
+    }
+
     private void toggleAdaptiveBrightness(boolean on) {
         int brightnessMode = on
                 ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC
@@ -371,6 +412,12 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         BigDecimal bd = new BigDecimal(Float.toString(d));
         bd = bd.setScale(2, BigDecimal.ROUND_HALF_DOWN);
         return bd.floatValue();
+    }
+
+    private static int stringPercentageToBrightnessInt(String stringPercent) {
+        Float percentage = Float.valueOf(stringPercent);
+        Float byteFloat = percentage * MAX_BRIGHTNESS / 100;
+        return byteFloat.intValue();
     }
 
     private boolean hasBrightnessSensor() {

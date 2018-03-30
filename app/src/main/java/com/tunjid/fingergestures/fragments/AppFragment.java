@@ -98,7 +98,7 @@ public class AppFragment extends MainActivityFragment
     @Override
     public void onResume() {
         super.onResume();
-        refresh();
+        notifyDataSetChanged();
     }
 
     @Override
@@ -142,6 +142,15 @@ public class AppFragment extends MainActivityFragment
         startActivityForResult(Intent.createChooser(intent, ""), selection);
     }
 
+    public void notifyItemChanged(@AppAdapter.AdapterIndex int position) {
+        int index = IntStream.range(0, items.length).filter(i -> items[i] == position).findFirst().orElse(-1);
+        if (recyclerView != null && index != -1) recyclerView.getAdapter().notifyItemChanged(index);
+    }
+
+    public void notifyDataSetChanged() {
+        if (recyclerView != null) recyclerView.getAdapter().notifyDataSetChanged();
+    }
+
     @Nullable
     @Override
     @SuppressLint("CommitTransaction")
@@ -150,15 +159,6 @@ public class AppFragment extends MainActivityFragment
         return getFragmentManager().beginTransaction()
                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
                         android.R.anim.fade_in, android.R.anim.fade_out);
-    }
-
-    public void refresh() {
-        if (recyclerView != null) recyclerView.getAdapter().notifyDataSetChanged();
-    }
-
-    public void refresh(@AppAdapter.AdapterIndex int position) {
-        int index = IntStream.range(0, items.length).filter(i -> items[i] == position).findFirst().orElse(-1);
-        if (recyclerView != null && index != -1) recyclerView.getAdapter().notifyItemChanged(index);
     }
 
     public void cropImage(Uri source, @BackgroundManager.WallpaperSelection int selection) {
