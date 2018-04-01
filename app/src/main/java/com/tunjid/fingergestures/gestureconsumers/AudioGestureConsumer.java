@@ -6,6 +6,7 @@ import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 
 import static android.media.AudioManager.ADJUST_LOWER;
@@ -27,7 +28,6 @@ public class AudioGestureConsumer implements GestureConsumer {
     @IntDef({STREAM_TYPE_MEDIA, STREAM_TYPE_RING, STREAM_TYPE_ALARM, STREAM_TYPE_ALL, STREAM_TYPE_DEFAULT})
     @interface AudioStream {}
 
-    @SuppressLint("StaticFieldLeak")
     private static AudioGestureConsumer instance;
 
     public static AudioGestureConsumer getInstance() {
@@ -50,21 +50,21 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     public boolean canSetVolumeDelta() {
-        return getStreamType() != STREAM_TYPE_DEFAULT;
+        return App.hasDoNotDisturbAccess() && getStreamType() != STREAM_TYPE_DEFAULT;
     }
 
     @IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT)
     public int getVolumeDelta() {
-        return requestApp(app -> app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE), DEF_INCREMENT_VALUE);
+        return App.requireApp(app -> app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE), DEF_INCREMENT_VALUE);
     }
 
     public void setVolumeDelta(@IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT) int volumeDelta) {
-        requestApp(app -> app.getPreferences().edit().putInt(INCREMENT_VALUE, volumeDelta).apply());
+        App.requireApp(app -> app.getPreferences().edit().putInt(INCREMENT_VALUE, volumeDelta).apply());
     }
 
     public void setStreamType(@IdRes int resId) {
         @AudioStream int streamType = getStreamTypeFromId(resId);
-        requestApp(app -> app.getPreferences().edit().putInt(AUDIO_STREAM_TYPE, streamType).apply());
+        App.requireApp(app -> app.getPreferences().edit().putInt(AUDIO_STREAM_TYPE, streamType).apply());
     }
 
     private void setStreamVolume(boolean increase, AudioManager audioManager, int streamType) {
@@ -82,7 +82,9 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     private void adjustAudio(boolean increase) {
-        requestApp(app -> {
+        App.requireApp(app -> {
+            if (!App.hasDoNotDisturbAccess()) return;
+
             AudioManager audioManager = app.getSystemService(AudioManager.class);
             if (audioManager == null) return;
 
@@ -107,7 +109,9 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     public String getChangeText(int percentage) {
-        return requestApp(app -> {
+        return App.requireApp(app -> {
+            if (!App.hasDoNotDisturbAccess()) return app.getString(R.string.enable_do_not_disturb);
+
             AudioManager audioManager = app.getSystemService(AudioManager.class);
             if (audioManager == null) return null;
 
@@ -138,7 +142,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     private int getStreamType() {
-        return requestApp(app -> app.getPreferences().getInt(AUDIO_STREAM_TYPE, STREAM_TYPE_DEFAULT), STREAM_TYPE_DEFAULT);
+        return App.requireApp(app -> app.getPreferences().getInt(AUDIO_STREAM_TYPE, STREAM_TYPE_DEFAULT), STREAM_TYPE_DEFAULT);
     }
 
     @AudioStream

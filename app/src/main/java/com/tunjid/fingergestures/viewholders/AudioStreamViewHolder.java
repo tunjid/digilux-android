@@ -3,10 +3,12 @@ package com.tunjid.fingergestures.viewholders;
 import android.view.View;
 import android.widget.RadioGroup;
 
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer;
 
+import static com.tunjid.fingergestures.activities.MainActivity.DO_NOT_DISTURB_CODE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AUDIO_DELTA;
 
 
@@ -22,8 +24,12 @@ public class AudioStreamViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
+        boolean hasDoNotDisturbAccess = App.hasDoNotDisturbAccess();
+        if (!hasDoNotDisturbAccess) adapterListener.requestPermission(DO_NOT_DISTURB_CODE);
+
         radioGroup.check(AudioGestureConsumer.getInstance().getCheckedId());
         radioGroup.setOnCheckedChangeListener((group, checkedId) -> onStreamPicked(checkedId));
+        for (View view : radioGroup.getTouchables()) view.setEnabled(hasDoNotDisturbAccess);
     }
 
     private void onStreamPicked(int checkedId) {

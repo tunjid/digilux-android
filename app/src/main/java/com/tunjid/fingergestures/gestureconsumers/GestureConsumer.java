@@ -6,7 +6,6 @@ import com.tunjid.fingergestures.App;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface GestureConsumer {
@@ -56,15 +55,4 @@ public interface GestureConsumer {
         return percentage / 100F;
     }
 
-    default void requestApp(Consumer<App> appConsumer) {
-        App app = App.getInstance();
-        if (app == null) return;
-
-        appConsumer.accept(app);
-    }
-
-    default <T> T requestApp(Function<App, T> appTFunction, T defaultValue) {
-        App app = App.getInstance();
-        return app != null ? appTFunction.apply(app) : defaultValue;
-    }
 }

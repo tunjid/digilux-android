@@ -97,9 +97,11 @@ public class MainActivity extends FingerGestureActivity {
     public static final int STORAGE_CODE = 100;
     public static final int SETTINGS_CODE = 200;
     public static final int ACCESSIBILITY_CODE = 300;
+    public static final int DO_NOT_DISTURB_CODE = 400;
+
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({STORAGE_CODE, SETTINGS_CODE, ACCESSIBILITY_CODE})
+    @IntDef({STORAGE_CODE, SETTINGS_CODE, ACCESSIBILITY_CODE,DO_NOT_DISTURB_CODE})
     public @interface PermissionRequest {}
 
     private static final String RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava";
@@ -306,6 +308,11 @@ public class MainActivity extends FingerGestureActivity {
                         ? R.string.accessibility_permission_granted
                         : R.string.accessibility_permission_denied);
                 break;
+            case DO_NOT_DISTURB_CODE:
+                showSnackbar((shouldRemove = App.hasDoNotDisturbAccess())
+                        ? R.string.do_not_disturb_permission_granted
+                        : R.string.do_not_disturb_permission_denied);
+                break;
         }
         if (shouldRemove) permissionsStack.remove(requestCode);
         dismissPermissionsBar();
@@ -385,6 +392,10 @@ public class MainActivity extends FingerGestureActivity {
         showPermissionDialog(R.string.accessibility_permissions_request, () -> startActivityForResult(App.accessibilityIntent(), ACCESSIBILITY_CODE));
     }
 
+    private void askForDoNotDisturb() {
+        showPermissionDialog(R.string.do_not_disturb_permissions_request, () -> startActivityForResult(App.doNotDisturbIntent(), DO_NOT_DISTURB_CODE));
+    }
+
     private void showPermissionDialog(@StringRes int stringRes, Runnable yesAction) {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.permission_required)
@@ -399,7 +410,8 @@ public class MainActivity extends FingerGestureActivity {
         int permissionRequest = permissionsStack.peek();
         int text = 0;
 
-        if (permissionRequest == ACCESSIBILITY_CODE) text = R.string.enable_accessibility;
+        if (permissionRequest == DO_NOT_DISTURB_CODE) text = R.string.enable_do_not_disturb;
+        else if (permissionRequest == ACCESSIBILITY_CODE) text = R.string.enable_accessibility;
         else if (permissionRequest == SETTINGS_CODE) text = R.string.enable_write_settings;
         else if (permissionRequest == STORAGE_CODE) text = R.string.enable_storage_settings;
 
@@ -419,7 +431,8 @@ public class MainActivity extends FingerGestureActivity {
         }
         int permissionRequest = permissionsStack.peek();
 
-        if (permissionRequest == ACCESSIBILITY_CODE) askForAccessibility();
+        if (permissionRequest == DO_NOT_DISTURB_CODE) askForDoNotDisturb();
+        else if (permissionRequest == ACCESSIBILITY_CODE) askForAccessibility();
         else if (permissionRequest == SETTINGS_CODE) askForSettings();
         else if (permissionRequest == STORAGE_CODE) askForStorage();
     }
