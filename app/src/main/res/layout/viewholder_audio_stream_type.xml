@@ -12,7 +12,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/single_margin"
-        android:drawableEnd="@drawable/ic_info_outline_white_24dp"
         android:drawablePadding="@dimen/single_margin"
         android:text="@string/audio_stream_title"
         android:textStyle="bold"
