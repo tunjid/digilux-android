@@ -1,6 +1,7 @@
 package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.support.annotation.IdRes;
@@ -13,6 +14,8 @@ import com.tunjid.fingergestures.R;
 
 import java.util.function.BiFunction;
 
+import static android.app.NotificationManager.INTERRUPTION_FILTER_ALARMS;
+import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.media.AudioManager.ADJUST_LOWER;
 import static android.media.AudioManager.ADJUST_RAISE;
 import static com.tunjid.fingergestures.App.delay;
@@ -22,6 +25,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class AudioGestureConsumer implements GestureConsumer {
 
+    private static final int NO_FLAGS = 0;
+    private static final int MIN_VOLUME = 0;
     private static final int DEF_INCREMENT_VALUE = 20;
     private static final int EXPAND_VOLUME_DELAY = 200;
     private static final int STREAM_TYPE_MEDIA = AudioManager.STREAM_MUSIC;
@@ -36,6 +41,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     private static final String AUDIO_STREAM_TYPE = "audio stream type";
     private static final String SHOWS_AUDIO_SLIDER = "audio slider show";
     private static final String EMPTY_STRING = "";
+
 
     @IntDef({STREAM_TYPE_MEDIA, STREAM_TYPE_RING, STREAM_TYPE_ALARM, STREAM_TYPE_ALL, STREAM_TYPE_DEFAULT})
     @interface AudioStream {}
@@ -86,7 +92,22 @@ public class AudioGestureConsumer implements GestureConsumer {
     private void setStreamVolume(boolean increase, AudioManager audioManager, int streamType) {
         int currentVolume = audioManager.getStreamVolume(streamType);
         int newVolume = increase ? increase(currentVolume, streamType, audioManager) : reduce(currentVolume, streamType, audioManager);
-        audioManager.setStreamVolume(streamType, newVolume, getFlags());
+
+        boolean ringStream = STREAM_TYPE_RING == streamType;
+        boolean turnDnDOn = ringStream && currentVolume == 0 && !increase;
+        boolean turnDnDOff = ringStream && newVolume != 0 && increase;
+
+        if (turnDnDOn || turnDnDOff) requireApp(app -> {
+            NotificationManager notificationManager = app.getSystemService(NotificationManager.class);
+            if (notificationManager == null) return;
+
+            int filter = turnDnDOn ? INTERRUPTION_FILTER_ALARMS : INTERRUPTION_FILTER_ALL;
+            if (notificationManager.getCurrentInterruptionFilter() == filter) return;
+
+            notificationManager.setInterruptionFilter(filter);
+        });
+
+        if (!turnDnDOn) audioManager.setStreamVolume(streamType, newVolume, getFlags());
     }
 
     public void setShowsSliders(boolean visible) {
@@ -94,7 +115,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     private int reduce(int currentValue, int stream, AudioManager audioManager) {
-        return Math.max(currentValue - normalizePercentageForStream(getVolumeDelta(), stream, audioManager), 0);
+        return Math.max(currentValue - normalizePercentageForStream(getVolumeDelta(), stream, audioManager), MIN_VOLUME);
     }
 
     private int increase(int currentValue, int stream, AudioManager audioManager) {
@@ -102,12 +123,8 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     private void adjustAudio(boolean increase) {
-        requireApp(app -> {
-            if (!hasDoNotDisturbAccess()) return;
-
-            AudioManager audioManager = app.getSystemService(AudioManager.class);
-            if (audioManager == null) return;
-
+        requireAppAndAudioManager((app, audioManager) -> {
+            if (!hasDoNotDisturbAccess()) return Void.TYPE;
             int streamType = getStreamType();
             switch (streamType) {
                 default:
@@ -125,7 +142,8 @@ public class AudioGestureConsumer implements GestureConsumer {
                     setStreamVolume(increase, audioManager, STREAM_TYPE_ALARM);
                     break;
             }
-        });
+            return Void.TYPE;
+        }, Void.TYPE);
     }
 
     public String getChangeText(int percentage) {
@@ -181,7 +199,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     private int getFlags() {
         boolean shouldShowSlider = shouldShowSliders();
         if (shouldShowSlider && getStreamType() == STREAM_TYPE_ALL) broadcastExpandVolumeIntent();
-        return shouldShowSlider ? AudioManager.FLAG_SHOW_UI : 0;
+        return shouldShowSlider ? AudioManager.FLAG_SHOW_UI : NO_FLAGS;
     }
 
     private void broadcastExpandVolumeIntent() {
