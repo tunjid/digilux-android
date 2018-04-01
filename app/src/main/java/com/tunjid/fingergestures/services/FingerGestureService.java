@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityWindowInfo;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
@@ -31,6 +32,8 @@ import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 
+import java.util.Objects;
+
 import static android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_ACCESSIBILITY_BUTTON;
 import static android.content.Intent.ACTION_SCREEN_ON;
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
@@ -38,6 +41,7 @@ import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityActi
 import static com.tunjid.fingergestures.PopUpGestureConsumer.ACTION_ACCESSIBILITY_BUTTON;
 import static com.tunjid.fingergestures.PopUpGestureConsumer.ACTION_SHOW_POPUP;
 import static com.tunjid.fingergestures.PopUpGestureConsumer.EXTRA_SHOWS_ACCESSIBILITY_BUTTON;
+import static com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer.ACTION_EXPAND_VOLUME_CONTROLS;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.ACTION_SCREEN_DIMMER_CHANGED;
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 import static com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.ACTION_GLOBAL_ACTION;
@@ -55,10 +59,14 @@ public class FingerGestureService extends AccessibilityService {
     public static final String EXTRA_SHOW_SNACK_BAR = " extrashow snack bar";
     public static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
     private static final String RESOURCE_OPEN_SETTINGS = "accessibility_quick_settings_settings";
+    private static final String RESOURCE_EXPAND_VOLUME_CONTROLS = "accessibility_volume_expand";
     private static final String RESOURCE_EXPAND_QUICK_SETTINGS = "accessibility_quick_settings_expand";
     private static final String RESOURCE_COLLAPSE_QUICK_SETTINGS = "accessibility_quick_settings_collapse";
+    private static final String DEFAULT_EXPAND_VOLUME = "Expand";
     private static final String DEFAULT_OPEN_SETTINGS = "Open settings";
     private static final String DEFAULT_EXPAND_QUICK_SETTINGS = "Open quick settings";
+    private static final String DEFAULT_COLLAPSE_QUICK_SETTINGS = "Close quick settings";
+
     private static final String STRING_RESOURCE = "string";
     private static final int INVALID_RESOURCE = 0;
     private static final int DELAY = 50;
@@ -93,6 +101,9 @@ public class FingerGestureService extends AccessibilityService {
                     else if (notificationsShowing()) expandQuickSettings();
                     else performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
                     break;
+                case ACTION_EXPAND_VOLUME_CONTROLS:
+                    expandAudioControls();
+                    break;
                 case ACTION_SCREEN_DIMMER_CHANGED:
                     adjustDimmer();
                     break;
@@ -125,6 +136,7 @@ public class FingerGestureService extends AccessibilityService {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_SCREEN_DIMMER_CHANGED);
+        filter.addAction(ACTION_EXPAND_VOLUME_CONTROLS);
         filter.addAction(ACTION_ACCESSIBILITY_BUTTON);
         filter.addAction(ACTION_WATCH_WINDOW_CHANGES);
         filter.addAction(ACTION_NOTIFICATION_TOGGLE);
@@ -172,7 +184,17 @@ public class FingerGestureService extends AccessibilityService {
     }
 
     private boolean isQuickSettingsShowing() {
-        return findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_COLLAPSE_QUICK_SETTINGS, RESOURCE_COLLAPSE_QUICK_SETTINGS)) != null;
+        return findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_COLLAPSE_QUICK_SETTINGS, DEFAULT_COLLAPSE_QUICK_SETTINGS)) != null;
+    }
+
+    private void expandAudioControls() {
+        getWindows().stream()
+                .map(AccessibilityWindowInfo::getRoot)
+                .filter(Objects::nonNull)
+                .map(nodeInfo -> findNode(nodeInfo, getSystemUiString(RESOURCE_EXPAND_VOLUME_CONTROLS, DEFAULT_EXPAND_VOLUME)))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .ifPresent(accessibilityNodeInfo -> accessibilityNodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK));
     }
 
     private void closeNotifications() {

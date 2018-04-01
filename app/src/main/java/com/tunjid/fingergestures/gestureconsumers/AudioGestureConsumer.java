@@ -1,10 +1,12 @@
 package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
@@ -13,10 +15,15 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static android.media.AudioManager.ADJUST_LOWER;
 import static android.media.AudioManager.ADJUST_RAISE;
+import static com.tunjid.fingergestures.App.delay;
+import static com.tunjid.fingergestures.App.hasDoNotDisturbAccess;
+import static com.tunjid.fingergestures.App.requireApp;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class AudioGestureConsumer implements GestureConsumer {
 
     private static final int DEF_INCREMENT_VALUE = 20;
+    private static final int EXPAND_VOLUME_DELAY = 200;
     private static final int STREAM_TYPE_MEDIA = AudioManager.STREAM_MUSIC;
     private static final int STREAM_TYPE_RING = AudioManager.STREAM_RING;
     private static final int STREAM_TYPE_ALARM = AudioManager.STREAM_ALARM;
@@ -24,6 +31,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     private static final int STREAM_TYPE_ALL = Integer.MAX_VALUE;
     private static final int MANAGED_BY_SYSTEM = -1;
 
+    public static final String ACTION_EXPAND_VOLUME_CONTROLS = "AudioGestureConsumer expand volume";
     private static final String INCREMENT_VALUE = "audio increment value";
     private static final String AUDIO_STREAM_TYPE = "audio stream type";
     private static final String SHOWS_AUDIO_SLIDER = "audio slider show";
@@ -53,25 +61,25 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     public boolean canSetVolumeDelta() {
-        return App.hasDoNotDisturbAccess() && getStreamType() != STREAM_TYPE_DEFAULT;
+        return hasDoNotDisturbAccess() && getStreamType() != STREAM_TYPE_DEFAULT;
     }
 
     public boolean shouldShowSliders() {
-        return App.requireApp(app -> app.getPreferences().getBoolean(SHOWS_AUDIO_SLIDER, true), true);
+        return requireApp(app -> app.getPreferences().getBoolean(SHOWS_AUDIO_SLIDER, true), true);
     }
 
     @IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT)
     public int getVolumeDelta() {
-        return App.requireApp(app -> app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE), DEF_INCREMENT_VALUE);
+        return requireApp(app -> app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE), DEF_INCREMENT_VALUE);
     }
 
     public void setVolumeDelta(@IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT) int volumeDelta) {
-        App.requireApp(app -> app.getPreferences().edit().putInt(INCREMENT_VALUE, volumeDelta).apply());
+        requireApp(app -> app.getPreferences().edit().putInt(INCREMENT_VALUE, volumeDelta).apply());
     }
 
     public void setStreamType(@IdRes int resId) {
         @AudioStream int streamType = getStreamTypeFromId(resId);
-        App.requireApp(app -> app.getPreferences().edit().putInt(AUDIO_STREAM_TYPE, streamType).apply());
+        requireApp(app -> app.getPreferences().edit().putInt(AUDIO_STREAM_TYPE, streamType).apply());
     }
 
     private void setStreamVolume(boolean increase, AudioManager audioManager, int streamType) {
@@ -81,7 +89,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     public void setShowsSliders(boolean visible) {
-        App.requireApp(app -> app.getPreferences().edit().putBoolean(SHOWS_AUDIO_SLIDER, visible).apply());
+        requireApp(app -> app.getPreferences().edit().putBoolean(SHOWS_AUDIO_SLIDER, visible).apply());
     }
 
     private int reduce(int currentValue, int stream, AudioManager audioManager) {
@@ -93,8 +101,8 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     private void adjustAudio(boolean increase) {
-        App.requireApp(app -> {
-            if (!App.hasDoNotDisturbAccess()) return;
+        requireApp(app -> {
+            if (!hasDoNotDisturbAccess()) return;
 
             AudioManager audioManager = app.getSystemService(AudioManager.class);
             if (audioManager == null) return;
@@ -121,7 +129,7 @@ public class AudioGestureConsumer implements GestureConsumer {
 
     public String getChangeText(int percentage) {
         AtomicReference<App> appReference = new AtomicReference<>();
-        AudioManager audioManager = App.requireApp(app -> {
+        AudioManager audioManager = requireApp(app -> {
             appReference.set(app);
             return app.getSystemService(AudioManager.class);
         }, null);
@@ -129,7 +137,7 @@ public class AudioGestureConsumer implements GestureConsumer {
         App app = appReference.get();
         if (app == null || audioManager == null) return "";
 
-        if (!App.hasDoNotDisturbAccess()) return app.getString(R.string.enable_do_not_disturb);
+        if (!hasDoNotDisturbAccess()) return app.getString(R.string.enable_do_not_disturb);
 
         int normalized = normalizePercentageForStream(percentage, getStreamType(), audioManager);
         int maxSteps = getMaxSteps(audioManager);
@@ -157,11 +165,18 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     private int getStreamType() {
-        return App.requireApp(app -> app.getPreferences().getInt(AUDIO_STREAM_TYPE, STREAM_TYPE_DEFAULT), STREAM_TYPE_DEFAULT);
+        return requireApp(app -> app.getPreferences().getInt(AUDIO_STREAM_TYPE, STREAM_TYPE_DEFAULT), STREAM_TYPE_DEFAULT);
     }
 
     private int getFlags() {
-        return shouldShowSliders() ? AudioManager.FLAG_SHOW_UI : 0;
+        boolean shouldShowSlider = shouldShowSliders();
+        if (shouldShowSlider && getStreamType() == STREAM_TYPE_ALL) broadcastExpandVolumeIntent();
+        return shouldShowSlider ? AudioManager.FLAG_SHOW_UI : 0;
+    }
+
+    private void broadcastExpandVolumeIntent() {
+        Intent expandVolumeIntent = new Intent(ACTION_EXPAND_VOLUME_CONTROLS);
+        delay(EXPAND_VOLUME_DELAY, MILLISECONDS, () -> requireApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(expandVolumeIntent)));
     }
 
     @AudioStream
