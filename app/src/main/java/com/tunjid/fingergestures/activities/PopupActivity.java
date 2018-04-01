@@ -15,7 +15,6 @@ import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
 import com.tunjid.fingergestures.adapters.DiffAdapter;
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
@@ -42,12 +41,11 @@ public class PopupActivity extends AppCompatActivity {
         window.setLayout(MATCH_PARENT, MATCH_PARENT);
 
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
-        BrightnessGestureConsumer gestureConsumer = BrightnessGestureConsumer.getInstance();
         DiffAdapter adapter = new ActionAdapter(true, false, PopUpGestureConsumer.getInstance()::getList, this::onActionClicked);
 
         List<String> actions = PopUpGestureConsumer.getInstance().getList();
-        int textColor = gestureConsumer.getSliderColor();
-        int sliderBackgroundColor = gestureConsumer.getBackgroundColor();
+        int textColor = backgroundManager.getSliderColor();
+        int sliderBackgroundColor = backgroundManager.getBackgroundColor();
 
         TextView text = findViewById(R.id.text);
         RecyclerView recyclerView = findViewById(R.id.item_list);

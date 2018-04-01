@@ -11,17 +11,21 @@
     <!-- Permission Dialogs-->
     <string name="permission_required">Permission Required</string>
 
+    <string name="enable_do_not_disturb">Enable Do Not Disturb Settings</string>
     <string name="enable_accessibility">Enable Accessibility Settings</string>
     <string name="enable_write_settings">Enable Brightness Settings</string>
     <string name="enable_storage_settings">Enable Storage Settings</string>
 
+    <string name="do_not_disturb_permissions_request">This app needs do not disturb access to change the ringer volume.\n\nGo to settings now?</string>
     <string name="accessibility_permissions_request">This app needs accessibility to listen for fingerprint gestures.\n\nGo to accessibility now?</string>
     <string name="settings_permission_request">This app needs permission to write to settings to save the brightness values.\n\nGo to settings now?</string>
     <string name="wallpaper_permission_request">This app needs permission to read from storage to access wallpaper colors and change them.\n\nGo to settings now?</string>
 
+    <string name="do_not_disturb_permission_granted">Do Not Disturb permission granted</string>
     <string name="accessibility_permission_granted">Accessibility permission granted</string>
     <string name="settings_permission_granted">Settings permission granted</string>
 
+    <string name="do_not_disturb_permission_denied">Do Not Disturb permission denied</string>
     <string name="accessibility_permission_denied">Accessibility permission denied</string>
     <string name="settings_permission_denied">Settings permission denied</string>
     <string name="accessibility_service_summary">Enable this to ease one handed phone brightness control by using fingerprint sensor gestures</string>
@@ -30,13 +34,14 @@
         \n2. To enable the docking the current app for accessible one handed use via Android\'s multi-window feature.\n
         \n3. To determine if the notification shade is showing to keep the 1 – 2 gesture combo to show the notification shade first and quick settings second.\n
         \n4. To check what app is currently showing to decide whether the phone should auto rotate the screen in landscape mode.\n
-        \n5. To show the accessibility button in the navbar for access to actions if you would prefer not to use a gesture for it.
+        \n5. To show the accessibility button in the navbar for access to actions if you would prefer not to use a gesture for it.\n
+        \n6. To show and / or expand volume controls when adjusting volume.\n
         \n\nEnabling this does not affect the functionality of any apps depending on the fingerprint sensor; gestures will be temporarily unavailable while fingerprint authentication is requested by any app,
         and will become available again after fingerprint authentication is complete.</string>
 
     <!-- Delta Viewholder-->
     <string name="delta_percent">%1$d%% per swipe</string>
-    <string name="adjust_slider_delta">Adjust Slider Step</string>
+    <string name="adjust_slider_delta">Adjust Brightness Slider Step</string>
 
     <!-- Position Viewholder-->
     <string name="adjust_slider_position">Adjust Slider Position</string>
@@ -52,6 +57,18 @@
     <string name="discrete_brightness_error">Please enter a value between 1 and 99</string>
     <string name="discrete_brightness_hint">Enter a brightness percentage</string>
     <string name="discrete_brightness_text">%1$s%%</string>
+
+    <!-- Audio Stream Viewholder-->
+    <string name="audio_stream_media">Media (%1$d levels)</string>
+    <string name="audio_stream_ringtone">Ring (%1$d levels)</string>
+    <string name="audio_stream_alarm">Alarm (%1$d levels)</string>
+    <string name="audio_stream_all">All (%1$d levels)</string>
+    <string name="audio_stream_text">%1$d step(s) of %2$d</string>
+    <string name="audio_stream_text_system">Set by Android System</string>
+    <string name="audio_stream_default">Most relevant (Android Default)</string>
+    <string name="audio_stream_title">Select Audio Stream</string>
+    <string name="audio_stream_slider_show">Show audio sliders</string>
+    <string name="audio_stream_delta">Adjust Audio Change Step</string>
 
     <!-- Color Adjuster Viewholder-->
     <string name="choose_color">Choose Color</string>
@@ -131,7 +148,7 @@
     <string name="auto_rotate_apps_excluded">Ignored Pop Up Overlay Apps</string>
     <string name="auto_rotate_add">Add to %1$s</string>
     <string name="auto_rotate_remove">Remove from %1$s?</string>
-    <string name="auto_rotate_prompt">Please enable auto rotate on the "adjustments" page.</string>
+    <string name="auto_rotate_prompt">Please enable the auto rotate option.</string>
     <string name="auto_rotate_cannot_remove">This app may not be removed from ignored apps as it draws over other apps.</string>
     <string name="auto_rotate_description">Whitelists certain apps to allow auto rotation in landscape.</string>
     <string name="auto_rotate_ignored_description">Ignores certain apps for being considered for auto rotation.
@@ -141,7 +158,7 @@
     <string name="popup_title">Pop Up Actions</string>
     <string name="popup_add">Add to accessibility button pop up.</string>
     <string name="popup_remove">Remove from accessibility button pop up?</string>
-    <string name="popup_prompt">Please enable the accessibility button on the "adjustments" page.</string>
+    <string name="popup_prompt">Please enable the accessibility button.</string>
     <string name="popup_enable">Enable accessibility button</string>
     <string name="popup_no_actions">No pop up actions have been added yet.</string>
     <string name="popup_description">Adds actions to the accessibility button pop up.</string>
@@ -164,6 +181,8 @@
     <string name="reduce_brightness">Reduce brightness</string>
     <string name="maximize_brightness">Maximum brightness</string>
     <string name="minimize_brightness">Minimum brightness</string>
+    <string name="increase_audio">Increase audio</string>
+    <string name="reduce_audio">Reduce audio</string>
     <string name="night_mode_on">Night mode on</string>
     <string name="night_mode_off">Night mode off</string>
     <string name="notification_up">Notification shade up</string>
@@ -205,7 +224,8 @@
 
     <!-- Bottom Navigation-->
     <string name="gestures">Gestures</string>
-    <string name="adjustments">Adjustments</string>
+    <string name="brightness">Brightness</string>
+    <string name="audio">Audio</string>
     <string name="appearance">Appearance</string>
 
     <!-- Trial-->

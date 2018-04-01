@@ -65,6 +65,9 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ANIMATES_POPUP;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ANIMATES_SLIDER;
+import static com.tunjid.fingergestures.adapters.AppAdapter.AUDIO_DELTA;
+import static com.tunjid.fingergestures.adapters.AppAdapter.AUDIO_SLIDER_SHOW;
+import static com.tunjid.fingergestures.adapters.AppAdapter.AUDIO_STREAM_TYPE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.DISCRETE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.DOUBLE_SWIPE_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ENABLE_ACCESSIBILITY_BUTTON;
@@ -95,9 +98,11 @@ public class MainActivity extends FingerGestureActivity {
     public static final int STORAGE_CODE = 100;
     public static final int SETTINGS_CODE = 200;
     public static final int ACCESSIBILITY_CODE = 300;
+    public static final int DO_NOT_DISTURB_CODE = 400;
+
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({STORAGE_CODE, SETTINGS_CODE, ACCESSIBILITY_CODE})
+    @IntDef({STORAGE_CODE, SETTINGS_CODE, ACCESSIBILITY_CODE, DO_NOT_DISTURB_CODE})
     public @interface PermissionRequest {}
 
     private static final String RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava";
@@ -124,12 +129,14 @@ public class MainActivity extends FingerGestureActivity {
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON,
             MAP_RIGHT_ICON, AD_FREE, REVIEW};
-    private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_COLOR, WALLPAPER_PICKER,
-            WALLPAPER_TRIGGER, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK, POPUP_ACTION};
-    private final int[] SLIDER_ITEMS = {PADDING, SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION,
-            DISCRETE_BRIGHTNESS, SCREEN_DIMMER, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER,
-            ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, ENABLE_ACCESSIBILITY_BUTTON,
+    private final int[] BRIGHTNESS_ITEMS = {PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS,
+            SCREEN_DIMMER, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER,
             ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
+    private final int[] AUDIO_ITEMS = {PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW};
+    private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_POSITION, SLIDER_DURATION,
+            SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ENABLE_WATCH_WINDOWS,
+            ENABLE_ACCESSIBILITY_BUTTON, ANIMATES_POPUP, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
+            POPUP_ACTION};
 
     {
         Context context = App.getInstance();
@@ -239,7 +246,10 @@ public class MainActivity extends FingerGestureActivity {
                 showFragment(AppFragment.newInstance(GESTURE_ITEMS));
                 return true;
             case R.id.action_slider:
-                showFragment(AppFragment.newInstance(SLIDER_ITEMS));
+                showFragment(AppFragment.newInstance(BRIGHTNESS_ITEMS));
+                return true;
+            case R.id.action_audio:
+                showFragment(AppFragment.newInstance(AUDIO_ITEMS));
                 return true;
             case R.id.action_wallpaper:
                 showFragment(AppFragment.newInstance(APPEARANCE_ITEMS));
@@ -299,6 +309,11 @@ public class MainActivity extends FingerGestureActivity {
                 showSnackbar((shouldRemove = App.accessibilityServiceEnabled())
                         ? R.string.accessibility_permission_granted
                         : R.string.accessibility_permission_denied);
+                break;
+            case DO_NOT_DISTURB_CODE:
+                showSnackbar((shouldRemove = App.hasDoNotDisturbAccess())
+                        ? R.string.do_not_disturb_permission_granted
+                        : R.string.do_not_disturb_permission_denied);
                 break;
         }
         if (shouldRemove) permissionsStack.remove(requestCode);
@@ -379,6 +394,10 @@ public class MainActivity extends FingerGestureActivity {
         showPermissionDialog(R.string.accessibility_permissions_request, () -> startActivityForResult(App.accessibilityIntent(), ACCESSIBILITY_CODE));
     }
 
+    private void askForDoNotDisturb() {
+        showPermissionDialog(R.string.do_not_disturb_permissions_request, () -> startActivityForResult(App.doNotDisturbIntent(), DO_NOT_DISTURB_CODE));
+    }
+
     private void showPermissionDialog(@StringRes int stringRes, Runnable yesAction) {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.permission_required)
@@ -393,7 +412,8 @@ public class MainActivity extends FingerGestureActivity {
         int permissionRequest = permissionsStack.peek();
         int text = 0;
 
-        if (permissionRequest == ACCESSIBILITY_CODE) text = R.string.enable_accessibility;
+        if (permissionRequest == DO_NOT_DISTURB_CODE) text = R.string.enable_do_not_disturb;
+        else if (permissionRequest == ACCESSIBILITY_CODE) text = R.string.enable_accessibility;
         else if (permissionRequest == SETTINGS_CODE) text = R.string.enable_write_settings;
         else if (permissionRequest == STORAGE_CODE) text = R.string.enable_storage_settings;
 
@@ -413,7 +433,8 @@ public class MainActivity extends FingerGestureActivity {
         }
         int permissionRequest = permissionsStack.peek();
 
-        if (permissionRequest == ACCESSIBILITY_CODE) askForAccessibility();
+        if (permissionRequest == DO_NOT_DISTURB_CODE) askForDoNotDisturb();
+        else if (permissionRequest == ACCESSIBILITY_CODE) askForAccessibility();
         else if (permissionRequest == SETTINGS_CODE) askForSettings();
         else if (permissionRequest == STORAGE_CODE) askForStorage();
     }
