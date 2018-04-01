@@ -64,9 +64,9 @@
     <string name="audio_stream_all">All</string>
     <string name="audio_stream_text">%1$d step(s) of %2$d</string>
     <string name="audio_stream_text_system">Set by Android System</string>
-    <string name="audio_stream_default">System Default</string>
+    <string name="audio_stream_default">Most relevant (Android Default)</string>
     <string name="audio_stream_title">Select Audio Stream</string>
-    <string name="audio_stream_delta">Adjust Audio Change</string>
+    <string name="audio_stream_delta">Adjust Audio Change Step</string>
 
     <!-- Color Adjuster Viewholder-->
     <string name="choose_color">Choose Color</string>

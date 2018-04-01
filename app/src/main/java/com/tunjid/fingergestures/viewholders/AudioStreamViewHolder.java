@@ -29,7 +29,9 @@ public class AudioStreamViewHolder extends AppViewHolder {
 
         radioGroup.check(AudioGestureConsumer.getInstance().getCheckedId());
         radioGroup.setOnCheckedChangeListener((group, checkedId) -> onStreamPicked(checkedId));
-        for (View view : radioGroup.getTouchables()) view.setEnabled(hasDoNotDisturbAccess);
+
+        int count = radioGroup.getChildCount();
+        for (int i = 0; i < count; i++) radioGroup.getChildAt(i).setEnabled(hasDoNotDisturbAccess);
     }
 
     private void onStreamPicked(int checkedId) {
