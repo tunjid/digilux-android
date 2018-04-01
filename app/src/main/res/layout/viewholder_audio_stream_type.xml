@@ -37,7 +37,8 @@
             android:paddingEnd="@dimen/single_margin"
             android:paddingStart="@dimen/single_margin"
             android:paddingTop="@dimen/single_margin"
-            android:text="@string/audio_stream_media" />
+            android:text="@string/audio_stream_media"
+            android:textColor="@color/toggle_text" />
 
         <RadioButton
             android:id="@+id/stream_ring"
@@ -47,7 +48,8 @@
             android:paddingEnd="@dimen/single_margin"
             android:paddingStart="@dimen/single_margin"
             android:paddingTop="@dimen/single_margin"
-            android:text="@string/audio_stream_ringtone" />
+            android:text="@string/audio_stream_ringtone"
+            android:textColor="@color/toggle_text" />
 
         <RadioButton
             android:id="@+id/stream_alarm"
@@ -57,7 +59,8 @@
             android:paddingEnd="@dimen/single_margin"
             android:paddingStart="@dimen/single_margin"
             android:paddingTop="@dimen/single_margin"
-            android:text="@string/audio_stream_alarm" />
+            android:text="@string/audio_stream_alarm"
+            android:textColor="@color/toggle_text" />
 
         <RadioButton
             android:id="@+id/stream_all"
@@ -67,7 +70,8 @@
             android:paddingEnd="@dimen/single_margin"
             android:paddingStart="@dimen/single_margin"
             android:paddingTop="@dimen/single_margin"
-            android:text="@string/audio_stream_all" />
+            android:text="@string/audio_stream_all"
+            android:textColor="@color/toggle_text" />
 
         <RadioButton
             android:id="@+id/stream_default"
@@ -77,7 +81,8 @@
             android:paddingEnd="@dimen/single_margin"
             android:paddingStart="@dimen/single_margin"
             android:paddingTop="@dimen/single_margin"
-            android:text="@string/audio_stream_default" />
+            android:text="@string/audio_stream_default"
+            android:textColor="@color/toggle_text" />
     </RadioGroup>
 </android.support.constraint.ConstraintLayout>
 
