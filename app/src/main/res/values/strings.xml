@@ -40,7 +40,7 @@
 
     <!-- Delta Viewholder-->
     <string name="delta_percent">%1$d%% per swipe</string>
-    <string name="adjust_slider_delta">Adjust Slider Step</string>
+    <string name="adjust_slider_delta">Adjust Brightness Slider Step</string>
 
     <!-- Position Viewholder-->
     <string name="adjust_slider_position">Adjust Slider Position</string>
@@ -146,7 +146,7 @@
     <string name="auto_rotate_apps_excluded">Ignored Pop Up Overlay Apps</string>
     <string name="auto_rotate_add">Add to %1$s</string>
     <string name="auto_rotate_remove">Remove from %1$s?</string>
-    <string name="auto_rotate_prompt">Please enable auto rotate on the "adjustments" page.</string>
+    <string name="auto_rotate_prompt">Please enable the auto rotate option.</string>
     <string name="auto_rotate_cannot_remove">This app may not be removed from ignored apps as it draws over other apps.</string>
     <string name="auto_rotate_description">Whitelists certain apps to allow auto rotation in landscape.</string>
     <string name="auto_rotate_ignored_description">Ignores certain apps for being considered for auto rotation.
@@ -156,7 +156,7 @@
     <string name="popup_title">Pop Up Actions</string>
     <string name="popup_add">Add to accessibility button pop up.</string>
     <string name="popup_remove">Remove from accessibility button pop up?</string>
-    <string name="popup_prompt">Please enable the accessibility button on the "adjustments" page.</string>
+    <string name="popup_prompt">Please enable the accessibility button.</string>
     <string name="popup_enable">Enable accessibility button</string>
     <string name="popup_no_actions">No pop up actions have been added yet.</string>
     <string name="popup_description">Adds actions to the accessibility button pop up.</string>
