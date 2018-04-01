@@ -28,6 +28,7 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
+import static com.tunjid.fingergestures.App.requireApp;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToByte;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToFraction;
 import static java.util.Comparator.naturalOrder;
@@ -56,6 +57,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final String SCREEN_DIMMER_DIM_PERCENT = "screen dimmer dim percent";
     private static final String ANIMATES_SLIDER = "animates slider";
     private static final String DISCRETE_BRIGHTNESS_SET = "discrete brightness values";
+    private static final String EMPTY_STRING = "";
 
     private final App app;
     private SetManager<Integer> discreteBrightnessManager;
@@ -155,8 +157,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 sensorManager.unregisterListener(this, lightSensor);
-
-                if (!restoresAdaptiveBrightness) return;
 
                 float[] values = event.values;
                 float lux = values != null && values.length > 0 ? values[0] : -1;
@@ -292,8 +292,8 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return app.getPreferences().getBoolean(ANIMATES_SLIDER, true);
     }
 
-    public boolean noDiscreteBrightness() {
-        return discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).isEmpty();
+    public boolean canAdjustDelta() {
+        return noDiscreteBrightness() || PurchasesManager.getInstance().isPremium();
     }
 
     public void addDiscreteBrightnessValue(String discreteValue) {
@@ -302,6 +302,12 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     public void removeDiscreteBrightnessValue(String discreteValue) {
         discreteBrightnessManager.removeFromSet(discreteValue, DISCRETE_BRIGHTNESS_SET);
+    }
+
+    public String getAdjustDeltaText(int percentage) {
+        return requireApp(app -> PurchasesManager.getInstance().isPremium() && !noDiscreteBrightness()
+                ? app.getString(R.string.delta_percent_premium, percentage)
+                : app.getString(R.string.delta_percent, percentage), EMPTY_STRING);
     }
 
     public List<String> getDiscreteBrightnessValues() {
@@ -381,5 +387,9 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private boolean shouldRemoveDimmerOnChange(@GestureAction int gestureAction) {
         return gestureAction == MINIMIZE_BRIGHTNESS || gestureAction == MAXIMIZE_BRIGHTNESS
                 || (shouldShowDimmer() && PurchasesManager.getInstance().isNotPremium());
+    }
+
+    private boolean noDiscreteBrightness() {
+        return discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).isEmpty();
     }
 }

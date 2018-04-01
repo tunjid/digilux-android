@@ -113,8 +113,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         R.string.adjust_slider_delta,
                         brightnessGestureConsumer::setIncrementPercentage,
                         brightnessGestureConsumer::getIncrementPercentage,
-                        brightnessGestureConsumer::noDiscreteBrightness,
-                        (increment) -> context.getString(R.string.delta_percent, increment));
+                        brightnessGestureConsumer::canAdjustDelta,
+                        brightnessGestureConsumer::getAdjustDeltaText);
             case SLIDER_POSITION:
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),

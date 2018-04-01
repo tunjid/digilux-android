@@ -41,6 +41,7 @@
 
     <!-- Delta Viewholder-->
     <string name="delta_percent">%1$d%% per swipe</string>
+    <string name="delta_percent_premium">%1$d%% per swipe (filter only)</string>
     <string name="adjust_slider_delta">Adjust Brightness Slider Step</string>
 
     <!-- Position Viewholder-->
