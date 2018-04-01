@@ -66,6 +66,7 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ANIMATES_POPUP;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ANIMATES_SLIDER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AUDIO_DELTA;
+import static com.tunjid.fingergestures.adapters.AppAdapter.AUDIO_SLIDER_SHOW;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AUDIO_STREAM_TYPE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.DISCRETE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.DOUBLE_SWIPE_SETTINGS;
@@ -131,7 +132,7 @@ public class MainActivity extends FingerGestureActivity {
     private final int[] BRIGHTNESS_ITEMS = {PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS,
             SCREEN_DIMMER, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER,
             ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
-    private final int[] AUDIO_ITEMS = {PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE};
+    private final int[] AUDIO_ITEMS = {PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW};
     private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_POSITION, SLIDER_DURATION,
             SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ENABLE_WATCH_WINDOWS,
             ENABLE_ACCESSIBILITY_BUTTON, ANIMATES_POPUP, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,

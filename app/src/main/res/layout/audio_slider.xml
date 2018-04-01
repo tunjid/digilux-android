@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout android:id="@+id/media_slider_background"
+<android.support.constraint.ConstraintLayout android:id="@+id/seekbar_background"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/single_margin"
-    tools:context=".activities.BrightnessActivity">
+    tools:contitle=".activities.BrightnessActivity">
 
     <View
         android:id="@+id/expand"
@@ -18,7 +18,7 @@
         app:layout_constraintWidth_percent="0.16" />
 
     <TextView
-        android:id="@+id/media_text"
+        android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -26,7 +26,7 @@
         app:layout_constraintWidth_percent="0.16" />
 
     <ImageView
-        android:id="@+id/media_icon"
+        android:id="@+id/icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/single_margin"
@@ -34,21 +34,19 @@
         android:paddingBottom="@dimen/half_margin"
         android:paddingTop="@dimen/half_margin"
         app:layout_constraintDimensionRatio="H,1:1"
-        app:layout_constraintLeft_toLeftOf="@+id/media_text"
-        app:layout_constraintRight_toRightOf="@+id/media_text"
-        app:layout_constraintTop_toBottomOf="@+id/media_text"
+        app:layout_constraintLeft_toLeftOf="@+id/title"
+        app:layout_constraintRight_toRightOf="@+id/title"
+        app:layout_constraintTop_toBottomOf="@+id/title"
         app:srcCompat="@drawable/ic_settings_white_24dp" />
 
     <SeekBar
-        android:id="@+id/media_slider"
+        android:id="@+id/seekbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        app:layout_constraintBottom_toBottomOf="@id/media_icon"
-        app:layout_constraintLeft_toRightOf="@+id/media_icon"
+        app:layout_constraintBottom_toBottomOf="@id/icon"
+        app:layout_constraintLeft_toRightOf="@+id/icon"
         app:layout_constraintRight_toLeftOf="@+id/expand"
-        app:layout_constraintTop_toTopOf="@+id/media_icon" />
-
-
+        app:layout_constraintTop_toTopOf="@+id/icon" />
 </android.support.constraint.ConstraintLayout>

@@ -75,7 +75,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int DISCRETE_BRIGHTNESS = 24;
     public static final int AUDIO_DELTA = 25;
     public static final int AUDIO_STREAM_TYPE = 26;
-
+    public static final int AUDIO_SLIDER_SHOW = 27;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
@@ -83,7 +83,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
             AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
             EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
-            ANIMATES_SLIDER, ANIMATES_POPUP, DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE})
+            ANIMATES_SLIDER, ANIMATES_POPUP, DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE,
+            AUDIO_SLIDER_SHOW})
     public @interface AdapterIndex {}
 
     private final int[] items;
@@ -196,6 +197,11 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         audioGestureConsumer::getVolumeDelta,
                         audioGestureConsumer::canSetVolumeDelta,
                         audioGestureConsumer::getChangeText);
+            case AUDIO_SLIDER_SHOW:
+                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                        R.string.audio_stream_slider_show,
+                        audioGestureConsumer::shouldShowSliders,
+                        audioGestureConsumer::setShowsSliders);
             case AUDIO_STREAM_TYPE:
                 return new AudioStreamViewHolder(getView(R.layout.viewholder_audio_stream_type, parent), adapterListener);
             case MAP_UP_ICON:

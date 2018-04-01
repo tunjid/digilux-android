@@ -9,6 +9,8 @@ import android.support.annotation.IntRange;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static android.media.AudioManager.ADJUST_LOWER;
 import static android.media.AudioManager.ADJUST_RAISE;
 
@@ -24,6 +26,7 @@ public class AudioGestureConsumer implements GestureConsumer {
 
     private static final String INCREMENT_VALUE = "audio increment value";
     private static final String AUDIO_STREAM_TYPE = "audio stream type";
+    private static final String SHOWS_AUDIO_SLIDER = "audio slider show";
 
     @IntDef({STREAM_TYPE_MEDIA, STREAM_TYPE_RING, STREAM_TYPE_ALARM, STREAM_TYPE_ALL, STREAM_TYPE_DEFAULT})
     @interface AudioStream {}
@@ -53,6 +56,10 @@ public class AudioGestureConsumer implements GestureConsumer {
         return App.hasDoNotDisturbAccess() && getStreamType() != STREAM_TYPE_DEFAULT;
     }
 
+    public boolean shouldShowSliders() {
+        return App.requireApp(app -> app.getPreferences().getBoolean(SHOWS_AUDIO_SLIDER, true), true);
+    }
+
     @IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT)
     public int getVolumeDelta() {
         return App.requireApp(app -> app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE), DEF_INCREMENT_VALUE);
@@ -70,7 +77,11 @@ public class AudioGestureConsumer implements GestureConsumer {
     private void setStreamVolume(boolean increase, AudioManager audioManager, int streamType) {
         int currentVolume = audioManager.getStreamVolume(streamType);
         int newVolume = increase ? increase(currentVolume, streamType, audioManager) : reduce(currentVolume, streamType, audioManager);
-        audioManager.setStreamVolume(streamType, newVolume, 0);
+        audioManager.setStreamVolume(streamType, newVolume, getFlags());
+    }
+
+    public void setShowsSliders(boolean visible) {
+        App.requireApp(app -> app.getPreferences().edit().putBoolean(SHOWS_AUDIO_SLIDER, visible).apply());
     }
 
     private int reduce(int currentValue, int stream, AudioManager audioManager) {
@@ -92,7 +103,7 @@ public class AudioGestureConsumer implements GestureConsumer {
             switch (streamType) {
                 default:
                 case STREAM_TYPE_DEFAULT:
-                    audioManager.adjustSuggestedStreamVolume(increase ? ADJUST_RAISE : ADJUST_LOWER, streamType, 0);
+                    audioManager.adjustSuggestedStreamVolume(increase ? ADJUST_RAISE : ADJUST_LOWER, streamType, getFlags());
                     break;
                 case STREAM_TYPE_MEDIA:
                 case STREAM_TYPE_ALARM:
@@ -109,19 +120,23 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     public String getChangeText(int percentage) {
-        return App.requireApp(app -> {
-            if (!App.hasDoNotDisturbAccess()) return app.getString(R.string.enable_do_not_disturb);
+        AtomicReference<App> appReference = new AtomicReference<>();
+        AudioManager audioManager = App.requireApp(app -> {
+            appReference.set(app);
+            return app.getSystemService(AudioManager.class);
+        }, null);
 
-            AudioManager audioManager = app.getSystemService(AudioManager.class);
-            if (audioManager == null) return null;
+        App app = appReference.get();
+        if (app == null || audioManager == null) return "";
 
-            int normalized = normalizePercentageForStream(percentage, getStreamType(), audioManager);
-            int maxSteps = getMaxSteps(audioManager);
+        if (!App.hasDoNotDisturbAccess()) return app.getString(R.string.enable_do_not_disturb);
 
-            return maxSteps == MANAGED_BY_SYSTEM
-                    ? app.getString(R.string.audio_stream_text_system)
-                    : app.getString(R.string.audio_stream_text, normalized, maxSteps);
-        }, "");
+        int normalized = normalizePercentageForStream(percentage, getStreamType(), audioManager);
+        int maxSteps = getMaxSteps(audioManager);
+
+        return maxSteps == MANAGED_BY_SYSTEM
+                ? app.getString(R.string.audio_stream_text_system)
+                : app.getString(R.string.audio_stream_text, normalized, maxSteps);
     }
 
     private int normalizePercentageForStream(int percentage, int streamType, AudioManager audioManager) {
@@ -143,6 +158,10 @@ public class AudioGestureConsumer implements GestureConsumer {
 
     private int getStreamType() {
         return App.requireApp(app -> app.getPreferences().getInt(AUDIO_STREAM_TYPE, STREAM_TYPE_DEFAULT), STREAM_TYPE_DEFAULT);
+    }
+
+    private int getFlags() {
+        return shouldShowSliders() ? AudioManager.FLAG_SHOW_UI : 0;
     }
 
     @AudioStream
@@ -200,3 +219,31 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 }
 
+//    public void setVolume(@IdRes int idRes, @IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT) int percentage) {
+//        AudioManager audioManager = App.requireApp(app -> app.getSystemService(AudioManager.class), null);
+//        if (audioManager == null) return;
+//
+//        @AudioStream int streamType = getStreamTypeFromId(idRes);
+//
+//        switch (streamType) {
+//            default:
+//            case STREAM_TYPE_DEFAULT:
+//                // No op
+//                break;
+//            case STREAM_TYPE_MEDIA:
+//            case STREAM_TYPE_RING:
+//            case STREAM_TYPE_ALARM:
+//                setStreamVolume(percentage, audioManager, streamType);
+//                break;
+//            case STREAM_TYPE_ALL:
+//                setStreamVolume(percentage, audioManager, STREAM_TYPE_MEDIA);
+//                setStreamVolume(percentage, audioManager, STREAM_TYPE_RING);
+//                setStreamVolume(percentage, audioManager, STREAM_TYPE_ALARM);
+//                break;
+//        }
+//    }
+//
+//    private void setStreamVolume(@IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT) int percentage, AudioManager audioManager, int streamType) {
+//        int newVolume = normalizePercentageForStream(percentage, streamType, audioManager);
+//        audioManager.setStreamVolume(streamType, newVolume, getFlags());
+//    }

@@ -66,6 +66,7 @@
     <string name="audio_stream_text_system">Set by Android System</string>
     <string name="audio_stream_default">Most relevant (Android Default)</string>
     <string name="audio_stream_title">Select Audio Stream</string>
+    <string name="audio_stream_slider_show">Show audio sliders</string>
     <string name="audio_stream_delta">Adjust Audio Change Step</string>
 
     <!-- Color Adjuster Viewholder-->
