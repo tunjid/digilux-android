@@ -26,7 +26,7 @@ import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.DiscreteBrightnessViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
 import com.tunjid.fingergestures.viewholders.PopupViewHolder;
-import com.tunjid.fingergestures.viewholders.ReviewViewHolder;
+import com.tunjid.fingergestures.viewholders.LinkViewHolder;
 import com.tunjid.fingergestures.viewholders.RotationViewHolder;
 import com.tunjid.fingergestures.viewholders.ScreenDimmerViewHolder;
 import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
@@ -43,6 +43,8 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GES
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.EXCLUDED_APPS;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
+import static com.tunjid.fingergestures.viewholders.LinkViewHolder.REVIEW_LINK_ITEM;
+import static com.tunjid.fingergestures.viewholders.LinkViewHolder.SUPPORT_LINK_ITEM;
 
 
 public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
@@ -76,6 +78,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int AUDIO_DELTA = 25;
     public static final int AUDIO_STREAM_TYPE = 26;
     public static final int AUDIO_SLIDER_SHOW = 27;
+    public static final int SUPPORT = 28;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
@@ -84,7 +87,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
             EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
             ANIMATES_SLIDER, ANIMATES_POPUP, DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE,
-            AUDIO_SLIDER_SHOW})
+            AUDIO_SLIDER_SHOW, SUPPORT})
     public @interface AdapterIndex {}
 
     private final int[] items;
@@ -214,8 +217,10 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE, adapterListener);
             case AD_FREE:
                 return new AdFreeViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
+            case SUPPORT:
+                return new LinkViewHolder(getView(R.layout.viewholder_simple_text, parent), SUPPORT_LINK_ITEM, adapterListener);
             case REVIEW:
-                return new ReviewViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
+                return new LinkViewHolder(getView(R.layout.viewholder_simple_text, parent), REVIEW_LINK_ITEM, adapterListener);
             case WALLPAPER_PICKER:
                 return new WallpaperViewHolder(getView(R.layout.viewholder_wallpaper_pick, parent), adapterListener);
             case WALLPAPER_TRIGGER:

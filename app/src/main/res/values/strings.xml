@@ -121,7 +121,8 @@
     <string name="premium_generosity_title">You\'re already premium…</string>
     <string name="premium_generosity_confirmation">Shut up and take my money!</string>
 
-    <!-- Review Viewholder-->
+    <!-- Link Viewholder-->
+    <string name="help_support">Help, support and feedback</string>
     <string name="review_app">Leave a review</string>
 
     <!-- Wallpaper Viewholder-->
