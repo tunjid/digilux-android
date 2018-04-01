@@ -10,11 +10,10 @@ import android.widget.TextView;
 
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.tunjid.fingergestures.BackgroundManager;
-import com.tunjid.fingergestures.activities.MainActivity;
-import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.R;
+import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import java.util.function.Consumer;
 
@@ -31,14 +30,12 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
     private final View[] wallpaperColorIndicators;
     private final CharSequence[] targetOptions;
     private final BackgroundManager backgroundManager;
-    private final BrightnessGestureConsumer brightnessGestureConsumer;
 
     public ColorAdjusterViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
 
         Context context = itemView.getContext();
         backgroundManager = BackgroundManager.getInstance();
-        brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         backgroundIndicator = itemView.findViewById(R.id.slider_background_color_indicator);
         sliderIndicator = itemView.findViewById(R.id.slider_color_indicator);
         targetOptions = new CharSequence[]{context.getString(R.string.slider_background), context.getString(R.string.slider)};
@@ -58,11 +55,11 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
         backgroundText.setText(R.string.change_slider_background_color);
         sliderText.setText(R.string.change_slider_color);
 
-        OnClickListener backgroundPicker = view -> pickColor(brightnessGestureConsumer.getBackgroundColor(), this::setBackgroundColor);
-        OnClickListener sliderPicker = view -> pickColor(brightnessGestureConsumer.getSliderColor(), this::setSliderColor);
+        OnClickListener backgroundPicker = view -> pickColor(backgroundManager.getBackgroundColor(), this::setBackgroundColor);
+        OnClickListener sliderPicker = view -> pickColor(backgroundManager.getSliderColor(), this::setSliderColor);
 
-        setBackgroundColor(brightnessGestureConsumer.getBackgroundColor());
-        setSliderColor(brightnessGestureConsumer.getSliderColor());
+        setBackgroundColor(backgroundManager.getBackgroundColor());
+        setSliderColor(backgroundManager.getSliderColor());
 
         backgroundIndicator.setOnClickListener(backgroundPicker);
         sliderIndicator.setOnClickListener(sliderPicker);
@@ -79,12 +76,12 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
     }
 
     private void setBackgroundColor(int color) {
-        brightnessGestureConsumer.setBackgroundColor(color);
+        backgroundManager.setBackgroundColor(color);
         backgroundIndicator.setBackground(backgroundManager.tint(R.drawable.color_indicator, color));
     }
 
     private void setSliderColor(int color) {
-        brightnessGestureConsumer.setSliderColor(color);
+        backgroundManager.setSliderColor(color);
         sliderIndicator.setBackground(backgroundManager.tint(R.drawable.color_indicator, color));
     }
 

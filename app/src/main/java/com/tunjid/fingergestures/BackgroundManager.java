@@ -17,6 +17,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
@@ -57,6 +58,8 @@ public class BackgroundManager {
     private static final int DEF_SLIDER_DURATION_PERCENT = 60;
 
     private static final String SLIDER_DURATION = "slider duration";
+    private static final String BACKGROUND_COLOR = "background color";
+    private static final String SLIDER_COLOR = "slider color";
 
     private static final String ERROR_NEED_PERMISSION = "Need permission";
     private static final String ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager";
@@ -104,17 +107,35 @@ public class BackgroundManager {
         wallpaperTargets = new String[]{app.getString(R.string.day_wallpaper), app.getString(R.string.night_wallpaper)};
     }
 
-    public int getSliderDurationMillis() {
-        return durationPercentageToMillis(getSliderDurationPercentage());
+    @ColorInt
+    public int getSliderColor() {
+        return app.getPreferences().getInt(SLIDER_COLOR, ContextCompat.getColor(App.getInstance(), R.color.colorAccent));
     }
 
-    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
-        app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply();
+    @ColorInt
+    public int getBackgroundColor() {
+        return app.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(App.getInstance(), R.color.colorPrimary));
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
     public int getSliderDurationPercentage() {
         return app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT);
+    }
+
+    public int getSliderDurationMillis() {
+        return durationPercentageToMillis(getSliderDurationPercentage());
+    }
+
+    public void setSliderColor(@ColorInt int color) {
+        app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply();
+    }
+
+    public void setBackgroundColor(@ColorInt int color) {
+        app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply();
+    }
+
+    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
+        app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply();
     }
 
     public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {

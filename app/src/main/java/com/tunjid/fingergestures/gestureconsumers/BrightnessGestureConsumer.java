@@ -9,10 +9,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.provider.Settings;
-import android.support.annotation.ColorInt;
 import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.App;
@@ -50,8 +48,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     public static final String BRIGHTNESS_FRACTION = "brightness value";
     public static final String ACTION_SCREEN_DIMMER_CHANGED = "show screen dimmer";
     private static final String INCREMENT_VALUE = "increment value";
-    private static final String BACKGROUND_COLOR = "background color";
-    private static final String SLIDER_COLOR = "slider color";
     private static final String SLIDER_POSITION = "slider position";
     private static final String SLIDER_VISIBLE = "slider visible";
     private static final String ADAPTIVE_BRIGHTNESS = "adaptive brightness";
@@ -212,14 +208,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
                 : findDiscreteBrightnessValue(byteValue, true);
     }
 
-    public void setBackgroundColor(@ColorInt int color) {
-        app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply();
-    }
-
-    public void setSliderColor(@ColorInt int color) {
-        app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply();
-    }
-
     public void setIncrementPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int incrementValue) {
         app.getPreferences().edit().putInt(INCREMENT_VALUE, incrementValue).apply();
     }
@@ -251,16 +239,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     public void setDimmerEnabled(boolean enabled) {
         app.getPreferences().edit().putBoolean(SCREEN_DIMMER_ENABLED, enabled).apply();
         if (!enabled) removeDimmer();
-    }
-
-    @ColorInt
-    public int getBackgroundColor() {
-        return app.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(App.getInstance(), R.color.colorPrimary));
-    }
-
-    @ColorInt
-    public int getSliderColor() {
-        return app.getPreferences().getInt(SLIDER_COLOR, ContextCompat.getColor(App.getInstance(), R.color.colorAccent));
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)

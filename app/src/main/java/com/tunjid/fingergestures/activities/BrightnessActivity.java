@@ -39,8 +39,8 @@ public class BrightnessActivity extends TimedActivity
 
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
 
-        int sliderColor = brightnessGestureConsumer.getSliderColor();
-        int sliderBackgroundColor = brightnessGestureConsumer.getBackgroundColor();
+        int sliderColor = backgroundManager.getSliderColor();
+        int sliderBackgroundColor = backgroundManager.getBackgroundColor();
 
         ConstraintLayout layout = findViewById(R.id.constraint_layout);
         seekBarBackground = findViewById(R.id.seekbar_background);

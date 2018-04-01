@@ -8,7 +8,6 @@ import com.tunjid.androidbootstrap.core.abstractclasses.BaseViewHolder;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
@@ -52,14 +51,16 @@ public class ActionViewHolder extends BaseViewHolder<ActionAdapter.ActionClickLi
     public void bind(@GestureConsumer.GestureAction int action) {
         this.action = action;
 
+        BackgroundManager backgroundManager = BackgroundManager.getInstance();
+
         textView.setVisibility(showsText ? View.VISIBLE : View.GONE);
         textView.setText(GestureMapper.getInstance().resourceForAction(action));
 
         int iconRes = actionToIcon(action);
-        int iconColor = BrightnessGestureConsumer.getInstance().getSliderColor();
+        int iconColor = backgroundManager.getSliderColor();
 
         if (showsText) imageView.setImageResource(iconRes);
-        else imageView.setImageDrawable(BackgroundManager.getInstance().tint(iconRes, iconColor));
+        else imageView.setImageDrawable(backgroundManager.tint(iconRes, iconColor));
     }
 
     private int actionToIcon(@GestureConsumer.GestureAction int action) {
