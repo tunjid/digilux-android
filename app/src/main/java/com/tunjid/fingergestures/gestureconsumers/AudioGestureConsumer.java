@@ -11,7 +11,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 
 import static android.media.AudioManager.ADJUST_LOWER;
 import static android.media.AudioManager.ADJUST_RAISE;
@@ -35,6 +35,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     private static final String INCREMENT_VALUE = "audio increment value";
     private static final String AUDIO_STREAM_TYPE = "audio stream type";
     private static final String SHOWS_AUDIO_SLIDER = "audio slider show";
+    private static final String EMPTY_STRING = "";
 
     @IntDef({STREAM_TYPE_MEDIA, STREAM_TYPE_RING, STREAM_TYPE_ALARM, STREAM_TYPE_ALL, STREAM_TYPE_DEFAULT})
     @interface AudioStream {}
@@ -128,23 +129,32 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     public String getChangeText(int percentage) {
-        AtomicReference<App> appReference = new AtomicReference<>();
-        AudioManager audioManager = requireApp(app -> {
-            appReference.set(app);
-            return app.getSystemService(AudioManager.class);
-        }, null);
+        return requireAppAndAudioManager((app, audioManager) -> {
+            if (!hasDoNotDisturbAccess()) return app.getString(R.string.enable_do_not_disturb);
 
-        App app = appReference.get();
-        if (app == null || audioManager == null) return "";
+            int normalized = normalizePercentageForStream(percentage, getStreamType(), audioManager);
+            int maxSteps = getMaxSteps(audioManager);
 
-        if (!hasDoNotDisturbAccess()) return app.getString(R.string.enable_do_not_disturb);
+            return maxSteps == MANAGED_BY_SYSTEM
+                    ? app.getString(R.string.audio_stream_text_system)
+                    : app.getString(R.string.audio_stream_text, normalized, maxSteps);
+        }, EMPTY_STRING);
+    }
 
-        int normalized = normalizePercentageForStream(percentage, getStreamType(), audioManager);
-        int maxSteps = getMaxSteps(audioManager);
-
-        return maxSteps == MANAGED_BY_SYSTEM
-                ? app.getString(R.string.audio_stream_text_system)
-                : app.getString(R.string.audio_stream_text, normalized, maxSteps);
+    public String getStreamTitle(@IdRes int resId) {
+        switch (getStreamTypeFromId(resId)) {
+            default:
+            case STREAM_TYPE_DEFAULT:
+                return requireApp(app -> app.getString(R.string.audio_stream_default), EMPTY_STRING);
+            case STREAM_TYPE_MEDIA:
+                return requireAppAndAudioManager((app, audioManager) -> app.getString(R.string.audio_stream_media, audioManager.getStreamMaxVolume(STREAM_TYPE_MEDIA)), EMPTY_STRING);
+            case STREAM_TYPE_RING:
+                return requireAppAndAudioManager((app, audioManager) -> app.getString(R.string.audio_stream_ringtone, audioManager.getStreamMaxVolume(STREAM_TYPE_RING)), EMPTY_STRING);
+            case STREAM_TYPE_ALARM:
+                return requireAppAndAudioManager((app, audioManager) -> app.getString(R.string.audio_stream_alarm, audioManager.getStreamMaxVolume(STREAM_TYPE_ALARM)), EMPTY_STRING);
+            case STREAM_TYPE_ALL:
+                return requireAppAndAudioManager((app, audioManager) -> app.getString(R.string.audio_stream_all, getMaxSteps(audioManager)), EMPTY_STRING);
+        }
     }
 
     private int normalizePercentageForStream(int percentage, int streamType, AudioManager audioManager) {
@@ -197,6 +207,13 @@ public class AudioGestureConsumer implements GestureConsumer {
             default:
                 return MANAGED_BY_SYSTEM;
         }
+    }
+
+    private <T> T requireAppAndAudioManager(BiFunction<App, AudioManager, T> biFunction, T defaultValue) {
+        return requireApp(app -> {
+            AudioManager audioManager = app.getSystemService(AudioManager.class);
+            return audioManager != null ? biFunction.apply(app, audioManager) : defaultValue;
+        }, defaultValue);
     }
 
     @AudioStream
