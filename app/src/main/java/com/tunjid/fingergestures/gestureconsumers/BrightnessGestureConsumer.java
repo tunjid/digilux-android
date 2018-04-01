@@ -42,11 +42,9 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final float MIN_DIM_PERCENT = 0F;
     private static final float MAX_DIM_PERCENT = 0.8F;
     private static final float DEF_DIM_PERCENT = MIN_DIM_PERCENT;
-    private static final int MAX_SLIDER_DURATION = 5000;
     private static final int MAX_ADAPTIVE_THRESHOLD = 1200;
     private static final int DEF_INCREMENT_VALUE = 20;
     private static final int DEF_POSITION_VALUE = 50;
-    private static final int DEF_SLIDER_DURATION_PERCENT = 60;
     private static final int DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD = 50;
 
     public static final String BRIGHTNESS_FRACTION = "brightness value";
@@ -55,7 +53,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final String BACKGROUND_COLOR = "background color";
     private static final String SLIDER_COLOR = "slider color";
     private static final String SLIDER_POSITION = "slider position";
-    private static final String SLIDER_DURATION = "slider duration";
     private static final String SLIDER_VISIBLE = "slider visible";
     private static final String ADAPTIVE_BRIGHTNESS = "adaptive brightness";
     private static final String ADAPTIVE_BRIGHTNESS_THRESHOLD = "adaptive brightness threshold";
@@ -223,10 +220,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply();
     }
 
-    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
-        app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply();
-    }
-
     public void setIncrementPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int incrementValue) {
         app.getPreferences().edit().putInt(INCREMENT_VALUE, incrementValue).apply();
     }
@@ -281,17 +274,8 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
-    public int getSliderDurationPercentage() {
-        return app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT);
-    }
-
-    @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
     public int getAdaptiveBrightnessThreshold() {
         return app.getPreferences().getInt(ADAPTIVE_BRIGHTNESS_THRESHOLD, DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD);
-    }
-
-    public int getSliderDurationMillis() {
-        return durationPercentageToMillis(getSliderDurationPercentage());
     }
 
     public float getScreenDimmerDimPercent() {
@@ -346,12 +330,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return discreteBrightnessManager.getList(DISCRETE_BRIGHTNESS_SET);
     }
 
-    public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
-        int millis = durationPercentageToMillis(duration);
-        float seconds = millis / 1000F;
-        return app.getString(R.string.duration_value, seconds);
-    }
-
     public String getAdaptiveBrightnessThresholdText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int percent) {
         if (!hasBrightnessSensor())
             return app.getString(R.string.unavailable_brightness_sensor);
@@ -376,10 +354,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         Intent intent = new Intent(ACTION_SCREEN_DIMMER_CHANGED);
         intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
         LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
-    }
-
-    private int durationPercentageToMillis(int percentage) {
-        return (int) (percentage * MAX_SLIDER_DURATION / 100F);
     }
 
     private int adaptiveThresholdToLux(int percentage) {

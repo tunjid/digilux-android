@@ -19,6 +19,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
+import android.support.annotation.IntRange;
 import android.support.annotation.StringRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -27,6 +28,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.graphics.Palette;
 import android.util.DisplayMetrics;
 import android.util.Pair;
+
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,6 +52,11 @@ import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 import static io.reactivex.schedulers.Schedulers.computation;
 
 public class BackgroundManager {
+
+    private static final int MAX_SLIDER_DURATION = 5000;
+    private static final int DEF_SLIDER_DURATION_PERCENT = 60;
+
+    private static final String SLIDER_DURATION = "slider duration";
 
     private static final String ERROR_NEED_PERMISSION = "Need permission";
     private static final String ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager";
@@ -94,6 +102,25 @@ public class BackgroundManager {
     private BackgroundManager() {
         app = App.getInstance();
         wallpaperTargets = new String[]{app.getString(R.string.day_wallpaper), app.getString(R.string.night_wallpaper)};
+    }
+
+    public int getSliderDurationMillis() {
+        return durationPercentageToMillis(getSliderDurationPercentage());
+    }
+
+    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
+        app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply();
+    }
+
+    @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
+    public int getSliderDurationPercentage() {
+        return app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT);
+    }
+
+    public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
+        int millis = durationPercentageToMillis(duration);
+        float seconds = millis / 1000F;
+        return app.getString(R.string.duration_value, seconds);
     }
 
     public int[] getScreenAspectRatio() {
@@ -319,5 +346,9 @@ public class BackgroundManager {
         if (handled) LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
 
         return handled;
+    }
+
+    private int durationPercentageToMillis(int percentage) {
+        return (int) (percentage * MAX_SLIDER_DURATION / 100F);
     }
 }

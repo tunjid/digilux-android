@@ -1,12 +1,9 @@
 package com.tunjid.fingergestures.activities;
 
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
-import android.support.v7.app.AppCompatActivity;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
 import android.view.View;
@@ -17,24 +14,14 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import io.reactivex.Flowable;
-import io.reactivex.disposables.Disposable;
-
 import static android.graphics.PorterDuff.Mode.SRC_IN;
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.BRIGHTNESS_FRACTION;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToByte;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public class BrightnessActivity extends AppCompatActivity
+public class BrightnessActivity extends TimedActivity
         implements SeekBar.OnSeekBarChangeListener {
 
     private int brightnessByte;
@@ -43,9 +30,7 @@ public class BrightnessActivity extends AppCompatActivity
     private TextView seekBarText;
     private ViewGroup seekBarBackground;
 
-    private LocalTime endTime = LocalTime.now();
     private BrightnessGestureConsumer brightnessGestureConsumer;
-    private final AtomicReference<Disposable> reference = new AtomicReference<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,14 +38,9 @@ public class BrightnessActivity extends AppCompatActivity
         setContentView(R.layout.activity_brightness);
 
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
-        BackgroundManager backgroundManager = BackgroundManager.getInstance();
 
         int sliderColor = brightnessGestureConsumer.getSliderColor();
         int sliderBackgroundColor = brightnessGestureConsumer.getBackgroundColor();
-
-        Window window = getWindow();
-        window.setLayout(MATCH_PARENT, MATCH_PARENT);
-        window.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 
         ConstraintLayout layout = findViewById(R.id.constraint_layout);
         seekBarBackground = findViewById(R.id.seekbar_background);
@@ -82,7 +62,6 @@ public class BrightnessActivity extends AppCompatActivity
         layout.setOnClickListener(v -> finish());
         settingsIcon.setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
 
-        updateEndTime();
         handleIntent(getIntent());
     }
 
@@ -99,16 +78,7 @@ public class BrightnessActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        finish();
-    }
-
-    @Override
     public void finish() {
-        Disposable disposable = reference.get();
-        if (disposable != null && !disposable.isDisposed()) disposable.dispose();
-        brightnessGestureConsumer.saveBrightness(brightnessByte);
         super.finish();
 
         boolean animateSlide = brightnessGestureConsumer.shouldAnimateSlider();
@@ -122,7 +92,7 @@ public class BrightnessActivity extends AppCompatActivity
         float brightness = percentage / 100F;
 
         Window window = getWindow();
-        WindowManager.LayoutParams params = getWindowLayoutParams(window);
+        WindowManager.LayoutParams params = window.getAttributes();
         params.screenBrightness = brightness;
         window.setAttributes(params);
 
@@ -156,28 +126,6 @@ public class BrightnessActivity extends AppCompatActivity
         }
 
         waitToFinish();
-    }
-
-    private void waitToFinish() {
-        if (reference.get() != null) return;
-        reference.set(countdownDisposable());
-    }
-
-    @NonNull
-    private Disposable countdownDisposable() {
-        return Flowable.interval(brightnessGestureConsumer.getSliderDurationMillis(), MILLISECONDS).subscribe(i -> {
-            if (LocalTime.now().isBefore(endTime)) return;
-            reference.get().dispose();
-            finish();
-        }, throwable -> {});
-    }
-
-    private void updateEndTime() {
-        endTime = LocalTime.now().plus(brightnessGestureConsumer.getSliderDurationMillis(), ChronoUnit.MILLIS);
-    }
-
-    private WindowManager.LayoutParams getWindowLayoutParams(Window window) {
-        return window.getAttributes();
     }
 
     @Override

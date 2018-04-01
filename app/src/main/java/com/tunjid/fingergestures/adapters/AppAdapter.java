@@ -101,6 +101,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
         RotationGestureConsumer rotationGestureConsumer = RotationGestureConsumer.getInstance();
         PopUpGestureConsumer popUpGestureConsumer = PopUpGestureConsumer.getInstance();
         AudioGestureConsumer audioGestureConsumer = AudioGestureConsumer.getInstance();
+        BackgroundManager backgroundManager = BackgroundManager.getInstance();
 
         switch (viewType) {
             case PADDING:
@@ -125,10 +126,10 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_duration,
-                        brightnessGestureConsumer::setSliderDurationPercentage,
-                        brightnessGestureConsumer::getSliderDurationPercentage,
+                        backgroundManager::setSliderDurationPercentage,
+                        backgroundManager::getSliderDurationPercentage,
                         () -> true,
-                        brightnessGestureConsumer::getSliderDurationText);
+                        backgroundManager::getSliderDurationText);
             case DISCRETE_BRIGHTNESS:
                 return new DiscreteBrightnessViewHolder(getView(R.layout.viewholder_horizontal_list, parent), adapterListener);
             case SLIDER_COLOR:
