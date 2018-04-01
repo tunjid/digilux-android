@@ -18,12 +18,14 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_AUDIO;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_AUDIO;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.SHOW_POPUP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE;
@@ -77,6 +79,12 @@ public class ActionViewHolder extends BaseViewHolder<ActionAdapter.ActionClickLi
 
             case MINIMIZE_BRIGHTNESS:
                 return R.drawable.ic_brightness_low_24dp;
+
+            case INCREASE_AUDIO:
+                return R.drawable.ic_volume_up_24dp;
+
+            case REDUCE_AUDIO:
+                return R.drawable.ic_volume_down_24dp;
 
             case NOTIFICATION_UP:
                 return R.drawable.ic_boxed_arrow_up_24dp;

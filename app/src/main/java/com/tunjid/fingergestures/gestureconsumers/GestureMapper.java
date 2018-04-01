@@ -23,18 +23,20 @@ import static android.accessibilityservice.FingerprintGestureController.FINGERPR
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_LEFT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_RIGHT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_UP;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_HOME;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_AUDIO;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_AUDIO;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.SHOW_POPUP;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE;
@@ -44,7 +46,6 @@ import static io.reactivex.Flowable.timer;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-@SuppressLint("UseSparseArrays")
 public final class GestureMapper extends FingerprintGestureController.FingerprintGestureCallback {
 
     private static final int UNASSIGNED_GESTURE = -1;
@@ -93,7 +94,8 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 DockingGestureConsumer.getInstance(),
                 RotationGestureConsumer.getInstance(),
                 GlobalActionGestureConsumer.getInstance(),
-                PopUpGestureConsumer.getInstance()};
+                PopUpGestureConsumer.getInstance(),
+                AudioGestureConsumer.getInstance()};
 
         actionIds = getActionIds();
     }
@@ -306,6 +308,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return MAXIMIZE_BRIGHTNESS;
             case R.string.minimize_brightness:
                 return MINIMIZE_BRIGHTNESS;
+            case R.string.increase_audio:
+                return INCREASE_AUDIO;
+            case R.string.reduce_audio:
+                return REDUCE_AUDIO;
             case R.string.notification_up:
                 return NOTIFICATION_UP;
             case R.string.notification_down:
@@ -347,6 +353,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return R.string.maximize_brightness;
             case MINIMIZE_BRIGHTNESS:
                 return R.string.minimize_brightness;
+            case INCREASE_AUDIO:
+                return R.string.increase_audio;
+            case REDUCE_AUDIO:
+                return R.string.reduce_audio;
             case NOTIFICATION_UP:
                 return R.string.notification_up;
             case NOTIFICATION_DOWN:

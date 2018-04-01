@@ -31,7 +31,7 @@ import io.reactivex.disposables.Disposable;
 import static android.graphics.PorterDuff.Mode.SRC_IN;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.BRIGHTNESS_FRACTION;
-import static com.tunjid.fingergestures.gestureconsumers.GestureUtils.normalizePercetageToByte;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToByte;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class BrightnessActivity extends AppCompatActivity
@@ -126,7 +126,7 @@ public class BrightnessActivity extends AppCompatActivity
         params.screenBrightness = brightness;
         window.setAttributes(params);
 
-        brightnessByte = normalizePercetageToByte(percentage);
+        brightnessByte = normalizePercentageToByte(percentage);
         brightnessGestureConsumer.saveBrightness(brightnessByte);
 
         if (seekBarText.getVisibility() == View.VISIBLE) {
@@ -143,7 +143,7 @@ public class BrightnessActivity extends AppCompatActivity
         float brightness = intent.getFloatExtra(BRIGHTNESS_FRACTION, 0);
         int percentage = (int) (brightness * 100);
 
-        brightnessByte = normalizePercetageToByte(percentage);
+        brightnessByte = normalizePercentageToByte(percentage);
         seekBar.setProgress(percentage, true);
         seekBar.setOnSeekBarChangeListener(this);
 
