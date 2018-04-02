@@ -2,10 +2,16 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.support.annotation.IntDef;
 
+import com.tunjid.fingergestures.App;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.function.Function;
 
 public interface GestureConsumer {
+
+    int ZERO_PERCENT = 0;
+    int HUNDRED_PERCENT = 100;
 
     int INCREASE_BRIGHTNESS = 0;
     int REDUCE_BRIGHTNESS = 1;
@@ -26,16 +32,27 @@ public interface GestureConsumer {
     int GLOBAL_SPLIT_SCREEN = 16;
     int GLOBAL_POWER_DIALOG = 17;
     int SHOW_POPUP = 18;
+    int INCREASE_AUDIO = 19;
+    int REDUCE_AUDIO = 20;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({INCREASE_BRIGHTNESS, REDUCE_BRIGHTNESS, MAXIMIZE_BRIGHTNESS, MINIMIZE_BRIGHTNESS,
             NOTIFICATION_DOWN, NOTIFICATION_UP, NOTIFICATION_TOGGLE, DO_NOTHING,
             TOGGLE_FLASHLIGHT, TOGGLE_DOCK, TOGGLE_AUTO_ROTATE,
             GLOBAL_HOME, GLOBAL_BACK, GLOBAL_RECENTS, GLOBAL_SPLIT_SCREEN, GLOBAL_POWER_DIALOG,
-            SHOW_POPUP})
+            SHOW_POPUP, REDUCE_AUDIO, INCREASE_AUDIO})
     @interface GestureAction {}
 
     void onGestureActionTriggered(@GestureAction int gestureAction);
 
     boolean accepts(@GestureAction int gesture);
+
+    static int normalizePercentageToByte(int percentage) {
+        return (int) (BrightnessGestureConsumer.MAX_BRIGHTNESS * (percentage / 100F));
+    }
+
+    static float normalizePercentageToFraction(int percentage) {
+        return percentage / 100F;
+    }
+
 }

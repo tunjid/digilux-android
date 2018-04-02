@@ -6,6 +6,8 @@
         <item>@string/reduce_brightness</item>
         <item>@string/maximize_brightness</item>
         <item>@string/minimize_brightness</item>
+        <item>@string/increase_audio</item>
+        <item>@string/reduce_audio</item>
         <item>@string/notification_up</item>
         <item>@string/notification_down</item>
         <item>@string/toggle_notifications</item>
@@ -24,12 +26,12 @@
         <item>@string/remove_ads_and_go_premium</item>
     </array>
     <array name="upsell_text">
-        <item>I uhh... need about tree fiddy 🐲</item>
-        <item>"Digilux Premium is Finger Flickin\' Good" - KFC</item>
-        <item>10 out of 10 parents agree, Digilux Premium is pretty okay.</item>
-        <item>I\'m just an ad that never grew up.</item>
-        <item>(•ㅅ•) づ [Go Premium!]</item>
-        <item>The game.</item>
-        <item>Wenger out.</item>
+        <item>@string/joke_loch</item>
+        <item>@string/joke_ad</item>
+        <item>@string/joke_kfc</item>
+        <item>@string/joke_bunny</item>
+        <item>@string/joke_parents</item>
+        <item>@string/joke_game</item>
+        <item>@string/joke_wenger</item>
     </array>
 </resources>

@@ -15,15 +15,18 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
 import com.tunjid.fingergestures.viewholders.AppViewHolder;
+import com.tunjid.fingergestures.viewholders.AudioStreamViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
+import com.tunjid.fingergestures.viewholders.DiscreteBrightnessViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
 import com.tunjid.fingergestures.viewholders.PopupViewHolder;
-import com.tunjid.fingergestures.viewholders.ReviewViewHolder;
+import com.tunjid.fingergestures.viewholders.LinkViewHolder;
 import com.tunjid.fingergestures.viewholders.RotationViewHolder;
 import com.tunjid.fingergestures.viewholders.ScreenDimmerViewHolder;
 import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
@@ -33,8 +36,6 @@ import com.tunjid.fingergestures.viewholders.WallpaperViewHolder;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
@@ -42,6 +43,8 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GES
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.EXCLUDED_APPS;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
+import static com.tunjid.fingergestures.viewholders.LinkViewHolder.REVIEW_LINK_ITEM;
+import static com.tunjid.fingergestures.viewholders.LinkViewHolder.SUPPORT_LINK_ITEM;
 
 
 public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
@@ -71,6 +74,11 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
     public static final int ENABLE_ACCESSIBILITY_BUTTON = 21;
     public static final int ANIMATES_SLIDER = 22;
     public static final int ANIMATES_POPUP = 23;
+    public static final int DISCRETE_BRIGHTNESS = 24;
+    public static final int AUDIO_DELTA = 25;
+    public static final int AUDIO_STREAM_TYPE = 26;
+    public static final int AUDIO_SLIDER_SHOW = 27;
+    public static final int SUPPORT = 28;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
@@ -78,7 +86,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
             AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
             EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
-            ANIMATES_SLIDER, ANIMATES_POPUP})
+            ANIMATES_SLIDER, ANIMATES_POPUP, DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE,
+            AUDIO_SLIDER_SHOW, SUPPORT})
     public @interface AdapterIndex {}
 
     private final int[] items;
@@ -94,7 +103,9 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
         Context context = parent.getContext();
         BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         RotationGestureConsumer rotationGestureConsumer = RotationGestureConsumer.getInstance();
-        PopUpGestureConsumer popUpManager = PopUpGestureConsumer.getInstance();
+        PopUpGestureConsumer popUpGestureConsumer = PopUpGestureConsumer.getInstance();
+        AudioGestureConsumer audioGestureConsumer = AudioGestureConsumer.getInstance();
+        BackgroundManager backgroundManager = BackgroundManager.getInstance();
 
         switch (viewType) {
             case PADDING:
@@ -105,8 +116,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         R.string.adjust_slider_delta,
                         brightnessGestureConsumer::setIncrementPercentage,
                         brightnessGestureConsumer::getIncrementPercentage,
-                        () -> true,
-                        (increment) -> context.getString(R.string.delta_percent, increment));
+                        brightnessGestureConsumer::canAdjustDelta,
+                        brightnessGestureConsumer::getAdjustDeltaText);
             case SLIDER_POSITION:
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
@@ -119,10 +130,12 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                 return new SliderAdjusterViewHolder(
                         getView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_duration,
-                        brightnessGestureConsumer::setSliderDurationPercentage,
-                        brightnessGestureConsumer::getSliderDurationPercentage,
+                        backgroundManager::setSliderDurationPercentage,
+                        backgroundManager::getSliderDurationPercentage,
                         () -> true,
-                        brightnessGestureConsumer::getSliderDurationText);
+                        backgroundManager::getSliderDurationText);
+            case DISCRETE_BRIGHTNESS:
+                return new DiscreteBrightnessViewHolder(getView(R.layout.viewholder_horizontal_list, parent), adapterListener);
             case SLIDER_COLOR:
                 return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent), adapterListener);
             case SCREEN_DIMMER:
@@ -133,7 +146,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                         brightnessGestureConsumer::restoresAdaptiveBrightnessOnDisplaySleep,
                         (flag) -> {
                             brightnessGestureConsumer.shouldRestoreAdaptiveBrightnessOnDisplaySleep(flag);
-                            notifyItemChanged(Arrays.stream(items).boxed().collect(Collectors.toList()).indexOf(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS));
+                            adapterListener.notifyItemChanged(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS);
                         });
             case SHOW_SLIDER:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
@@ -157,8 +170,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             case ENABLE_ACCESSIBILITY_BUTTON:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.popup_enable,
-                        popUpManager::hasAccessibilityButton,
-                        popUpManager::enableAccessibilityButton);
+                        popUpGestureConsumer::hasAccessibilityButton,
+                        popUpGestureConsumer::enableAccessibilityButton);
             case DOUBLE_SWIPE_SETTINGS:
                 GestureMapper mapper = GestureMapper.getInstance();
                 return new SliderAdjusterViewHolder(
@@ -171,13 +184,29 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
             case ANIMATES_POPUP:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.popup_animate_in,
-                        popUpManager::shouldAnimatePopup,
-                        popUpManager::setAnimatesPopup);
+                        popUpGestureConsumer::shouldAnimatePopup,
+                        popUpGestureConsumer::setAnimatesPopup);
             case ANIMATES_SLIDER:
                 return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
                         R.string.slider_animate,
                         brightnessGestureConsumer::shouldAnimateSlider,
                         brightnessGestureConsumer::setAnimatesSlider);
+            case AUDIO_DELTA:
+                return new SliderAdjusterViewHolder(
+                        getView(R.layout.viewholder_slider_delta, parent),
+                        R.string.audio_stream_delta,
+                        0,
+                        audioGestureConsumer::setVolumeDelta,
+                        audioGestureConsumer::getVolumeDelta,
+                        audioGestureConsumer::canSetVolumeDelta,
+                        audioGestureConsumer::getChangeText);
+            case AUDIO_SLIDER_SHOW:
+                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                        R.string.audio_stream_slider_show,
+                        audioGestureConsumer::shouldShowSliders,
+                        audioGestureConsumer::setShowsSliders);
+            case AUDIO_STREAM_TYPE:
+                return new AudioStreamViewHolder(getView(R.layout.viewholder_audio_stream_type, parent), adapterListener);
             case MAP_UP_ICON:
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE, adapterListener);
             case MAP_DOWN_ICON:
@@ -188,8 +217,10 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
                 return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE, adapterListener);
             case AD_FREE:
                 return new AdFreeViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
+            case SUPPORT:
+                return new LinkViewHolder(getView(R.layout.viewholder_simple_text, parent), SUPPORT_LINK_ITEM, adapterListener);
             case REVIEW:
-                return new ReviewViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
+                return new LinkViewHolder(getView(R.layout.viewholder_simple_text, parent), REVIEW_LINK_ITEM, adapterListener);
             case WALLPAPER_PICKER:
                 return new WallpaperViewHolder(getView(R.layout.viewholder_wallpaper_pick, parent), adapterListener);
             case WALLPAPER_TRIGGER:
@@ -227,6 +258,8 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
         void requestPermission(@MainActivity.PermissionRequest int permission);
 
         void showSnackbar(@StringRes int message);
+
+        void notifyItemChanged(@AdapterIndex int index);
 
         void showBottomSheetFragment(MainActivityFragment fragment);
     }

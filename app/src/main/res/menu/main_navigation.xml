@@ -10,8 +10,14 @@
     <item
         android:id="@+id/action_slider"
         android:enabled="true"
-        android:icon="@drawable/ic_slider_grey_24dp"
-        android:title="@string/adjustments"
+        android:icon="@drawable/ic_brightness_7_24dp"
+        android:title="@string/brightness"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_audio"
+        android:enabled="true"
+        android:icon="@drawable/ic_volume_loud_24dp"
+        android:title="@string/audio"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_wallpaper"

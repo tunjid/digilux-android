@@ -122,7 +122,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         AppFragment fragment = getCurrentAppFragment();
         if (fragment == null) return;
 
-        fragment.refresh(ROTATION_APPS.equals(persistedSet) ? ROTATION_LOCK : EXCLUDED_ROTATION_LOCK);
+        fragment.notifyItemChanged(ROTATION_APPS.equals(persistedSet) ? ROTATION_LOCK : EXCLUDED_ROTATION_LOCK);
     }
 
     @Override

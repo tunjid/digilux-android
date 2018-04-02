@@ -41,7 +41,6 @@ public class SliderAdjusterViewHolder extends AppViewHolder
         title.setText(titleRes);
 
         seekBar = itemView.findViewById(R.id.seekbar);
-        seekBar.setProgress(valueSupplier.get());
         seekBar.setOnSeekBarChangeListener(this);
 
         if (infoRes != 0) {
@@ -65,13 +64,17 @@ public class SliderAdjusterViewHolder extends AppViewHolder
     public void bind() {
         super.bind();
         boolean enabled = enabledSupplier.get();
-        value.setEnabled(enabled);
+
         seekBar.setEnabled(enabled);
+        seekBar.setProgress(valueSupplier.get());
+
+        value.setEnabled(enabled);
         value.setText(function.apply(valueSupplier.get()));
     }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int percentage, boolean fromUser) {
+        if (!fromUser) return;
         consumer.accept(percentage);
         value.setText(function.apply(percentage));
     }
