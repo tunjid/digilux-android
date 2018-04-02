@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Flowable;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.processors.PublishProcessor;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -120,12 +120,12 @@ public class MainActivity extends FingerGestureActivity {
     private TextView permissionText;
     private BottomSheetBehavior bottomSheetBehavior;
 
-    private Disposable disposable;
+    private PublishProcessor<String> publishProcessor;
+    private CompositeDisposable disposables;
     private String[] quips;
 
     private final TextLink[] links;
     private final AtomicInteger quipCounter = new AtomicInteger(-1);
-    private final PublishProcessor<String> publishProcessor = PublishProcessor.create();
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON,
@@ -164,6 +164,8 @@ public class MainActivity extends FingerGestureActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        disposables = new CompositeDisposable();
 
         Window window = getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -285,7 +287,7 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     protected void onDestroy() {
-        if (disposable != null) disposable.dispose();
+        if (disposables != null) disposables.clear();
         switcher = null;
         constraintLayout = null;
         permissionText = null;
@@ -446,12 +448,16 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void shill() {
-        Flowable.interval(20, TimeUnit.SECONDS)
+        disposables.clear();
+
+        publishProcessor = PublishProcessor.create();
+
+        disposables.add(Flowable.interval(10, TimeUnit.SECONDS)
                 .map(value -> getNextQuip())
                 .observeOn(mainThread())
-                .subscribe(publishProcessor::onNext, Throwable::printStackTrace);
+                .subscribe(publishProcessor::onNext, Throwable::printStackTrace));
 
-        disposable = publishProcessor.subscribe(switcher::setText, Throwable::printStackTrace);
+        disposables.add(publishProcessor.subscribe(switcher::setText, Throwable::printStackTrace));
     }
 
     private void hideAds() {
@@ -492,7 +498,9 @@ public class MainActivity extends FingerGestureActivity {
         quips = getResources().getStringArray(R.array.upsell_text);
         switcher.setFactory(() -> {
             View view = LayoutInflater.from(this).inflate(R.layout.text_switch, switcher, false);
-            view.setOnClickListener(clicked -> publishProcessor.onNext(getNextQuip()));
+            view.setOnClickListener(clicked -> {
+                if (publishProcessor != null) publishProcessor.onNext(getNextQuip());
+            });
             return view;
         });
 
