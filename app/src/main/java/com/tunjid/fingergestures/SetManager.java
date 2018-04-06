@@ -9,20 +9,19 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.tunjid.fingergestures.App.requireApp;
+
 public class SetManager<T> {
 
-    private final App app;
     private final Comparator<T> sorter;
     private final Function<String, T> stringMapper;
     private final Function<T, String> objectMapper;
     private final Function<String, Boolean> addFilter;
-//    private final Map<String, List<String>> listMap;
 
-    public SetManager(Comparator<T> sorter, Function<String, Boolean> addFilter,
-                      Function<String, T> stringMapper, Function<T, String> objectMapper) {
-
-        app = App.getInstance();
-
+    public SetManager(Comparator<T> sorter,
+                      Function<String, Boolean> addFilter,
+                      Function<String, T> stringMapper,
+                      Function<T, String> objectMapper) {
         this.sorter = sorter;
         this.addFilter = addFilter;
         this.stringMapper = stringMapper;
@@ -55,10 +54,11 @@ public class SetManager<T> {
     }
 
     public Set<String> getSet(String preferencesName) {
-        return new HashSet<>(app.getPreferences().getStringSet(preferencesName, new HashSet<>()));
+        Set<String> defaultValue = new HashSet<>();
+        return requireApp(app -> new HashSet<>(app.getPreferences().getStringSet(preferencesName, defaultValue)), defaultValue);
     }
 
     private void saveSet(Set<String> set, String preferencesName) {
-        app.getPreferences().edit().putStringSet(preferencesName, set).apply();
+        requireApp(app -> app.getPreferences().edit().putStringSet(preferencesName, set).apply());
     }
 }
