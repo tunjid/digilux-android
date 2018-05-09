@@ -23,6 +23,7 @@ import static android.accessibilityservice.FingerprintGestureController.FINGERPR
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_LEFT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_RIGHT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_UP;
+import static com.tunjid.fingergestures.App.requireApp;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_HOME;
@@ -66,7 +67,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     @SuppressLint("StaticFieldLeak")
     private static GestureMapper instance;
 
-    private final App app;
 
     private final int[] actionIds;
     private final GestureConsumer[] consumers;
@@ -83,7 +83,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public @interface GestureDirection {}
 
     private GestureMapper() {
-        app = App.getInstance();
         directionReference = new AtomicReference<>();
 
         consumers = new GestureConsumer[]{
@@ -106,14 +105,14 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public void mapGestureToAction(@GestureDirection String direction, @GestureConsumer.GestureAction int action) {
-        app.getPreferences().edit().putInt(direction, action).apply();
+        requireApp(app -> app.getPreferences().edit().putInt(direction, action).apply());
     }
 
     public String getMappedAction(@GestureDirection String gestureDirection) {
         @GestureConsumer.GestureAction
         int action = directionToAction(gestureDirection);
         int stringResource = resourceForAction(action);
-        return app.getString(stringResource);
+        return requireApp(app -> app.getString(stringResource), "");
     }
 
     @GestureDirection
@@ -126,17 +125,17 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public int getDoubleSwipeDelay() {
-        return app.getPreferences().getInt(DOUBLE_SWIPE_DELAY, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE);
+        return requireApp(app -> app.getPreferences().getInt(DOUBLE_SWIPE_DELAY, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE), DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE);
     }
 
     public void setDoubleSwipeDelay(int percentage) {
-        app.getPreferences().edit().putInt(DOUBLE_SWIPE_DELAY, percentage).apply();
+        requireApp(app -> app.getPreferences().edit().putInt(DOUBLE_SWIPE_DELAY, percentage).apply());
     }
 
     public String getSwipeDelayText(int percentage) {
-        return app.getString(PurchasesManager.getInstance().isNotPremium()
+        return requireApp(app -> app.getString(PurchasesManager.getInstance().isNotPremium()
                 ? R.string.go_premium_text
-                : R.string.double_swipe_delay, delayPercentageToMillis(percentage));
+                : R.string.double_swipe_delay, delayPercentageToMillis(percentage)), "");
     }
 
     @Override
@@ -247,7 +246,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private int directionToAction(@GestureDirection String direction) {
         if (isDouble(direction) && PurchasesManager.getInstance().isNotPremium()) return DO_NOTHING;
 
-        int gesture = app.getPreferences().getInt(direction, UNASSIGNED_GESTURE);
+        int gesture = requireApp(app -> app.getPreferences().getInt(direction, UNASSIGNED_GESTURE), UNASSIGNED_GESTURE);
         if (gesture != UNASSIGNED_GESTURE) return gesture;
 
         // Defaults
@@ -387,35 +386,37 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public String getDirectionName(@GestureDirection String direction) {
         switch (direction) {
             case UP_GESTURE:
-                return app.getString(R.string.swipe_up);
+                return requireApp(app -> app.getString(R.string.swipe_up), "");
             case DOWN_GESTURE:
-                return app.getString(R.string.swipe_down);
+                return requireApp(app -> app.getString(R.string.swipe_down), "");
             case LEFT_GESTURE:
-                return app.getString(R.string.swipe_left);
+                return requireApp(app -> app.getString(R.string.swipe_left), "");
             case RIGHT_GESTURE:
-                return app.getString(R.string.swipe_right);
+                return requireApp(app -> app.getString(R.string.swipe_right), "");
             case DOUBLE_UP_GESTURE:
-                return app.getString(R.string.double_swipe_up);
+                return requireApp(app -> app.getString(R.string.double_swipe_up), "");
             case DOUBLE_DOWN_GESTURE:
-                return app.getString(R.string.double_swipe_down);
+                return requireApp(app -> app.getString(R.string.double_swipe_down), "");
             case DOUBLE_LEFT_GESTURE:
-                return app.getString(R.string.double_swipe_left);
+                return requireApp(app -> app.getString(R.string.double_swipe_left), "");
             case DOUBLE_RIGHT_GESTURE:
-                return app.getString(R.string.double_swipe_right);
+                return requireApp(app -> app.getString(R.string.double_swipe_right), "");
             default:
                 return "";
         }
     }
 
     private int[] getActionIds() {
-        TypedArray typedArray = app.getResources().obtainTypedArray(R.array.action_resources);
-        int length = typedArray.length();
+        return requireApp(app -> {
+            TypedArray array = app.getResources().obtainTypedArray(R.array.action_resources);
+            int length = array.length();
 
-        int[] ints = new int[length];
-        for (int i = 0; i < length; i++) ints[i] = typedArray.getResourceId(i, R.string.do_nothing);
+            int[] ints = new int[length];
+            for (int i = 0; i < length; i++) ints[i] = array.getResourceId(i, R.string.do_nothing);
 
-        typedArray.recycle();
+            array.recycle();
 
-        return ints;
+            return ints;
+        }, new int[0]);
     }
 }
