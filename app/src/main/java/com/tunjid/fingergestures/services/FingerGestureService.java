@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityButtonController;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.FingerprintGestureController;
+import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,11 +12,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -58,14 +62,12 @@ public class FingerGestureService extends AccessibilityService {
     public static final String ACTION_SHOW_SNACK_BAR = "action show snack bar";
     public static final String EXTRA_SHOW_SNACK_BAR = " extrashow snack bar";
     public static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
-    private static final String RESOURCE_OPEN_SETTINGS = "accessibility_quick_settings_settings";
     private static final String RESOURCE_EXPAND_VOLUME_CONTROLS = "accessibility_volume_expand";
     private static final String RESOURCE_EXPAND_QUICK_SETTINGS = "accessibility_quick_settings_expand";
-    private static final String RESOURCE_COLLAPSE_QUICK_SETTINGS = "accessibility_quick_settings_collapse";
+    private static final String RESOURCE_EDIT_QUICK_SETTINGS = "accessibility_quick_settings_edit";
     private static final String DEFAULT_EXPAND_VOLUME = "Expand";
-    private static final String DEFAULT_OPEN_SETTINGS = "Open settings";
     private static final String DEFAULT_EXPAND_QUICK_SETTINGS = "Open quick settings";
-    private static final String DEFAULT_COLLAPSE_QUICK_SETTINGS = "Close quick settings";
+    private static final String DEFAULT_EDIT_QUICK_SETTINGS = "Edit order of settings";
 
     private static final String STRING_RESOURCE = "string";
     private static final int INVALID_RESOURCE = 0;
@@ -172,19 +174,16 @@ public class FingerGestureService extends AccessibilityService {
     private void expandQuickSettings() {
         AccessibilityNodeInfo info = findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_EXPAND_QUICK_SETTINGS, DEFAULT_EXPAND_QUICK_SETTINGS));
         if (info != null) info.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+        else swipeDown();
     }
 
     private boolean notificationsShowing() {
         AccessibilityNodeInfo info = FingerGestureService.this.getRootInActiveWindow();
-        return info != null && ANDROID_SYSTEM_UI_PACKAGE.equals(info.getPackageName()) && isSettingsCogVisible();
-    }
-
-    private boolean isSettingsCogVisible() {
-        return findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_OPEN_SETTINGS, DEFAULT_OPEN_SETTINGS)) != null;
+        return info != null && info.getPackageName() != null && ANDROID_SYSTEM_UI_PACKAGE.equals(info.getPackageName().toString());
     }
 
     private boolean isQuickSettingsShowing() {
-        return findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_COLLAPSE_QUICK_SETTINGS, DEFAULT_COLLAPSE_QUICK_SETTINGS)) != null;
+        return findNode(getRootInActiveWindow(), getSystemUiString(RESOURCE_EDIT_QUICK_SETTINGS, DEFAULT_EDIT_QUICK_SETTINGS)) != null;
     }
 
     private void expandAudioControls() {
@@ -207,6 +206,19 @@ public class FingerGestureService extends AccessibilityService {
         Intent intent = new Intent(FingerGestureService.this, PopupActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+    }
+
+    private void swipeDown() {
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+
+        GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
+        Path path = new Path();
+
+        path.moveTo(0, 0);
+        path.lineTo(displayMetrics.widthPixels, displayMetrics.heightPixels);
+        gestureBuilder.addStroke(new GestureDescription.StrokeDescription(path, 0, 20));
+
+        dispatchGesture(gestureBuilder.build(), new GestureResultCallback() {}, null);
     }
 
     private void adjustDimmer() {
@@ -292,6 +304,7 @@ public class FingerGestureService extends AccessibilityService {
     @Nullable
     private AccessibilityNodeInfo findNode(AccessibilityNodeInfo info, String name) {
         if (info == null) return null;
+        if (info.getContentDescription() != null) Log.i("TEST", info.getContentDescription().toString());
         int size = info.getChildCount();
         if (size > 0) {
             for (int i = 0; i < size; i++) {

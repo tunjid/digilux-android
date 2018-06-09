@@ -2,6 +2,7 @@
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:accessibilityFlags="flagDefault|flagRequestFingerprintGestures|flagRetrieveInteractiveWindows"
+    android:canPerformGestures="true"
     android:canRequestFingerprintGestures="true"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_service_description"
