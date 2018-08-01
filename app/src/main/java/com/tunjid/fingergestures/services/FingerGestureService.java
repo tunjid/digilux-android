@@ -19,7 +19,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -60,7 +59,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class FingerGestureService extends AccessibilityService {
 
     public static final String ACTION_SHOW_SNACK_BAR = "action show snack bar";
-    public static final String EXTRA_SHOW_SNACK_BAR = " extrashow snack bar";
+    public static final String EXTRA_SHOW_SNACK_BAR = " extra show snack bar";
     public static final String ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui";
     private static final String RESOURCE_EXPAND_VOLUME_CONTROLS = "accessibility_volume_expand";
     private static final String RESOURCE_EXPAND_QUICK_SETTINGS = "accessibility_quick_settings_expand";
@@ -304,7 +303,6 @@ public class FingerGestureService extends AccessibilityService {
     @Nullable
     private AccessibilityNodeInfo findNode(AccessibilityNodeInfo info, String name) {
         if (info == null) return null;
-        if (info.getContentDescription() != null) Log.i("TEST", info.getContentDescription().toString());
         int size = info.getChildCount();
         if (size > 0) {
             for (int i = 0; i < size; i++) {
