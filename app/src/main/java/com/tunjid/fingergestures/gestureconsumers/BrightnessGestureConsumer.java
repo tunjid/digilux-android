@@ -28,7 +28,6 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
-import static com.tunjid.fingergestures.App.requireApp;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToByte;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToFraction;
 import static java.util.Comparator.naturalOrder;
@@ -305,7 +304,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public String getAdjustDeltaText(int percentage) {
-        return requireApp(app -> PurchasesManager.getInstance().isPremium() && !noDiscreteBrightness()
+        return App.transformApp(app -> PurchasesManager.getInstance().isPremium() && !noDiscreteBrightness()
                 ? app.getString(R.string.delta_percent_premium, percentage)
                 : app.getString(R.string.delta_percent, percentage), EMPTY_STRING);
     }

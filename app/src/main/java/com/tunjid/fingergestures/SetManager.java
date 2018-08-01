@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.tunjid.fingergestures.App.requireApp;
+import static com.tunjid.fingergestures.App.withApp;
 
 public class SetManager<T> {
 
@@ -55,10 +55,10 @@ public class SetManager<T> {
 
     public Set<String> getSet(String preferencesName) {
         Set<String> defaultValue = new HashSet<>();
-        return requireApp(app -> new HashSet<>(app.getPreferences().getStringSet(preferencesName, defaultValue)), defaultValue);
+        return App.transformApp(app -> new HashSet<>(app.getPreferences().getStringSet(preferencesName, defaultValue)), defaultValue);
     }
 
     private void saveSet(Set<String> set, String preferencesName) {
-        requireApp(app -> app.getPreferences().edit().putStringSet(preferencesName, set).apply());
+        withApp(app -> app.getPreferences().edit().putStringSet(preferencesName, set).apply());
     }
 }

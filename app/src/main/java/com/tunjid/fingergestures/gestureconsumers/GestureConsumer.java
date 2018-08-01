@@ -2,15 +2,13 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.support.annotation.IntDef;
 
-import com.tunjid.fingergestures.App;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.function.Function;
 
 public interface GestureConsumer {
 
     int ZERO_PERCENT = 0;
+    int FIFTY_PERCENT = 50;
     int HUNDRED_PERCENT = 100;
 
     int INCREASE_BRIGHTNESS = 0;
