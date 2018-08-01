@@ -50,7 +50,7 @@ import static android.app.AlarmManager.RTC_WAKEUP;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.text.TextUtils.isEmpty;
 import static com.tunjid.fingergestures.App.EMPTY;
-import static com.tunjid.fingergestures.App.requireApp;
+import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.App.transformApp;
 import static io.reactivex.Single.error;
 import static io.reactivex.Single.fromCallable;
@@ -107,23 +107,23 @@ public class BackgroundManager {
 
     private BackgroundManager() {
         wallpaperTargets = new String[]{
-                requireApp(app -> app.getString(R.string.day_wallpaper), EMPTY),
-                requireApp(app -> app.getString(R.string.night_wallpaper), EMPTY)};
+                App.transformApp(app -> app.getString(R.string.day_wallpaper), EMPTY),
+                App.transformApp(app -> app.getString(R.string.night_wallpaper), EMPTY)};
     }
 
     @ColorInt
     public int getSliderColor() {
-        return requireApp(app -> app.getPreferences().getInt(SLIDER_COLOR, ContextCompat.getColor(app, R.color.colorAccent)), Color.WHITE);
+        return App.transformApp(app -> app.getPreferences().getInt(SLIDER_COLOR, ContextCompat.getColor(app, R.color.colorAccent)), Color.WHITE);
     }
 
     @ColorInt
     public int getBackgroundColor() {
-        return requireApp(app -> app.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(app, R.color.colorAccent)), Color.LTGRAY);
+        return App.transformApp(app -> app.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(app, R.color.colorAccent)), Color.LTGRAY);
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
     public int getSliderDurationPercentage() {
-        return requireApp(app -> app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT), GestureConsumer.FIFTY_PERCENT);
+        return App.transformApp(app -> app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT), GestureConsumer.FIFTY_PERCENT);
     }
 
     public int getSliderDurationMillis() {
@@ -131,21 +131,21 @@ public class BackgroundManager {
     }
 
     public void setSliderColor(@ColorInt int color) {
-        requireApp(app -> app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply());
+        withApp(app -> app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply());
     }
 
     public void setBackgroundColor(@ColorInt int color) {
-        requireApp(app -> app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply());
+        withApp(app -> app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply());
     }
 
     public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
-        requireApp(app -> app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply());
+        withApp(app -> app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply());
     }
 
     public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
         int millis = durationPercentageToMillis(duration);
         float seconds = millis / 1000F;
-        return requireApp(app -> app.getString(R.string.duration_value, seconds), EMPTY);
+        return App.transformApp(app -> app.getString(R.string.duration_value, seconds), EMPTY);
     }
 
     @Nullable
@@ -288,7 +288,7 @@ public class BackgroundManager {
     }
 
     private void reInitializeWallpaperChange(@WallpaperSelection int selection) {
-        requireApp(app -> {
+        withApp(app -> {
             SharedPreferences preferences = app.getPreferences();
             boolean isDay = selection == DAY_WALLPAPER_PICK_CODE;
             boolean hasCalendar = preferences.getBoolean(isDay ? DAY_WALLPAPER_SET : NIGHT_WALLPAPER_SET, false);
@@ -308,7 +308,7 @@ public class BackgroundManager {
 
         boolean isDayWallpaper = selection == DAY_WALLPAPER_PICK_CODE;
 
-        requireApp(app -> app.getPreferences().edit()
+        withApp(app -> app.getPreferences().edit()
                 .putInt(isDayWallpaper ? DAY_WALLPAPER_HOUR : NIGHT_WALLPAPER_HOUR, hour)
                 .putInt(isDayWallpaper ? DAY_WALLPAPER_MINUTE : NIGHT_WALLPAPER_MINUTE, minute)
                 .putBoolean(isDayWallpaper ? DAY_WALLPAPER_SET : NIGHT_WALLPAPER_SET, adding)
@@ -346,7 +346,7 @@ public class BackgroundManager {
     }
 
     public boolean willChangeWallpaper(@WallpaperSelection int selection) {
-        return requireApp(app -> {
+        return App.transformApp(app -> {
             Intent intent = new Intent(app, WallpaperBroadcastReceiver.class);
             intent.setAction(ACTION_CHANGE_WALLPAPER);
             intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection);
@@ -382,7 +382,7 @@ public class BackgroundManager {
 
         boolean handled = componentName.getPackageName().equals("com.google.android.apps.photos");
         if (handled)
-            requireApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(intent));
+            withApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(intent));
 
         return handled;
     }
