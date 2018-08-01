@@ -164,8 +164,9 @@ public class AppFragment extends MainActivityFragment
     public void cropImage(Uri source, @BackgroundManager.WallpaperSelection int selection) {
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
         int[] aspectRatio = backgroundManager.getScreenAspectRatio();
+        if (aspectRatio == null) return;
 
-        File file = backgroundManager.getWallpaperFile(selection);
+        File file = backgroundManager.getWallpaperFile(selection, requireContext());
         Uri destination = Uri.fromFile(file);
 
         Activity activity = getActivity();
