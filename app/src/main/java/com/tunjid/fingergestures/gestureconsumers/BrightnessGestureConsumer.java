@@ -3,6 +3,7 @@ package com.tunjid.fingergestures.gestureconsumers;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -28,6 +29,8 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
+import static com.tunjid.fingergestures.App.transformApp;
+import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToByte;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToFraction;
 import static java.util.Comparator.naturalOrder;
@@ -58,7 +61,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final String DISCRETE_BRIGHTNESS_SET = "discrete brightness values";
     private static final String EMPTY_STRING = "";
 
-    private final App app;
     private SetManager<Integer> discreteBrightnessManager;
 
     @SuppressLint("StaticFieldLeak")
@@ -70,14 +72,16 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     private BrightnessGestureConsumer() {
-        app = App.getInstance();
-        discreteBrightnessManager = new SetManager<>(Integer::compareTo, s -> true, Integer::valueOf, String::valueOf);
+        discreteBrightnessManager = new SetManager<>(Integer::compareTo, ignored -> true, Integer::valueOf, String::valueOf);
     }
 
     @Override
     public void onGestureActionTriggered(@GestureAction int gestureAction) {
         int byteValue;
         int originalValue;
+
+        App app = App.getInstance();
+        if (app == null) return;
 
         try {byteValue = Settings.System.getInt(app.getContentResolver(), SCREEN_BRIGHTNESS);}
         catch (Exception e) {byteValue = (int) MAX_BRIGHTNESS;}
@@ -127,7 +131,9 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     public void saveBrightness(int byteValue) {
         if (!App.canWriteToSettings()) return;
 
-        ContentResolver contentResolver = app.getContentResolver();
+        ContentResolver contentResolver = transformApp(ContextWrapper::getContentResolver);
+        if (contentResolver == null) return;
+
         Settings.System.putInt(contentResolver, SCREEN_BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_MANUAL);
         Settings.System.putInt(contentResolver, SCREEN_BRIGHTNESS, byteValue);
     }
@@ -146,7 +152,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
             return;
         }
 
-        SensorManager sensorManager = (SensorManager) app.getSystemService(Context.SENSOR_SERVICE);
+        SensorManager sensorManager = transformApp(app -> (SensorManager) app.getSystemService(Context.SENSOR_SERVICE));
         if (sensorManager == null) return;
 
         final Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -208,59 +214,59 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public void setIncrementPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int incrementValue) {
-        app.getPreferences().edit().putInt(INCREMENT_VALUE, incrementValue).apply();
+        withApp(app -> app.getPreferences().edit().putInt(INCREMENT_VALUE, incrementValue).apply());
     }
 
     public void setPositionPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int positionPercentage) {
-        app.getPreferences().edit().putInt(SLIDER_POSITION, positionPercentage).apply();
+        withApp(app -> app.getPreferences().edit().putInt(SLIDER_POSITION, positionPercentage).apply());
     }
 
     private void setDimmerPercent(@FloatRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) float percentage) {
-        app.getPreferences().edit().putFloat(SCREEN_DIMMER_DIM_PERCENT, percentage).apply();
+        withApp(app -> app.getPreferences().edit().putFloat(SCREEN_DIMMER_DIM_PERCENT, percentage).apply());
     }
 
     public void setAdaptiveBrightnessThreshold(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int threshold) {
-        app.getPreferences().edit().putInt(ADAPTIVE_BRIGHTNESS_THRESHOLD, threshold).apply();
+        withApp(app -> app.getPreferences().edit().putInt(ADAPTIVE_BRIGHTNESS_THRESHOLD, threshold).apply());
     }
 
     public void shouldRestoreAdaptiveBrightnessOnDisplaySleep(boolean restore) {
-        app.getPreferences().edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply();
+        withApp(app -> app.getPreferences().edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply());
     }
 
     public void setSliderVisible(boolean visible) {
-        app.getPreferences().edit().putBoolean(SLIDER_VISIBLE, visible).apply();
+        withApp(app -> app.getPreferences().edit().putBoolean(SLIDER_VISIBLE, visible).apply());
     }
 
     public void setAnimatesSlider(boolean visible) {
-        app.getPreferences().edit().putBoolean(ANIMATES_SLIDER, visible).apply();
+        withApp(app -> app.getPreferences().edit().putBoolean(ANIMATES_SLIDER, visible).apply());
     }
 
     public void setDimmerEnabled(boolean enabled) {
-        app.getPreferences().edit().putBoolean(SCREEN_DIMMER_ENABLED, enabled).apply();
+        withApp(app -> app.getPreferences().edit().putBoolean(SCREEN_DIMMER_ENABLED, enabled).apply());
         if (!enabled) removeDimmer();
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
     public int getIncrementPercentage() {
-        return app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE);
+        return transformApp(app -> app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE), DEF_INCREMENT_VALUE);
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
     public int getPositionPercentage() {
-        return app.getPreferences().getInt(SLIDER_POSITION, DEF_POSITION_VALUE);
+        return transformApp(app -> app.getPreferences().getInt(SLIDER_POSITION, DEF_POSITION_VALUE), DEF_POSITION_VALUE);
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
     public int getAdaptiveBrightnessThreshold() {
-        return app.getPreferences().getInt(ADAPTIVE_BRIGHTNESS_THRESHOLD, DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD);
+        return transformApp(app -> app.getPreferences().getInt(ADAPTIVE_BRIGHTNESS_THRESHOLD, DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD), DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD);
     }
 
     public float getScreenDimmerDimPercent() {
-        return app.getPreferences().getFloat(SCREEN_DIMMER_DIM_PERCENT, DEF_DIM_PERCENT);
+        return transformApp(app -> app.getPreferences().getFloat(SCREEN_DIMMER_DIM_PERCENT, DEF_DIM_PERCENT), DEF_DIM_PERCENT);
     }
 
     public boolean restoresAdaptiveBrightnessOnDisplaySleep() {
-        return app.getPreferences().getBoolean(ADAPTIVE_BRIGHTNESS, false);
+        return transformApp(app -> app.getPreferences().getBoolean(ADAPTIVE_BRIGHTNESS, false), false);
     }
 
     public boolean supportsAmbientThreshold() {
@@ -270,13 +276,13 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public boolean hasOverlayPermission() {
-        return Settings.canDrawOverlays(app);
+        return transformApp(Settings::canDrawOverlays, false);
     }
 
     public boolean isDimmerEnabled() {
         return hasOverlayPermission()
                 && PurchasesManager.getInstance().isPremium()
-                && app.getPreferences().getBoolean(SCREEN_DIMMER_ENABLED, false);
+                && transformApp(app -> app.getPreferences().getBoolean(SCREEN_DIMMER_ENABLED, false), false);
     }
 
     public boolean shouldShowDimmer() {
@@ -284,11 +290,11 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public boolean shouldShowSlider() {
-        return app.getPreferences().getBoolean(SLIDER_VISIBLE, true);
+        return transformApp(app -> app.getPreferences().getBoolean(SLIDER_VISIBLE, true), true);
     }
 
     public boolean shouldAnimateSlider() {
-        return app.getPreferences().getBoolean(ANIMATES_SLIDER, true);
+        return transformApp(app -> app.getPreferences().getBoolean(ANIMATES_SLIDER, true), true);
     }
 
     public boolean canAdjustDelta() {
@@ -304,7 +310,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public String getAdjustDeltaText(int percentage) {
-        return App.transformApp(app -> PurchasesManager.getInstance().isPremium() && !noDiscreteBrightness()
+        return transformApp(app -> PurchasesManager.getInstance().isPremium() && !noDiscreteBrightness()
                 ? app.getString(R.string.delta_percent_premium, percentage)
                 : app.getString(R.string.delta_percent, percentage), EMPTY_STRING);
     }
@@ -315,28 +321,31 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     public String getAdaptiveBrightnessThresholdText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int percent) {
         if (!hasBrightnessSensor())
-            return app.getString(R.string.unavailable_brightness_sensor);
+            return transformApp(app -> app.getString(R.string.unavailable_brightness_sensor), EMPTY_STRING);
 
         if (PurchasesManager.getInstance().isNotPremium())
-            return app.getString(R.string.go_premium_text);
+            return transformApp(app -> app.getString(R.string.go_premium_text), EMPTY_STRING);
 
         if (!restoresAdaptiveBrightnessOnDisplaySleep())
-            return (app.getString(R.string.adjust_adaptive_threshold_prompt));
+            return transformApp(app -> app.getString(R.string.adjust_adaptive_threshold_prompt), EMPTY_STRING);
 
         int lux = adaptiveThresholdToLux(percent);
-        String descriptor = app.getString(lux < 50
-                ? R.string.adaptive_threshold_low
-                : lux < 1000 ? R.string.adaptive_threshold_medium
-                : R.string.adaptive_threshold_high);
 
-        return app.getString(R.string.adaptive_threshold, lux, descriptor);
+        return transformApp(app -> {
+            String descriptor = app.getString(lux < 50
+                    ? R.string.adaptive_threshold_low
+                    : lux < 1000 ? R.string.adaptive_threshold_medium
+                    : R.string.adaptive_threshold_high);
+
+            return app.getString(R.string.adaptive_threshold, lux, descriptor);
+        }, EMPTY_STRING);
     }
 
     public void removeDimmer() {
         setDimmerPercent(MIN_DIM_PERCENT);
         Intent intent = new Intent(ACTION_SCREEN_DIMMER_CHANGED);
         intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
-        LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
+        withApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(intent));
     }
 
     private int adaptiveThresholdToLux(int percentage) {
@@ -351,16 +360,14 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
         return discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).stream()
                 .map(BrightnessGestureConsumer::stringPercentageToBrightnessInt)
-                .filter(filter::apply)
-                .sorted(comparator)
-                .findFirst().orElse(alternative);
+                .filter(filter::apply).min(comparator).orElse(alternative);
     }
 
     private void toggleAdaptiveBrightness(boolean on) {
         int brightnessMode = on
                 ? SCREEN_BRIGHTNESS_MODE_AUTOMATIC
                 : SCREEN_BRIGHTNESS_MODE_MANUAL;
-        Settings.System.putInt(app.getContentResolver(), SCREEN_BRIGHTNESS_MODE, brightnessMode);
+        withApp(app -> Settings.System.putInt(app.getContentResolver(), SCREEN_BRIGHTNESS_MODE, brightnessMode));
     }
 
     private static float roundDown(float d) {
@@ -376,7 +383,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     private boolean hasBrightnessSensor() {
-        SensorManager sensorManager = (SensorManager) app.getSystemService(Context.SENSOR_SERVICE);
+        SensorManager sensorManager = transformApp(app -> (SensorManager) app.getSystemService(Context.SENSOR_SERVICE));
         if (sensorManager == null) return false;
 
         final Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);

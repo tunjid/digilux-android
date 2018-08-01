@@ -73,22 +73,7 @@ public class GlobalActionGestureConsumer implements GestureConsumer {
         Intent intent = new Intent(ACTION_GLOBAL_ACTION);
         intent.putExtra(EXTRA_GLOBAL_ACTION, globalAction);
 
-        LocalBroadcastManager.getInstance(App.getInstance())
-                .sendBroadcast(intent);
-
-//        AudioManager audioManager = app.getSystemService(AudioManager.class);
-//        if (audioManager == null) return;
-//
-//        int action = gestureAction == GLOBAL_HOME ? AudioManager.ADJUST_RAISE
-//                : gestureAction == GLOBAL_BACK
-//                ? AudioManager.ADJUST_LOWER
-//                : AudioManager.ADJUST_MUTE;
-//
-//
-//        audioManager.setStreamVolume(
-//                AudioManager.STREAM_RING,
-//                audioManager.getStreamMaxVolume(AudioManager.STREAM_RING),
-//                0);
+        LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
     }
 }
 

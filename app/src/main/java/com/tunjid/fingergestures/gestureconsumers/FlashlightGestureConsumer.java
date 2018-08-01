@@ -35,6 +35,7 @@ public class FlashlightGestureConsumer implements GestureConsumer {
         switch (gestureAction) {
             case TOGGLE_FLASHLIGHT:
                 App app = App.getInstance();
+                if (app == null) return;
                 if (!isCallbackRegistered) isCallbackRegistered = registerTorchCallback(app);
                 if (!isCallbackRegistered) return;
 

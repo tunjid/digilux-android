@@ -141,7 +141,9 @@ public class MainActivity extends FingerGestureActivity {
 
     {
         Context context = App.getInstance();
-        links = new TextLink[]{new TextLink(context.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
+        links = context == null
+                ? new TextLink[0]
+                : new TextLink[]{new TextLink(context.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
                 new TextLink(context.getString(R.string.rxjava), RX_JAVA_LINK),
                 new TextLink(context.getString(R.string.color_picker), COLOR_PICKER_LINK),
                 new TextLink(context.getString(R.string.image_cropper), IMAGE_CROPPER_LINK),

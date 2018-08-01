@@ -40,6 +40,7 @@ public class App extends android.app.Application {
         return getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
     }
 
+    @Nullable
     public static App getInstance() {
         return instance;
     }

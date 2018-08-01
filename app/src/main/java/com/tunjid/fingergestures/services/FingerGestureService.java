@@ -198,7 +198,7 @@ public class FingerGestureService extends AccessibilityService {
     private void closeNotifications() {
         Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         closeIntent.setPackage(ANDROID_SYSTEM_UI_PACKAGE);
-        App.getInstance().sendBroadcast(closeIntent);
+        sendBroadcast(closeIntent);
     }
 
     private void showPopup() {
