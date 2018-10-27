@@ -7,12 +7,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.tunjid.androidbootstrap.view.recyclerview.BaseViewHolder;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveViewHolder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.PackageAdapter;
 
 
-public class PackageViewHolder extends BaseViewHolder<PackageAdapter.PackageClickListener> {
+public class PackageViewHolder extends InteractiveViewHolder<PackageAdapter.PackageClickListener> {
 
     private String packageName;
 

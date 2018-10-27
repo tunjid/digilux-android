@@ -5,22 +5,29 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
+
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.Toolbar;
-import android.text.TextUtils;
+
 import android.transition.AutoTransition;
 import android.transition.Transition;
+import android.transition.TransitionListenerAdapter;
 import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,10 +37,10 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextSwitcher;
-import android.widget.TextView;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
-import com.tunjid.androidbootstrap.core.view.ViewHider;
+import com.tunjid.androidbootstrap.view.animator.FabExtensionAnimator;
+import com.tunjid.androidbootstrap.view.animator.ViewHider;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
@@ -53,6 +60,7 @@ import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.processors.PublishProcessor;
 
+import static android.content.Intent.ACTION_SEND;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
@@ -117,9 +125,10 @@ public class MainActivity extends FingerGestureActivity {
 
     private ViewGroup constraintLayout;
     private TextSwitcher switcher;
-    private TextView permissionText;
+    private MaterialButton permissionText;
     private BottomSheetBehavior bottomSheetBehavior;
 
+    private FabExtensionAnimator fabExtensionAnimator;
     private PublishProcessor<String> publishProcessor;
     private CompositeDisposable disposables;
     private String[] quips;
@@ -129,15 +138,19 @@ public class MainActivity extends FingerGestureActivity {
     private final Deque<Integer> permissionsStack = new ArrayDeque<>();
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON,
-            MAP_RIGHT_ICON, AD_FREE, SUPPORT, REVIEW};
+            MAP_RIGHT_ICON, AD_FREE, SUPPORT, REVIEW, PADDING};
+
     private final int[] BRIGHTNESS_ITEMS = {PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS,
             SCREEN_DIMMER, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER,
-            ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS};
-    private final int[] AUDIO_ITEMS = {PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW};
+            ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS, PADDING};
+
+    private final int[] AUDIO_ITEMS = {PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW,
+            PADDING};
+
     private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_POSITION, SLIDER_DURATION,
             SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ENABLE_WATCH_WINDOWS,
             ENABLE_ACCESSIBILITY_BUTTON, ANIMATES_POPUP, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
-            POPUP_ACTION};
+            POPUP_ACTION, PADDING};
 
     {
         Context context = App.getInstance();
@@ -178,20 +191,25 @@ public class MainActivity extends FingerGestureActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         switcher = findViewById(R.id.upgrade_prompt);
+        permissionText = findViewById(R.id.permission_view);
         constraintLayout = findViewById(R.id.constraint_layout);
 
+        fabHider = ViewHider.of(permissionText).setDirection(ViewHider.BOTTOM).build();
         barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build();
+        fabExtensionAnimator = new FabExtensionAnimator(permissionText);
 
-        permissionText = findViewById(R.id.permission_view);
+        fabHider.hide();
+
+        permissionText.setBackgroundTintList(getFabTint());
         permissionText.setOnClickListener(view -> onPermissionClicked());
         bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottom_sheet));
-
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected);
+
         setSupportActionBar(toolbar);
         toggleBottomSheet(false);
 
         Intent startIntent = getIntent();
-        boolean isPickIntent = startIntent != null && Intent.ACTION_SEND.equals(startIntent.getAction());
+        boolean isPickIntent = startIntent != null && ACTION_SEND.equals(startIntent.getAction());
 
         if (savedInstanceState == null && isPickIntent) handleIntent(startIntent);
         else if (savedInstanceState == null) showFragment(AppFragment.newInstance(GESTURE_ITEMS));
@@ -350,7 +368,7 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     public void requestPermission(@PermissionRequest int permission) {
-        if (permissionsStack.contains(permission)) permissionsStack.remove(permission);
+        permissionsStack.remove(permission);
         permissionsStack.push(permission);
         onPermissionAdded();
     }
@@ -363,8 +381,7 @@ public class MainActivity extends FingerGestureActivity {
         String action = intent.getAction();
         String type = intent.getType();
 
-        if (!Intent.ACTION_SEND.equals(action) || TextUtils.isEmpty(type) || !type.startsWith("image/"))
-            return;
+        if (!ACTION_SEND.equals(action) || type == null || !type.startsWith("image/")) return;
 
         if (!App.hasStoragePermission()) {
             showSnackbar(R.string.enable_storage_settings);
@@ -415,14 +432,18 @@ public class MainActivity extends FingerGestureActivity {
     private void onPermissionAdded() {
         if (permissionsStack.isEmpty()) return;
         int permissionRequest = permissionsStack.peek();
-        int text = 0;
+        FabExtensionAnimator.GlyphState glyphState = null;
 
-        if (permissionRequest == DO_NOT_DISTURB_CODE) text = R.string.enable_do_not_disturb;
-        else if (permissionRequest == ACCESSIBILITY_CODE) text = R.string.enable_accessibility;
-        else if (permissionRequest == SETTINGS_CODE) text = R.string.enable_write_settings;
-        else if (permissionRequest == STORAGE_CODE) text = R.string.enable_storage_settings;
+        if (permissionRequest == DO_NOT_DISTURB_CODE)
+            glyphState = glyphState(R.string.enable_do_not_disturb, R.drawable.ic_volume_loud_24dp);
+        else if (permissionRequest == ACCESSIBILITY_CODE)
+            glyphState = glyphState(R.string.enable_accessibility, R.drawable.ic_human_24dp);
+        else if (permissionRequest == SETTINGS_CODE)
+            glyphState = glyphState(R.string.enable_write_settings, R.drawable.ic_settings_white_24dp);
+        else if (permissionRequest == STORAGE_CODE)
+            glyphState = glyphState(R.string.enable_storage_settings, R.drawable.ic_storage_24dp);
 
-        if (text != 0) permissionText.setText(text);
+        if (glyphState != null) fabExtensionAnimator.updateGlyphs(glyphState);
         togglePermissionText(true);
     }
 
@@ -466,33 +487,12 @@ public class MainActivity extends FingerGestureActivity {
         if (switcher.getVisibility() == View.GONE) return;
 
         Transition hideTransition = getTransition();
-        hideTransition.addListener(new Transition.TransitionListener() {
-            @Override
-            public void onTransitionStart(@NonNull Transition transition) {
-
-            }
-
-            @Override
-            public void onTransitionEnd(@NonNull Transition transition) {
+        hideTransition.addListener(new TransitionListenerAdapter() {
+            public void onTransitionEnd(Transition transition) {
                 showSnackbar(R.string.billing_thanks);
             }
-
-            @Override
-            public void onTransitionCancel(@NonNull Transition transition) {
-
-            }
-
-            @Override
-            public void onTransitionPause(@NonNull Transition transition) {
-
-            }
-
-            @Override
-            public void onTransitionResume(@NonNull Transition transition) {
-
-            }
         });
-        android.transition.TransitionManager.beginDelayedTransition(constraintLayout, hideTransition);
+        TransitionManager.beginDelayedTransition(constraintLayout, hideTransition);
         switcher.setVisibility(View.GONE);
     }
 
@@ -511,9 +511,16 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void togglePermissionText(boolean show) {
-        TransitionManager.beginDelayedTransition(constraintLayout, getTransition());
-        permissionText.setVisibility(show ? View.VISIBLE : View.GONE);
-        ((ViewGroup) permissionText.getParent()).invalidate();
+        if (show) fabHider.show();
+        else fabHider.hide();
+    }
+
+    private ColorStateList getFabTint() {
+        return ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorPrimary));
+    }
+
+    private FabExtensionAnimator.GlyphState glyphState(@StringRes int text, @DrawableRes int icon) {
+        return FabExtensionAnimator.newState(getText(text), ContextCompat.getDrawable(this, icon));
     }
 
     private Transition getTransition() {

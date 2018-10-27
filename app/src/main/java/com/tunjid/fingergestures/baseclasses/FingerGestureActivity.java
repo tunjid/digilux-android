@@ -7,7 +7,7 @@ import com.google.android.material.snackbar.Snackbar;
 import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseActivity;
-import com.tunjid.androidbootstrap.core.view.ViewHider;
+import com.tunjid.androidbootstrap.view.animator.ViewHider;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.billing.BillingManager;
 import com.tunjid.fingergestures.billing.PurchasesManager;
@@ -23,6 +23,7 @@ import static com.android.billingclient.api.BillingClient.BillingResponse.SERVIC
 public abstract class FingerGestureActivity extends BaseActivity {
 
     protected ViewHider barHider;
+    protected ViewHider fabHider;
     protected ViewGroup coordinator;
     private CompositeDisposable disposables = new CompositeDisposable();
 

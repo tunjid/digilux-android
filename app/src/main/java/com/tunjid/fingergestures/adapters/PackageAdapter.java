@@ -3,7 +3,7 @@ package com.tunjid.fingergestures.adapters;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.tunjid.androidbootstrap.view.recyclerview.BaseRecyclerViewAdapter;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.viewholders.PackageViewHolder;
 
@@ -35,7 +35,7 @@ public class PackageAdapter extends DiffAdapter<PackageViewHolder, PackageAdapte
         holder.bind(list.get(position));
     }
 
-    public interface PackageClickListener extends BaseRecyclerViewAdapter.AdapterListener {
+    public interface PackageClickListener extends InteractiveAdapter.AdapterListener {
         void onPackageClicked(String packageName);
     }
 }

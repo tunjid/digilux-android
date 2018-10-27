@@ -1,7 +1,7 @@
 package com.tunjid.fingergestures.adapters;
 
-import com.tunjid.androidbootstrap.view.recyclerview.BaseRecyclerViewAdapter;
-import com.tunjid.androidbootstrap.view.recyclerview.BaseViewHolder;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveViewHolder;
 
 import androidx.recyclerview.widget.DiffUtil;
 
@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import io.reactivex.Single;
 
 
-public abstract class DiffAdapter<V extends BaseViewHolder<T>, T extends BaseRecyclerViewAdapter.AdapterListener> extends BaseRecyclerViewAdapter<V, T> {
+public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends InteractiveAdapter.AdapterListener> extends InteractiveAdapter<V, T> {
 
     final List<String> list;
     private final Supplier<List<String>> listSupplier;

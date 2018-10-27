@@ -118,7 +118,7 @@ public class BackgroundManager {
 
     @ColorInt
     public int getBackgroundColor() {
-        return App.transformApp(app -> app.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(app, R.color.colorAccent)), Color.LTGRAY);
+        return App.transformApp(app -> app.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(app, R.color.colorPrimary)), Color.LTGRAY);
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)

@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.tunjid.androidbootstrap.view.recyclerview.BaseRecyclerViewAdapter;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
@@ -47,7 +47,7 @@ import static com.tunjid.fingergestures.viewholders.LinkViewHolder.REVIEW_LINK_I
 import static com.tunjid.fingergestures.viewholders.LinkViewHolder.SUPPORT_LINK_ITEM;
 
 
-public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
+public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
 
     public static final int PADDING = -1;
     public static final int SLIDER_DELTA = 0;
@@ -250,7 +250,7 @@ public class AppAdapter extends BaseRecyclerViewAdapter<AppViewHolder, AppAdapte
         return items[position];
     }
 
-    public interface AppAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
+    public interface AppAdapterListener extends InteractiveAdapter.AdapterListener {
         void purchase(@PurchasesManager.SKU String sku);
 
         void pickWallpaper(@BackgroundManager.WallpaperSelection int selection);

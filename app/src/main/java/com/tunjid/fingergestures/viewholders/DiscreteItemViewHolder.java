@@ -4,12 +4,12 @@ import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 
-import com.tunjid.androidbootstrap.view.recyclerview.BaseViewHolder;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveViewHolder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.DiscreteBrightnessAdapter;
 
 
-public class DiscreteItemViewHolder extends BaseViewHolder<DiscreteBrightnessAdapter.BrightnessValueClickListener> {
+public class DiscreteItemViewHolder extends InteractiveViewHolder<DiscreteBrightnessAdapter.BrightnessValueClickListener> {
 
     private String discreteValue;
     private TextView textView;

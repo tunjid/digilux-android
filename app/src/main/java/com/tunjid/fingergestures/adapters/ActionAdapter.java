@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.tunjid.androidbootstrap.view.recyclerview.BaseRecyclerViewAdapter;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.viewholders.ActionViewHolder;
@@ -39,7 +39,7 @@ public class ActionAdapter extends DiffAdapter<ActionViewHolder, ActionAdapter.A
         holder.bind(Integer.valueOf(list.get(position)));
     }
 
-    public interface ActionClickListener extends BaseRecyclerViewAdapter.AdapterListener {
+    public interface ActionClickListener extends InteractiveAdapter.AdapterListener {
         void onActionClicked(@GestureConsumer.GestureAction int actionRes);
     }
 }
