@@ -2,8 +2,8 @@ package com.tunjid.fingergestures.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
 import android.view.View;

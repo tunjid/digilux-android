@@ -4,7 +4,7 @@ import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 
-import com.tunjid.androidbootstrap.core.abstractclasses.BaseViewHolder;
+import com.tunjid.androidbootstrap.view.recyclerview.BaseViewHolder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.DiscreteBrightnessAdapter;
 

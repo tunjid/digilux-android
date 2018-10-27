@@ -3,9 +3,9 @@ package com.tunjid.fingergestures.gestureconsumers;
 import android.accessibilityservice.FingerprintGestureController;
 import android.annotation.SuppressLint;
 import android.content.res.TypedArray;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringDef;
-import android.support.annotation.StringRes;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringDef;
+import androidx.annotation.StringRes;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.PopUpGestureConsumer;

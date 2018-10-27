@@ -1,8 +1,8 @@
 package com.tunjid.fingergestures.viewholders;
 
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
@@ -15,7 +15,7 @@ import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.fragments.ActionFragment;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 
-import static android.support.v7.widget.LinearLayoutManager.HORIZONTAL;
+import static androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL;
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 
 public class PopupViewHolder extends AppViewHolder {

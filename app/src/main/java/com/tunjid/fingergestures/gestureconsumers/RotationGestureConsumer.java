@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringDef;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringDef;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.tunjid.fingergestures.App;

@@ -10,9 +10,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.provider.Settings;
-import android.support.annotation.FloatRange;
-import android.support.annotation.IntRange;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.FloatRange;
+import androidx.annotation.IntRange;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
