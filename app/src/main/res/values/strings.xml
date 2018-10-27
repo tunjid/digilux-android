@@ -198,6 +198,8 @@
     <string name="global_recents">Show Recent Apps</string>
     <string name="global_split_screen">Toggle Split Screen</string>
     <string name="global_power_dialog">Show Power Dialog</string>
+    <string name="global_lock_screen">Lock Screen</string>
+    <string name="global_take_screenshot">Take Screenshot</string>
     <string name="show_popup">Show popup</string>
     <string name="do_nothing">Do nothing</string>
     <string name="unsupported_action">Sorry! Looks like that action is unsupported on your device. Please drop me a line to fix it.</string>
