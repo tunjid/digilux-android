@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.FragmentManager;
+import io.reactivex.disposables.CompositeDisposable;
+
 import android.view.View;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
@@ -16,9 +18,17 @@ import com.tunjid.fingergestures.fragments.AppFragment;
 
 public abstract class MainActivityFragment extends BaseFragment {
 
+    protected CompositeDisposable disposables = new CompositeDisposable();
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onDestroyView() {
+        disposables.clear();
+        super.onDestroyView();
     }
 
     protected void toggleToolbar(boolean visible) {
@@ -41,11 +51,6 @@ public abstract class MainActivityFragment extends BaseFragment {
         if (activity != null) activity.requestPermission(permission);
     }
 
-    public void toggleBottomSheet(boolean show) {
-        MainActivity activity = ((MainActivity) getActivity());
-        if (activity != null) activity.toggleBottomSheet(show);
-    }
-
     public void showBottomSheetFragment(MainActivityFragment fragment) {
         FragmentManager fragmentManager = getFragmentManager();
         if (fragmentManager == null) return;
@@ -54,8 +59,13 @@ public abstract class MainActivityFragment extends BaseFragment {
         toggleBottomSheet(true);
     }
 
+    protected void toggleBottomSheet(boolean show) {
+        MainActivity activity = ((MainActivity) getActivity());
+        if (activity != null) activity.toggleBottomSheet(show);
+    }
+
     @Nullable
-    public AppFragment getCurrentAppFragment() {
+    protected AppFragment getCurrentAppFragment() {
         MainActivity activity = ((MainActivity) getActivity());
         if (activity == null) return null;
 

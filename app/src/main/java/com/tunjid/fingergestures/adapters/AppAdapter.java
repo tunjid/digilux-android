@@ -1,11 +1,6 @@
 package com.tunjid.fingergestures.adapters;
 
 import android.content.Context;
-import androidx.annotation.IntDef;
-import androidx.annotation.LayoutRes;
-import androidx.annotation.StringRes;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
@@ -24,9 +19,9 @@ import com.tunjid.fingergestures.viewholders.AppViewHolder;
 import com.tunjid.fingergestures.viewholders.AudioStreamViewHolder;
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.DiscreteBrightnessViewHolder;
+import com.tunjid.fingergestures.viewholders.LinkViewHolder;
 import com.tunjid.fingergestures.viewholders.MapperViewHolder;
 import com.tunjid.fingergestures.viewholders.PopupViewHolder;
-import com.tunjid.fingergestures.viewholders.LinkViewHolder;
 import com.tunjid.fingergestures.viewholders.RotationViewHolder;
 import com.tunjid.fingergestures.viewholders.ScreenDimmerViewHolder;
 import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
@@ -36,6 +31,10 @@ import com.tunjid.fingergestures.viewholders.WallpaperViewHolder;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
@@ -98,8 +97,9 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
         this.items = items;
     }
 
+    @NonNull
     @Override
-    public AppViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public AppViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         BrightnessGestureConsumer brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
         RotationGestureConsumer rotationGestureConsumer = RotationGestureConsumer.getInstance();
@@ -109,10 +109,10 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
 
         switch (viewType) {
             case PADDING:
-                return new AppViewHolder(getView(R.layout.viewholder_padding, parent));
+                return new AppViewHolder(getItemView(R.layout.viewholder_padding, parent));
             case SLIDER_DELTA:
                 return new SliderAdjusterViewHolder(
-                        getView(R.layout.viewholder_slider_delta, parent),
+                        getItemView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_delta,
                         brightnessGestureConsumer::setIncrementPercentage,
                         brightnessGestureConsumer::getIncrementPercentage,
@@ -120,7 +120,7 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         brightnessGestureConsumer::getAdjustDeltaText);
             case SLIDER_POSITION:
                 return new SliderAdjusterViewHolder(
-                        getView(R.layout.viewholder_slider_delta, parent),
+                        getItemView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_position,
                         brightnessGestureConsumer::setPositionPercentage,
                         brightnessGestureConsumer::getPositionPercentage,
@@ -128,20 +128,20 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         (percentage) -> context.getString(R.string.position_percent, percentage));
             case SLIDER_DURATION:
                 return new SliderAdjusterViewHolder(
-                        getView(R.layout.viewholder_slider_delta, parent),
+                        getItemView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_slider_duration,
                         backgroundManager::setSliderDurationPercentage,
                         backgroundManager::getSliderDurationPercentage,
                         () -> true,
                         backgroundManager::getSliderDurationText);
             case DISCRETE_BRIGHTNESS:
-                return new DiscreteBrightnessViewHolder(getView(R.layout.viewholder_horizontal_list, parent), adapterListener);
+                return new DiscreteBrightnessViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), adapterListener);
             case SLIDER_COLOR:
-                return new ColorAdjusterViewHolder(getView(R.layout.viewholder_slider_color, parent), adapterListener);
+                return new ColorAdjusterViewHolder(getItemView(R.layout.viewholder_slider_color, parent), adapterListener);
             case SCREEN_DIMMER:
-                return new ScreenDimmerViewHolder(getView(R.layout.viewholder_screen_dimmer, parent), adapterListener);
+                return new ScreenDimmerViewHolder(getItemView(R.layout.viewholder_screen_dimmer, parent), adapterListener);
             case ADAPTIVE_BRIGHTNESS:
-                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
                         R.string.adaptive_brightness,
                         brightnessGestureConsumer::restoresAdaptiveBrightnessOnDisplaySleep,
                         (flag) -> {
@@ -149,13 +149,13 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                             adapterListener.notifyItemChanged(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS);
                         });
             case SHOW_SLIDER:
-                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
                         R.string.show_slider,
                         brightnessGestureConsumer::shouldShowSlider,
                         brightnessGestureConsumer::setSliderVisible);
             case ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS:
                 return new SliderAdjusterViewHolder(
-                        getView(R.layout.viewholder_slider_delta, parent),
+                        getItemView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_adaptive_threshold,
                         R.string.adjust_adaptive_threshold_description,
                         brightnessGestureConsumer::setAdaptiveBrightnessThreshold,
@@ -163,37 +163,37 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         brightnessGestureConsumer::supportsAmbientThreshold,
                         brightnessGestureConsumer::getAdaptiveBrightnessThresholdText);
             case ENABLE_WATCH_WINDOWS:
-                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
                         R.string.auto_rotate_apps,
                         rotationGestureConsumer::canAutoRotate,
                         rotationGestureConsumer::enableWindowContentWatching);
             case ENABLE_ACCESSIBILITY_BUTTON:
-                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
                         R.string.popup_enable,
                         popUpGestureConsumer::hasAccessibilityButton,
                         popUpGestureConsumer::enableAccessibilityButton);
             case DOUBLE_SWIPE_SETTINGS:
                 GestureMapper mapper = GestureMapper.getInstance();
                 return new SliderAdjusterViewHolder(
-                        getView(R.layout.viewholder_slider_delta, parent),
+                        getItemView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_double_swipe_settings,
                         mapper::setDoubleSwipeDelay,
                         mapper::getDoubleSwipeDelay,
                         () -> PurchasesManager.getInstance().isPremium(),
                         mapper::getSwipeDelayText);
             case ANIMATES_POPUP:
-                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
                         R.string.popup_animate_in,
                         popUpGestureConsumer::shouldAnimatePopup,
                         popUpGestureConsumer::setAnimatesPopup);
             case ANIMATES_SLIDER:
-                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
                         R.string.slider_animate,
                         brightnessGestureConsumer::shouldAnimateSlider,
                         brightnessGestureConsumer::setAnimatesSlider);
             case AUDIO_DELTA:
                 return new SliderAdjusterViewHolder(
-                        getView(R.layout.viewholder_slider_delta, parent),
+                        getItemView(R.layout.viewholder_slider_delta, parent),
                         R.string.audio_stream_delta,
                         0,
                         audioGestureConsumer::setVolumeDelta,
@@ -201,43 +201,43 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         audioGestureConsumer::canSetVolumeDelta,
                         audioGestureConsumer::getChangeText);
             case AUDIO_SLIDER_SHOW:
-                return new ToggleViewHolder(getView(R.layout.viewholder_toggle, parent),
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
                         R.string.audio_stream_slider_show,
                         audioGestureConsumer::shouldShowSliders,
                         audioGestureConsumer::setShowsSliders);
             case AUDIO_STREAM_TYPE:
-                return new AudioStreamViewHolder(getView(R.layout.viewholder_audio_stream_type, parent), adapterListener);
+                return new AudioStreamViewHolder(getItemView(R.layout.viewholder_audio_stream_type, parent), adapterListener);
             case MAP_UP_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), UP_GESTURE, adapterListener);
+                return new MapperViewHolder(getItemView(R.layout.viewholder_mapper, parent), UP_GESTURE, adapterListener);
             case MAP_DOWN_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), DOWN_GESTURE, adapterListener);
+                return new MapperViewHolder(getItemView(R.layout.viewholder_mapper, parent), DOWN_GESTURE, adapterListener);
             case MAP_LEFT_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), LEFT_GESTURE, adapterListener);
+                return new MapperViewHolder(getItemView(R.layout.viewholder_mapper, parent), LEFT_GESTURE, adapterListener);
             case MAP_RIGHT_ICON:
-                return new MapperViewHolder(getView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE, adapterListener);
+                return new MapperViewHolder(getItemView(R.layout.viewholder_mapper, parent), RIGHT_GESTURE, adapterListener);
             case AD_FREE:
-                return new AdFreeViewHolder(getView(R.layout.viewholder_simple_text, parent), adapterListener);
+                return new AdFreeViewHolder(getItemView(R.layout.viewholder_simple_text, parent), adapterListener);
             case SUPPORT:
-                return new LinkViewHolder(getView(R.layout.viewholder_simple_text, parent), SUPPORT_LINK_ITEM, adapterListener);
+                return new LinkViewHolder(getItemView(R.layout.viewholder_simple_text, parent), SUPPORT_LINK_ITEM, adapterListener);
             case REVIEW:
-                return new LinkViewHolder(getView(R.layout.viewholder_simple_text, parent), REVIEW_LINK_ITEM, adapterListener);
+                return new LinkViewHolder(getItemView(R.layout.viewholder_simple_text, parent), REVIEW_LINK_ITEM, adapterListener);
             case WALLPAPER_PICKER:
-                return new WallpaperViewHolder(getView(R.layout.viewholder_wallpaper_pick, parent), adapterListener);
+                return new WallpaperViewHolder(getItemView(R.layout.viewholder_wallpaper_pick, parent), adapterListener);
             case WALLPAPER_TRIGGER:
-                return new WallpaperTriggerViewHolder(getView(R.layout.viewholder_wallpaper_trigger, parent), adapterListener);
+                return new WallpaperTriggerViewHolder(getItemView(R.layout.viewholder_wallpaper_trigger, parent), adapterListener);
             case ROTATION_LOCK:
-                return new RotationViewHolder(getView(R.layout.viewholder_horizontal_list, parent), ROTATION_APPS, adapterListener);
+                return new RotationViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), ROTATION_APPS, adapterListener);
             case EXCLUDED_ROTATION_LOCK:
-                return new RotationViewHolder(getView(R.layout.viewholder_horizontal_list, parent), EXCLUDED_APPS, adapterListener);
+                return new RotationViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), EXCLUDED_APPS, adapterListener);
             case POPUP_ACTION:
-                return new PopupViewHolder(getView(R.layout.viewholder_horizontal_list, parent), adapterListener);
+                return new PopupViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), adapterListener);
             default:
-                return new AppViewHolder(getView(R.layout.viewholder_slider_delta, parent));
+                return new AppViewHolder(getItemView(R.layout.viewholder_slider_delta, parent));
         }
     }
 
     @Override
-    public void onBindViewHolder(AppViewHolder holder, int position) {holder.bind();}
+    public void onBindViewHolder(@NonNull AppViewHolder holder, int position) {holder.bind();}
 
     @Override
     public int getItemCount() {return items.length;}
@@ -262,9 +262,5 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
         void notifyItemChanged(@AdapterIndex int index);
 
         void showBottomSheetFragment(MainActivityFragment fragment);
-    }
-
-    private View getView(@LayoutRes int res, ViewGroup viewGroup) {
-        return LayoutInflater.from(viewGroup.getContext()).inflate(res, viewGroup, false);
     }
 }
