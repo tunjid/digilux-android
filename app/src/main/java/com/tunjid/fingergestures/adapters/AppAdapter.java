@@ -49,39 +49,40 @@ import static com.tunjid.fingergestures.viewholders.LinkViewHolder.SUPPORT_LINK_
 public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
 
     public static final int PADDING = -1;
-    public static final int SLIDER_DELTA = 0;
-    public static final int SLIDER_POSITION = 1;
-    public static final int SLIDER_DURATION = 2;
-    public static final int SLIDER_COLOR = 3;
-    public static final int SCREEN_DIMMER = 4;
-    public static final int SHOW_SLIDER = 5;
-    public static final int ADAPTIVE_BRIGHTNESS = 6;
-    public static final int ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS = 7;
-    public static final int DOUBLE_SWIPE_SETTINGS = 8;
-    public static final int MAP_UP_ICON = 9;
-    public static final int MAP_DOWN_ICON = 10;
-    public static final int MAP_LEFT_ICON = 11;
-    public static final int MAP_RIGHT_ICON = 12;
-    public static final int AD_FREE = 13;
-    public static final int REVIEW = 14;
-    public static final int WALLPAPER_PICKER = 15;
-    public static final int WALLPAPER_TRIGGER = 16;
-    public static final int ROTATION_LOCK = 17;
-    public static final int EXCLUDED_ROTATION_LOCK = 18;
-    public static final int ENABLE_WATCH_WINDOWS = 19;
-    public static final int POPUP_ACTION = 20;
-    public static final int ENABLE_ACCESSIBILITY_BUTTON = 21;
-    public static final int ANIMATES_SLIDER = 22;
-    public static final int ANIMATES_POPUP = 23;
-    public static final int DISCRETE_BRIGHTNESS = 24;
-    public static final int AUDIO_DELTA = 25;
-    public static final int AUDIO_STREAM_TYPE = 26;
-    public static final int AUDIO_SLIDER_SHOW = 27;
-    public static final int SUPPORT = 28;
+    public static final int SLIDER_DELTA = PADDING + 1;
+    public static final int SLIDER_POSITION = SLIDER_DELTA + 1;
+    public static final int SLIDER_DURATION = SLIDER_POSITION + 1;
+    public static final int SLIDER_COLOR = SLIDER_DURATION + 1;
+    public static final int SCREEN_DIMMER = SLIDER_COLOR + 1;
+    public static final int USE_LOGARITHMIC_SCALE = SCREEN_DIMMER + 1;
+    public static final int SHOW_SLIDER = USE_LOGARITHMIC_SCALE + 1;
+    public static final int ADAPTIVE_BRIGHTNESS = SHOW_SLIDER + 1;
+    public static final int ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS = ADAPTIVE_BRIGHTNESS + 1;
+    public static final int DOUBLE_SWIPE_SETTINGS = ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS + 1;
+    public static final int MAP_UP_ICON = DOUBLE_SWIPE_SETTINGS + 1;
+    public static final int MAP_DOWN_ICON = MAP_UP_ICON + 1;
+    public static final int MAP_LEFT_ICON = MAP_DOWN_ICON + 1;
+    public static final int MAP_RIGHT_ICON = MAP_LEFT_ICON + 1;
+    public static final int AD_FREE = MAP_RIGHT_ICON + 1;
+    public static final int REVIEW = AD_FREE + 1;
+    public static final int WALLPAPER_PICKER = REVIEW + 1;
+    public static final int WALLPAPER_TRIGGER = WALLPAPER_PICKER + 1;
+    public static final int ROTATION_LOCK = WALLPAPER_TRIGGER + 1;
+    public static final int EXCLUDED_ROTATION_LOCK = ROTATION_LOCK + 1;
+    public static final int ENABLE_WATCH_WINDOWS = EXCLUDED_ROTATION_LOCK + 1;
+    public static final int POPUP_ACTION = ENABLE_WATCH_WINDOWS + 1;
+    public static final int ENABLE_ACCESSIBILITY_BUTTON = POPUP_ACTION + 1;
+    public static final int ANIMATES_SLIDER = ENABLE_ACCESSIBILITY_BUTTON + 1;
+    public static final int ANIMATES_POPUP = ANIMATES_SLIDER + 1;
+    public static final int DISCRETE_BRIGHTNESS = ANIMATES_POPUP + 1;
+    public static final int AUDIO_DELTA = DISCRETE_BRIGHTNESS + 1;
+    public static final int AUDIO_STREAM_TYPE = AUDIO_DELTA + 1;
+    public static final int AUDIO_SLIDER_SHOW = AUDIO_STREAM_TYPE + 1;
+    public static final int SUPPORT = AUDIO_SLIDER_SHOW + 1;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
-            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+            SHOW_SLIDER, USE_LOGARITHMIC_SCALE, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
             DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
             AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
             EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
@@ -148,6 +149,11 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                             brightnessGestureConsumer.shouldRestoreAdaptiveBrightnessOnDisplaySleep(flag);
                             adapterListener.notifyItemChanged(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS);
                         });
+            case USE_LOGARITHMIC_SCALE:
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
+                        R.string.use_logarithmic_scale,
+                        brightnessGestureConsumer::usesLogarithmicScale,
+                        brightnessGestureConsumer::shouldUseLogarithmicScale);
             case SHOW_SLIDER:
                 return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
                         R.string.show_slider,

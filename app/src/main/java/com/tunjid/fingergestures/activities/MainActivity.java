@@ -96,6 +96,7 @@ import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_DELTA;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_DURATION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_POSITION;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SUPPORT;
+import static com.tunjid.fingergestures.adapters.AppAdapter.USE_LOGARITHMIC_SCALE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_PICKER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.WALLPAPER_TRIGGER;
 import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
@@ -141,7 +142,7 @@ public class MainActivity extends FingerGestureActivity {
             MAP_RIGHT_ICON, AD_FREE, SUPPORT, REVIEW, PADDING};
 
     private final int[] BRIGHTNESS_ITEMS = {PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS,
-            SCREEN_DIMMER, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER,
+            SCREEN_DIMMER, USE_LOGARITHMIC_SCALE, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER,
             ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS, PADDING};
 
     private final int[] AUDIO_ITEMS = {PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW,

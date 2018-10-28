@@ -39,27 +39,27 @@
         \n\nEnabling this does not affect the functionality of any apps depending on the fingerprint sensor; gestures will be temporarily unavailable while fingerprint authentication is requested by any app,
         and will become available again after fingerprint authentication is complete.</string>
 
-    <!-- Delta Viewholder-->
+    <!-- Delta ViewHolder-->
     <string name="delta_percent">%1$d%% per swipe</string>
     <string name="delta_percent_premium">%1$d%% per swipe (filter only)</string>
     <string name="adjust_slider_delta">Adjust Brightness Slider Step</string>
 
-    <!-- Position Viewholder-->
+    <!-- Position ViewHolder-->
     <string name="adjust_slider_position">Adjust Slider Position</string>
     <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
-    <!-- Duration Viewholder-->
+    <!-- Duration ViewHolder-->
     <string name="adjust_slider_duration">Adjust Slider Pop Up Duration</string>
     <string name="duration_value">%1$.2f seconds</string>
 
-    <!-- Discrete Viewholder-->
+    <!-- Discrete ViewHolder-->
     <string name="discrete_brightness_title">Discrete brightness values</string>
     <string name="discrete_brightness_description">Allows you to set discrete values for brightness changes instead of choosing a fixed interval per swipe</string>
     <string name="discrete_brightness_error">Please enter a value between 1 and 99</string>
     <string name="discrete_brightness_hint">Enter a brightness percentage</string>
     <string name="discrete_brightness_text">%1$s%%</string>
 
-    <!-- Audio Stream Viewholder-->
+    <!-- Audio Stream ViewHolder-->
     <string name="audio_stream_media">Media (%1$d levels)</string>
     <string name="audio_stream_ringtone">Ring (%1$d levels)</string>
     <string name="audio_stream_alarm">Alarm (%1$d levels)</string>
@@ -71,7 +71,7 @@
     <string name="audio_stream_slider_show">Show audio sliders</string>
     <string name="audio_stream_delta">Adjust Audio Change Step</string>
 
-    <!-- Color Adjuster Viewholder-->
+    <!-- Color Adjuster ViewHolder-->
     <string name="choose_color">Choose Color</string>
     <string name="choose_target">Choose Target</string>
     <string name="edit_slider_appearance">Edit Slider Appearance</string>
@@ -82,7 +82,7 @@
     <string name="slider_background">Slider Background</string>
     <string name="premium_prompt_slider">Adds the immeasurable, earth shattering convenience of choosing your slider color based on the colors in your static wallpaper.</string>
 
-    <!-- Adaptive Brightness Viewholder-->
+    <!-- Adaptive Brightness ViewHolder-->
     <string name="adaptive_brightness">Restore adaptive brightness when the screen is turned off and on</string>
     <string name="adjust_adaptive_threshold">Adjust Adaptive Brightness Restoration Threshold</string>
     <string name="adjust_adaptive_threshold_prompt">Please enable the adaptive brightness setting to use this feature</string>
@@ -94,23 +94,26 @@
     <string name="adaptive_threshold_medium">Family living room lights - Overcast day</string>
     <string name="adaptive_threshold_high">Overcast day - Direct sunlight</string>
 
-    <!-- Show Slider Viewholder-->
+    <!-- Use Logarithmic Scale ViewHolder-->
+    <string name="use_logarithmic_scale">Use Android P logarithmic brightness scale</string>
+
+    <!-- Show Slider ViewHolder-->
     <string name="show_slider">Show the slider when adjusting brightness</string>
     <string name="slider_animate">Animate brightness slider entrance and exit</string>
 
-    <!-- Screen Dimmer Viewholder-->
+    <!-- Screen Dimmer ViewHolder-->
     <string name="screen_dimmer">Screen Dimmer</string>
     <string name="screen_dimmer_toggle">Enable Screen Dimmer</string>
     <string name="screen_dimmer_value">Screen dimmed %1$.0f%% </string>
     <string name="screen_overlay_grant_permission">Grant overlay permissions</string>
     <string name="premium_prompt_dimmer">Draws a dark overlay to further dim brightness at night. Please note the overlay cannot be dawn over the notification bar / shade due to limitations in Android Oreo.</string>
 
-    <!-- Swipe Delay Viewholder-->
+    <!-- Swipe Delay ViewHolder-->
     <string name="adjust_double_swipe_settings">Adjust Double Swipe Duration</string>
     <string name="double_swipe_delay">%1$d milliseconds</string>
     <string name="premium_prompt_double_swipe">Gives the ability to map double swipes to actions.</string>
 
-    <!-- Ad Free Viewholder-->
+    <!-- Ad Free ViewHolder-->
     <string name="purchase_options">Purchase Options</string>
     <string name="remove_ads_only">Remove ads only</string>
     <string name="remove_ads_and_go_premium">Remove ads and get premium features</string>
@@ -121,11 +124,11 @@
     <string name="premium_generosity_title">You\'re already premium…</string>
     <string name="premium_generosity_confirmation">Shut up and take my money!</string>
 
-    <!-- Link Viewholder-->
+    <!-- Link ViewHolder-->
     <string name="help_support">Help, support and feedback</string>
     <string name="review_app">Leave a review</string>
 
-    <!-- Wallpaper Viewholder-->
+    <!-- Wallpaper ViewHolder-->
     <string name="alternate_wallpaper">Day and Night Wallpaper</string>
     <string name="current_wallpaper">Current</string>
     <string name="day_wallpaper">Day</string>
@@ -139,13 +142,13 @@
     <string name="choose_edit_source_message">Choose the image to edit in an image editing app.
         \n\nRemember to tap the share icon in the app you pick after editing to share the edited image with DigiLux.
         \n\nSnapseed and Photo Editor by dev.mcgyver work great; others should as well with Google Photos being the only known exception.</string>
-    <!-- Wallpaper Trigger Viewholder-->
+    <!-- Wallpaper Trigger ViewHolder-->
     <string name="wallpaper_trigger">Wallpaper Change Time</string>
     <string name="light_time">Light: %1%s</string>
     <string name="dark_time">Dark: %1$s</string>
     <string name="to">to</string>
 
-    <!-- Rotation Viewholder-->
+    <!-- Rotation ViewHolder-->
     <string name="auto_rotate_apps">Apps Allowed to Auto Rotate</string>
     <string name="selective_app_rotation">Enable selective app auto rotation (turn off if scrolling performance degrades)</string>
     <string name="auto_rotate_apps_excluded">Ignored Pop Up Overlay Apps</string>
@@ -157,7 +160,7 @@
     <string name="auto_rotate_ignored_description">Ignores certain apps for being considered for auto rotation.
     \n\nThis should be used for apps that display over apps like the System UI, this app, keyboards, screen filters, and so on.</string>
 
-    <!-- Popup Viewholder-->
+    <!-- Popup ViewHolder-->
     <string name="popup_title">Pop Up Actions</string>
     <string name="popup_add">Add to accessibility button pop up.</string>
     <string name="popup_remove">Remove from accessibility button pop up?</string>
