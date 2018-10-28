@@ -40,6 +40,7 @@ public class BrightnessLookup {
     }
 
     private static final int[][] table = {
+            {0, 0},
             {1, 6},
             {2, 11},
             {3, 15},

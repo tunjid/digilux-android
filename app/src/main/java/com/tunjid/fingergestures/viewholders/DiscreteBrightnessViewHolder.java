@@ -104,7 +104,7 @@ public class DiscreteBrightnessViewHolder extends AppViewHolder {
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
         editText.setFilters(new InputFilter[]{new LengthFilter(2)});
         editText.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId != EditorInfo.IME_ACTION_SEND)
+            if (actionId == EditorInfo.IME_ACTION_SEND)
                 onDiscreteValueEntered(alertDialog, editText);
             return true;
         });

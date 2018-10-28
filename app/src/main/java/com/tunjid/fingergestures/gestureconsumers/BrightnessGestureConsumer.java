@@ -10,7 +10,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.provider.Settings;
-import android.util.Log;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BrightnessLookup;
@@ -96,9 +95,6 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         else if (gestureAction == REDUCE_BRIGHTNESS) byteValue = reduce(byteValue);
         else if (gestureAction == MAXIMIZE_BRIGHTNESS) byteValue = (int) MAX_BRIGHTNESS;
         else if (gestureAction == MINIMIZE_BRIGHTNESS) byteValue = (int) MIN_BRIGHTNESS;
-
-        Log.i("TEST", "Byte from " + originalValue + " to " + byteValue);
-        Log.i("TEST", "Percentage from " + byteToPercentage(originalValue) + " to " + byteToPercentage(byteValue));
 
         Intent intent = new Intent(app, BrightnessActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
