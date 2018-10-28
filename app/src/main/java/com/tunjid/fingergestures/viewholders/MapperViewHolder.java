@@ -71,7 +71,7 @@ public class MapperViewHolder extends AppViewHolder {
         GestureMapper mapper = GestureMapper.getInstance();
         Context context = itemView.getContext();
         return SpanBuilder.format(context.getString(R.string.mapper_format),
-                new SpanBuilder(context, mapper.getDirectionName(direction)).bold().build(),
+                SpanBuilder.of(mapper.getDirectionName(direction)).bold().build(),
                 text);
     }
 

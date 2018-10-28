@@ -2,8 +2,8 @@ package com.tunjid.fingergestures.viewholders;
 
 import android.app.TimePickerDialog;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.DrawableRes;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.DrawableRes;
+import androidx.core.content.ContextCompat;
 import android.view.View;
 import android.widget.TextView;
 

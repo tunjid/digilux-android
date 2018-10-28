@@ -2,8 +2,8 @@ package com.tunjid.fingergestures.viewholders;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.RecyclerView;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.InputFilter;
 import android.text.InputFilter.LengthFilter;
 import android.text.InputType;
@@ -104,7 +104,7 @@ public class DiscreteBrightnessViewHolder extends AppViewHolder {
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
         editText.setFilters(new InputFilter[]{new LengthFilter(2)});
         editText.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId != EditorInfo.IME_ACTION_SEND)
+            if (actionId == EditorInfo.IME_ACTION_SEND)
                 onDiscreteValueEntered(alertDialog, editText);
             return true;
         });

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout android:id="@+id/container"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/single_margin">
@@ -20,55 +20,56 @@
         android:id="@+id/start"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/single_margin"
         android:layout_marginTop="@dimen/single_margin"
-        android:drawablePadding="@dimen/single_margin"
+        android:layout_marginBottom="@dimen/single_margin"
         android:drawableTop="@drawable/ic_day_24dp"
+        android:drawablePadding="@dimen/single_margin"
+        android:gravity="center_horizontal"
         android:text="@string/light_time"
         android:textColor="@color/toggle_text"
         app:layout_constrainedWidth="true"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/cancel_auto_wallpaper"
-        app:layout_constraintTop_toBottomOf="@+id/title"
-        app:layout_constraintWidth_default="wrap" />
+        app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <TextView
         android:id="@+id/cancel_auto_wallpaper"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/single_margin"
         android:layout_marginTop="@dimen/single_margin"
+        android:layout_marginBottom="@dimen/single_margin"
         android:background="@drawable/circle_background"
         android:gravity="center"
-        android:paddingBottom="@dimen/half_margin"
         android:paddingLeft="@dimen/single_margin"
-        android:paddingRight="@dimen/single_margin"
         android:paddingTop="@dimen/half_margin"
+        android:paddingRight="@dimen/single_margin"
+        android:paddingBottom="@dimen/half_margin"
         android:text="@string/reset"
         android:textColor="@color/toggle_text"
+        app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/start"
         app:layout_constraintLeft_toRightOf="@+id/start"
         app:layout_constraintRight_toLeftOf="@+id/end"
-        app:layout_constraintTop_toTopOf="@+id/start"
-        app:layout_constraintWidth_default="wrap" />
+
+        app:layout_constraintTop_toTopOf="@+id/start" />
 
     <TextView
         android:id="@+id/end"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/single_margin"
         android:layout_marginTop="@dimen/single_margin"
-        android:drawablePadding="@dimen/single_margin"
+        android:layout_marginBottom="@dimen/single_margin"
         android:drawableTop="@drawable/ic_night_24dp"
+        android:drawablePadding="@dimen/single_margin"
+        android:gravity="center_horizontal"
         android:text="@string/dark_time"
         android:textColor="@color/toggle_text"
         app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/start"
         app:layout_constraintLeft_toRightOf="@+id/cancel_auto_wallpaper"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/start"
-        app:layout_constraintWidth_default="wrap" />
-</android.support.constraint.ConstraintLayout>
+        app:layout_constraintTop_toTopOf="@+id/start" />
+</androidx.constraintlayout.widget.ConstraintLayout>
 
 

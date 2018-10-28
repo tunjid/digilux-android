@@ -2,9 +2,9 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.tunjid.fingergestures.App;
+import static com.tunjid.fingergestures.App.withApp;
 
 public class NotificationGestureConsumer implements GestureConsumer {
 
@@ -41,12 +41,12 @@ public class NotificationGestureConsumer implements GestureConsumer {
             case NOTIFICATION_UP:
             case NOTIFICATION_DOWN:
             case NOTIFICATION_TOGGLE:
-                LocalBroadcastManager.getInstance(App.getInstance())
+                withApp(app -> LocalBroadcastManager.getInstance(app)
                         .sendBroadcast(new Intent(gestureAction == NOTIFICATION_UP
                                 ? ACTION_NOTIFICATION_UP
                                 : gestureAction == NOTIFICATION_DOWN
                                 ? ACTION_NOTIFICATION_DOWN
-                                : ACTION_NOTIFICATION_TOGGLE));
+                                : ACTION_NOTIFICATION_TOGGLE)));
                 break;
         }
     }

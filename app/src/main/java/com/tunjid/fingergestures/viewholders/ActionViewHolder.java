@@ -4,7 +4,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.tunjid.androidbootstrap.core.abstractclasses.BaseViewHolder;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveViewHolder;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
@@ -14,9 +14,11 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_HOME;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_LOCK_SCREEN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_TAKE_SCREENSHOT;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_AUDIO;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
@@ -32,7 +34,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT;
 
 
-public class ActionViewHolder extends BaseViewHolder<ActionAdapter.ActionClickListener> {
+public class ActionViewHolder extends InteractiveViewHolder<ActionAdapter.ActionClickListener> {
 
     private final boolean showsText;
     private int action;
@@ -119,6 +121,12 @@ public class ActionViewHolder extends BaseViewHolder<ActionAdapter.ActionClickLi
 
             case GLOBAL_SPLIT_SCREEN:
                 return R.drawable.ic_split_screen_24dp;
+
+            case GLOBAL_LOCK_SCREEN:
+                return R.drawable.ic_lock_screen_24dp;
+
+            case GLOBAL_TAKE_SCREENSHOT:
+                return R.drawable.ic_screenshot_24dp;
 
             case SHOW_POPUP:
                 return R.drawable.ic_more_horizontal_24dp;

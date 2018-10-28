@@ -3,9 +3,10 @@ package com.tunjid.fingergestures.gestureconsumers;
 import android.accessibilityservice.FingerprintGestureController;
 import android.annotation.SuppressLint;
 import android.content.res.TypedArray;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringDef;
-import android.support.annotation.StringRes;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.StringDef;
+import androidx.annotation.StringRes;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
@@ -23,13 +24,16 @@ import static android.accessibilityservice.FingerprintGestureController.FINGERPR
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_LEFT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_RIGHT;
 import static android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_UP;
-import static com.tunjid.fingergestures.App.requireApp;
+import static com.tunjid.fingergestures.App.isPieOrHigher;
+import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_HOME;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_LOCK_SCREEN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_TAKE_SCREENSHOT;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_AUDIO;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
@@ -66,7 +70,6 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     @SuppressLint("StaticFieldLeak")
     private static GestureMapper instance;
-
 
     private final int[] actionIds;
     private final GestureConsumer[] consumers;
@@ -105,14 +108,14 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public void mapGestureToAction(@GestureDirection String direction, @GestureConsumer.GestureAction int action) {
-        requireApp(app -> app.getPreferences().edit().putInt(direction, action).apply());
+        withApp(app -> app.getPreferences().edit().putInt(direction, action).apply());
     }
 
     public String getMappedAction(@GestureDirection String gestureDirection) {
         @GestureConsumer.GestureAction
         int action = directionToAction(gestureDirection);
         int stringResource = resourceForAction(action);
-        return requireApp(app -> app.getString(stringResource), "");
+        return App.transformApp(app -> app.getString(stringResource), "");
     }
 
     @GestureDirection
@@ -121,19 +124,20 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public int[] getActions() {
-        return IntStream.of(actionIds).map(this::actionForResource).toArray();
+        return IntStream.of(actionIds).map(this::actionForResource)
+                .filter(this::isSupportedAction).toArray();
     }
 
     public int getDoubleSwipeDelay() {
-        return requireApp(app -> app.getPreferences().getInt(DOUBLE_SWIPE_DELAY, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE), DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE);
+        return App.transformApp(app -> app.getPreferences().getInt(DOUBLE_SWIPE_DELAY, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE), DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE);
     }
 
     public void setDoubleSwipeDelay(int percentage) {
-        requireApp(app -> app.getPreferences().edit().putInt(DOUBLE_SWIPE_DELAY, percentage).apply());
+        withApp(app -> app.getPreferences().edit().putInt(DOUBLE_SWIPE_DELAY, percentage).apply());
     }
 
     public String getSwipeDelayText(int percentage) {
-        return requireApp(app -> app.getString(PurchasesManager.getInstance().isNotPremium()
+        return App.transformApp(app -> app.getString(PurchasesManager.getInstance().isNotPremium()
                 ? R.string.go_premium_text
                 : R.string.double_swipe_delay, delayPercentageToMillis(percentage)), "");
     }
@@ -242,11 +246,16 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
         }
     }
 
+    private boolean isSupportedAction(@GestureConsumer.GestureAction int action) {
+        if (action == GLOBAL_LOCK_SCREEN || action == GLOBAL_TAKE_SCREENSHOT) return isPieOrHigher();
+        return true;
+    }
+
     @GestureConsumer.GestureAction
     private int directionToAction(@GestureDirection String direction) {
         if (isDouble(direction) && PurchasesManager.getInstance().isNotPremium()) return DO_NOTHING;
 
-        int gesture = requireApp(app -> app.getPreferences().getInt(direction, UNASSIGNED_GESTURE), UNASSIGNED_GESTURE);
+        int gesture = App.transformApp(app -> app.getPreferences().getInt(direction, UNASSIGNED_GESTURE), UNASSIGNED_GESTURE);
         if (gesture != UNASSIGNED_GESTURE) return gesture;
 
         // Defaults
@@ -333,6 +342,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return GLOBAL_SPLIT_SCREEN;
             case R.string.global_power_dialog:
                 return GLOBAL_POWER_DIALOG;
+            case R.string.global_lock_screen:
+                return GLOBAL_LOCK_SCREEN;
+            case R.string.global_take_screenshot:
+                return GLOBAL_TAKE_SCREENSHOT;
             case R.string.show_popup:
                 return SHOW_POPUP;
         }
@@ -378,6 +391,10 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
                 return R.string.global_split_screen;
             case GLOBAL_POWER_DIALOG:
                 return R.string.global_power_dialog;
+            case GLOBAL_LOCK_SCREEN:
+                return R.string.global_lock_screen;
+            case GLOBAL_TAKE_SCREENSHOT:
+                return R.string.global_take_screenshot;
             case SHOW_POPUP:
                 return R.string.show_popup;
         }
@@ -386,28 +403,28 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public String getDirectionName(@GestureDirection String direction) {
         switch (direction) {
             case UP_GESTURE:
-                return requireApp(app -> app.getString(R.string.swipe_up), "");
+                return App.transformApp(app -> app.getString(R.string.swipe_up), "");
             case DOWN_GESTURE:
-                return requireApp(app -> app.getString(R.string.swipe_down), "");
+                return App.transformApp(app -> app.getString(R.string.swipe_down), "");
             case LEFT_GESTURE:
-                return requireApp(app -> app.getString(R.string.swipe_left), "");
+                return App.transformApp(app -> app.getString(R.string.swipe_left), "");
             case RIGHT_GESTURE:
-                return requireApp(app -> app.getString(R.string.swipe_right), "");
+                return App.transformApp(app -> app.getString(R.string.swipe_right), "");
             case DOUBLE_UP_GESTURE:
-                return requireApp(app -> app.getString(R.string.double_swipe_up), "");
+                return App.transformApp(app -> app.getString(R.string.double_swipe_up), "");
             case DOUBLE_DOWN_GESTURE:
-                return requireApp(app -> app.getString(R.string.double_swipe_down), "");
+                return App.transformApp(app -> app.getString(R.string.double_swipe_down), "");
             case DOUBLE_LEFT_GESTURE:
-                return requireApp(app -> app.getString(R.string.double_swipe_left), "");
+                return App.transformApp(app -> app.getString(R.string.double_swipe_left), "");
             case DOUBLE_RIGHT_GESTURE:
-                return requireApp(app -> app.getString(R.string.double_swipe_right), "");
+                return App.transformApp(app -> app.getString(R.string.double_swipe_right), "");
             default:
                 return "";
         }
     }
 
     private int[] getActionIds() {
-        return requireApp(app -> {
+        return App.transformApp(app -> {
             TypedArray array = app.getResources().obtainTypedArray(R.array.action_resources);
             int length = array.length();
 

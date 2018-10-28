@@ -5,9 +5,11 @@ import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import android.view.accessibility.AccessibilityManager;
 
 import java.util.List;
@@ -25,6 +27,7 @@ import static io.reactivex.Flowable.timer;
 public class App extends android.app.Application {
 
     private static final String BRIGHTNESS_PREFS = "brightness prefs";
+    public static final String EMPTY = "";
 
     private static App instance;
 
@@ -38,6 +41,7 @@ public class App extends android.app.Application {
         return getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
     }
 
+    @Nullable
     public static App getInstance() {
         return instance;
     }
@@ -62,22 +66,26 @@ public class App extends android.app.Application {
     }
 
     public static boolean canWriteToSettings() {
-        return requireApp(Settings.System::canWrite, false);
+        return transformApp(Settings.System::canWrite, false);
     }
 
     public static boolean hasStoragePermission() {
-        return requireApp(app -> ContextCompat.checkSelfPermission(app, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED, false);
+        return transformApp(app -> ContextCompat.checkSelfPermission(app, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED, false);
+    }
+
+    public static boolean isPieOrHigher() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
     }
 
     public static boolean hasDoNotDisturbAccess() {
-        return requireApp(app -> {
+        return transformApp(app -> {
             NotificationManager notificationManager = app.getSystemService(NotificationManager.class);
             return notificationManager != null && notificationManager.isNotificationPolicyAccessGranted();
         }, false);
     }
 
     public static boolean accessibilityServiceEnabled() {
-        return requireApp(app -> {
+        return transformApp(app -> {
             String key = app.getPackageName();
 
             AccessibilityManager accessibilityManager = ((AccessibilityManager) app.getSystemService(ACCESSIBILITY_SERVICE));
@@ -90,15 +98,20 @@ public class App extends android.app.Application {
         }, false);
     }
 
-    public static void requireApp(Consumer<App> appConsumer) {
+    public static void withApp(Consumer<App> appConsumer) {
         App app = getInstance();
         if (app == null) return;
 
         appConsumer.accept(app);
     }
 
-    public static <T> T requireApp(Function<App, T> appTFunction, T defaultValue) {
+    public static <T> T transformApp(Function<App, T> appTFunction, T defaultValue) {
         App app = getInstance();
         return app != null ? appTFunction.apply(app) : defaultValue;
+    }
+
+    @Nullable
+    public static <T> T transformApp(Function<App, T> appTFunction) {
+        return transformApp(appTFunction, null);
     }
 }

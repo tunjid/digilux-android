@@ -1,11 +1,12 @@
 package com.tunjid.fingergestures.viewholders;
 
+import android.annotation.SuppressLint;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.constraint.ConstraintLayout;
-import android.support.v4.content.FileProvider;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.FileProvider;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -40,13 +41,14 @@ public class WallpaperViewHolder extends AppViewHolder {
         night.setOnClickListener(view -> adapterListener.pickWallpaper(NIGHT_WALLPAPER_PICK_CODE));
         itemView.findViewById(R.id.share_day_wallpaper).setOnClickListener(view -> requestEdit(DAY_WALLPAPER_PICK_CODE));
         itemView.findViewById(R.id.share_night_wallpaper).setOnClickListener(view -> requestEdit(NIGHT_WALLPAPER_PICK_CODE));
-        
+
         setAspectRatio(current);
         setAspectRatio(day);
         setAspectRatio(night);
     }
 
     @Override
+    @SuppressLint("MissingPermission")
     public void bind() {
         super.bind();
         if (App.hasStoragePermission()) {
@@ -73,7 +75,7 @@ public class WallpaperViewHolder extends AppViewHolder {
 
     private void requestEdit(@BackgroundManager.WallpaperSelection int selection) {
         Context context = itemView.getContext();
-        File file = backgroundManager.getWallpaperFile(selection);
+        File file = backgroundManager.getWallpaperFile(selection, context);
 
         if (!file.exists()) {
             adapterListener.showSnackbar(R.string.error_wallpaper_not_created);
@@ -86,14 +88,17 @@ public class WallpaperViewHolder extends AppViewHolder {
         editIntent.setDataAndType(uri, "image/*");
         editIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        context.startActivity(Intent.createChooser(editIntent, context.getString(R.string.choose_edit_source_message), backgroundManager.getWallpaperEditPendingIntent().getIntentSender()));
+        context.startActivity(Intent.createChooser(editIntent,
+                context.getString(R.string.choose_edit_source_message),
+                backgroundManager.getWallpaperEditPendingIntent(context).getIntentSender()));
     }
 
     private void loadImage(@BackgroundManager.WallpaperSelection int selection, ImageView imageView) {
-        File file = backgroundManager.getWallpaperFile(selection);
+        Context context = imageView.getContext();
+        File file = backgroundManager.getWallpaperFile(selection, context);
         if (!file.exists()) return;
 
-        Picasso.with(itemView.getContext()).load(file)
+        Picasso.with(context).load(file)
                 .memoryPolicy(MemoryPolicy.NO_CACHE)
                 .fit()
                 .noFade()

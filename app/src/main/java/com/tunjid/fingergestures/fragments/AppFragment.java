@@ -9,13 +9,13 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +32,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
-import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
+import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 
 public class AppFragment extends MainActivityFragment
         implements
@@ -164,8 +164,9 @@ public class AppFragment extends MainActivityFragment
     public void cropImage(Uri source, @BackgroundManager.WallpaperSelection int selection) {
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
         int[] aspectRatio = backgroundManager.getScreenAspectRatio();
+        if (aspectRatio == null) return;
 
-        File file = backgroundManager.getWallpaperFile(selection);
+        File file = backgroundManager.getWallpaperFile(selection, requireContext());
         Uri destination = Uri.fromFile(file);
 
         Activity activity = getActivity();

@@ -20,6 +20,8 @@
         <item>@string/global_recents</item>
         <item>@string/global_split_screen</item>
         <item>@string/global_power_dialog</item>
+        <item>@string/global_lock_screen</item>
+        <item>@string/global_take_screenshot</item>
     </array>
     <array name="purchase_options">
         <item>@string/remove_ads_only</item>

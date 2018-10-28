@@ -14,9 +14,9 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -198,7 +198,7 @@ public class FingerGestureService extends AccessibilityService {
     private void closeNotifications() {
         Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         closeIntent.setPackage(ANDROID_SYSTEM_UI_PACKAGE);
-        App.getInstance().sendBroadcast(closeIntent);
+        sendBroadcast(closeIntent);
     }
 
     private void showPopup() {
@@ -304,21 +304,18 @@ public class FingerGestureService extends AccessibilityService {
     private AccessibilityNodeInfo findNode(AccessibilityNodeInfo info, String name) {
         if (info == null) return null;
         int size = info.getChildCount();
-        if (size > 0) {
-            for (int i = 0; i < size; i++) {
-                AccessibilityNodeInfo node = findNode(info.getChild(i), name);
-                if (node != null) return node;
-            }
-        }
-        else {
-            if (!info.getActionList().contains(ACTION_CLICK)) return null;
 
-            CharSequence contentDescription = info.getContentDescription();
-            if (TextUtils.isEmpty(contentDescription)) return null;
-
-            String description = contentDescription.toString();
-            if (description.contains(name)) return info;
+        if (size > 0) for (int i = 0; i < size; i++) {
+            AccessibilityNodeInfo node = findNode(info.getChild(i), name);
+            if (node != null) return node;
         }
+        if (!info.getActionList().contains(ACTION_CLICK)) return null;
+
+        CharSequence contentDescription = info.getContentDescription();
+        if (TextUtils.isEmpty(contentDescription)) return null;
+
+        String description = contentDescription.toString();
+        if (description.contains(name)) return info;
         return null;
     }
 }
