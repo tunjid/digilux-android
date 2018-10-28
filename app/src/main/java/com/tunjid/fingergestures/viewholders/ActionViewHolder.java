@@ -14,9 +14,11 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_HOME;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_LOCK_SCREEN;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN;
+import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_TAKE_SCREENSHOT;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_AUDIO;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS;
@@ -119,6 +121,12 @@ public class ActionViewHolder extends InteractiveViewHolder<ActionAdapter.Action
 
             case GLOBAL_SPLIT_SCREEN:
                 return R.drawable.ic_split_screen_24dp;
+
+            case GLOBAL_LOCK_SCREEN:
+                return R.drawable.ic_lock_screen_24dp;
+
+            case GLOBAL_TAKE_SCREENSHOT:
+                return R.drawable.ic_screenshot_24dp;
 
             case SHOW_POPUP:
                 return R.drawable.ic_more_horizontal_24dp;
