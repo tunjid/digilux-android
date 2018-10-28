@@ -10,6 +10,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.provider.Settings;
+import android.util.Log;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BrightnessLookup;
@@ -50,7 +51,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private static final int DEF_POSITION_VALUE = 50;
     private static final int DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD = 50;
 
-    public static final String BRIGHTNESS_FRACTION = "brightness value";
+    public static final String CURRENT_BRIGHTNESS_BYTE = "brightness value";
     public static final String ACTION_SCREEN_DIMMER_CHANGED = "show screen dimmer";
     private static final String INCREMENT_VALUE = "increment value";
     private static final String SLIDER_POSITION = "slider position";
@@ -96,6 +97,9 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         else if (gestureAction == MAXIMIZE_BRIGHTNESS) byteValue = (int) MAX_BRIGHTNESS;
         else if (gestureAction == MINIMIZE_BRIGHTNESS) byteValue = (int) MIN_BRIGHTNESS;
 
+        Log.i("TEST", "Byte from " + originalValue + " to " + byteValue);
+        Log.i("TEST", "Percentage from " + byteToPercentage(originalValue) + " to " + byteToPercentage(byteValue));
+
         Intent intent = new Intent(app, BrightnessActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
@@ -111,8 +115,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
         saveBrightness(byteValue);
 
-        float brightness = byteValue / MAX_BRIGHTNESS;
-        intent.putExtra(BRIGHTNESS_FRACTION, brightness);
+        intent.putExtra(CURRENT_BRIGHTNESS_BYTE, byteValue);
 
         if (shouldShowSlider()) app.startActivity(intent);
     }
@@ -374,7 +377,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
                 : (int) (percentage * MAX_BRIGHTNESS / 100);
     }
 
-    private int byteToPercentage(int byteValue) {
+    public int byteToPercentage(int byteValue) {
         return usesLogarithmicScale()
                 ? BrightnessLookup.lookup(byteValue, true)
                 : (int) (byteValue * 100 / MAX_BRIGHTNESS);

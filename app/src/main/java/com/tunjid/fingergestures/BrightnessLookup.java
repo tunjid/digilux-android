@@ -2,38 +2,44 @@ package com.tunjid.fingergestures;
 
 public class BrightnessLookup {
 
+    private static final int FLICKER_THRESHOLD = 24;
+
     public static int lookup(int query, boolean isByte) {
         int low = 0;
-        int high = lookup.length - 1;
+        int mid = 0;
+        int high = table.length - 1;
+        boolean increasing = true;
+
+        // No direct mapping for bytes, just crawl for the lower values
+        if (!isByte && query < FLICKER_THRESHOLD) return crawl(query, 0, false, true);
 
         while (low <= high) {
-            int middle = (low + high) / 2;
-            int key = lookup[middle][isByte ? 0 : 1];
+            mid = (low + high) / 2;
+            int key = table[mid][isByte ? 0 : 1];
             int diff = query - key;
-            boolean increasing = diff > 0;
+            increasing = diff > 0;
 
-            if (Math.abs(diff) < 2) return crawl(query, middle, isByte, increasing);
-            else if (increasing) low = middle + 1;
-            else high = middle - 1;
+            if (Math.abs(diff) < 2) return crawl(query, mid, isByte, increasing);
+            else if (increasing) low = mid + 1;
+            else high = mid - 1;
         }
-        return 0;
+
+        return crawl(query, mid, isByte, increasing);
     }
 
     private static int crawl(int query, int index, boolean isByte, boolean increasing) {
+        int i = index;
+        int num = table.length;
         int key = isByte ? 0 : 1;
         int value = isByte ? 1 : 0;
 
-        if (increasing) for (int i = index, lookupLength = lookup.length; i < lookupLength; i++) {
-            if (lookup[i][key] >= query) return lookup[i][value];
-        }
-        else for (int i = index; i >= 0; i--) {
-            if (lookup[i][key] <= query) return lookup[i][value];
-        }
+        if (increasing) { for (; i < num; i++) if (table[i][key] >= query) return table[i][value]; }
+        else for (; i >= 0; i--) if (table[i][key] <= query) return table[i][value];
+
         return 0;
     }
 
-
-    private static final int[][] lookup = {
+    private static final int[][] table = {
             {1, 6},
             {2, 11},
             {3, 15},

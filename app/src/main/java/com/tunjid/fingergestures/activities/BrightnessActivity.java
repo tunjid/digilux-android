@@ -6,8 +6,6 @@ import android.transition.AutoTransition;
 import android.transition.TransitionManager;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -19,7 +17,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
 import static android.graphics.PorterDuff.Mode.SRC_IN;
-import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.BRIGHTNESS_FRACTION;
+import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.CURRENT_BRIGHTNESS_BYTE;
 
 public class BrightnessActivity extends TimedActivity
         implements SeekBar.OnSeekBarChangeListener {
@@ -87,33 +85,27 @@ public class BrightnessActivity extends TimedActivity
     }
 
     @Override
-    public void onProgressChanged(SeekBar seekBar, int percentage, boolean b) {
-        if (percentage == 100) percentage--;
-        float brightness = percentage / 100F;
+    public void onProgressChanged(SeekBar seekBar, int percentage, boolean fromUser) {
+        updateEndTime();
 
-        Window window = getWindow();
-        WindowManager.LayoutParams params = window.getAttributes();
-        params.screenBrightness = brightness;
-        window.setAttributes(params);
+        if (!fromUser) return;
+        if (percentage == 100) percentage--;
 
         brightnessByte = brightnessGestureConsumer.percentToByte(percentage);
         brightnessGestureConsumer.saveBrightness(brightnessByte);
 
-        if (seekBarText.getVisibility() == View.VISIBLE) {
-            TransitionManager.beginDelayedTransition(seekBarBackground, new AutoTransition());
-            seekBarText.setVisibility(View.GONE);
-        }
+        if (seekBarText.getVisibility() != View.VISIBLE) return;
 
-        updateEndTime();
+        TransitionManager.beginDelayedTransition(seekBarBackground, new AutoTransition());
+        seekBarText.setVisibility(View.GONE);
     }
 
     private void handleIntent(Intent intent) {
         TransitionManager.beginDelayedTransition(seekBarBackground, new AutoTransition());
 
-        float brightness = intent.getFloatExtra(BRIGHTNESS_FRACTION, 0);
-        int percentage = (int) (brightness * 100);
+        brightnessByte = intent.getIntExtra(CURRENT_BRIGHTNESS_BYTE, 0);
+        int percentage = brightnessGestureConsumer.byteToPercentage(brightnessByte);
 
-        brightnessByte = brightnessGestureConsumer.percentToByte(percentage);
         seekBar.setProgress(percentage, true);
         seekBar.setOnSeekBarChangeListener(this);
 
@@ -134,7 +126,5 @@ public class BrightnessActivity extends TimedActivity
     }
 
     @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
-    }
+    public void onStopTrackingTouch(SeekBar seekBar) { }
 }
