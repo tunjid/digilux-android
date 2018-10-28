@@ -1,10 +1,12 @@
 package com.tunjid.fingergestures.adapters;
 
-import android.support.annotation.LayoutRes;
+import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
+
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.tunjid.androidbootstrap.core.abstractclasses.BaseRecyclerViewAdapter;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.viewholders.ActionViewHolder;
@@ -25,18 +27,19 @@ public class ActionAdapter extends DiffAdapter<ActionViewHolder, ActionAdapter.A
         setHasStableIds(true);
     }
 
+    @NonNull
     @Override
-    public ActionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ActionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         @LayoutRes int layoutRes = isHorizontal ? R.layout.viewholder_action_horizontal : R.layout.viewholder_action_vertical;
         return new ActionViewHolder(showsText, LayoutInflater.from(parent.getContext()).inflate(layoutRes, parent, false), adapterListener);
     }
 
     @Override
-    public void onBindViewHolder(ActionViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ActionViewHolder holder, int position) {
         holder.bind(Integer.valueOf(list.get(position)));
     }
 
-    public interface ActionClickListener extends BaseRecyclerViewAdapter.AdapterListener {
+    public interface ActionClickListener extends InteractiveAdapter.AdapterListener {
         void onActionClicked(@GestureConsumer.GestureAction int actionRes);
     }
 }

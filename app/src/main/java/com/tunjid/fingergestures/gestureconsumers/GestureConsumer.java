@@ -1,6 +1,6 @@
 package com.tunjid.fingergestures.gestureconsumers;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -15,8 +15,8 @@ public interface GestureConsumer {
     int REDUCE_BRIGHTNESS = 1;
     int MAXIMIZE_BRIGHTNESS = 2;
     int MINIMIZE_BRIGHTNESS = 3;
-    //    int NIGHT_MODE_ON = 4;
-//    int NIGHT_MODE_OFF = 5;
+    // int NIGHT_MODE_ON = 4; DO NOT REMOVE FOR LEGACY REASONS
+    // int NIGHT_MODE_OFF = 5; DO NOT REMOVE FOR LEGACY REASONS
     int NOTIFICATION_UP = 6;
     int NOTIFICATION_DOWN = 7;
     int DO_NOTHING = 8;
@@ -32,22 +32,20 @@ public interface GestureConsumer {
     int SHOW_POPUP = 18;
     int INCREASE_AUDIO = 19;
     int REDUCE_AUDIO = 20;
+    int GLOBAL_LOCK_SCREEN = 21;
+    int GLOBAL_TAKE_SCREENSHOT = 22;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({INCREASE_BRIGHTNESS, REDUCE_BRIGHTNESS, MAXIMIZE_BRIGHTNESS, MINIMIZE_BRIGHTNESS,
             NOTIFICATION_DOWN, NOTIFICATION_UP, NOTIFICATION_TOGGLE, DO_NOTHING,
             TOGGLE_FLASHLIGHT, TOGGLE_DOCK, TOGGLE_AUTO_ROTATE,
             GLOBAL_HOME, GLOBAL_BACK, GLOBAL_RECENTS, GLOBAL_SPLIT_SCREEN, GLOBAL_POWER_DIALOG,
-            SHOW_POPUP, REDUCE_AUDIO, INCREASE_AUDIO})
+            SHOW_POPUP, REDUCE_AUDIO, INCREASE_AUDIO, GLOBAL_LOCK_SCREEN, GLOBAL_TAKE_SCREENSHOT})
     @interface GestureAction {}
 
     void onGestureActionTriggered(@GestureAction int gestureAction);
 
     boolean accepts(@GestureAction int gesture);
-
-    static int normalizePercentageToByte(int percentage) {
-        return (int) (BrightnessGestureConsumer.MAX_BRIGHTNESS * (percentage / 100F));
-    }
 
     static float normalizePercentageToFraction(int percentage) {
         return percentage / 100F;

@@ -5,14 +5,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
 import android.view.LayoutInflater;
@@ -29,14 +21,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
-import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
+import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 import static com.tunjid.fingergestures.adapters.AppAdapter.EXCLUDED_ROTATION_LOCK;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ROTATION_LOCK;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
+import static java.util.Objects.requireNonNull;
 
 public class PackageFragment extends MainActivityFragment implements PackageAdapter.PackageClickListener {
 
@@ -59,7 +60,6 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
     public String getStableTag() {
         return getClass().getSimpleName();
     }
-
 
     @Nullable
     @Override
@@ -132,7 +132,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
     }
 
     private void populateList(Context context) {
-        Single.fromCallable(() -> context.getPackageManager().getInstalledApplications(0).stream()
+        disposables.add(Single.fromCallable(() -> context.getPackageManager().getInstalledApplications(0).stream()
                 .filter(applicationInfo -> (applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0 || (applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0)
                 .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
                 .map(packageInfo -> packageInfo.packageName)
@@ -146,8 +146,8 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
                     packageNames.clear();
                     packageNames.addAll(list);
                     progressBar.setVisibility(View.GONE);
-                    ((PackageAdapter) recyclerView.getAdapter()).calculateDiff();
+                    ((PackageAdapter) requireNonNull(recyclerView.getAdapter())).calculateDiff();
                     TransitionManager.beginDelayedTransition(root, new AutoTransition());
-                }, Throwable::printStackTrace);
+                }, Throwable::printStackTrace));
     }
 }

@@ -4,10 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.support.annotation.IdRes;
-import android.support.annotation.IntDef;
-import android.support.annotation.IntRange;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.IdRes;
+import androidx.annotation.IntDef;
+import androidx.annotation.IntRange;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;

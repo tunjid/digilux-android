@@ -10,11 +10,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.provider.Settings;
-import android.support.annotation.FloatRange;
-import android.support.annotation.IntRange;
-import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.tunjid.fingergestures.App;
+import com.tunjid.fingergestures.BrightnessLookup;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.SetManager;
 import com.tunjid.fingergestures.activities.BrightnessActivity;
@@ -25,34 +24,39 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
+import androidx.annotation.FloatRange;
+import androidx.annotation.IntRange;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
 import static com.tunjid.fingergestures.App.transformApp;
 import static com.tunjid.fingergestures.App.withApp;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToByte;
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToFraction;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.reverseOrder;
 
 public class BrightnessGestureConsumer implements GestureConsumer {
 
-    static final float MAX_BRIGHTNESS = 255F;
+    private static final int FUZZ_THRESHOLD = 15;
     private static final float MIN_BRIGHTNESS = 0F;
     private static final float MIN_DIM_PERCENT = 0F;
-    private static final float MAX_DIM_PERCENT = 0.8F;
+    private static final float MAX_DIM_PERCENT = .8F;
+    private static final float MAX_BRIGHTNESS = 255F;
     private static final float DEF_DIM_PERCENT = MIN_DIM_PERCENT;
     private static final int MAX_ADAPTIVE_THRESHOLD = 1200;
     private static final int DEF_INCREMENT_VALUE = 20;
     private static final int DEF_POSITION_VALUE = 50;
     private static final int DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD = 50;
 
-    public static final String BRIGHTNESS_FRACTION = "brightness value";
+    public static final String CURRENT_BRIGHTNESS_BYTE = "brightness value";
     public static final String ACTION_SCREEN_DIMMER_CHANGED = "show screen dimmer";
     private static final String INCREMENT_VALUE = "increment value";
     private static final String SLIDER_POSITION = "slider position";
     private static final String SLIDER_VISIBLE = "slider visible";
+    private static final String LOGARITHMIC_SCALE = "logarithmic scale";
     private static final String ADAPTIVE_BRIGHTNESS = "adaptive brightness";
     private static final String ADAPTIVE_BRIGHTNESS_THRESHOLD = "adaptive brightness threshold";
     private static final String SCREEN_DIMMER_ENABLED = "screen dimmer enabled";
@@ -83,7 +87,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         App app = App.getInstance();
         if (app == null) return;
 
-        try {byteValue = Settings.System.getInt(app.getContentResolver(), SCREEN_BRIGHTNESS);}
+        try { byteValue = Settings.System.getInt(app.getContentResolver(), SCREEN_BRIGHTNESS); }
         catch (Exception e) {byteValue = (int) MAX_BRIGHTNESS;}
 
         originalValue = byteValue;
@@ -92,6 +96,9 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         else if (gestureAction == REDUCE_BRIGHTNESS) byteValue = reduce(byteValue);
         else if (gestureAction == MAXIMIZE_BRIGHTNESS) byteValue = (int) MAX_BRIGHTNESS;
         else if (gestureAction == MINIMIZE_BRIGHTNESS) byteValue = (int) MIN_BRIGHTNESS;
+
+        Log.i("TEST", "Byte from " + originalValue + " to " + byteValue);
+        Log.i("TEST", "Percentage from " + byteToPercentage(originalValue) + " to " + byteToPercentage(byteValue));
 
         Intent intent = new Intent(app, BrightnessActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -108,8 +115,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
         saveBrightness(byteValue);
 
-        float brightness = byteValue / MAX_BRIGHTNESS;
-        intent.putExtra(BRIGHTNESS_FRACTION, brightness);
+        intent.putExtra(CURRENT_BRIGHTNESS_BYTE, byteValue);
 
         if (shouldShowSlider()) app.startActivity(intent);
     }
@@ -203,14 +209,23 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     private int reduce(int byteValue) {
         return noDiscreteBrightness()
-                ? Math.max(byteValue - normalizePercentageToByte(getIncrementPercentage()), (int) MIN_BRIGHTNESS)
+                ? Math.max(adjustByte(byteValue, false), (int) MIN_BRIGHTNESS)
                 : findDiscreteBrightnessValue(byteValue, false);
     }
 
     private int increase(int byteValue) {
         return noDiscreteBrightness()
-                ? Math.min(byteValue + normalizePercentageToByte(getIncrementPercentage()), (int) MAX_BRIGHTNESS)
+                ? Math.min(adjustByte(byteValue, true), (int) MAX_BRIGHTNESS)
                 : findDiscreteBrightnessValue(byteValue, true);
+    }
+
+    private int adjustByte(int byteValue, boolean increase) {
+        int delta = getIncrementPercentage();
+        int asPercentage = byteToPercentage(byteValue);
+        if (increase) asPercentage = Math.min(asPercentage + delta, 100);
+        else asPercentage = Math.max(asPercentage - delta, 0);
+
+        return percentToByte(asPercentage);
     }
 
     public void setIncrementPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int incrementValue) {
@@ -231,6 +246,10 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     public void shouldRestoreAdaptiveBrightnessOnDisplaySleep(boolean restore) {
         withApp(app -> app.getPreferences().edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply());
+    }
+
+    public void shouldUseLogarithmicScale(boolean isLogarithmic) {
+        withApp(app -> app.getPreferences().edit().putBoolean(LOGARITHMIC_SCALE, isLogarithmic).apply());
     }
 
     public void setSliderVisible(boolean visible) {
@@ -267,6 +286,10 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     public boolean restoresAdaptiveBrightnessOnDisplaySleep() {
         return transformApp(app -> app.getPreferences().getBoolean(ADAPTIVE_BRIGHTNESS, false), false);
+    }
+
+    public boolean usesLogarithmicScale() {
+        return transformApp(app -> app.getPreferences().getBoolean(LOGARITHMIC_SCALE, App.isPieOrHigher()), App.isPieOrHigher());
     }
 
     public boolean supportsAmbientThreshold() {
@@ -348,18 +371,30 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         withApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(intent));
     }
 
+    public int percentToByte(int percentage) {
+        return usesLogarithmicScale()
+                ? BrightnessLookup.lookup(percentage, false)
+                : (int) (percentage * MAX_BRIGHTNESS / 100);
+    }
+
+    public int byteToPercentage(int byteValue) {
+        return usesLogarithmicScale()
+                ? BrightnessLookup.lookup(byteValue, true)
+                : (int) (byteValue * 100 / MAX_BRIGHTNESS);
+    }
+
     private int adaptiveThresholdToLux(int percentage) {
         return (int) (percentage * MAX_ADAPTIVE_THRESHOLD / 100F);
     }
 
-    private int findDiscreteBrightnessValue(int current, boolean increasing) {
-        int evaluated = increasing ? current + 4 : current - 4;
+    private int findDiscreteBrightnessValue(int byteValue, boolean increasing) {
+        int evaluated = byteValue < FUZZ_THRESHOLD ? byteValue : increasing ? byteValue + 2 : byteValue - 2;
         int alternative = (int) (increasing ? MAX_BRIGHTNESS : MIN_BRIGHTNESS);
         Comparator<Integer> comparator = increasing ? naturalOrder() : reverseOrder();
         Function<Integer, Boolean> filter = integer -> increasing ? integer > evaluated : integer < evaluated;
 
         return discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).stream()
-                .map(BrightnessGestureConsumer::stringPercentageToBrightnessInt)
+                .map(this::stringPercentageToBrightnessInt)
                 .filter(filter::apply).min(comparator).orElse(alternative);
     }
 
@@ -376,10 +411,9 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return bd.floatValue();
     }
 
-    private static int stringPercentageToBrightnessInt(String stringPercent) {
+    private int stringPercentageToBrightnessInt(String stringPercent) {
         Float percentage = Float.valueOf(stringPercent);
-        Float byteFloat = percentage * MAX_BRIGHTNESS / 100;
-        return byteFloat.intValue();
+        return percentToByte(percentage.intValue());
     }
 
     private boolean hasBrightnessSensor() {

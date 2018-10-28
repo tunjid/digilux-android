@@ -3,9 +3,9 @@ package com.tunjid.fingergestures.activities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
@@ -20,7 +20,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import java.util.List;
 
-import static android.support.v7.widget.LinearLayoutManager.HORIZONTAL;
+import static androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 public class PopupActivity extends AppCompatActivity {

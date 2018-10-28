@@ -2,14 +2,18 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
+import android.os.Build;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.App;
 
 import static android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK;
 import static android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME;
+import static android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN;
 import static android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_POWER_DIALOG;
 import static android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_RECENTS;
+import static android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_TAKE_SCREENSHOT;
 import static android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN;
 
 public class GlobalActionGestureConsumer implements GestureConsumer {
@@ -34,8 +38,10 @@ public class GlobalActionGestureConsumer implements GestureConsumer {
             case GLOBAL_HOME:
             case GLOBAL_BACK:
             case GLOBAL_RECENTS:
+            case GLOBAL_LOCK_SCREEN:
             case GLOBAL_SPLIT_SCREEN:
             case GLOBAL_POWER_DIALOG:
+            case GLOBAL_TAKE_SCREENSHOT:
                 return true;
             default:
                 return false;
@@ -48,30 +54,35 @@ public class GlobalActionGestureConsumer implements GestureConsumer {
         App app = App.getInstance();
         if (app == null) return;
 
-        int globalAction = -1;
+        int action = -1;
 
         switch (gestureAction) {
             case GLOBAL_HOME:
-                globalAction = GLOBAL_ACTION_HOME;
+                action = GLOBAL_ACTION_HOME;
                 break;
             case GLOBAL_BACK:
-                globalAction = GLOBAL_ACTION_BACK;
+                action = GLOBAL_ACTION_BACK;
                 break;
             case GLOBAL_RECENTS:
-                globalAction = GLOBAL_ACTION_RECENTS;
+                action = GLOBAL_ACTION_RECENTS;
                 break;
             case GLOBAL_SPLIT_SCREEN:
-                globalAction = GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN;
+                action = GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN;
                 break;
             case GLOBAL_POWER_DIALOG:
-                globalAction = GLOBAL_ACTION_POWER_DIALOG;
+                action = GLOBAL_ACTION_POWER_DIALOG;
                 break;
         }
 
-        if (globalAction == -1) return;
+        if (App.isPieOrHigher()) {
+            if (gestureAction == GLOBAL_TAKE_SCREENSHOT) action = GLOBAL_ACTION_TAKE_SCREENSHOT;
+            else if (gestureAction == GLOBAL_LOCK_SCREEN) action = GLOBAL_ACTION_LOCK_SCREEN;
+        }
+
+        if (action == -1) return;
 
         Intent intent = new Intent(ACTION_GLOBAL_ACTION);
-        intent.putExtra(EXTRA_GLOBAL_ACTION, globalAction);
+        intent.putExtra(EXTRA_GLOBAL_ACTION, action);
 
         LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
     }

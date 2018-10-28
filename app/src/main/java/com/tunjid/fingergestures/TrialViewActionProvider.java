@@ -1,7 +1,7 @@
 package com.tunjid.fingergestures;
 
 import android.content.Context;
-import android.support.v4.view.ActionProvider;
+import androidx.core.view.ActionProvider;
 import android.view.MenuItem;
 import android.view.View;
 

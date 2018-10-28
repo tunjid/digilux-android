@@ -1,20 +1,20 @@
 package com.tunjid.fingergestures.baseclasses;
 
 
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
-import android.support.design.widget.Snackbar;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import com.google.android.material.snackbar.Snackbar;
 import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseActivity;
-import com.tunjid.androidbootstrap.core.view.ViewHider;
+import com.tunjid.androidbootstrap.view.animator.ViewHider;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.billing.BillingManager;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import io.reactivex.disposables.CompositeDisposable;
 
-import static android.support.design.widget.Snackbar.LENGTH_SHORT;
+import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
 import static com.android.billingclient.api.BillingClient.BillingResponse.ITEM_ALREADY_OWNED;
 import static com.android.billingclient.api.BillingClient.BillingResponse.OK;
 import static com.android.billingclient.api.BillingClient.BillingResponse.SERVICE_DISCONNECTED;
@@ -23,6 +23,7 @@ import static com.android.billingclient.api.BillingClient.BillingResponse.SERVIC
 public abstract class FingerGestureActivity extends BaseActivity {
 
     protected ViewHider barHider;
+    protected ViewHider fabHider;
     protected ViewGroup coordinator;
     private CompositeDisposable disposables = new CompositeDisposable();
 

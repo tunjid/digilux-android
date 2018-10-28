@@ -4,7 +4,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.tunjid.androidbootstrap.core.abstractclasses.BaseViewHolder;
+import com.tunjid.androidbootstrap.view.recyclerview.InteractiveViewHolder;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
@@ -32,7 +32,7 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_
 import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT;
 
 
-public class ActionViewHolder extends BaseViewHolder<ActionAdapter.ActionClickListener> {
+public class ActionViewHolder extends InteractiveViewHolder<ActionAdapter.ActionClickListener> {
 
     private final boolean showsText;
     private int action;

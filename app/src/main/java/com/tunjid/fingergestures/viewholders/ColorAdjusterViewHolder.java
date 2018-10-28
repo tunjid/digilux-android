@@ -2,8 +2,8 @@ package com.tunjid.fingergestures.viewholders;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.graphics.Palette;
+import androidx.appcompat.app.AlertDialog;
+import androidx.palette.graphics.Palette;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;

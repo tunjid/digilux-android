@@ -17,18 +17,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.annotation.ColorInt;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.IntDef;
-import android.support.annotation.IntRange;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.graphics.Palette;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 
@@ -43,15 +31,27 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.function.IntConsumer;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
+import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.palette.graphics.Palette;
 import io.reactivex.Single;
 
 import static android.app.AlarmManager.INTERVAL_DAY;
 import static android.app.AlarmManager.RTC_WAKEUP;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
-import static android.text.TextUtils.isEmpty;
+import static androidx.core.content.ContextCompat.getColor;
 import static com.tunjid.fingergestures.App.EMPTY;
-import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.App.transformApp;
+import static com.tunjid.fingergestures.App.withApp;
 import static io.reactivex.Single.error;
 import static io.reactivex.Single.fromCallable;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
@@ -107,23 +107,23 @@ public class BackgroundManager {
 
     private BackgroundManager() {
         wallpaperTargets = new String[]{
-                App.transformApp(app -> app.getString(R.string.day_wallpaper), EMPTY),
-                App.transformApp(app -> app.getString(R.string.night_wallpaper), EMPTY)};
+                transformApp(app -> app.getString(R.string.day_wallpaper), EMPTY),
+                transformApp(app -> app.getString(R.string.night_wallpaper), EMPTY)};
     }
 
     @ColorInt
     public int getSliderColor() {
-        return App.transformApp(app -> app.getPreferences().getInt(SLIDER_COLOR, ContextCompat.getColor(app, R.color.colorAccent)), Color.WHITE);
+        return transformApp(app -> app.getPreferences().getInt(SLIDER_COLOR, getColor(app, R.color.colorAccent)), Color.WHITE);
     }
 
     @ColorInt
     public int getBackgroundColor() {
-        return App.transformApp(app -> app.getPreferences().getInt(BACKGROUND_COLOR, ContextCompat.getColor(app, R.color.colorAccent)), Color.LTGRAY);
+        return transformApp(app -> app.getPreferences().getInt(BACKGROUND_COLOR, getColor(app, R.color.colorPrimary)), Color.LTGRAY);
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
     public int getSliderDurationPercentage() {
-        return App.transformApp(app -> app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT), GestureConsumer.FIFTY_PERCENT);
+        return transformApp(app -> app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT), GestureConsumer.FIFTY_PERCENT);
     }
 
     public int getSliderDurationMillis() {
@@ -145,7 +145,7 @@ public class BackgroundManager {
     public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
         int millis = durationPercentageToMillis(duration);
         float seconds = millis / 1000F;
-        return App.transformApp(app -> app.getString(R.string.duration_value, seconds), EMPTY);
+        return transformApp(app -> app.getString(R.string.duration_value, seconds), EMPTY);
     }
 
     @Nullable
@@ -276,13 +276,13 @@ public class BackgroundManager {
 
         if (!App.hasStoragePermission()) return;
         try { wallpaperManager.setStream(new FileInputStream(wallpaperFile));}
-        catch (Exception e) {e.printStackTrace();}
+        catch (Exception e) { e.printStackTrace(); }
     }
 
     @WallpaperSelection
     private int selectionFromIntent(Intent intent) {
         String action = intent.getAction();
-        return !isEmpty(action) && action.equals(ACTION_CHANGE_WALLPAPER)
+        return action != null && action.equals(ACTION_CHANGE_WALLPAPER)
                 ? intent.getIntExtra(EXTRA_CHANGE_WALLPAPER, INVALID_WALLPAPER_PICK_CODE)
                 : INVALID_WALLPAPER_PICK_CODE;
     }
@@ -346,7 +346,7 @@ public class BackgroundManager {
     }
 
     public boolean willChangeWallpaper(@WallpaperSelection int selection) {
-        return App.transformApp(app -> {
+        return transformApp(app -> {
             Intent intent = new Intent(app, WallpaperBroadcastReceiver.class);
             intent.setAction(ACTION_CHANGE_WALLPAPER);
             intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection);

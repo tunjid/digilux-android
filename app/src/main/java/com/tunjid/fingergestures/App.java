@@ -5,10 +5,11 @@ import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import android.view.accessibility.AccessibilityManager;
 
 import java.util.List;
@@ -70,6 +71,10 @@ public class App extends android.app.Application {
 
     public static boolean hasStoragePermission() {
         return transformApp(app -> ContextCompat.checkSelfPermission(app, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED, false);
+    }
+
+    public static boolean isPieOrHigher() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
     }
 
     public static boolean hasDoNotDisturbAccess() {
