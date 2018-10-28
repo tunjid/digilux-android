@@ -47,10 +47,6 @@ public interface GestureConsumer {
 
     boolean accepts(@GestureAction int gesture);
 
-    static int normalizePercentageToByte(int percentage) {
-        return (int) (BrightnessGestureConsumer.MAX_BRIGHTNESS * (percentage / 100F));
-    }
-
     static float normalizePercentageToFraction(int percentage) {
         return percentage / 100F;
     }

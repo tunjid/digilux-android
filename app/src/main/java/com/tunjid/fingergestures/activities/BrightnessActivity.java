@@ -2,8 +2,6 @@ package com.tunjid.fingergestures.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
 import android.view.View;
@@ -17,9 +15,11 @@ import android.widget.TextView;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+
 import static android.graphics.PorterDuff.Mode.SRC_IN;
 import static com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.BRIGHTNESS_FRACTION;
-import static com.tunjid.fingergestures.gestureconsumers.GestureConsumer.normalizePercentageToByte;
 
 public class BrightnessActivity extends TimedActivity
         implements SeekBar.OnSeekBarChangeListener {
@@ -96,7 +96,7 @@ public class BrightnessActivity extends TimedActivity
         params.screenBrightness = brightness;
         window.setAttributes(params);
 
-        brightnessByte = normalizePercentageToByte(percentage);
+        brightnessByte = brightnessGestureConsumer.percentToByte(percentage);
         brightnessGestureConsumer.saveBrightness(brightnessByte);
 
         if (seekBarText.getVisibility() == View.VISIBLE) {
@@ -113,7 +113,7 @@ public class BrightnessActivity extends TimedActivity
         float brightness = intent.getFloatExtra(BRIGHTNESS_FRACTION, 0);
         int percentage = (int) (brightness * 100);
 
-        brightnessByte = normalizePercentageToByte(percentage);
+        brightnessByte = brightnessGestureConsumer.percentToByte(percentage);
         seekBar.setProgress(percentage, true);
         seekBar.setOnSeekBarChangeListener(this);
 

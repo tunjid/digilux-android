@@ -39,11 +39,11 @@ import static java.util.Comparator.reverseOrder;
 
 public class BrightnessGestureConsumer implements GestureConsumer {
 
-    static final float MAX_BRIGHTNESS = 255F;
     private static final int FUZZ_THRESHOLD = 15;
     private static final float MIN_BRIGHTNESS = 0F;
     private static final float MIN_DIM_PERCENT = 0F;
-    private static final float MAX_DIM_PERCENT = 0.8F;
+    private static final float MAX_DIM_PERCENT = .8F;
+    private static final float MAX_BRIGHTNESS = 255F;
     private static final float DEF_DIM_PERCENT = MIN_DIM_PERCENT;
     private static final int MAX_ADAPTIVE_THRESHOLD = 1200;
     private static final int DEF_INCREMENT_VALUE = 20;
@@ -368,6 +368,18 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         withApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(intent));
     }
 
+    public int percentToByte(int percentage) {
+        return usesLogarithmicScale()
+                ? BrightnessLookup.lookup(percentage, false)
+                : (int) (percentage * MAX_BRIGHTNESS / 100);
+    }
+
+    private int byteToPercentage(int byteValue) {
+        return usesLogarithmicScale()
+                ? BrightnessLookup.lookup(byteValue, true)
+                : (int) (byteValue * 100 / MAX_BRIGHTNESS);
+    }
+
     private int adaptiveThresholdToLux(int percentage) {
         return (int) (percentage * MAX_ADAPTIVE_THRESHOLD / 100F);
     }
@@ -396,7 +408,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return bd.floatValue();
     }
 
-    private  int stringPercentageToBrightnessInt(String stringPercent) {
+    private int stringPercentageToBrightnessInt(String stringPercent) {
         Float percentage = Float.valueOf(stringPercent);
         return percentToByte(percentage.intValue());
     }
@@ -417,17 +429,4 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     private boolean noDiscreteBrightness() {
         return discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).isEmpty();
     }
-
-    private  int percentToByte(int percentage) {
-        return usesLogarithmicScale()
-                ? BrightnessLookup.lookup(percentage, false)
-                : (int) (percentage * MAX_BRIGHTNESS / 100);
-    }
-
-    private  int byteToPercentage(int byteValue) {
-        return usesLogarithmicScale()
-                ? BrightnessLookup.lookup(byteValue, true)
-                : (int) (byteValue * 100 / MAX_BRIGHTNESS);
-    }
-
 }
