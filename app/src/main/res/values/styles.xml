@@ -7,6 +7,10 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="SwitchTintTheme" >
+        <item name="colorControlActivated">@color/colorPrimary</item>
+    </style>
+
     <style name="BrightnessActivityTheme" parent="Theme.MaterialComponents.Dialog">
         <item name="windowNoTitle">true</item>
         <item name="android:windowTranslucentStatus">true</item>
