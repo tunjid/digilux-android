@@ -304,21 +304,18 @@ public class FingerGestureService extends AccessibilityService {
     private AccessibilityNodeInfo findNode(AccessibilityNodeInfo info, String name) {
         if (info == null) return null;
         int size = info.getChildCount();
-        if (size > 0) {
-            for (int i = 0; i < size; i++) {
-                AccessibilityNodeInfo node = findNode(info.getChild(i), name);
-                if (node != null) return node;
-            }
-        }
-        else {
-            if (!info.getActionList().contains(ACTION_CLICK)) return null;
 
-            CharSequence contentDescription = info.getContentDescription();
-            if (TextUtils.isEmpty(contentDescription)) return null;
-
-            String description = contentDescription.toString();
-            if (description.contains(name)) return info;
+        if (size > 0) for (int i = 0; i < size; i++) {
+            AccessibilityNodeInfo node = findNode(info.getChild(i), name);
+            if (node != null) return node;
         }
+        if (!info.getActionList().contains(ACTION_CLICK)) return null;
+
+        CharSequence contentDescription = info.getContentDescription();
+        if (TextUtils.isEmpty(contentDescription)) return null;
+
+        String description = contentDescription.toString();
+        if (description.contains(name)) return info;
         return null;
     }
 }

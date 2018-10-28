@@ -164,7 +164,7 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         brightnessGestureConsumer::getAdaptiveBrightnessThresholdText);
             case ENABLE_WATCH_WINDOWS:
                 return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
-                        R.string.auto_rotate_apps,
+                        R.string.selective_app_rotation,
                         rotationGestureConsumer::canAutoRotate,
                         rotationGestureConsumer::enableWindowContentWatching);
             case ENABLE_ACCESSIBILITY_BUTTON:
