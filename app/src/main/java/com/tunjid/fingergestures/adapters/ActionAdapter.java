@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.function.Supplier;
 
 
-public class ActionAdapter extends DiffAdapter<ActionViewHolder, ActionAdapter.ActionClickListener> {
+public class ActionAdapter extends DiffAdapter<ActionViewHolder, ActionAdapter.ActionClickListener, Integer> {
 
     private final boolean isHorizontal;
     private final boolean showsText;
 
-    public ActionAdapter(boolean isHorizontal, boolean showsText, Supplier<List<String>> listSupplier, ActionClickListener listener) {
+    public ActionAdapter(boolean isHorizontal, boolean showsText, Supplier<List<Integer>> listSupplier, ActionClickListener listener) {
         super(listSupplier, listener);
         this.isHorizontal = isHorizontal;
         this.showsText = showsText;
@@ -36,7 +36,7 @@ public class ActionAdapter extends DiffAdapter<ActionViewHolder, ActionAdapter.A
 
     @Override
     public void onBindViewHolder(@NonNull ActionViewHolder holder, int position) {
-        holder.bind(Integer.valueOf(list.get(position)));
+        holder.bind(list.get(position));
     }
 
     public interface ActionClickListener extends InteractiveAdapter.AdapterListener {

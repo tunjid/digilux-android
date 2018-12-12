@@ -27,15 +27,8 @@ public class PackageViewHolder extends InteractiveViewHolder<PackageAdapter.Pack
         itemView.setOnClickListener(view -> adapterListener.onPackageClicked(packageName));
     }
 
-    public void bind(String packageName) {
-        this.packageName = packageName;
-
+    public void bind(ApplicationInfo info) {
         PackageManager packageManager = itemView.getContext().getPackageManager();
-        ApplicationInfo info = null;
-
-        try {info = packageManager.getApplicationInfo(packageName, 0);}
-        catch (Exception e) {e.printStackTrace();}
-
         if (info == null) return;
 
         imageView.setImageDrawable(packageManager.getApplicationIcon(info));

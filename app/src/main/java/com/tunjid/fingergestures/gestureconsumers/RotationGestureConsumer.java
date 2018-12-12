@@ -110,8 +110,8 @@ public class RotationGestureConsumer implements GestureConsumer {
         setManager.removeFromSet(packageName, preferencesName);
     }
 
-    public List<String> getList(@PersistedSet String preferenceName) {
-        return setManager.getList(preferenceName);
+    public List<ApplicationInfo> getList(@PersistedSet String preferenceName) {
+        return setManager.getItems(preferenceName);
     }
 
     public Comparator<ApplicationInfo> getApplicationInfoComparator() {

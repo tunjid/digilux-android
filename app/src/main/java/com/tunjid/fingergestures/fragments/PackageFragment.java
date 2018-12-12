@@ -45,7 +45,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
 
     private View progressBar;
     private RecyclerView recyclerView;
-    private final List<String> packageNames = new ArrayList<>();
+    private final List<ApplicationInfo> packageNames = new ArrayList<>();
 
     public static PackageFragment newInstance(@RotationGestureConsumer.PersistedSet String preferenceName) {
         PackageFragment fragment = new PackageFragment();
@@ -135,7 +135,6 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         disposables.add(Single.fromCallable(() -> context.getPackageManager().getInstalledApplications(0).stream()
                 .filter(applicationInfo -> (applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0 || (applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0)
                 .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
-                .map(packageInfo -> packageInfo.packageName)
                 .collect(Collectors.toList()))
                 .subscribeOn(Schedulers.io())
                 .observeOn(mainThread())

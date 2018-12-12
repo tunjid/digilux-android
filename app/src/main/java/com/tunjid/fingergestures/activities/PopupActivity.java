@@ -3,9 +3,6 @@ package com.tunjid.fingergestures.activities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
@@ -20,7 +17,10 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import java.util.List;
 
-import static androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 public class PopupActivity extends AppCompatActivity {
@@ -41,15 +41,15 @@ public class PopupActivity extends AppCompatActivity {
         window.setLayout(MATCH_PARENT, MATCH_PARENT);
 
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
-        DiffAdapter adapter = new ActionAdapter(true, false, PopUpGestureConsumer.getInstance()::getList, this::onActionClicked);
+        DiffAdapter adapter = new ActionAdapter(true, true, PopUpGestureConsumer.getInstance()::getList, this::onActionClicked);
 
-        List<String> actions = PopUpGestureConsumer.getInstance().getList();
+        List<Integer> actions = PopUpGestureConsumer.getInstance().getList();
         int textColor = backgroundManager.getSliderColor();
         int sliderBackgroundColor = backgroundManager.getBackgroundColor();
 
         TextView text = findViewById(R.id.text);
         RecyclerView recyclerView = findViewById(R.id.item_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, HORIZONTAL, false));
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setBackground(backgroundManager.tint(R.drawable.color_indicator, sliderBackgroundColor));
         recyclerView.setAdapter(adapter);
 

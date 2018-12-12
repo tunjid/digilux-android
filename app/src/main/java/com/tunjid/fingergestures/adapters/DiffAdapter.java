@@ -15,14 +15,15 @@ import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 
 
-public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends InteractiveAdapter.AdapterListener> extends InteractiveAdapter<V, T> {
+public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends InteractiveAdapter.AdapterListener, S>
+        extends InteractiveAdapter<V, T> {
 
-    final List<String> list;
-    private final Supplier<List<String>> listSupplier;
+    final List<S> list;
+    private final Supplier<List<S>> listSupplier;
 
     private final CompositeDisposable disposables;
 
-    DiffAdapter(Supplier<List<String>> listSupplier, T listener) {
+    DiffAdapter(Supplier<List<S>> listSupplier, T listener) {
         super(listener);
         setHasStableIds(true);
         this.list = new ArrayList<>();
@@ -41,8 +42,8 @@ public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends 
     }
 
     public void calculateDiff() {
-        List<String> newPackageNames = listSupplier.get();
-        disposables.add(Single.fromCallable(() -> DiffUtil.calculateDiff(new DiffCallBack(list, newPackageNames)))
+        List<S> newPackageNames = listSupplier.get();
+        disposables.add(Single.fromCallable(() -> DiffUtil.calculateDiff(new DiffCallBack<>(list, newPackageNames)))
                 .subscribe(diffResult -> {
                     list.clear();
                     list.addAll(newPackageNames);
@@ -56,12 +57,12 @@ public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends 
         super.onDetachedFromRecyclerView(recyclerView);
     }
 
-    private static class DiffCallBack extends DiffUtil.Callback {
+    private static class DiffCallBack<S> extends DiffUtil.Callback {
 
-        private final List<String> oldList;
-        private final List<String> newList;
+        private final List<S> oldList;
+        private final List<S> newList;
 
-        DiffCallBack(List<String> oldList, List<String> newList) {
+        DiffCallBack(List<S> oldList, List<S> newList) {
             this.oldList = oldList;
             this.newList = newList;
         }

@@ -145,8 +145,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
         super.onDestroyView();
     }
 
-    private List<String> getItems() {
-        return IntStream.of(GestureMapper.getInstance().getActions())
-                .mapToObj(String::valueOf).collect(Collectors.toList());
+    private List<Integer> getItems() {
+        return IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList());
     }
 }

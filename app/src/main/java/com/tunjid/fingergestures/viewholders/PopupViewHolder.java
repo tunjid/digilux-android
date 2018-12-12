@@ -1,8 +1,5 @@
 package com.tunjid.fingergestures.viewholders;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
@@ -15,7 +12,10 @@ import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.fragments.ActionFragment;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 
-import static androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 
 public class PopupViewHolder extends AppViewHolder {
@@ -28,7 +28,7 @@ public class PopupViewHolder extends AppViewHolder {
         PopUpGestureConsumer buttonManager = PopUpGestureConsumer.getInstance();
 
         recyclerView = itemView.findViewById(R.id.item_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext(), HORIZONTAL, false));
+        recyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 3));
         recyclerView.setAdapter(new ActionAdapter(true, true, buttonManager::getList, this::onActionClicked));
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
