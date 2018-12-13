@@ -21,6 +21,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.disposables.CompositeDisposable;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 public class PopupActivity extends AppCompatActivity {
@@ -68,7 +70,7 @@ public class PopupActivity extends AppCompatActivity {
 
         disposables.add(adapter.calculateDiff().subscribe(size -> {
             spanSizer.set(size == 1 ? 6 : size == 2 ? 3 : 2);
-            text.setVisibility(size.equals(0) ? View.VISIBLE : View.GONE);
+            text.setVisibility(size == 0 ? VISIBLE : GONE);
         }, Throwable::printStackTrace));
 
         findViewById(R.id.constraint_layout).setOnTouchListener((view, motionEvent) -> {
