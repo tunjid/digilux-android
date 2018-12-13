@@ -12,7 +12,7 @@ import com.tunjid.fingergestures.viewholders.DiscreteItemViewHolder;
 import androidx.annotation.NonNull;
 
 
-public class DiscreteBrightnessAdapter extends DiffAdapter<DiscreteItemViewHolder, DiscreteBrightnessAdapter.BrightnessValueClickListener> {
+public class DiscreteBrightnessAdapter extends DiffAdapter<DiscreteItemViewHolder, DiscreteBrightnessAdapter.BrightnessValueClickListener, String> {
 
     public DiscreteBrightnessAdapter(BrightnessValueClickListener listener) {
         super(BrightnessGestureConsumer.getInstance()::getDiscreteBrightnessValues, listener);

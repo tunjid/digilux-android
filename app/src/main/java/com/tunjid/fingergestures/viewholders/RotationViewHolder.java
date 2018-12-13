@@ -1,8 +1,5 @@
 package com.tunjid.fingergestures.viewholders;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
@@ -14,7 +11,10 @@ import com.tunjid.fingergestures.adapters.PackageAdapter;
 import com.tunjid.fingergestures.fragments.PackageFragment;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 
-import static androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 
@@ -28,7 +28,7 @@ public class RotationViewHolder extends AppViewHolder {
         RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
 
         rotationList = itemView.findViewById(R.id.item_list);
-        rotationList.setLayoutManager(new LinearLayoutManager(itemView.getContext(), HORIZONTAL, false));
+        rotationList.setLayoutManager(new GridLayoutManager(itemView.getContext(), 3));
         rotationList.setAdapter(new PackageAdapter(true, () -> gestureConsumer.getList(persistedSet), getPackageClickListener(persistedSet)));
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {

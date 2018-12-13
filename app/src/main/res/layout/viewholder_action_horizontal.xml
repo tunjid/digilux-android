@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/container"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
-    android:paddingLeft="@dimen/single_margin"
-    android:paddingRight="@dimen/single_margin"
-    android:paddingTop="@dimen/single_margin">
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:padding="@dimen/single_margin">
 
     <ImageView
         android:id="@+id/icon"
@@ -16,6 +13,7 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/half_margin"
         android:src="@drawable/ic_do_nothing_24dp"
+        app:layout_constraintBottom_toTopOf="@+id/text"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -24,8 +22,10 @@
         android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:text="@string/blank_emoji"
         android:textColor="@color/toggle_text"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/icon" />
