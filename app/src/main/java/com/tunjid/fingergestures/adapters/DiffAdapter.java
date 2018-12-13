@@ -3,16 +3,20 @@ package com.tunjid.fingergestures.adapters;
 import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
 import com.tunjid.androidbootstrap.view.recyclerview.InteractiveViewHolder;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.subjects.PublishSubject;
+
+import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
+import static io.reactivex.schedulers.Schedulers.io;
 
 
 public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends InteractiveAdapter.AdapterListener, S>
@@ -41,14 +45,19 @@ public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends 
         return list.get(position).hashCode();
     }
 
-    public void calculateDiff() {
-        List<S> newPackageNames = listSupplier.get();
-        disposables.add(Single.fromCallable(() -> DiffUtil.calculateDiff(new DiffCallBack<>(list, newPackageNames)))
+    public Single<Integer> calculateDiff() {
+        PublishSubject<Integer> subject = PublishSubject.create();
+        AtomicReference<List<S>> ref = new AtomicReference<>();
+        disposables.add(Single.fromCallable(() -> DiffUtil.calculateDiff(new DiffCallBack<>(list, ref.updateAndGet(s -> listSupplier.get()))))
+                .subscribeOn(io())
+                .observeOn(mainThread())
                 .subscribe(diffResult -> {
                     list.clear();
-                    list.addAll(newPackageNames);
+                    list.addAll(ref.get());
+                    subject.onNext(list.size()); // must be first
                     diffResult.dispatchUpdatesTo(this);
                 }, Throwable::printStackTrace));
+        return subject.firstOrError();
     }
 
     @Override

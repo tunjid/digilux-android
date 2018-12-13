@@ -11,19 +11,21 @@ import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
-import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
-import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import io.reactivex.disposables.CompositeDisposable;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 public class PopupActivity extends AppCompatActivity {
+
+    private CompositeDisposable disposables;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -37,27 +39,37 @@ public class PopupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_popup);
 
+        disposables = new CompositeDisposable();
+
         Window window = getWindow();
         window.setLayout(MATCH_PARENT, MATCH_PARENT);
 
+        AtomicInteger spanSizer = new AtomicInteger(0);
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
-        DiffAdapter adapter = new ActionAdapter(true, true, PopUpGestureConsumer.getInstance()::getList, this::onActionClicked);
-
-        List<Integer> actions = PopUpGestureConsumer.getInstance().getList();
-        int textColor = backgroundManager.getSliderColor();
-        int sliderBackgroundColor = backgroundManager.getBackgroundColor();
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 6);
+        ActionAdapter adapter = new ActionAdapter(true, true, PopUpGestureConsumer.getInstance()::getList, this::onActionClicked);
 
         TextView text = findViewById(R.id.text);
         RecyclerView recyclerView = findViewById(R.id.item_list);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+
+        int textColor = backgroundManager.getSliderColor();
+        int sliderBackgroundColor = backgroundManager.getBackgroundColor();
+
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.setBackground(backgroundManager.tint(R.drawable.color_indicator, sliderBackgroundColor));
         recyclerView.setAdapter(adapter);
 
         text.setTextColor(textColor);
-        text.setVisibility(actions.isEmpty() ? View.VISIBLE : View.GONE);
         text.setBackground(backgroundManager.tint(R.drawable.color_indicator, sliderBackgroundColor));
 
-        adapter.calculateDiff();
+        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override public int getSpanSize(int position) { return spanSizer.get(); }
+        });
+
+        disposables.add(adapter.calculateDiff().subscribe(size -> {
+            spanSizer.set(size == 1 ? 6 : size == 2 ? 3 : 2);
+            text.setVisibility(size.equals(0) ? View.VISIBLE : View.GONE);
+        }, Throwable::printStackTrace));
 
         findViewById(R.id.constraint_layout).setOnTouchListener((view, motionEvent) -> {
             finish();
@@ -84,6 +96,7 @@ public class PopupActivity extends AppCompatActivity {
         boolean shouldAnimate = PopUpGestureConsumer.getInstance().shouldAnimatePopup();
         if (shouldAnimate) overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down);
         else overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        disposables.clear();
     }
 
     private void onActionClicked(@GestureConsumer.GestureAction int action) {
