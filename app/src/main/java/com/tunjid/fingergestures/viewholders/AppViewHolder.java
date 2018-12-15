@@ -1,8 +1,11 @@
 package com.tunjid.fingergestures.viewholders;
 
 import android.content.Context;
+
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
+import io.reactivex.disposables.CompositeDisposable;
+
 import android.view.View;
 
 import com.tunjid.androidbootstrap.view.recyclerview.InteractiveViewHolder;
@@ -11,6 +14,8 @@ import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 
 public class AppViewHolder extends InteractiveViewHolder<AppAdapter.AppAdapterListener> {
+
+    protected final CompositeDisposable disposables = new CompositeDisposable();
 
     public AppViewHolder(View itemView) {
         super(itemView);
@@ -21,6 +26,8 @@ public class AppViewHolder extends InteractiveViewHolder<AppAdapter.AppAdapterLi
     }
 
     public void bind() {}
+
+    public void clear() { disposables.clear();}
 
     void goPremium(@StringRes int description) {
         Context context = itemView.getContext();
