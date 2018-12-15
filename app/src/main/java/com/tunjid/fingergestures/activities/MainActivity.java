@@ -48,6 +48,7 @@ import com.tunjid.fingergestures.TrialView;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.AppFragment;
+import com.tunjid.fingergestures.viewholders.DiffViewHolder;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -309,6 +310,8 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     protected void onDestroy() {
+        DiffViewHolder.onActivityDestroyed();
+
         if (disposables != null) disposables.clear();
         switcher = null;
         constraintLayout = null;

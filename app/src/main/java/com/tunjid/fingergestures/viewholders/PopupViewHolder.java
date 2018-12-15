@@ -58,6 +58,11 @@ public class PopupViewHolder extends DiffViewHolder<ActionAdapter> {
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
     }
 
+    @Override
+    String getSizeCacheKey() {
+        return getClass().getSimpleName();
+    }
+
     @Nullable @Override
     ActionAdapter getAdapter() {
         return (ActionAdapter) recyclerView.getAdapter();
