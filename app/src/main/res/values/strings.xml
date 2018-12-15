@@ -165,8 +165,8 @@
     <string name="popup_add">Add to accessibility button pop up.</string>
     <string name="popup_remove">Remove from accessibility button pop up?</string>
     <string name="popup_prompt">Please enable the accessibility button.</string>
-    <string name="popup_enable">Enable accessibility button</string>
-    <string name="popup_single_click">Use accessibility button as single click button.
+    <string name="popup_enable">Enable accessibility button in navbar</string>
+    <string name="popup_single_click">Use accessibility navbar button as single click button.
         \n\nThis doesn\'t show the pop up and performs the first action in the pop up list if it exists.</string>
     <string name="popup_no_actions">No pop up actions have been added yet.</string>
     <string name="popup_description">Adds actions to the accessibility button pop up.</string>
