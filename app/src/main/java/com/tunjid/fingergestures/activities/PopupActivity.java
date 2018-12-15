@@ -3,10 +3,10 @@ package com.tunjid.fingergestures.activities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
@@ -54,15 +54,11 @@ public class PopupActivity extends AppCompatActivity {
         TextView text = findViewById(R.id.text);
         RecyclerView recyclerView = findViewById(R.id.item_list);
 
-        int textColor = backgroundManager.getSliderColor();
-        int sliderBackgroundColor = backgroundManager.getBackgroundColor();
-
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setBackground(backgroundManager.tint(R.drawable.color_indicator, sliderBackgroundColor));
         recyclerView.setAdapter(adapter);
 
-        text.setTextColor(textColor);
-        text.setBackground(backgroundManager.tint(R.drawable.color_indicator, sliderBackgroundColor));
+        text.setTextColor(backgroundManager.getSliderColor());
+        this.<MaterialCardView>findViewById(R.id.card).setCardBackgroundColor(backgroundManager.getBackgroundColor());
 
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override public int getSpanSize(int position) { return spanSizer.get(); }
