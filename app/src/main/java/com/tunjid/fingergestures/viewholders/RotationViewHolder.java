@@ -52,6 +52,7 @@ public class RotationViewHolder extends DiffViewHolder<PackageAdapter> {
     @Override
     public void bind() {
         super.bind();
+
         diff();
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
     }

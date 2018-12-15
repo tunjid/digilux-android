@@ -65,6 +65,7 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<DiscreteBrightn
     @Override
     public void bind() {
         super.bind();
+
         diff();
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
     }
