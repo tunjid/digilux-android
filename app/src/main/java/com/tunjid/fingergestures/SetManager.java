@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.tunjid.fingergestures.App.withApp;
 
@@ -45,12 +46,20 @@ public class SetManager<T> {
     }
 
     public List<String> getList(String preferenceName) {
-       return getSet(preferenceName).stream()
+       return stream(preferenceName).collect(Collectors.toList());
+    }
+
+    public List<T> getItems(String preferenceName) {
+        return stream(preferenceName).map(stringMapper).collect(Collectors.toList());
+    }
+
+    private Stream<String> stream(String preferenceName) {
+        return getSet(preferenceName)
+                .stream()
                 .map(stringMapper)
                 .filter(Objects::nonNull)
                 .sorted(sorter)
-                .map(objectMapper)
-                .collect(Collectors.toList());
+                .map(objectMapper);
     }
 
     public Set<String> getSet(String preferencesName) {

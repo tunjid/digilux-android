@@ -1,5 +1,6 @@
 package com.tunjid.fingergestures.adapters;
 
+import android.content.pm.ApplicationInfo;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -13,11 +14,11 @@ import java.util.function.Supplier;
 import androidx.annotation.NonNull;
 
 
-public class PackageAdapter extends DiffAdapter<PackageViewHolder, PackageAdapter.PackageClickListener> {
+public class PackageAdapter extends DiffAdapter<PackageViewHolder, PackageAdapter.PackageClickListener, ApplicationInfo> {
 
     private final boolean isHorizontal;
 
-    public PackageAdapter(boolean isHorizontal, Supplier<List<String>> listSupplier, PackageClickListener listener) {
+    public PackageAdapter(boolean isHorizontal, Supplier<List<ApplicationInfo>> listSupplier, PackageClickListener listener) {
         super(listSupplier, listener);
         setHasStableIds(true);
         this.isHorizontal = isHorizontal;

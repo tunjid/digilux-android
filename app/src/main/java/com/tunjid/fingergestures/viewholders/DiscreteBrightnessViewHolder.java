@@ -2,32 +2,35 @@ package com.tunjid.fingergestures.viewholders;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.InputFilter;
 import android.text.InputFilter.LengthFilter;
 import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.adapters.DiscreteBrightnessAdapter;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.RecyclerView;
 
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_DELTA;
 
-public class DiscreteBrightnessViewHolder extends AppViewHolder {
+public class DiscreteBrightnessViewHolder extends DiffViewHolder<DiscreteBrightnessAdapter> {
 
     private RecyclerView discreteBrightnessList;
 
@@ -43,7 +46,7 @@ public class DiscreteBrightnessViewHolder extends AppViewHolder {
         FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(itemView.getContext());
         layoutManager.setFlexDirection(FlexDirection.ROW);
         layoutManager.setJustifyContent(JustifyContent.FLEX_START);
-        layoutManager.setAlignItems(2);
+        layoutManager.setAlignItems(AlignItems.CENTER);
 
         discreteBrightnessList = itemView.findViewById(R.id.item_list);
         discreteBrightnessList.setLayoutManager(layoutManager);
@@ -63,8 +66,19 @@ public class DiscreteBrightnessViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        ((DiffAdapter) discreteBrightnessList.getAdapter()).calculateDiff();
+
+        diff();
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+    }
+
+    @Override
+    String getSizeCacheKey() {
+        return getClass().getSimpleName();
+    }
+
+    @Nullable @Override
+    DiscreteBrightnessAdapter getAdapter() {
+        return (DiscreteBrightnessAdapter) discreteBrightnessList.getAdapter();
     }
 
     private void onDiscreteValueEntered(DialogInterface dialogInterface, EditText editText) {
@@ -109,6 +123,8 @@ public class DiscreteBrightnessViewHolder extends AppViewHolder {
             return true;
         });
 
+        if (alertDialog.getWindow() != null)
+            alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         alertDialog.show();
     }
 

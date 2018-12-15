@@ -1,9 +1,9 @@
 package com.tunjid.fingergestures.services;
 
 import android.accessibilityservice.AccessibilityButtonController;
+import android.accessibilityservice.AccessibilityButtonController.AccessibilityButtonCallback;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.accessibilityservice.FingerprintGestureController;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -14,9 +14,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -30,12 +29,15 @@ import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.activities.PopupActivity;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 
 import java.util.Objects;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import static android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_ACCESSIBILITY_BUTTON;
 import static android.content.Intent.ACTION_SCREEN_ON;
@@ -74,11 +76,12 @@ public class FingerGestureService extends AccessibilityService {
 
     @Nullable
     private View overlayView;
-    private final AccessibilityButtonController.AccessibilityButtonCallback accessibilityButtonCallback = new AccessibilityButtonController.AccessibilityButtonCallback() {
+
+    private HandlerThread gestureThread;
+
+    private final AccessibilityButtonCallback accessibilityButtonCallback = new AccessibilityButtonCallback() {
         @Override
-        public void onClicked(AccessibilityButtonController controller) {
-            showPopup();
-        }
+        public void onClicked(AccessibilityButtonController controller) { PopUpGestureConsumer.getInstance().showPopup(); }
     };
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -123,7 +126,7 @@ public class FingerGestureService extends AccessibilityService {
                     if (globalAction != -1) performGlobalAction(globalAction);
                     break;
                 case ACTION_SHOW_POPUP:
-                    showPopup();
+                    PopUpGestureConsumer.getInstance().showPopup();
                     break;
             }
         }
@@ -132,8 +135,12 @@ public class FingerGestureService extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
-        FingerprintGestureController gestureController = getFingerprintGestureController();
-        gestureController.registerFingerprintGestureCallback(GestureMapper.getInstance(), null);
+
+        if (gestureThread != null) gestureThread.quitSafely();
+        gestureThread = new HandlerThread("GestureThread");
+        gestureThread.start();
+
+        getFingerprintGestureController().registerFingerprintGestureCallback(GestureMapper.getInstance(), new Handler(gestureThread.getLooper()));
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_SCREEN_DIMMER_CHANGED);
@@ -157,8 +164,13 @@ public class FingerGestureService extends AccessibilityService {
 
     @Override
     public void onDestroy() {
+        getFingerprintGestureController().unregisterFingerprintGestureCallback(GestureMapper.getInstance());
         getAccessibilityButtonController().unregisterAccessibilityButtonCallback(accessibilityButtonCallback);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+
+        if (gestureThread != null) gestureThread.quitSafely();
+        gestureThread = null;
+
         super.onDestroy();
     }
 
@@ -199,12 +211,6 @@ public class FingerGestureService extends AccessibilityService {
         Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         closeIntent.setPackage(ANDROID_SYSTEM_UI_PACKAGE);
         sendBroadcast(closeIntent);
-    }
-
-    private void showPopup() {
-        Intent intent = new Intent(FingerGestureService.this, PopupActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
 
     private void swipeDown() {

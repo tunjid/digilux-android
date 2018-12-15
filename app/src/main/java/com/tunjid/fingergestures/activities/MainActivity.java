@@ -48,6 +48,7 @@ import com.tunjid.fingergestures.TrialView;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.AppFragment;
+import com.tunjid.fingergestures.viewholders.DiffViewHolder;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -68,6 +69,7 @@ import static com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE;
 import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
 import static android.view.animation.AnimationUtils.loadAnimation;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
+import static com.tunjid.fingergestures.adapters.AppAdapter.ACCESSIBILITY_SINGLE_CLICK;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
 import static com.tunjid.fingergestures.adapters.AppAdapter.AD_FREE;
@@ -150,8 +152,8 @@ public class MainActivity extends FingerGestureActivity {
 
     private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_POSITION, SLIDER_DURATION,
             SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ENABLE_WATCH_WINDOWS,
-            ENABLE_ACCESSIBILITY_BUTTON, ANIMATES_POPUP, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
-            POPUP_ACTION, PADDING};
+            ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK, ANIMATES_POPUP, ROTATION_LOCK,
+            EXCLUDED_ROTATION_LOCK, POPUP_ACTION, PADDING};
 
     {
         Context context = App.getInstance();
@@ -308,6 +310,8 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     protected void onDestroy() {
+        DiffViewHolder.onActivityDestroyed();
+
         if (disposables != null) disposables.clear();
         switcher = null;
         constraintLayout = null;

@@ -1,34 +1,36 @@
 package com.tunjid.fingergestures.viewholders;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.adapters.PackageAdapter;
 import com.tunjid.fingergestures.fragments.PackageFragment;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 
-import static androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 
-public class RotationViewHolder extends AppViewHolder {
+public class RotationViewHolder extends DiffViewHolder<PackageAdapter> {
 
+    private final String persistedSet;
     private RecyclerView rotationList;
 
     public RotationViewHolder(View itemView, @RotationGestureConsumer.PersistedSet String persistedSet, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
+        this.persistedSet = persistedSet;
 
         RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
 
         rotationList = itemView.findViewById(R.id.item_list);
-        rotationList.setLayoutManager(new LinearLayoutManager(itemView.getContext(), HORIZONTAL, false));
+        rotationList.setLayoutManager(new GridLayoutManager(itemView.getContext(), 3));
         rotationList.setAdapter(new PackageAdapter(true, () -> gestureConsumer.getList(persistedSet), getPackageClickListener(persistedSet)));
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
@@ -52,8 +54,19 @@ public class RotationViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        ((DiffAdapter) rotationList.getAdapter()).calculateDiff();
+
+        diff();
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+    }
+
+    @Override
+    String getSizeCacheKey() {
+        return persistedSet;
+    }
+
+    @Nullable @Override
+    PackageAdapter getAdapter() {
+        return (PackageAdapter) rotationList.getAdapter();
     }
 
     private PackageAdapter.PackageClickListener getPackageClickListener(@RotationGestureConsumer.PersistedSet String preferenceName) {
