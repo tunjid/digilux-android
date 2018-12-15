@@ -20,10 +20,12 @@ import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 
 public class RotationViewHolder extends DiffViewHolder<PackageAdapter> {
 
+    private final String persistedSet;
     private RecyclerView rotationList;
 
     public RotationViewHolder(View itemView, @RotationGestureConsumer.PersistedSet String persistedSet, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
+        this.persistedSet = persistedSet;
 
         RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
 
@@ -55,6 +57,11 @@ public class RotationViewHolder extends DiffViewHolder<PackageAdapter> {
 
         diff();
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+    }
+
+    @Override
+    String getSizeCacheKey() {
+        return persistedSet;
     }
 
     @Nullable @Override

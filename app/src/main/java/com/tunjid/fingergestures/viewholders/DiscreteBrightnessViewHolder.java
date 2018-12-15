@@ -7,6 +7,7 @@ import android.text.InputFilter.LengthFilter;
 import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -70,6 +71,11 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<DiscreteBrightn
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
     }
 
+    @Override
+    String getSizeCacheKey() {
+        return getClass().getSimpleName();
+    }
+
     @Nullable @Override
     DiscreteBrightnessAdapter getAdapter() {
         return (DiscreteBrightnessAdapter) discreteBrightnessList.getAdapter();
@@ -117,6 +123,8 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<DiscreteBrightn
             return true;
         });
 
+        if (alertDialog.getWindow() != null)
+            alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         alertDialog.show();
     }
 
