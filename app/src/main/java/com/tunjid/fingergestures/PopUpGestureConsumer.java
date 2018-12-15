@@ -3,8 +3,10 @@ package com.tunjid.fingergestures;
 
 import android.content.Intent;
 
+import com.tunjid.fingergestures.activities.PopupActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import java.util.List;
 
@@ -19,6 +21,7 @@ public class PopUpGestureConsumer implements GestureConsumer {
     public static final String ACTION_SHOW_POPUP = "PopUpGestureConsumer shows popup";
     public static final String EXTRA_SHOWS_ACCESSIBILITY_BUTTON = "extra shows accessibility button";
     private static final String ACCESSIBILITY_BUTTON_ENABLED = "accessibility button enabled";
+    private static final String ACCESSIBILITY_BUTTON_SINGLE_CLICK = "accessibility button single click";
     private static final String SAVED_ACTIONS = "accessibility button apps";
     private static final String ANIMATES_POPUP = "animates popup";
 
@@ -49,6 +52,10 @@ public class PopUpGestureConsumer implements GestureConsumer {
         return transformApp(app -> app.getPreferences().getBoolean(ACCESSIBILITY_BUTTON_ENABLED, false), false);
     }
 
+    public boolean isSingleClick() {
+        return transformApp(app -> app.getPreferences().getBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, false), false);
+    }
+
     public boolean shouldAnimatePopup() {
         return transformApp(app -> app.getPreferences().getBoolean(ANIMATES_POPUP, true), true);
     }
@@ -63,6 +70,21 @@ public class PopUpGestureConsumer implements GestureConsumer {
 
     public void setAnimatesPopup(boolean visible) {
         withApp(app -> app.getPreferences().edit().putBoolean(ANIMATES_POPUP, visible).apply());
+    }
+
+    public void setSingleClick(boolean isSingleClick) {
+        withApp(app -> app.getPreferences().edit().putBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, isSingleClick).apply());
+    }
+
+    public void showPopup() {
+        if (isSingleClick()) getList().stream()
+                .findFirst()
+                .ifPresent(GestureMapper.getInstance()::performAction);
+        else withApp(app -> {
+            Intent intent = new Intent(app, PopupActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            app.startActivity(intent);
+        });
     }
 
     public List<Integer> getList() {

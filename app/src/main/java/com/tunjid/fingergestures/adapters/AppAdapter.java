@@ -72,7 +72,8 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
     public static final int ENABLE_WATCH_WINDOWS = EXCLUDED_ROTATION_LOCK + 1;
     public static final int POPUP_ACTION = ENABLE_WATCH_WINDOWS + 1;
     public static final int ENABLE_ACCESSIBILITY_BUTTON = POPUP_ACTION + 1;
-    public static final int ANIMATES_SLIDER = ENABLE_ACCESSIBILITY_BUTTON + 1;
+    public static final int ACCESSIBILITY_SINGLE_CLICK = ENABLE_ACCESSIBILITY_BUTTON + 1;
+    public static final int ANIMATES_SLIDER = ACCESSIBILITY_SINGLE_CLICK + 1;
     public static final int ANIMATES_POPUP = ANIMATES_SLIDER + 1;
     public static final int DISCRETE_BRIGHTNESS = ANIMATES_POPUP + 1;
     public static final int AUDIO_DELTA = DISCRETE_BRIGHTNESS + 1;
@@ -86,8 +87,8 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
             DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
             AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
             EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
-            ANIMATES_SLIDER, ANIMATES_POPUP, DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE,
-            AUDIO_SLIDER_SHOW, SUPPORT})
+            ACCESSIBILITY_SINGLE_CLICK, ANIMATES_SLIDER, ANIMATES_POPUP, DISCRETE_BRIGHTNESS,
+            AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW, SUPPORT})
     public @interface AdapterIndex {}
 
     private final int[] items;
@@ -178,6 +179,11 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         R.string.popup_enable,
                         popUpGestureConsumer::hasAccessibilityButton,
                         popUpGestureConsumer::enableAccessibilityButton);
+            case ACCESSIBILITY_SINGLE_CLICK:
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
+                        R.string.popup_single_click,
+                        popUpGestureConsumer::isSingleClick,
+                        popUpGestureConsumer::setSingleClick);
             case DOUBLE_SWIPE_SETTINGS:
                 GestureMapper mapper = GestureMapper.getInstance();
                 return new SliderAdjusterViewHolder(
