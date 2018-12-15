@@ -8,17 +8,17 @@ import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.fragments.ActionFragment;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 
-public class PopupViewHolder extends AppViewHolder {
+public class PopupViewHolder extends DiffViewHolder<ActionAdapter> {
 
     private RecyclerView recyclerView;
 
@@ -53,8 +53,14 @@ public class PopupViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        ((DiffAdapter) recyclerView.getAdapter()).calculateDiff();
+
+        diff();
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+    }
+
+    @Nullable @Override
+    ActionAdapter getAdapter() {
+        return (ActionAdapter) recyclerView.getAdapter();
     }
 
     private void onActionClicked(@GestureConsumer.GestureAction int action) {

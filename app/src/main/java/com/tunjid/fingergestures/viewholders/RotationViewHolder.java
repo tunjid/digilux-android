@@ -6,11 +6,11 @@ import android.widget.TextView;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.adapters.PackageAdapter;
 import com.tunjid.fingergestures.fragments.PackageFragment;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 
-public class RotationViewHolder extends AppViewHolder {
+public class RotationViewHolder extends DiffViewHolder<PackageAdapter> {
 
     private RecyclerView rotationList;
 
@@ -52,8 +52,14 @@ public class RotationViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        ((DiffAdapter) rotationList.getAdapter()).calculateDiff();
+
+        diff();
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+    }
+
+    @Nullable @Override
+    PackageAdapter getAdapter() {
+        return (PackageAdapter) rotationList.getAdapter();
     }
 
     private PackageAdapter.PackageClickListener getPackageClickListener(@RotationGestureConsumer.PersistedSet String preferenceName) {

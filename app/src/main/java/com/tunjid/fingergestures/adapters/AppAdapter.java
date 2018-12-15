@@ -262,6 +262,18 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
         return items[position];
     }
 
+    @Override
+    public void onViewDetachedFromWindow(@NonNull AppViewHolder holder) {
+        holder.clear();
+        super.onViewDetachedFromWindow(holder);
+    }
+
+    @Override
+    public boolean onFailedToRecycleView(@NonNull AppViewHolder holder) {
+        holder.clear();
+        return super.onFailedToRecycleView(holder);
+    }
+
     public interface AppAdapterListener extends InteractiveAdapter.AdapterListener {
         void purchase(@PurchasesManager.SKU String sku);
 
