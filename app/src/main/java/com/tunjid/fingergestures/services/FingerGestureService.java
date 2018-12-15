@@ -29,7 +29,6 @@ import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.activities.PopupActivity;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
@@ -81,7 +80,8 @@ public class FingerGestureService extends AccessibilityService {
     private HandlerThread gestureThread;
 
     private final AccessibilityButtonCallback accessibilityButtonCallback = new AccessibilityButtonCallback() {
-        @Override public void onClicked(AccessibilityButtonController controller) { showPopup(); }
+        @Override
+        public void onClicked(AccessibilityButtonController controller) { PopUpGestureConsumer.getInstance().showPopup(); }
     };
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -126,7 +126,7 @@ public class FingerGestureService extends AccessibilityService {
                     if (globalAction != -1) performGlobalAction(globalAction);
                     break;
                 case ACTION_SHOW_POPUP:
-                    showPopup();
+                    PopUpGestureConsumer.getInstance().showPopup();
                     break;
             }
         }
@@ -211,12 +211,6 @@ public class FingerGestureService extends AccessibilityService {
         Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         closeIntent.setPackage(ANDROID_SYSTEM_UI_PACKAGE);
         sendBroadcast(closeIntent);
-    }
-
-    private void showPopup() {
-        Intent intent = new Intent(FingerGestureService.this, PopupActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
 
     private void swipeDown() {
