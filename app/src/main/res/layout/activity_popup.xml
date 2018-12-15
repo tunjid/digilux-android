@@ -16,7 +16,10 @@
         android:layout_height="wrap_content"
         android:elevation="@dimen/half_margin"
         app:cardCornerRadius="@dimen/half_margin"
-        app:contentPadding="@dimen/half_margin"
+        app:contentPaddingBottom="@dimen/quarter_margin"
+        app:contentPaddingLeft="@dimen/single_margin"
+        app:contentPaddingRight="@dimen/single_margin"
+        app:contentPaddingTop="@dimen/quarter_margin"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -33,8 +36,11 @@
             android:id="@+id/text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minHeight="@dimen/triple_and_half_margin"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:minHeight="@dimen/double_and_half_margin"
             android:text="@string/popup_no_actions"
+            android:textSize="@dimen/small_text"
             android:visibility="gone" />
     </com.google.android.material.card.MaterialCardView>
 
