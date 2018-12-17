@@ -7,9 +7,11 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+
 import android.view.accessibility.AccessibilityManager;
 
 import java.util.List;
@@ -113,5 +115,9 @@ public class App extends android.app.Application {
     @Nullable
     public static <T> T transformApp(Function<App, T> appTFunction) {
         return transformApp(appTFunction, null);
+    }
+
+    public static <T> void nullCheck(@Nullable T target, Consumer<T> consumer) {
+        if (target != null) consumer.accept(target);
     }
 }

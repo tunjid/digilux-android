@@ -12,6 +12,7 @@ import android.os.Bundle;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -20,6 +21,8 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,6 +56,7 @@ import com.tunjid.fingergestures.viewholders.DiffViewHolder;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -150,10 +154,12 @@ public class MainActivity extends FingerGestureActivity {
     private final int[] AUDIO_ITEMS = {PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW,
             PADDING};
 
-    private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_POSITION, SLIDER_DURATION,
-            SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ENABLE_WATCH_WINDOWS,
-            ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK, ANIMATES_POPUP, ROTATION_LOCK,
+    private final int[] POPUP_ITEMS = {PADDING, ENABLE_ACCESSIBILITY_BUTTON,
+            ACCESSIBILITY_SINGLE_CLICK, ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, ROTATION_LOCK,
             EXCLUDED_ROTATION_LOCK, POPUP_ACTION, PADDING};
+
+    private final int[] APPEARANCE_ITEMS = {PADDING, SLIDER_POSITION, SLIDER_DURATION,
+            SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, PADDING};
 
     {
         Context context = App.getInstance();
@@ -217,6 +223,13 @@ public class MainActivity extends FingerGestureActivity {
         if (savedInstanceState == null && isPickIntent) handleIntent(startIntent);
         else if (savedInstanceState == null) showFragment(AppFragment.newInstance(GESTURE_ITEMS));
 
+        getSupportFragmentManager().registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
+            @Override
+            public void onFragmentViewCreated(@NonNull FragmentManager fm, @NonNull Fragment f, @NonNull View v, @Nullable Bundle savedInstanceState) {
+                if (f instanceof AppFragment) updateBottomNav((AppFragment) f, bottomNavigationView);
+            }
+        }, false);
+
         setUpSwitcher();
     }
 
@@ -276,6 +289,9 @@ public class MainActivity extends FingerGestureActivity {
                 return true;
             case R.id.action_audio:
                 showFragment(AppFragment.newInstance(AUDIO_ITEMS));
+                return true;
+            case R.id.action_accessibility_popup:
+                showFragment(AppFragment.newInstance(POPUP_ITEMS));
                 return true;
             case R.id.action_wallpaper:
                 showFragment(AppFragment.newInstance(APPEARANCE_ITEMS));
@@ -468,6 +484,24 @@ public class MainActivity extends FingerGestureActivity {
         else if (permissionRequest == ACCESSIBILITY_CODE) askForAccessibility();
         else if (permissionRequest == SETTINGS_CODE) askForSettings();
         else if (permissionRequest == STORAGE_CODE) askForStorage();
+    }
+
+    private void updateBottomNav(@NonNull AppFragment fragment, BottomNavigationView bottomNavigationView) {
+        permissionsStack.clear();
+        int hash = Arrays.hashCode(fragment.getItems());
+        int id = hash == Arrays.hashCode(GESTURE_ITEMS)
+                ? R.id.action_directions
+                : hash == Arrays.hashCode(BRIGHTNESS_ITEMS)
+                ? R.id.action_slider
+                : hash == Arrays.hashCode(AUDIO_ITEMS)
+                ? R.id.action_audio
+                : hash == Arrays.hashCode(POPUP_ITEMS)
+                ? R.id.action_accessibility_popup
+                : hash == Arrays.hashCode(APPEARANCE_ITEMS)
+                ? R.id.action_wallpaper
+                : 0;
+
+        if (id != 0) bottomNavigationView.setSelectedItemId(id);
     }
 
     private void showLink(TextLink textLink) {

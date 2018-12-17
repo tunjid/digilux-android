@@ -165,12 +165,12 @@
     <string name="popup_add">Add to accessibility button pop up.</string>
     <string name="popup_remove">Remove from accessibility button pop up?</string>
     <string name="popup_prompt">Please enable the accessibility button.</string>
-    <string name="popup_enable">Enable accessibility button in navbar</string>
-    <string name="popup_single_click">Use accessibility navbar button as single click button.
+    <string name="popup_enable">Enable accessibility shortcut button in navbar</string>
+    <string name="popup_single_click">Use accessibility shortcut button in navbar as single click button.
         \n\nThis doesn\'t show the pop up and performs the first action in the pop up list if it exists.</string>
     <string name="popup_no_actions">No pop up actions have been added yet.</string>
     <string name="popup_description">Adds actions to the accessibility button pop up.</string>
-    <string name="popup_animate_in">Animate pop up window\'s entrance and exit</string>
+    <string name="popup_animate_in">Animate shortcut pop up window\'s entrance and exit</string>
 
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>
@@ -236,7 +236,8 @@
     <string name="gestures">Gestures</string>
     <string name="brightness">Brightness</string>
     <string name="audio">Audio</string>
-    <string name="appearance">Appearance</string>
+    <string name="shortcuts">Shortcuts</string>
+    <string name="appearance">Display</string>
 
     <!-- Trial-->
     <string name="trial_text">Start trial for %1$s? Swipe to dismiss.</string>

@@ -42,7 +42,6 @@
         app:elevation="@dimen/half_margin"
         app:itemIconTint="@color/toggle_text"
         app:itemTextColor="@color/toggle_text"
-        app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
