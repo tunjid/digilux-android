@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentTransaction;
@@ -16,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +35,7 @@ import java.util.Arrays;
 import java.util.stream.IntStream;
 
 import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
+import static com.tunjid.fingergestures.App.nullCheck;
 
 public class AppFragment extends MainActivityFragment
         implements
@@ -80,10 +83,8 @@ public class AppFragment extends MainActivityFragment
         recyclerView.setAdapter(new AppAdapter(items, this));
         recyclerView.addItemDecoration(itemDecoration);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (Math.abs(dy) < 3) return;
-                toggleToolbar(dy < 0);
+            @Override public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (Math.abs(dy) > 3) toggleToolbar(dy < 0);
             }
         });
 
@@ -142,13 +143,17 @@ public class AppFragment extends MainActivityFragment
         startActivityForResult(Intent.createChooser(intent, ""), selection);
     }
 
+    public int[] getItems() {
+        return items;
+    }
+
     public void notifyItemChanged(@AppAdapter.AdapterIndex int position) {
         int index = IntStream.range(0, items.length).filter(i -> items[i] == position).findFirst().orElse(-1);
-        if (recyclerView != null && index != -1) recyclerView.getAdapter().notifyItemChanged(index);
+        if (index != -1) nullCheck(getAdapter(), adapter -> adapter.notifyItemChanged(index));
     }
 
     public void notifyDataSetChanged() {
-        if (recyclerView != null) recyclerView.getAdapter().notifyDataSetChanged();
+        nullCheck(getAdapter(), RecyclerView.Adapter::notifyDataSetChanged);
     }
 
     @Nullable
@@ -179,5 +184,10 @@ public class AppFragment extends MainActivityFragment
                 .setMinCropWindowSize(100, 100)
                 .setOutputCompressFormat(Bitmap.CompressFormat.PNG)
                 .start(activity, this);
+    }
+
+    @Nullable
+    private RecyclerView.Adapter getAdapter() {
+        return recyclerView == null ? null : recyclerView.getAdapter();
     }
 }

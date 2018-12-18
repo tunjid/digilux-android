@@ -7,22 +7,28 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+
 import android.view.accessibility.AccessibilityManager;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
+import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK;
 import static io.reactivex.Flowable.timer;
+import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class App extends android.app.Application {
 
@@ -48,7 +54,7 @@ public class App extends android.app.Application {
 
     @NonNull
     public static Intent settingsIntent() {
-        return new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + getInstance().getPackageName()));
+        return new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + instance.getPackageName()));
     }
 
     @NonNull
@@ -113,5 +119,15 @@ public class App extends android.app.Application {
     @Nullable
     public static <T> T transformApp(Function<App, T> appTFunction) {
         return transformApp(appTFunction, null);
+    }
+
+    public static <T> void nullCheck(@Nullable T target, Consumer<T> consumer) {
+        if (target != null) consumer.accept(target);
+    }
+
+    public static <T>Single<T> backgroundToMain(Supplier<T> supplier) {
+        return Single.fromCallable(supplier::get)
+                .subscribeOn(Schedulers.io())
+                .observeOn(mainThread());
     }
 }

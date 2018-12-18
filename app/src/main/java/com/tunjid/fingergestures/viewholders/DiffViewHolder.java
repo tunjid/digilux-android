@@ -13,6 +13,7 @@ import java.util.Map;
 import androidx.annotation.Nullable;
 
 import static android.transition.TransitionManager.beginDelayedTransition;
+import static com.tunjid.fingergestures.App.nullCheck;
 
 public abstract class DiffViewHolder<T extends DiffAdapter> extends AppViewHolder {
 
@@ -27,10 +28,7 @@ public abstract class DiffViewHolder<T extends DiffAdapter> extends AppViewHolde
     // The compiler error is odd, the type of the single should be independent of the types of the DiffAdapter
     @SuppressWarnings("unchecked")
     void diff() {
-        T adapter = getAdapter();
-        if (adapter == null) return;
-
-        disposables.add(adapter.calculateDiff().subscribe(this::onDiff, o -> {}));
+        nullCheck(getAdapter(), adapter -> disposables.add(adapter.calculateDiff().subscribe(this::onDiff, o -> {})));
     }
 
     abstract String getSizeCacheKey();
