@@ -9,6 +9,8 @@ import com.tunjid.fingergestures.R;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.tunjid.fingergestures.App.backgroundToMain;
+
 public class ToggleViewHolder extends AppViewHolder {
 
     public ToggleViewHolder(View itemView,
@@ -18,7 +20,7 @@ public class ToggleViewHolder extends AppViewHolder {
         super(itemView);
         Switch toggle = itemView.findViewById(R.id.toggle);
         toggle.setText(titleRes);
-        toggle.setChecked(supplier.get());
         toggle.setOnCheckedChangeListener((view, isChecked) -> consumer.accept(isChecked));
+        disposables.add(backgroundToMain(supplier).subscribe(toggle::setChecked, Throwable::printStackTrace));
     }
 }
