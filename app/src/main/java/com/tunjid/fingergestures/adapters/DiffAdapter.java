@@ -15,9 +15,7 @@ import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
 
-import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
-import static io.reactivex.schedulers.Schedulers.io;
-
+import static com.tunjid.fingergestures.App.*;
 
 public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends InteractiveAdapter.AdapterListener, S>
         extends InteractiveAdapter<V, T> {
@@ -48,9 +46,7 @@ public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends 
     public Single<Integer> calculateDiff() {
         PublishSubject<Integer> subject = PublishSubject.create();
         AtomicReference<List<S>> ref = new AtomicReference<>();
-        disposables.add(Single.fromCallable(() -> DiffUtil.calculateDiff(new DiffCallBack<>(list, ref.updateAndGet(s -> listSupplier.get()))))
-                .subscribeOn(io())
-                .observeOn(mainThread())
+        disposables.add(backgroundToMain(() -> DiffUtil.calculateDiff(new DiffCallBack<>(list, ref.updateAndGet(s -> listSupplier.get()))))
                 .subscribe(diffResult -> {
                     list.clear();
                     list.addAll(ref.get());
