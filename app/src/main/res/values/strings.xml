@@ -161,7 +161,7 @@
     \n\nThis should be used for apps that display over apps like the System UI, this app, keyboards, screen filters, and so on.</string>
 
     <!-- Popup ViewHolder-->
-    <string name="popup_title">Pop Up Actions</string>
+    <string name="popup_title">Shortcut Pop Up Actions</string>
     <string name="popup_add">Add to accessibility button pop up.</string>
     <string name="popup_remove">Remove from accessibility button pop up?</string>
     <string name="popup_prompt">Please enable the accessibility button.</string>
