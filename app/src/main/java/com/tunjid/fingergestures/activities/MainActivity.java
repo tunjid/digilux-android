@@ -8,26 +8,6 @@ import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.DrawableRes;
-import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
-
 import android.transition.AutoTransition;
 import android.transition.Transition;
 import android.transition.TransitionListenerAdapter;
@@ -41,6 +21,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextSwitcher;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.androidbootstrap.view.animator.FabExtensionAnimator;
 import com.tunjid.androidbootstrap.view.animator.ViewHider;
@@ -57,21 +41,33 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Deque;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.processors.PublishProcessor;
 
 import static android.content.Intent.ACTION_SEND;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.view.animation.AnimationUtils.loadAnimation;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 import static com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE;
 import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
-import static android.view.animation.AnimationUtils.loadAnimation;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ACCESSIBILITY_SINGLE_CLICK;
 import static com.tunjid.fingergestures.adapters.AppAdapter.ADAPTIVE_BRIGHTNESS;
@@ -142,7 +138,7 @@ public class MainActivity extends FingerGestureActivity {
 
     private final TextLink[] links;
     private final AtomicInteger quipCounter = new AtomicInteger(-1);
-    private final Deque<Integer> permissionsStack = new ArrayDeque<>();
+    private final Queue<Integer> permissionsQueue = new ArrayDeque<>();
 
     private final int[] GESTURE_ITEMS = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON,
             MAP_RIGHT_ICON, AD_FREE, SUPPORT, REVIEW, PADDING};
@@ -226,7 +222,8 @@ public class MainActivity extends FingerGestureActivity {
         getSupportFragmentManager().registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
             @Override
             public void onFragmentViewCreated(@NonNull FragmentManager fm, @NonNull Fragment f, @NonNull View v, @Nullable Bundle savedInstanceState) {
-                if (f instanceof AppFragment) updateBottomNav((AppFragment) f, bottomNavigationView);
+                if (f instanceof AppFragment)
+                    updateBottomNav((AppFragment) f, bottomNavigationView);
             }
         }, false);
 
@@ -333,7 +330,7 @@ public class MainActivity extends FingerGestureActivity {
         constraintLayout = null;
         permissionText = null;
         bottomSheetBehavior = null;
-        permissionsStack.clear();
+        permissionsQueue.clear();
         super.onDestroy();
     }
 
@@ -360,7 +357,7 @@ public class MainActivity extends FingerGestureActivity {
                         : R.string.do_not_disturb_permission_denied);
                 break;
         }
-        if (shouldRemove) permissionsStack.remove(requestCode);
+        if (shouldRemove) permissionsQueue.remove(requestCode);
         dismissPermissionsBar();
     }
 
@@ -370,7 +367,7 @@ public class MainActivity extends FingerGestureActivity {
         if (requestCode != STORAGE_CODE || grantResults.length == 0 || grantResults[0] != PERMISSION_GRANTED)
             return;
 
-        permissionsStack.remove(requestCode);
+        permissionsQueue.remove(requestCode);
         dismissPermissionsBar();
         AppFragment fragment = (AppFragment) getCurrentFragment();
         if (fragment != null) fragment.notifyDataSetChanged();
@@ -384,13 +381,12 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     public boolean showFragment(BaseFragment fragment) {
-        if (permissionsStack.isEmpty()) dismissPermissionsBar();
+        if (permissionsQueue.isEmpty()) dismissPermissionsBar();
         return super.showFragment(fragment);
     }
 
     public void requestPermission(@PermissionRequest int permission) {
-        permissionsStack.remove(permission);
-        permissionsStack.push(permission);
+        if (!permissionsQueue.contains(permission)) permissionsQueue.add(permission);
         onPermissionAdded();
     }
 
@@ -451,8 +447,8 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void onPermissionAdded() {
-        if (permissionsStack.isEmpty()) return;
-        int permissionRequest = permissionsStack.peek();
+        if (permissionsQueue.isEmpty()) return;
+        int permissionRequest = permissionsQueue.peek();
         FabExtensionAnimator.GlyphState glyphState = null;
 
         if (permissionRequest == DO_NOT_DISTURB_CODE)
@@ -469,16 +465,16 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void dismissPermissionsBar() {
-        if (permissionsStack.isEmpty()) togglePermissionText(false);
+        if (permissionsQueue.isEmpty()) togglePermissionText(false);
         else onPermissionAdded();
     }
 
     private void onPermissionClicked() {
-        if (permissionsStack.isEmpty()) {
+        if (permissionsQueue.isEmpty()) {
             dismissPermissionsBar();
             return;
         }
-        int permissionRequest = permissionsStack.peek();
+        int permissionRequest = permissionsQueue.peek();
 
         if (permissionRequest == DO_NOT_DISTURB_CODE) askForDoNotDisturb();
         else if (permissionRequest == ACCESSIBILITY_CODE) askForAccessibility();
@@ -487,7 +483,7 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void updateBottomNav(@NonNull AppFragment fragment, BottomNavigationView bottomNavigationView) {
-        permissionsStack.clear();
+        permissionsQueue.clear();
         int hash = Arrays.hashCode(fragment.getItems());
         int id = hash == Arrays.hashCode(GESTURE_ITEMS)
                 ? R.id.action_directions
@@ -550,8 +546,7 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void togglePermissionText(boolean show) {
-        if (show) fabHider.show();
-        else fabHider.hide();
+        permissionText.post(show ? fabHider::show : fabHider::hide);
     }
 
     private ColorStateList getFabTint() {
