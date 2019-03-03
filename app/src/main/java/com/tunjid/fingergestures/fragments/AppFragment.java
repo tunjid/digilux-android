@@ -9,33 +9,34 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
+import com.tunjid.androidbootstrap.recyclerview.ListManager;
+import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
+import com.tunjid.fingergestures.viewholders.AppViewHolder;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.DividerItemDecoration;
+
 import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
-import static com.tunjid.fingergestures.App.nullCheck;
+import static com.tunjid.fingergestures.BackgroundManager.DAY_WALLPAPER_PICK_CODE;
+import static com.tunjid.fingergestures.BackgroundManager.NIGHT_WALLPAPER_PICK_CODE;
 
 public class AppFragment extends MainActivityFragment
         implements
@@ -45,7 +46,7 @@ public class AppFragment extends MainActivityFragment
     private static final String IMAGE_SELECTION = "image/*";
 
     private int[] items;
-    private RecyclerView recyclerView;
+    private ListManager<AppViewHolder, Void> listManager;
 
     public static AppFragment newInstance(int[] items) {
         AppFragment fragment = new AppFragment();
@@ -78,15 +79,13 @@ public class AppFragment extends MainActivityFragment
         Drawable decoration = ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark);
         if (decoration != null) itemDecoration.setDrawable(decoration);
 
-        recyclerView = root.findViewById(R.id.options_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new AppAdapter(items, this));
-        recyclerView.addItemDecoration(itemDecoration);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                if (Math.abs(dy) > 3) toggleToolbar(dy < 0);
-            }
-        });
+        listManager = new ListManagerBuilder<AppViewHolder, Void>()
+                .withRecyclerView(root.findViewById(R.id.options_list))
+                .withAdapter(new AppAdapter(items, this))
+                .withLinearLayoutManager()
+                .addDecoration(itemDecoration)
+                .addScrollListener((dx, dy) -> {if (Math.abs(dy) > 3) toggleToolbar(dy < 0);})
+                .build();
 
         return root;
     }
@@ -117,10 +116,8 @@ public class AppFragment extends MainActivityFragment
 
         if (resultCode != Activity.RESULT_OK) {
             showSnackbar(R.string.cancel_wallpaper);
-            return;
         }
-
-        if (requestCode == BackgroundManager.DAY_WALLPAPER_PICK_CODE || requestCode == BackgroundManager.NIGHT_WALLPAPER_PICK_CODE) {
+        else if (requestCode == DAY_WALLPAPER_PICK_CODE || requestCode == NIGHT_WALLPAPER_PICK_CODE) {
             cropImage(data.getData(), requestCode);
         }
     }
@@ -128,7 +125,8 @@ public class AppFragment extends MainActivityFragment
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        recyclerView = null;
+        listManager.clear();
+        listManager = null;
     }
 
     @Override
@@ -149,11 +147,11 @@ public class AppFragment extends MainActivityFragment
 
     public void notifyItemChanged(@AppAdapter.AdapterIndex int position) {
         int index = IntStream.range(0, items.length).filter(i -> items[i] == position).findFirst().orElse(-1);
-        if (index != -1) nullCheck(getAdapter(), adapter -> adapter.notifyItemChanged(index));
+        if (index != -1) listManager.notifyItemChanged(index);
     }
 
     public void notifyDataSetChanged() {
-        nullCheck(getAdapter(), RecyclerView.Adapter::notifyDataSetChanged);
+        listManager.notifyDataSetChanged();
     }
 
     @Nullable
@@ -184,10 +182,5 @@ public class AppFragment extends MainActivityFragment
                 .setMinCropWindowSize(100, 100)
                 .setOutputCompressFormat(Bitmap.CompressFormat.PNG)
                 .start(activity, this);
-    }
-
-    @Nullable
-    private RecyclerView.Adapter getAdapter() {
-        return recyclerView == null ? null : recyclerView.getAdapter();
     }
 }

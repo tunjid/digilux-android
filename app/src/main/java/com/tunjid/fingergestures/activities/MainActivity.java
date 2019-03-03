@@ -26,7 +26,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
-import com.tunjid.androidbootstrap.view.animator.FabExtensionAnimator;
+import com.tunjid.androidbootstrap.material.animator.FabExtensionAnimator;
 import com.tunjid.androidbootstrap.view.animator.ViewHider;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;

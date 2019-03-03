@@ -1,21 +1,22 @@
 package com.tunjid.fingergestures.adapters;
 
-import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
-import com.tunjid.androidbootstrap.view.recyclerview.InteractiveViewHolder;
+import com.tunjid.androidbootstrap.functions.collections.Lists;
+import com.tunjid.androidbootstrap.recyclerview.InteractiveAdapter;
+import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder;
+import com.tunjid.androidbootstrap.recyclerview.diff.Diff;
+import com.tunjid.androidbootstrap.recyclerview.diff.Differentiable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
 
-import static com.tunjid.fingergestures.App.*;
+import static com.tunjid.fingergestures.App.backgroundToMain;
 
 public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends InteractiveAdapter.AdapterListener, S>
         extends InteractiveAdapter<V, T> {
@@ -45,51 +46,27 @@ public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends 
 
     public Single<Integer> calculateDiff() {
         PublishSubject<Integer> subject = PublishSubject.create();
-        AtomicReference<List<S>> ref = new AtomicReference<>();
-        disposables.add(backgroundToMain(() -> DiffUtil.calculateDiff(new DiffCallBack<>(list, ref.updateAndGet(s -> listSupplier.get()))))
-                .subscribe(diffResult -> {
-                    list.clear();
-                    list.addAll(ref.get());
+
+        disposables.add(backgroundToMain(this::getDiff)
+                .subscribe(diff -> {
+                    Lists.replace(list, diff.items);
                     subject.onNext(list.size()); // must be first
-                    diffResult.dispatchUpdatesTo(this);
+                    diff.result.dispatchUpdatesTo(this);
                 }, Throwable::printStackTrace));
+
         return subject.firstOrError();
+    }
+
+    private Diff<S> getDiff() {
+        return Diff.calculate(list,
+                listSupplier.get(),
+                (listCopy, newList) -> newList,
+                item -> Differentiable.fromCharSequence(item::toString));
     }
 
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         disposables.clear();
         super.onDetachedFromRecyclerView(recyclerView);
-    }
-
-    private static class DiffCallBack<S> extends DiffUtil.Callback {
-
-        private final List<S> oldList;
-        private final List<S> newList;
-
-        DiffCallBack(List<S> oldList, List<S> newList) {
-            this.oldList = oldList;
-            this.newList = newList;
-        }
-
-        @Override
-        public int getOldListSize() {
-            return oldList.size();
-        }
-
-        @Override
-        public int getNewListSize() {
-            return newList.size();
-        }
-
-        @Override
-        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldList.get(oldItemPosition).equals(newList.get(newItemPosition));
-        }
-
-        @Override
-        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-            return areItemsTheSame(oldItemPosition, newItemPosition);
-        }
     }
 }

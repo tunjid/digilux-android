@@ -3,7 +3,7 @@ package com.tunjid.fingergestures.adapters;
 import android.content.Context;
 import android.view.ViewGroup;
 
-import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
+import com.tunjid.androidbootstrap.recyclerview.InteractiveAdapter;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;

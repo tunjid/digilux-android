@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.tunjid.androidbootstrap.view.recyclerview.InteractiveViewHolder;
+import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.PackageAdapter;
 

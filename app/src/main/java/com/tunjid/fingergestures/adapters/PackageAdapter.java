@@ -4,7 +4,7 @@ import android.content.pm.ApplicationInfo;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.tunjid.androidbootstrap.view.recyclerview.InteractiveAdapter;
+import com.tunjid.androidbootstrap.recyclerview.InteractiveAdapter;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.viewholders.PackageViewHolder;
 

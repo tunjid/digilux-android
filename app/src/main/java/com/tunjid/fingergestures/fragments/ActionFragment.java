@@ -4,30 +4,30 @@ package com.tunjid.fingergestures.fragments;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
-import com.tunjid.fingergestures.adapters.DiffAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
+import com.tunjid.fingergestures.viewholders.ActionViewHolder;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 
 import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_DOWN_ICON;
@@ -47,8 +47,6 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTUR
 public class ActionFragment extends MainActivityFragment implements ActionAdapter.ActionClickListener {
 
     private static final String ARG_DIRECTION = "DIRECTION";
-
-    private RecyclerView recyclerView;
 
     public static ActionFragment directionInstance(@GestureMapper.GestureDirection String direction) {
         ActionFragment fragment = new ActionFragment();
@@ -84,15 +82,19 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
 
         if (decoration != null) itemDecoration.setDrawable(decoration);
 
-        DiffAdapter adapter = new ActionAdapter(false, true, this::getItems, this);
-        recyclerView = root.findViewById(R.id.options_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(adapter);
-        recyclerView.addItemDecoration(itemDecoration);
+        ActionAdapter adapter = new ActionAdapter(false, true, this::getItems, this);
+
+        new ListManagerBuilder<ActionViewHolder, Void>()
+                .withRecyclerView(root.findViewById(R.id.options_list))
+                .withLinearLayoutManager()
+                .withAdapter(adapter)
+                .addDecoration(itemDecoration)
+                .build();
+
+        adapter.calculateDiff();
 
         root.<Toolbar>findViewById(R.id.title_bar).setTitle(R.string.pick_action);
 
-        adapter.calculateDiff();
         return root;
     }
 
@@ -117,8 +119,9 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
         GestureMapper mapper = GestureMapper.getInstance();
 
         if (isActionInstance) {
-            Context context = recyclerView.getContext();
-            if (PopUpGestureConsumer.getInstance().addToSet(action)) fragment.notifyItemChanged(POPUP_ACTION);
+            Context context = requireContext();
+            if (PopUpGestureConsumer.getInstance().addToSet(action))
+                fragment.notifyItemChanged(POPUP_ACTION);
             else new AlertDialog.Builder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
@@ -137,12 +140,6 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
                     : DOWN_GESTURE.equals(direction) || DOUBLE_DOWN_GESTURE.equals(direction)
                     ? MAP_DOWN_ICON : MAP_DOWN_ICON);
         }
-    }
-
-    @Override
-    public void onDestroyView() {
-        recyclerView = null;
-        super.onDestroyView();
     }
 
     private List<Integer> getItems() {

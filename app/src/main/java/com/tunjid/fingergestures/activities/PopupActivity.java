@@ -7,18 +7,20 @@ import android.view.Window;
 import android.widget.TextView;
 
 import com.google.android.material.card.MaterialCardView;
+import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
+import com.tunjid.fingergestures.viewholders.ActionViewHolder;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup;
 import io.reactivex.disposables.CompositeDisposable;
 
 import static android.view.View.GONE;
@@ -48,21 +50,20 @@ public class PopupActivity extends AppCompatActivity {
 
         AtomicInteger spanSizer = new AtomicInteger(0);
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 6);
         ActionAdapter adapter = new ActionAdapter(true, true, PopUpGestureConsumer.getInstance()::getList, this::onActionClicked);
 
+        new ListManagerBuilder<ActionViewHolder, Void>()
+                .withRecyclerView(findViewById(R.id.item_list))
+                .withGridLayoutManager(6)
+                .withAdapter(adapter)
+                .onLayoutManager(manager -> ((GridLayoutManager) manager).setSpanSizeLookup(new SpanSizeLookup() {
+                    @Override public int getSpanSize(int position) { return spanSizer.get(); }
+                }))
+                .build();
+
         TextView text = findViewById(R.id.text);
-        RecyclerView recyclerView = findViewById(R.id.item_list);
-
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
-
         text.setTextColor(backgroundManager.getSliderColor());
         this.<MaterialCardView>findViewById(R.id.card).setCardBackgroundColor(backgroundManager.getBackgroundColor());
-
-        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-            @Override public int getSpanSize(int position) { return spanSizer.get(); }
-        });
 
         disposables.add(adapter.calculateDiff().subscribe(size -> {
             spanSizer.set(size == 1 ? 6 : size == 2 ? 3 : 2);

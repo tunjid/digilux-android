@@ -11,11 +11,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.tunjid.androidbootstrap.functions.collections.Lists;
+import com.tunjid.androidbootstrap.recyclerview.ListManager;
+import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.PackageAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
+import com.tunjid.fingergestures.viewholders.PackageViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +31,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
@@ -44,7 +46,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
     private static final String ARG_PERSISTED_SET = "PERSISTED_SET";
 
     private View progressBar;
-    private RecyclerView recyclerView;
+    private ListManager<PackageViewHolder, Void> listManager;
     private final List<ApplicationInfo> packageNames = new ArrayList<>();
 
     public static PackageFragment newInstance(@RotationGestureConsumer.PersistedSet String preferenceName) {
@@ -74,10 +76,12 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         if (decoration != null) itemDecoration.setDrawable(decoration);
 
         progressBar = root.findViewById(R.id.progress_bar);
-        recyclerView = root.findViewById(R.id.options_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new PackageAdapter(false, () -> packageNames, this));
-        recyclerView.addItemDecoration(itemDecoration);
+        listManager = new ListManagerBuilder<PackageViewHolder, Void>()
+                .withRecyclerView(root.findViewById(R.id.options_list))
+                .withAdapter(new PackageAdapter(false, () -> packageNames, this))
+                .withLinearLayoutManager()
+                .addDecoration(itemDecoration)
+                .build();
 
         String persistedSet = getArguments().getString(ARG_PERSISTED_SET);
         root.<Toolbar>findViewById(R.id.title_bar).setTitle(RotationGestureConsumer.getInstance().getAddText(persistedSet));
@@ -107,7 +111,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         boolean added = RotationGestureConsumer.getInstance().addToSet(packageName, persistedSet);
 
         if (!added) {
-            Context context = recyclerView.getContext();
+            Context context = requireContext();
             new AlertDialog.Builder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.auto_rotate_description)))
@@ -127,7 +131,8 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
 
     @Override
     public void onDestroyView() {
-        recyclerView = null;
+        listManager.clear();
+        listManager = null;
         super.onDestroyView();
     }
 
@@ -142,10 +147,10 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
                     ViewGroup root = (ViewGroup) getView();
                     if (root == null) return;
 
-                    packageNames.clear();
-                    packageNames.addAll(list);
+                    Lists.replace(packageNames, list);
+
                     progressBar.setVisibility(View.GONE);
-                    ((PackageAdapter) requireNonNull(recyclerView.getAdapter())).calculateDiff();
+                    listManager.withRecyclerView(rv -> ((PackageAdapter) requireNonNull(rv.getAdapter())).calculateDiff());
                     TransitionManager.beginDelayedTransition(root, new AutoTransition());
                 }, Throwable::printStackTrace));
     }
