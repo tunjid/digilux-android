@@ -40,6 +40,7 @@ public abstract class DiffViewHolder<T extends DiffAdapter> extends AppViewHolde
         if (!(value instanceof Integer)) return;
 
         String key = getSizeCacheKey();
+        @SuppressWarnings("ConstantConditions")
         int oldSize = sizeMap.getOrDefault(key, 0);
         int newSize = (int) value;
 
