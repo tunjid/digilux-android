@@ -144,7 +144,7 @@ public class MainActivity extends FingerGestureActivity {
 
         if (savedInstanceState == null && isPickIntent) handleIntent(startIntent);
         else if (savedInstanceState == null)
-            showFragment(AppFragment.newInstance(viewModel.gestureItems));
+            showAppFragment(viewModel.gestureItems);
 
         getSupportFragmentManager().registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
             @Override
@@ -209,19 +209,19 @@ public class MainActivity extends FingerGestureActivity {
                 snackbar.show();
                 break;
             case R.id.action_directions:
-                showFragment(AppFragment.newInstance(viewModel.gestureItems));
+                showAppFragment(viewModel.gestureItems);
                 return true;
             case R.id.action_slider:
-                showFragment(AppFragment.newInstance(viewModel.brightnessItems));
+                showAppFragment(viewModel.brightnessItems);
                 return true;
             case R.id.action_audio:
-                showFragment(AppFragment.newInstance(viewModel.audioItems));
+                showAppFragment(viewModel.audioItems);
                 return true;
             case R.id.action_accessibility_popup:
-                showFragment(AppFragment.newInstance(viewModel.popupItems));
+                showAppFragment(viewModel.popupItems);
                 return true;
             case R.id.action_wallpaper:
-                showFragment(AppFragment.newInstance(viewModel.appearanceItems));
+                showAppFragment(viewModel.appearanceItems);
                 return true;
             case R.id.info:
                 new AlertDialog.Builder(this)
@@ -300,6 +300,10 @@ public class MainActivity extends FingerGestureActivity {
         bottomSheetBehavior.setState(show ? STATE_COLLAPSED : STATE_HIDDEN);
     }
 
+    private void showAppFragment(int[] items) {
+        showFragment(AppFragment.newInstance(items));
+    }
+
     private void handleIntent(Intent intent) {
         String action = intent.getAction();
         String type = intent.getType();
@@ -308,7 +312,7 @@ public class MainActivity extends FingerGestureActivity {
 
         if (!App.hasStoragePermission()) {
             showSnackbar(R.string.enable_storage_settings);
-            showFragment(AppFragment.newInstance(viewModel.gestureItems));
+            showAppFragment(viewModel.gestureItems);
             return;
         }
 
