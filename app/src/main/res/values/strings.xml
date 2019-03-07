@@ -24,10 +24,13 @@
     <string name="do_not_disturb_permission_granted">Do Not Disturb permission granted</string>
     <string name="accessibility_permission_granted">Accessibility permission granted</string>
     <string name="settings_permission_granted">Settings permission granted</string>
+    <string name="storage_permission_granted">Storage permission granted</string>
 
     <string name="do_not_disturb_permission_denied">Do Not Disturb permission denied</string>
     <string name="accessibility_permission_denied">Accessibility permission denied</string>
     <string name="settings_permission_denied">Settings permission denied</string>
+    <string name="storage_permission_denied">Storage permission denied</string>
+
     <string name="accessibility_service_summary">Enable this to ease one handed phone brightness control by using fingerprint sensor gestures</string>
     <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures to aid in one handed usage of your device. Accessibility is used for the following:\n
         \n1. To listen for gestures on the fingerprint sensor.\n

@@ -28,11 +28,8 @@ import com.tunjid.fingergestures.viewholders.SliderAdjusterViewHolder;
 import com.tunjid.fingergestures.viewholders.ToggleViewHolder;
 import com.tunjid.fingergestures.viewholders.WallpaperTriggerViewHolder;
 import com.tunjid.fingergestures.viewholders.WallpaperViewHolder;
+import com.tunjid.fingergestures.viewmodels.AppViewModel;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
@@ -44,52 +41,41 @@ import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 import static com.tunjid.fingergestures.viewholders.LinkViewHolder.REVIEW_LINK_ITEM;
 import static com.tunjid.fingergestures.viewholders.LinkViewHolder.SUPPORT_LINK_ITEM;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.ACCESSIBILITY_SINGLE_CLICK;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.ADAPTIVE_BRIGHTNESS;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.AD_FREE;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.ANIMATES_POPUP;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.ANIMATES_SLIDER;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.AUDIO_DELTA;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.AUDIO_SLIDER_SHOW;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.AUDIO_STREAM_TYPE;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.DISCRETE_BRIGHTNESS;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.DOUBLE_SWIPE_SETTINGS;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.ENABLE_ACCESSIBILITY_BUTTON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.ENABLE_WATCH_WINDOWS;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.EXCLUDED_ROTATION_LOCK;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_DOWN_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_LEFT_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_RIGHT_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_UP_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.PADDING;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.POPUP_ACTION;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.REVIEW;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.ROTATION_LOCK;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.SCREEN_DIMMER;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.SHOW_SLIDER;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.SLIDER_COLOR;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.SLIDER_DELTA;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.SLIDER_DURATION;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.SLIDER_POSITION;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.SUPPORT;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.USE_LOGARITHMIC_SCALE;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.WALLPAPER_PICKER;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.WALLPAPER_TRIGGER;
 
 
 public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
-
-    public static final int PADDING = -1;
-    public static final int SLIDER_DELTA = PADDING + 1;
-    public static final int SLIDER_POSITION = SLIDER_DELTA + 1;
-    public static final int SLIDER_DURATION = SLIDER_POSITION + 1;
-    public static final int SLIDER_COLOR = SLIDER_DURATION + 1;
-    public static final int SCREEN_DIMMER = SLIDER_COLOR + 1;
-    public static final int USE_LOGARITHMIC_SCALE = SCREEN_DIMMER + 1;
-    public static final int SHOW_SLIDER = USE_LOGARITHMIC_SCALE + 1;
-    public static final int ADAPTIVE_BRIGHTNESS = SHOW_SLIDER + 1;
-    public static final int ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS = ADAPTIVE_BRIGHTNESS + 1;
-    public static final int DOUBLE_SWIPE_SETTINGS = ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS + 1;
-    public static final int MAP_UP_ICON = DOUBLE_SWIPE_SETTINGS + 1;
-    public static final int MAP_DOWN_ICON = MAP_UP_ICON + 1;
-    public static final int MAP_LEFT_ICON = MAP_DOWN_ICON + 1;
-    public static final int MAP_RIGHT_ICON = MAP_LEFT_ICON + 1;
-    public static final int AD_FREE = MAP_RIGHT_ICON + 1;
-    public static final int REVIEW = AD_FREE + 1;
-    public static final int WALLPAPER_PICKER = REVIEW + 1;
-    public static final int WALLPAPER_TRIGGER = WALLPAPER_PICKER + 1;
-    public static final int ROTATION_LOCK = WALLPAPER_TRIGGER + 1;
-    public static final int EXCLUDED_ROTATION_LOCK = ROTATION_LOCK + 1;
-    public static final int ENABLE_WATCH_WINDOWS = EXCLUDED_ROTATION_LOCK + 1;
-    public static final int POPUP_ACTION = ENABLE_WATCH_WINDOWS + 1;
-    public static final int ENABLE_ACCESSIBILITY_BUTTON = POPUP_ACTION + 1;
-    public static final int ACCESSIBILITY_SINGLE_CLICK = ENABLE_ACCESSIBILITY_BUTTON + 1;
-    public static final int ANIMATES_SLIDER = ACCESSIBILITY_SINGLE_CLICK + 1;
-    public static final int ANIMATES_POPUP = ANIMATES_SLIDER + 1;
-    public static final int DISCRETE_BRIGHTNESS = ANIMATES_POPUP + 1;
-    public static final int AUDIO_DELTA = DISCRETE_BRIGHTNESS + 1;
-    public static final int AUDIO_STREAM_TYPE = AUDIO_DELTA + 1;
-    public static final int AUDIO_SLIDER_SHOW = AUDIO_STREAM_TYPE + 1;
-    public static final int SUPPORT = AUDIO_SLIDER_SHOW + 1;
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
-            SHOW_SLIDER, USE_LOGARITHMIC_SCALE, ADAPTIVE_BRIGHTNESS, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
-            DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
-            AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
-            EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
-            ACCESSIBILITY_SINGLE_CLICK, ANIMATES_SLIDER, ANIMATES_POPUP, DISCRETE_BRIGHTNESS,
-            AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW, SUPPORT})
-    public @interface AdapterIndex {}
 
     private final int[] items;
 
@@ -283,7 +269,7 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
 
         void showSnackbar(@StringRes int message);
 
-        void notifyItemChanged(@AdapterIndex int index);
+        void notifyItemChanged(@AppViewModel.AdapterIndex int index);
 
         void showBottomSheetFragment(MainActivityFragment fragment);
     }

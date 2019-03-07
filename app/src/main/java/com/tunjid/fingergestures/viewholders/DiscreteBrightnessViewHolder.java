@@ -28,7 +28,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
-import static com.tunjid.fingergestures.adapters.AppAdapter.SLIDER_DELTA;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.SLIDER_DELTA;
 
 public class DiscreteBrightnessViewHolder extends DiffViewHolder<DiscreteBrightnessAdapter> {
 

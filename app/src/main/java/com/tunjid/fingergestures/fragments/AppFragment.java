@@ -23,6 +23,7 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 import com.tunjid.fingergestures.viewholders.AppViewHolder;
+import com.tunjid.fingergestures.viewmodels.AppViewModel;
 
 import java.io.File;
 import java.util.Arrays;
@@ -145,7 +146,7 @@ public class AppFragment extends MainActivityFragment
         return items;
     }
 
-    public void notifyItemChanged(@AppAdapter.AdapterIndex int position) {
+    public void notifyItemChanged(@AppViewModel.AdapterIndex int position) {
         int index = IntStream.range(0, items.length).filter(i -> items[i] == position).findFirst().orElse(-1);
         if (index != -1) listManager.notifyItemChanged(index);
     }

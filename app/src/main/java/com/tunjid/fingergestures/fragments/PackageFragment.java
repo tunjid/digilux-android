@@ -35,8 +35,8 @@ import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
 import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
-import static com.tunjid.fingergestures.adapters.AppAdapter.EXCLUDED_ROTATION_LOCK;
-import static com.tunjid.fingergestures.adapters.AppAdapter.ROTATION_LOCK;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.EXCLUDED_ROTATION_LOCK;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.ROTATION_LOCK;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 import static java.util.Objects.requireNonNull;

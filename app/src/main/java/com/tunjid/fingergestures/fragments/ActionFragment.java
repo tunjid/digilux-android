@@ -30,11 +30,11 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 
 import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
-import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_DOWN_ICON;
-import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_LEFT_ICON;
-import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_RIGHT_ICON;
-import static com.tunjid.fingergestures.adapters.AppAdapter.MAP_UP_ICON;
-import static com.tunjid.fingergestures.adapters.AppAdapter.POPUP_ACTION;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_DOWN_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_LEFT_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_RIGHT_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_UP_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.POPUP_ACTION;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_LEFT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_RIGHT_GESTURE;
