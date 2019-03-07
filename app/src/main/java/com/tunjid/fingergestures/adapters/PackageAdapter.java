@@ -9,7 +9,6 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.viewholders.PackageViewHolder;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import androidx.annotation.NonNull;
 
@@ -18,9 +17,8 @@ public class PackageAdapter extends DiffAdapter<PackageViewHolder, PackageAdapte
 
     private final boolean isHorizontal;
 
-    public PackageAdapter(boolean isHorizontal, Supplier<List<ApplicationInfo>> listSupplier, PackageClickListener listener) {
-        super(listSupplier, listener);
-        setHasStableIds(true);
+    public PackageAdapter(boolean isHorizontal, List<ApplicationInfo> list, PackageClickListener listener) {
+        super(list, listener);
         this.isHorizontal = isHorizontal;
     }
 

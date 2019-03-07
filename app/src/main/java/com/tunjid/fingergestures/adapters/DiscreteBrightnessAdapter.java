@@ -6,17 +6,17 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.recyclerview.InteractiveAdapter;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.viewholders.DiscreteItemViewHolder;
+
+import java.util.List;
 
 import androidx.annotation.NonNull;
 
 
 public class DiscreteBrightnessAdapter extends DiffAdapter<DiscreteItemViewHolder, DiscreteBrightnessAdapter.BrightnessValueClickListener, String> {
 
-    public DiscreteBrightnessAdapter(BrightnessValueClickListener listener) {
-        super(BrightnessGestureConsumer.getInstance()::getDiscreteBrightnessValues, listener);
-        setHasStableIds(true);
+    public DiscreteBrightnessAdapter(List<String> items, BrightnessValueClickListener listener) {
+        super(items, listener);
     }
 
     @NonNull

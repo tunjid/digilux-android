@@ -8,7 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.tunjid.androidbootstrap.recyclerview.ListManager;
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
@@ -18,6 +20,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.viewholders.ActionViewHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -30,11 +33,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 
 import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
-import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_DOWN_ICON;
-import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_LEFT_ICON;
-import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_RIGHT_ICON;
-import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_UP_ICON;
-import static com.tunjid.fingergestures.viewmodels.AppViewModel.POPUP_ACTION;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_LEFT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_RIGHT_GESTURE;
@@ -43,6 +41,11 @@ import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GEST
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_DOWN_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_LEFT_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_RIGHT_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_UP_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.POPUP_ACTION;
 
 public class ActionFragment extends MainActivityFragment implements ActionAdapter.ActionClickListener {
 
@@ -82,16 +85,15 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
 
         if (decoration != null) itemDecoration.setDrawable(decoration);
 
-        ActionAdapter adapter = new ActionAdapter(false, true, this::getItems, this);
-
-        new ListManagerBuilder<ActionViewHolder, Void>()
+        List<Integer> items = new ArrayList<>();
+        ListManager<ActionViewHolder, Void> listManager =  new ListManagerBuilder<ActionViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withLinearLayoutManager()
-                .withAdapter(adapter)
+                .withAdapter(new ActionAdapter(false, true, items, this))
                 .addDecoration(itemDecoration)
                 .build();
 
-        adapter.calculateDiff();
+        disposables.add(App.diff(items, this::getItems).subscribe(listManager::onDiff, Throwable::printStackTrace));
 
         root.<Toolbar>findViewById(R.id.title_bar).setTitle(R.string.pick_action);
 

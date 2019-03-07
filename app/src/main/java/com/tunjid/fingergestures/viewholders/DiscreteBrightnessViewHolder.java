@@ -23,6 +23,9 @@ import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.adapters.DiscreteBrightnessAdapter;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 
+import java.util.List;
+import java.util.function.Supplier;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,7 +33,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.SLIDER_DELTA;
 
-public class DiscreteBrightnessViewHolder extends DiffViewHolder<DiscreteBrightnessAdapter> {
+public class DiscreteBrightnessViewHolder extends DiffViewHolder<String> {
 
     private RecyclerView discreteBrightnessList;
 
@@ -50,7 +53,7 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<DiscreteBrightn
 
         discreteBrightnessList = itemView.findViewById(R.id.item_list);
         discreteBrightnessList.setLayoutManager(layoutManager);
-        discreteBrightnessList.setAdapter(new DiscreteBrightnessAdapter(discreteValue -> {
+        discreteBrightnessList.setAdapter(new DiscreteBrightnessAdapter(items, discreteValue -> {
             BrightnessGestureConsumer.getInstance().removeDiscreteBrightnessValue(discreteValue);
             adapterListener.notifyItemChanged(SLIDER_DELTA);
             bind();
@@ -79,6 +82,11 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<DiscreteBrightn
     @Nullable @Override
     DiscreteBrightnessAdapter getAdapter() {
         return (DiscreteBrightnessAdapter) discreteBrightnessList.getAdapter();
+    }
+
+    @Override
+    Supplier<List<String>> getListSupplier() {
+        return BrightnessGestureConsumer.getInstance()::getDiscreteBrightnessValues;
     }
 
     private void onDiscreteValueEntered(DialogInterface dialogInterface, EditText editText) {

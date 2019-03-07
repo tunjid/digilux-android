@@ -7,7 +7,9 @@ import android.view.Window;
 import android.widget.TextView;
 
 import com.google.android.material.card.MaterialCardView;
+import com.tunjid.androidbootstrap.recyclerview.ListManager;
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
@@ -16,6 +18,8 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.viewholders.ActionViewHolder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -48,14 +52,14 @@ public class PopupActivity extends AppCompatActivity {
         Window window = getWindow();
         window.setLayout(MATCH_PARENT, MATCH_PARENT);
 
+        List<Integer> items = new ArrayList<>();
         AtomicInteger spanSizer = new AtomicInteger(0);
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
-        ActionAdapter adapter = new ActionAdapter(true, true, PopUpGestureConsumer.getInstance()::getList, this::onActionClicked);
 
-        new ListManagerBuilder<ActionViewHolder, Void>()
+        ListManager<ActionViewHolder, Void> listManager = new ListManagerBuilder<ActionViewHolder, Void>()
                 .withRecyclerView(findViewById(R.id.item_list))
                 .withGridLayoutManager(6)
-                .withAdapter(adapter)
+                .withAdapter(new ActionAdapter(true, true, items, this::onActionClicked))
                 .onLayoutManager(manager -> ((GridLayoutManager) manager).setSpanSizeLookup(new SpanSizeLookup() {
                     @Override public int getSpanSize(int position) { return spanSizer.get(); }
                 }))
@@ -65,7 +69,9 @@ public class PopupActivity extends AppCompatActivity {
         text.setTextColor(backgroundManager.getSliderColor());
         this.<MaterialCardView>findViewById(R.id.card).setCardBackgroundColor(backgroundManager.getBackgroundColor());
 
-        disposables.add(adapter.calculateDiff().subscribe(size -> {
+        disposables.add(App.diff(items, PopUpGestureConsumer.getInstance()::getList).subscribe(result -> {
+            int size = items.size();
+            listManager.onDiff(result);
             spanSizer.set(size == 1 ? 6 : size == 2 ? 3 : 2);
             text.setVisibility(size == 0 ? VISIBLE : GONE);
         }, Throwable::printStackTrace));
