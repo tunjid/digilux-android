@@ -30,9 +30,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DividerItemDecoration;
-import io.reactivex.Single;
 
 import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 import static com.tunjid.fingergestures.App.nullCheck;
@@ -43,10 +41,6 @@ import static com.tunjid.fingergestures.viewmodels.AppViewModel.ROTATION_LOCK;
 public class PackageFragment extends MainActivityFragment implements PackageAdapter.PackageClickListener {
 
     private static final String ARG_PERSISTED_SET = "PERSISTED_SET";
-
-    private View progressBar;
-    private ListManager<PackageViewHolder, Void> listManager;
-    private final List<ApplicationInfo> packageNames = new ArrayList<>();
 
     public static PackageFragment newInstance(@RotationGestureConsumer.PersistedSet String preferenceName) {
         PackageFragment fragment = new PackageFragment();
@@ -74,8 +68,9 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
 
         if (decoration != null) itemDecoration.setDrawable(decoration);
 
-        progressBar = root.findViewById(R.id.progress_bar);
-        listManager = new ListManagerBuilder<PackageViewHolder, Void>()
+        List<ApplicationInfo> packageNames = new ArrayList<>();
+        View progressBar = root.findViewById(R.id.progress_bar);
+        ListManager<PackageViewHolder, Void> listManager = new ListManagerBuilder<PackageViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withAdapter(new PackageAdapter(false, packageNames, this))
                 .withLinearLayoutManager()
@@ -85,11 +80,15 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         String persistedSet = getArguments().getString(ARG_PERSISTED_SET);
         root.<Toolbar>findViewById(R.id.title_bar).setTitle(RotationGestureConsumer.getInstance().getAddText(persistedSet));
 
-        disposables.add(populateList(context).subscribe(result -> {
-            TransitionManager.beginDelayedTransition(root, new AutoTransition());
-            progressBar.setVisibility(View.GONE);
-            listManager.onDiff(result);
-        }, Throwable::printStackTrace));
+        disposables.add(App.diff(packageNames, () -> context.getPackageManager().getInstalledApplications(0).stream()
+                .filter(applicationInfo -> (applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0 || (applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0)
+                .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
+                .collect(Collectors.toList()))
+                .subscribe(result -> {
+                    TransitionManager.beginDelayedTransition(root, new AutoTransition());
+                    progressBar.setVisibility(View.GONE);
+                    listManager.onDiff(result);
+                }, Throwable::printStackTrace));
 
         return root;
     }
@@ -126,19 +125,5 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
 
         toggleBottomSheet(false);
         nullCheck(getCurrentAppFragment(), fragment -> fragment.notifyItemChanged(ROTATION_APPS.equals(persistedSet) ? ROTATION_LOCK : EXCLUDED_ROTATION_LOCK));
-    }
-
-    @Override
-    public void onDestroyView() {
-        listManager.clear();
-        listManager = null;
-        super.onDestroyView();
-    }
-
-    private Single<DiffUtil.DiffResult> populateList(Context context) {
-        return App.diff(packageNames, () -> context.getPackageManager().getInstalledApplications(0).stream()
-                .filter(applicationInfo -> (applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0 || (applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0)
-                .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
-                .collect(Collectors.toList()));
     }
 }
