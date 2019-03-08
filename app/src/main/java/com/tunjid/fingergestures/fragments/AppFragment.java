@@ -132,14 +132,10 @@ public class AppFragment extends MainActivityFragment
 
     @Override
     public void pickWallpaper(@BackgroundManager.WallpaperSelection int selection) {
-        if (!App.hasStoragePermission()) {
-            showSnackbar(R.string.enable_storage_settings);
-            return;
-        }
-        Intent intent = new Intent();
-        intent.setType(IMAGE_SELECTION);
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, ""), selection);
+        if (!App.hasStoragePermission()) showSnackbar(R.string.enable_storage_settings);
+        else startActivityForResult(Intent.createChooser(new Intent()
+                .setType(IMAGE_SELECTION)
+                .setAction(Intent.ACTION_GET_CONTENT), ""), selection);
     }
 
     public int[] getItems() {
@@ -170,11 +166,11 @@ public class AppFragment extends MainActivityFragment
         int[] aspectRatio = backgroundManager.getScreenAspectRatio();
         if (aspectRatio == null) return;
 
-        File file = backgroundManager.getWallpaperFile(selection, requireContext());
-        Uri destination = Uri.fromFile(file);
-
         Activity activity = getActivity();
         if (activity == null) return;
+
+        File file = backgroundManager.getWallpaperFile(selection, activity);
+        Uri destination = Uri.fromFile(file);
 
         CropImage.activity(source)
                 .setOutputUri(destination)
