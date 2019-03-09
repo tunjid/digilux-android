@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 import com.tunjid.fingergestures.models.State;
 import com.tunjid.fingergestures.models.TextLink;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -108,6 +110,8 @@ public class AppViewModel extends AndroidViewModel {
     private static final String MATERIAL_DESIGN_ICONS_LINK = "https://materialdesignicons.com/";
 
     public final TextLink[] links;
+    public final List<Integer> availableActions;
+    public final List<ApplicationInfo> installedApps;
 
     private State state;
     private final String[] quips;
@@ -115,7 +119,6 @@ public class AppViewModel extends AndroidViewModel {
     private final CompositeDisposable disposable;
     private final PublishProcessor<State> stateProcessor;
     private final PublishProcessor<String> shillProcessor;
-    private final List<ApplicationInfo> installedApps;
     private final Queue<Integer> permissionsQueue;
 
     public AppViewModel(@NonNull Application application) {
@@ -124,6 +127,7 @@ public class AppViewModel extends AndroidViewModel {
         state = new State(application);
         disposable = new CompositeDisposable();
         installedApps = new ArrayList<>();
+        availableActions = new ArrayList<>();
         permissionsQueue = new ArrayDeque<>();
         quipCounter = new AtomicInteger(-1);
 
@@ -164,8 +168,8 @@ public class AppViewModel extends AndroidViewModel {
                 .collect(Collectors.toList()));
     }
 
-    public List<ApplicationInfo> getInstalledApps() {
-        return installedApps;
+    public Single<DiffUtil.DiffResult> updatedActions() {
+        return App.diff(availableActions, () -> IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList()));
     }
 
     public void shillMoar() {

@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.recyclerview.ListManager;
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
-import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
@@ -18,16 +17,13 @@ import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.viewholders.ActionViewHolder;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import com.tunjid.fingergestures.viewmodels.AppViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProviders;
 
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_LEFT_GESTURE;
@@ -47,6 +43,8 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
 
     private static final String ARG_DIRECTION = "DIRECTION";
 
+    private AppViewModel viewModel;
+
     public static ActionFragment directionInstance(@GestureMapper.GestureDirection String direction) {
         ActionFragment fragment = new ActionFragment();
         Bundle args = new Bundle();
@@ -56,7 +54,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
         return fragment;
     }
 
-    public static ActionFragment actionInstance() {
+    public static ActionFragment popUpInstance() {
         ActionFragment fragment = new ActionFragment();
         Bundle args = new Bundle();
 
@@ -65,25 +63,24 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
     }
 
     @Override
-    public String getStableTag() {
-        return getClass().getSimpleName();
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        viewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
     }
-
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_actions, container, false);
 
-        List<Integer> items = new ArrayList<>();
         ListManager<ActionViewHolder, Void> listManager =  new ListManagerBuilder<ActionViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withLinearLayoutManager()
-                .withAdapter(new ActionAdapter(false, true, items, this))
+                .withAdapter(new ActionAdapter(false, true, viewModel.availableActions, this))
                 .addDecoration(divider())
                 .build();
 
-        disposables.add(App.diff(items, this::getItems).subscribe(listManager::onDiff, Throwable::printStackTrace));
+        disposables.add(viewModel.updatedActions().subscribe(listManager::onDiff, Throwable::printStackTrace));
 
         root.<Toolbar>findViewById(R.id.title_bar).setTitle(R.string.pick_action);
 
@@ -101,7 +98,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
         @GestureMapper.GestureDirection
         String direction = args.getString(ARG_DIRECTION);
 
-        boolean isActionInstance = direction == null;
+        boolean isPopUpInstance = direction == null;
 
         toggleBottomSheet(false);
 
@@ -110,7 +107,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
 
         GestureMapper mapper = GestureMapper.getInstance();
 
-        if (isActionInstance) {
+        if (isPopUpInstance) {
             Context context = requireContext();
             if (PopUpGestureConsumer.getInstance().addToSet(action))
                 fragment.notifyItemChanged(POPUP_ACTION);
@@ -132,9 +129,5 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
                     : DOWN_GESTURE.equals(direction) || DOUBLE_DOWN_GESTURE.equals(direction)
                     ? MAP_DOWN_ICON : MAP_DOWN_ICON);
         }
-    }
-
-    private List<Integer> getItems() {
-        return IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList());
     }
 }

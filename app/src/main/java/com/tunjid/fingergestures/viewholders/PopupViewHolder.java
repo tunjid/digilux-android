@@ -42,7 +42,7 @@ public class PopupViewHolder extends DiffViewHolder<Integer> {
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.popup_prompt).show();
 
             else
-                adapterListener.showBottomSheetFragment(ActionFragment.actionInstance());
+                adapterListener.showBottomSheetFragment(ActionFragment.popUpInstance());
         });
 
         TextView title = itemView.findViewById(R.id.title);

@@ -8,6 +8,7 @@ import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.tunjid.androidbootstrap.recyclerview.ListManager;
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
@@ -57,16 +58,17 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_packages, container, false);
 
-        View progressBar = root.findViewById(R.id.progress_bar);
+        Toolbar toolbar = root.findViewById(R.id.title_bar);
+        ProgressBar progressBar = root.findViewById(R.id.progress_bar);
         ListManager<PackageViewHolder, Void> listManager = new ListManagerBuilder<PackageViewHolder, Void>()
-                .withAdapter(new PackageAdapter(false, viewModel.getInstalledApps(), this))
+                .withAdapter(new PackageAdapter(false, viewModel.installedApps, this))
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withLinearLayoutManager()
                 .addDecoration(divider())
                 .build();
 
         String persistedSet = getArguments().getString(ARG_PERSISTED_SET);
-        root.<Toolbar>findViewById(R.id.title_bar).setTitle(RotationGestureConsumer.getInstance().getAddText(persistedSet));
+        toolbar.setTitle(RotationGestureConsumer.getInstance().getAddText(persistedSet));
 
         disposables.add(viewModel.updatedApps().subscribe(result -> {
             TransitionManager.beginDelayedTransition(root, new AutoTransition());
