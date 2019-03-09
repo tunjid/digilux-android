@@ -1,5 +1,6 @@
 package com.tunjid.fingergestures.viewholders;
 
+import android.content.pm.ApplicationInfo;
 import android.view.View;
 import android.widget.TextView;
 
@@ -10,6 +11,9 @@ import com.tunjid.fingergestures.adapters.PackageAdapter;
 import com.tunjid.fingergestures.fragments.PackageFragment;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 
+import java.util.List;
+import java.util.function.Supplier;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -18,7 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 
-public class RotationViewHolder extends DiffViewHolder<PackageAdapter> {
+public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
 
     private final String persistedSet;
     private RecyclerView rotationList;
@@ -31,7 +35,7 @@ public class RotationViewHolder extends DiffViewHolder<PackageAdapter> {
 
         rotationList = itemView.findViewById(R.id.item_list);
         rotationList.setLayoutManager(new GridLayoutManager(itemView.getContext(), 3));
-        rotationList.setAdapter(new PackageAdapter(true, () -> gestureConsumer.getList(persistedSet), getPackageClickListener(persistedSet)));
+        rotationList.setAdapter(new PackageAdapter(true, items, getPackageClickListener(persistedSet)));
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
             if (!App.canWriteToSettings())
@@ -67,6 +71,11 @@ public class RotationViewHolder extends DiffViewHolder<PackageAdapter> {
     @Nullable @Override
     PackageAdapter getAdapter() {
         return (PackageAdapter) rotationList.getAdapter();
+    }
+
+    @Override
+    Supplier<List<ApplicationInfo>> getListSupplier() {
+        return () -> RotationGestureConsumer.getInstance().getList(persistedSet);
     }
 
     private PackageAdapter.PackageClickListener getPackageClickListener(@RotationGestureConsumer.PersistedSet String preferenceName) {

@@ -4,46 +4,55 @@ import android.transition.AutoTransition;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.adapters.DiffAdapter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 
 import static android.transition.TransitionManager.beginDelayedTransition;
 import static com.tunjid.fingergestures.App.nullCheck;
 
-public abstract class DiffViewHolder<T extends DiffAdapter> extends AppViewHolder {
+public abstract class DiffViewHolder<T> extends AppViewHolder {
 
     private static final Map<String, Integer> sizeMap = new HashMap<>();
 
+    protected final List<T> items;
+
     DiffViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
+        this.items = new ArrayList<>();
     }
 
     public static void onActivityDestroyed() { sizeMap.clear(); }
 
-    // The compiler error is odd, the type of the single should be independent of the types of the DiffAdapter
-    @SuppressWarnings("unchecked")
-    void diff() {
-        nullCheck(getAdapter(), adapter -> disposables.add(adapter.calculateDiff().subscribe(this::onDiff, o -> {})));
+    final void diff() {
+        disposables.add(App.diff(items, getListSupplier()).subscribe(this::onDiff, Throwable::printStackTrace));
     }
 
     abstract String getSizeCacheKey();
 
     @Nullable
-    abstract T getAdapter();
+    abstract RecyclerView.Adapter getAdapter();
 
-    private void onDiff(Object value) {
-        if (!(value instanceof Integer)) return;
+    abstract Supplier<List<T>> getListSupplier();
 
+    private void onDiff(DiffUtil.DiffResult diffResult) {
         String key = getSizeCacheKey();
+        @SuppressWarnings("ConstantConditions")
         int oldSize = sizeMap.getOrDefault(key, 0);
-        int newSize = (int) value;
+        int newSize = items.size();
 
         if (oldSize != newSize) beginDelayedTransition((ViewGroup) itemView, new AutoTransition());
         sizeMap.put(key, newSize);
+
+        nullCheck(getAdapter(), diffResult::dispatchUpdatesTo);
     }
 }

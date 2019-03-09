@@ -63,7 +63,7 @@
             android:layout_gravity="bottom|center_horizontal"
             android:layout_margin="@dimen/single_margin"
             android:text="@string/enable_accessibility"
-            app:layout_behavior="com.tunjid.androidbootstrap.view.behavior.BottomTransientBarBehavior"
+            app:layout_behavior="@string/bottom_transient_bar_behavior"
             app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
             app:layout_constraintRight_toRightOf="parent" />
 
@@ -74,7 +74,7 @@
             android:background="@color/colorBackground"
             app:behavior_hideable="true"
             app:behavior_peekHeight="500dp"
-            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
+            app:layout_behavior="@string/bottom_sheet_behavior" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -11,6 +11,9 @@ import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.fragments.ActionFragment;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 
+import java.util.List;
+import java.util.function.Supplier;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -18,7 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 
-public class PopupViewHolder extends DiffViewHolder<ActionAdapter> {
+public class PopupViewHolder extends DiffViewHolder<Integer> {
 
     private RecyclerView recyclerView;
 
@@ -29,7 +32,7 @@ public class PopupViewHolder extends DiffViewHolder<ActionAdapter> {
 
         recyclerView = itemView.findViewById(R.id.item_list);
         recyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 3));
-        recyclerView.setAdapter(new ActionAdapter(true, true, buttonManager::getList, this::onActionClicked));
+        recyclerView.setAdapter(new ActionAdapter(true, true, items, this::onActionClicked));
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
             if (!App.canWriteToSettings())
@@ -39,7 +42,7 @@ public class PopupViewHolder extends DiffViewHolder<ActionAdapter> {
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.popup_prompt).show();
 
             else
-                adapterListener.showBottomSheetFragment(ActionFragment.actionInstance());
+                adapterListener.showBottomSheetFragment(ActionFragment.popUpInstance());
         });
 
         TextView title = itemView.findViewById(R.id.title);
@@ -66,6 +69,11 @@ public class PopupViewHolder extends DiffViewHolder<ActionAdapter> {
     @Nullable @Override
     ActionAdapter getAdapter() {
         return (ActionAdapter) recyclerView.getAdapter();
+    }
+
+    @Override
+    Supplier<List<Integer>> getListSupplier() {
+        return PopUpGestureConsumer.getInstance()::getList;
     }
 
     private void onActionClicked(@GestureConsumer.GestureAction int action) {
