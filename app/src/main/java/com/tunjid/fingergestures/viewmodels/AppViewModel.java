@@ -162,10 +162,12 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public Single<DiffUtil.DiffResult> updatedApps() {
-        return App.diff(installedApps, () -> getApplication().getPackageManager().getInstalledApplications(0).stream()
-                .filter(this::isUserInstalledApp)
-                .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
-                .collect(Collectors.toList()));
+        return App.diff(installedApps,
+                () -> getApplication().getPackageManager().getInstalledApplications(0).stream()
+                        .filter(this::isUserInstalledApp)
+                        .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
+                        .collect(Collectors.toList()),
+                info -> info.packageName);
     }
 
     public Single<DiffUtil.DiffResult> updatedActions() {

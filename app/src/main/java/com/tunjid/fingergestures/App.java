@@ -19,6 +19,7 @@ import com.tunjid.androidbootstrap.recyclerview.diff.Diff;
 import com.tunjid.androidbootstrap.recyclerview.diff.Differentiable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -131,10 +132,17 @@ public class App extends android.app.Application {
     }
 
     public static <T> Single<DiffUtil.DiffResult> diff(List<T> list, Supplier<List<T>> supplier) {
-        return backgroundToMain(() -> Diff.calculate(list,
+        return diff(list, supplier, Object::toString);
+    }
+
+    public static <T> Single<DiffUtil.DiffResult> diff(List<T> list,
+                                                       Supplier<List<T>> supplier,
+                                                       Function<T, String> diffFunction) {
+        return backgroundToMain(() -> Diff.calculate(
+                list,
                 supplier.get(),
                 (listCopy, newList) -> newList,
-                item -> Differentiable.fromCharSequence(item::toString)))
+                item -> Differentiable.fromCharSequence(() -> diffFunction.apply(item))))
                 .map(diff -> {
                     Lists.replace(list, diff.items);
                     return diff.result;
