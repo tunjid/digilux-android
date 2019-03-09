@@ -400,7 +400,7 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void onStateChanged(State state) {
-        fabExtensionAnimator.updateGlyphs(state.glyphState);
+        permissionText.post(() -> fabExtensionAnimator.updateGlyphs(state.glyphState));
         permissionText.post(state.fabVisible ? fabHider::show : fabHider::hide);
     }
 

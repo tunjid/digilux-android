@@ -152,7 +152,7 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public Flowable<State> state() {
-        return stateProcessor;
+        return stateProcessor.distinct();
     }
 
     public Flowable<String> shill() {
@@ -267,6 +267,7 @@ public class AppViewModel extends AndroidViewModel {
                 break;
         }
 
+        state = state.visibility(true);
         stateProcessor.onNext(state);
     }
 

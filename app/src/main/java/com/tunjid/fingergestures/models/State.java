@@ -5,6 +5,8 @@ import android.content.Context;
 import com.tunjid.androidbootstrap.material.animator.FabExtensionAnimator.GlyphState;
 import com.tunjid.fingergestures.R;
 
+import java.util.Objects;
+
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 
@@ -34,5 +36,17 @@ public class State {
     public State glyph(@StringRes int text, @DrawableRes int icon) {
         GlyphState glyphState = transformApp(app -> newState(app.getText(text), getDrawable(app, icon)), this.glyphState);
         return new State(fabVisible, glyphState);
+    }
+
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        State state = (State) o;
+        return fabVisible == state.fabVisible &&
+                Objects.equals(glyphState, state.glyphState);
+    }
+
+    @Override public int hashCode() {
+        return Objects.hash(fabVisible, glyphState);
     }
 }
