@@ -65,6 +65,7 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 import static com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE;
 import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
+import static com.tunjid.fingergestures.App.nullCheck;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
 import static com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR;
@@ -276,14 +277,18 @@ public class MainActivity extends FingerGestureActivity {
             return;
 
         viewModel.onPermissionChange(requestCode).ifPresent(this::showSnackbar);
-        AppFragment fragment = (AppFragment) getCurrentFragment();
-        if (fragment != null) fragment.notifyDataSetChanged();
+        nullCheck(getCurrentFragment(), AppFragment::notifyDataSetChanged);
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         handleIntent(intent);
+    }
+
+    @Override
+    public AppFragment getCurrentFragment() {
+        return (AppFragment) super.getCurrentFragment();
     }
 
     @Override

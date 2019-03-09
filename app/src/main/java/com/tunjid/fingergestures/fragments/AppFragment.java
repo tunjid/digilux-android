@@ -84,11 +84,6 @@ public class AppFragment extends MainActivityFragment
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         notifyDataSetChanged();
@@ -143,8 +138,8 @@ public class AppFragment extends MainActivityFragment
         listManager.notifyDataSetChanged();
     }
 
-    @Nullable
     @Override
+    @Nullable
     @SuppressLint("CommitTransaction")
     @SuppressWarnings("ConstantConditions")
     public FragmentTransaction provideFragmentTransaction(BaseFragment fragmentTo) {
