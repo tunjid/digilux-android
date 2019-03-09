@@ -3,10 +3,8 @@ package com.tunjid.fingergestures.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -31,13 +29,11 @@ import java.util.stream.IntStream;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.DividerItemDecoration;
 
-import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 import static com.tunjid.fingergestures.BackgroundManager.DAY_WALLPAPER_PICK_CODE;
 import static com.tunjid.fingergestures.BackgroundManager.NIGHT_WALLPAPER_PICK_CODE;
+import static java.lang.Math.abs;
 
 public class AppFragment extends MainActivityFragment
         implements
@@ -75,17 +71,13 @@ public class AppFragment extends MainActivityFragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_home, container, false);
-        Context context = inflater.getContext();
-        DividerItemDecoration itemDecoration = new DividerItemDecoration(context, VERTICAL);
-        Drawable decoration = ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark);
-        if (decoration != null) itemDecoration.setDrawable(decoration);
 
         listManager = new ListManagerBuilder<AppViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withAdapter(new AppAdapter(items, this))
                 .withLinearLayoutManager()
-                .addDecoration(itemDecoration)
-                .addScrollListener((dx, dy) -> {if (Math.abs(dy) > 3) toggleToolbar(dy < 0);})
+                .addDecoration(divider())
+                .addScrollListener((dx, dy) -> { if (abs(dy) > 3) toggleToolbar(dy < 0); })
                 .build();
 
         return root;

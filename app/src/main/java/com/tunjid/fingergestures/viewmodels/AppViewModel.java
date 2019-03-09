@@ -1,27 +1,34 @@
 package com.tunjid.fingergestures.viewmodels;
 
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
+import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 import com.tunjid.fingergestures.models.State;
 import com.tunjid.fingergestures.models.TextLink;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.recyclerview.widget.DiffUtil;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.processors.PublishProcessor;
 
@@ -108,6 +115,7 @@ public class AppViewModel extends AndroidViewModel {
     private final CompositeDisposable disposable;
     private final PublishProcessor<State> stateProcessor;
     private final PublishProcessor<String> shillProcessor;
+    private final List<ApplicationInfo> installedApps;
     private final Queue<Integer> permissionsQueue;
 
     public AppViewModel(@NonNull Application application) {
@@ -115,6 +123,7 @@ public class AppViewModel extends AndroidViewModel {
 
         state = new State(application);
         disposable = new CompositeDisposable();
+        installedApps = new ArrayList<>();
         permissionsQueue = new ArrayDeque<>();
         quipCounter = new AtomicInteger(-1);
 
@@ -131,7 +140,8 @@ public class AppViewModel extends AndroidViewModel {
                 new TextLink(application.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
     }
 
-    @Override protected void onCleared() {
+    @Override
+    protected void onCleared() {
         super.onCleared();
         disposable.clear();
         permissionsQueue.clear();
@@ -145,6 +155,17 @@ public class AppViewModel extends AndroidViewModel {
         disposable.clear();
         startShilling();
         return shillProcessor;
+    }
+
+    public Single<DiffUtil.DiffResult> updatedApps() {
+        return App.diff(installedApps, () -> getApplication().getPackageManager().getInstalledApplications(0).stream()
+                .filter(this::isUserInstalledApp)
+                .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
+                .collect(Collectors.toList()));
+    }
+
+    public List<ApplicationInfo> getInstalledApps() {
+        return installedApps;
     }
 
     public void shillMoar() {
@@ -253,5 +274,9 @@ public class AppViewModel extends AndroidViewModel {
     private String getNextQuip() {
         if (quipCounter.incrementAndGet() >= quips.length) quipCounter.set(0);
         return quips[quipCounter.get()];
+    }
+
+    private boolean isUserInstalledApp(ApplicationInfo info) {
+        return (info.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0 || (info.flags & ApplicationInfo.FLAG_SYSTEM) == 0;
     }
 }

@@ -2,8 +2,6 @@ package com.tunjid.fingergestures.fragments;
 
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
@@ -13,26 +11,20 @@ import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.recyclerview.ListManager;
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
-import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.PackageAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 import com.tunjid.fingergestures.viewholders.PackageViewHolder;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.tunjid.fingergestures.viewmodels.AppViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.lifecycle.ViewModelProviders;
 
-import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 import static com.tunjid.fingergestures.App.nullCheck;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.EXCLUDED_ROTATION_LOCK;
@@ -41,6 +33,8 @@ import static com.tunjid.fingergestures.viewmodels.AppViewModel.ROTATION_LOCK;
 public class PackageFragment extends MainActivityFragment implements PackageAdapter.PackageClickListener {
 
     private static final String ARG_PERSISTED_SET = "PERSISTED_SET";
+
+    private AppViewModel viewModel;
 
     public static PackageFragment newInstance(@RotationGestureConsumer.PersistedSet String preferenceName) {
         PackageFragment fragment = new PackageFragment();
@@ -52,8 +46,9 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
     }
 
     @Override
-    public String getStableTag() {
-        return getClass().getSimpleName();
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        viewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
     }
 
     @Nullable
@@ -61,34 +56,23 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
     @SuppressWarnings("ConstantConditions")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_packages, container, false);
-        Context context = inflater.getContext();
 
-        DividerItemDecoration itemDecoration = new DividerItemDecoration(context, VERTICAL);
-        Drawable decoration = ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark);
-
-        if (decoration != null) itemDecoration.setDrawable(decoration);
-
-        List<ApplicationInfo> packageNames = new ArrayList<>();
         View progressBar = root.findViewById(R.id.progress_bar);
         ListManager<PackageViewHolder, Void> listManager = new ListManagerBuilder<PackageViewHolder, Void>()
+                .withAdapter(new PackageAdapter(false, viewModel.getInstalledApps(), this))
                 .withRecyclerView(root.findViewById(R.id.options_list))
-                .withAdapter(new PackageAdapter(false, packageNames, this))
                 .withLinearLayoutManager()
-                .addDecoration(itemDecoration)
+                .addDecoration(divider())
                 .build();
 
         String persistedSet = getArguments().getString(ARG_PERSISTED_SET);
         root.<Toolbar>findViewById(R.id.title_bar).setTitle(RotationGestureConsumer.getInstance().getAddText(persistedSet));
 
-        disposables.add(App.diff(packageNames, () -> context.getPackageManager().getInstalledApplications(0).stream()
-                .filter(applicationInfo -> (applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0 || (applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0)
-                .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
-                .collect(Collectors.toList()))
-                .subscribe(result -> {
-                    TransitionManager.beginDelayedTransition(root, new AutoTransition());
-                    progressBar.setVisibility(View.GONE);
-                    listManager.onDiff(result);
-                }, Throwable::printStackTrace));
+        disposables.add(viewModel.updatedApps().subscribe(result -> {
+            TransitionManager.beginDelayedTransition(root, new AutoTransition());
+            progressBar.setVisibility(View.GONE);
+            listManager.onDiff(result);
+        }, Throwable::printStackTrace));
 
         return root;
     }

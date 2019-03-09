@@ -1,13 +1,9 @@
 package com.tunjid.fingergestures.baseclasses;
 
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import androidx.fragment.app.FragmentManager;
-import io.reactivex.disposables.CompositeDisposable;
-
 import android.view.View;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
@@ -15,6 +11,17 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.AppFragment;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.RecyclerView;
+import io.reactivex.disposables.CompositeDisposable;
+
+import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 
 public abstract class MainActivityFragment extends BaseFragment {
 
@@ -70,5 +77,16 @@ public abstract class MainActivityFragment extends BaseFragment {
         if (activity == null) return null;
 
         return (AppFragment) activity.getCurrentFragment();
+    }
+
+    protected RecyclerView.ItemDecoration divider() {
+        Context context = requireContext();
+
+        DividerItemDecoration itemDecoration = new DividerItemDecoration(context, VERTICAL);
+        Drawable decoration = ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark);
+
+        if (decoration != null) itemDecoration.setDrawable(decoration);
+
+        return itemDecoration;
     }
 }

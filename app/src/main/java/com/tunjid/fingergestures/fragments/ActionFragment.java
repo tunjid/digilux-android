@@ -2,7 +2,6 @@ package com.tunjid.fingergestures.fragments;
 
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,10 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
 
-import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_DOWN_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_LEFT_GESTURE;
 import static com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_RIGHT_GESTURE;
@@ -78,19 +74,13 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_actions, container, false);
-        Context context = inflater.getContext();
-
-        DividerItemDecoration itemDecoration = new DividerItemDecoration(context, VERTICAL);
-        Drawable decoration = ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark);
-
-        if (decoration != null) itemDecoration.setDrawable(decoration);
 
         List<Integer> items = new ArrayList<>();
         ListManager<ActionViewHolder, Void> listManager =  new ListManagerBuilder<ActionViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withLinearLayoutManager()
                 .withAdapter(new ActionAdapter(false, true, items, this))
-                .addDecoration(itemDecoration)
+                .addDecoration(divider())
                 .build();
 
         disposables.add(App.diff(items, this::getItems).subscribe(listManager::onDiff, Throwable::printStackTrace));
