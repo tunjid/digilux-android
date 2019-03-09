@@ -73,6 +73,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_actions, container, false);
 
+        root.<Toolbar>findViewById(R.id.title_bar).setTitle(R.string.pick_action);
         ListManager<ActionViewHolder, Void> listManager =  new ListManagerBuilder<ActionViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withLinearLayoutManager()
@@ -81,8 +82,6 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
                 .build();
 
         disposables.add(viewModel.updatedActions().subscribe(listManager::onDiff, Throwable::printStackTrace));
-
-        root.<Toolbar>findViewById(R.id.title_bar).setTitle(R.string.pick_action);
 
         return root;
     }
