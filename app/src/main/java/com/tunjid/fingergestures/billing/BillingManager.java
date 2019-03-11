@@ -110,7 +110,7 @@ public class BillingManager {
         private BillingExecutor() {}
 
         @Override
-        public void subscribe(final CompletableEmitter emitter) throws Exception {
+        public void subscribe(final CompletableEmitter emitter) {
             if (isServiceConnected) {
                 emitter.onComplete();
                 return;
