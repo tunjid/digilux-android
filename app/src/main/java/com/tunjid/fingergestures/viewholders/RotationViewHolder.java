@@ -64,6 +64,9 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
     }
 
     @Override
+    protected String diffHash(ApplicationInfo item) { return item.packageName; }
+
+    @Override
     String getSizeCacheKey() {
         return persistedSet;
     }

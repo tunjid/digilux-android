@@ -7,11 +7,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-
 import android.view.accessibility.AccessibilityManager;
 
 import com.tunjid.androidbootstrap.functions.collections.Lists;
@@ -19,12 +14,14 @@ import com.tunjid.androidbootstrap.recyclerview.diff.Diff;
 import com.tunjid.androidbootstrap.recyclerview.diff.Differentiable;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;

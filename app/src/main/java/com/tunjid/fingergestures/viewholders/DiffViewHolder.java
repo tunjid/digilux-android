@@ -34,8 +34,10 @@ public abstract class DiffViewHolder<T> extends AppViewHolder {
     public static void onActivityDestroyed() { sizeMap.clear(); }
 
     final void diff() {
-        disposables.add(App.diff(items, getListSupplier()).subscribe(this::onDiff, Throwable::printStackTrace));
+        disposables.add(App.diff(items, getListSupplier(), this::diffHash).subscribe(this::onDiff, Throwable::printStackTrace));
     }
+
+    protected String diffHash(T item) { return item.toString(); }
 
     abstract String getSizeCacheKey();
 
