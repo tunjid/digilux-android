@@ -76,7 +76,7 @@ public class AppViewModel extends AndroidViewModel {
     public static final int SUPPORT = AUDIO_SLIDER_SHOW + 1;
 
     public final int[] gestureItems = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON,
-            MAP_RIGHT_ICON, AD_FREE, SUPPORT, REVIEW, PADDING};
+            MAP_RIGHT_ICON, /*AD_FREE,*/ SUPPORT, REVIEW, PADDING};
 
     public final int[] brightnessItems = {PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS,
             SCREEN_DIMMER, USE_LOGARITHMIC_SCALE, SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER,
