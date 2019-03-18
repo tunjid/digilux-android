@@ -10,7 +10,7 @@ import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer;
 
 import static com.tunjid.fingergestures.activities.MainActivity.DO_NOT_DISTURB_CODE;
-import static com.tunjid.fingergestures.adapters.AppAdapter.AUDIO_DELTA;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.AUDIO_DELTA;
 
 
 public class AudioStreamViewHolder extends AppViewHolder {

@@ -14,12 +14,18 @@ import androidx.core.content.ContextCompat;
 
 import android.view.accessibility.AccessibilityManager;
 
+import com.tunjid.androidbootstrap.functions.collections.Lists;
+import com.tunjid.androidbootstrap.recyclerview.diff.Diff;
+import com.tunjid.androidbootstrap.recyclerview.diff.Differentiable;
+
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import androidx.recyclerview.widget.DiffUtil;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -125,7 +131,25 @@ public class App extends android.app.Application {
         if (target != null) consumer.accept(target);
     }
 
-    public static <T>Single<T> backgroundToMain(Supplier<T> supplier) {
+    public static <T> Single<DiffUtil.DiffResult> diff(List<T> list, Supplier<List<T>> supplier) {
+        return diff(list, supplier, Object::toString);
+    }
+
+    public static <T> Single<DiffUtil.DiffResult> diff(List<T> list,
+                                                       Supplier<List<T>> supplier,
+                                                       Function<T, String> diffFunction) {
+        return backgroundToMain(() -> Diff.calculate(
+                list,
+                supplier.get(),
+                (listCopy, newList) -> newList,
+                item -> Differentiable.fromCharSequence(() -> diffFunction.apply(item))))
+                .map(diff -> {
+                    Lists.replace(list, diff.items);
+                    return diff.result;
+                });
+    }
+
+    public static <T> Single<T> backgroundToMain(Supplier<T> supplier) {
         return Single.fromCallable(supplier::get)
                 .subscribeOn(Schedulers.io())
                 .observeOn(mainThread());
