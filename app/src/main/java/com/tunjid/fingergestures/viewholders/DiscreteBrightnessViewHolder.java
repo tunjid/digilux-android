@@ -37,8 +37,8 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<String> {
 
     private RecyclerView discreteBrightnessList;
 
-    public DiscreteBrightnessViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
-        super(itemView, listener);
+    public DiscreteBrightnessViewHolder(View itemView, List<String> items, AppAdapter.AppAdapterListener listener) {
+        super(itemView, items, listener);
 
         TextView title = itemView.findViewById(R.id.title);
         title.setText(R.string.discrete_brightness_title);

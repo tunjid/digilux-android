@@ -14,36 +14,36 @@ import static androidx.core.content.ContextCompat.getDrawable;
 import static com.tunjid.androidbootstrap.material.animator.FabExtensionAnimator.newState;
 import static com.tunjid.fingergestures.App.transformApp;
 
-public class State {
+public class UiState {
 
     public final boolean fabVisible;
     public final GlyphState glyphState;
 
-    public State(Context context) {
+    public UiState(Context context) {
         this.fabVisible = false;
         this.glyphState = newState(context.getText(R.string.enable_accessibility), getDrawable(context, R.drawable.ic_human_24dp));
     }
 
-    private State(boolean fabVisible, GlyphState glyphState) {
+    private UiState(boolean fabVisible, GlyphState glyphState) {
         this.fabVisible = fabVisible;
         this.glyphState = glyphState;
     }
 
-    public State visibility(boolean fabVisible) {
-        return new State(fabVisible, this.glyphState);
+    public UiState visibility(boolean fabVisible) {
+        return new UiState(fabVisible, this.glyphState);
     }
 
-    public State glyph(@StringRes int text, @DrawableRes int icon) {
+    public UiState glyph(@StringRes int text, @DrawableRes int icon) {
         GlyphState glyphState = transformApp(app -> newState(app.getText(text), getDrawable(app, icon)), this.glyphState);
-        return new State(fabVisible, glyphState);
+        return new UiState(fabVisible, glyphState);
     }
 
     @Override public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        State state = (State) o;
-        return fabVisible == state.fabVisible &&
-                Objects.equals(glyphState, state.glyphState);
+        UiState uiState = (UiState) o;
+        return fabVisible == uiState.fabVisible &&
+                Objects.equals(glyphState, uiState.glyphState);
     }
 
     @Override public int hashCode() {

@@ -27,8 +27,11 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
     private final String persistedSet;
     private RecyclerView rotationList;
 
-    public RotationViewHolder(View itemView, @RotationGestureConsumer.PersistedSet String persistedSet, AppAdapter.AppAdapterListener listener) {
-        super(itemView, listener);
+    public RotationViewHolder(View itemView,
+                              @RotationGestureConsumer.PersistedSet String persistedSet,
+                              List<ApplicationInfo> items,
+                              AppAdapter.AppAdapterListener listener) {
+        super(itemView, items, listener);
         this.persistedSet = persistedSet;
 
         RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
@@ -62,6 +65,9 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
         diff();
         if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
     }
+
+    @Override
+    protected String diffHash(ApplicationInfo item) { return item.packageName; }
 
     @Override
     String getSizeCacheKey() {

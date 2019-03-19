@@ -77,7 +77,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
         ListManager<ActionViewHolder, Void> listManager =  new ListManagerBuilder<ActionViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withLinearLayoutManager()
-                .withAdapter(new ActionAdapter(false, true, viewModel.availableActions, this))
+                .withAdapter(new ActionAdapter(false, true, viewModel.state.availableActions, this))
                 .addDecoration(divider())
                 .build();
 
