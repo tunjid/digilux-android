@@ -61,7 +61,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         Toolbar toolbar = root.findViewById(R.id.title_bar);
         ProgressBar progressBar = root.findViewById(R.id.progress_bar);
         ListManager<PackageViewHolder, Void> listManager = new ListManagerBuilder<PackageViewHolder, Void>()
-                .withAdapter(new PackageAdapter(false, viewModel.installedApps, this))
+                .withAdapter(new PackageAdapter(false, viewModel.state.installedApps, this))
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withLinearLayoutManager()
                 .addDecoration(divider())

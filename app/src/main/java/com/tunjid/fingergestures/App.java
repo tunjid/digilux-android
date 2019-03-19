@@ -140,10 +140,8 @@ public class App extends android.app.Application {
                 supplier.get(),
                 (listCopy, newList) -> newList,
                 item -> Differentiable.fromCharSequence(() -> diffFunction.apply(item))))
-                .map(diff -> {
-                    Lists.replace(list, diff.items);
-                    return diff.result;
-                });
+                .doOnSuccess(diff -> Lists.replace(list, diff.items))
+                .map(diff -> diff.result);
     }
 
     public static <T> Single<T> backgroundToMain(Supplier<T> supplier) {

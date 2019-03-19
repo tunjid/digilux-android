@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,9 +25,9 @@ public abstract class DiffViewHolder<T> extends AppViewHolder {
 
     protected final List<T> items;
 
-    DiffViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
+    DiffViewHolder(View itemView, List<T> items, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
-        this.items = new ArrayList<>();
+        this.items = items;
     }
 
     public static void onActivityDestroyed() { sizeMap.clear(); }

@@ -14,6 +14,7 @@ import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
+import com.tunjid.fingergestures.models.AppState;
 import com.tunjid.fingergestures.viewholders.AdFreeViewHolder;
 import com.tunjid.fingergestures.viewholders.AppViewHolder;
 import com.tunjid.fingergestures.viewholders.AudioStreamViewHolder;
@@ -78,11 +79,13 @@ import static com.tunjid.fingergestures.viewmodels.AppViewModel.WALLPAPER_TRIGGE
 public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.AppAdapterListener> {
 
     private final int[] items;
+    private final AppState state;
 
-    public AppAdapter(int[] items, AppAdapterListener listener) {
+    public AppAdapter(int[] items, AppState state, AppAdapterListener listener) {
         super(listener);
         setHasStableIds(true);
         this.items = items;
+        this.state = state;
     }
 
     @NonNull
@@ -123,7 +126,7 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         () -> true,
                         backgroundManager::getSliderDurationText);
             case DISCRETE_BRIGHTNESS:
-                return new DiscreteBrightnessViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), adapterListener);
+                return new DiscreteBrightnessViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), state.brightnessValues, adapterListener);
             case SLIDER_COLOR:
                 return new ColorAdjusterViewHolder(getItemView(R.layout.viewholder_slider_color, parent), adapterListener);
             case SCREEN_DIMMER:
@@ -224,11 +227,11 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
             case WALLPAPER_TRIGGER:
                 return new WallpaperTriggerViewHolder(getItemView(R.layout.viewholder_wallpaper_trigger, parent), adapterListener);
             case ROTATION_LOCK:
-                return new RotationViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), ROTATION_APPS, adapterListener);
+                return new RotationViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), ROTATION_APPS, state.rotationApps, adapterListener);
             case EXCLUDED_ROTATION_LOCK:
-                return new RotationViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), EXCLUDED_APPS, adapterListener);
+                return new RotationViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), EXCLUDED_APPS, state.excludedRotationApps, adapterListener);
             case POPUP_ACTION:
-                return new PopupViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), adapterListener);
+                return new PopupViewHolder(getItemView(R.layout.viewholder_horizontal_list, parent), state.popUpActions, adapterListener);
             default:
                 return new AppViewHolder(getItemView(R.layout.viewholder_slider_delta, parent));
         }

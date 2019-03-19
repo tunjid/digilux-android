@@ -35,7 +35,7 @@ import com.tunjid.fingergestures.TrialView;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.AppFragment;
-import com.tunjid.fingergestures.models.State;
+import com.tunjid.fingergestures.models.UiState;
 import com.tunjid.fingergestures.models.TextLink;
 import com.tunjid.fingergestures.viewholders.DiffViewHolder;
 import com.tunjid.fingergestures.viewmodels.AppViewModel;
@@ -135,7 +135,7 @@ public class MainActivity extends FingerGestureActivity {
         bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottom_sheet));
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected);
 
-        disposables.add(viewModel.state().subscribe(this::onStateChanged, Throwable::printStackTrace));
+        disposables.add(viewModel.uiState().subscribe(this::onStateChanged, Throwable::printStackTrace));
 
         setSupportActionBar(toolbar);
         toggleBottomSheet(false);
@@ -227,7 +227,7 @@ public class MainActivity extends FingerGestureActivity {
             case R.id.info:
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.open_source_libraries)
-                        .setItems(viewModel.links, (dialog, index) -> showLink(viewModel.links[index]))
+                        .setItems(viewModel.state.links, (dialog, index) -> showLink(viewModel.state.links[index]))
                         .show();
                 return true;
         }
@@ -404,9 +404,9 @@ public class MainActivity extends FingerGestureActivity {
         switcher.setOutAnimation(loadAnimation(this, android.R.anim.slide_out_right));
     }
 
-    private void onStateChanged(State state) {
-        permissionText.post(() -> fabExtensionAnimator.updateGlyphs(state.glyphState));
-        permissionText.post(state.fabVisible ? fabHider::show : fabHider::hide);
+    private void onStateChanged(UiState uiState) {
+        permissionText.post(() -> fabExtensionAnimator.updateGlyphs(uiState.glyphState));
+        permissionText.post(uiState.fabVisible ? fabHider::show : fabHider::hide);
     }
 
     private ColorStateList getFabTint() {
