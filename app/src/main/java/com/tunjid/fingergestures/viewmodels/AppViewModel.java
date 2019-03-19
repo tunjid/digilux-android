@@ -8,17 +8,13 @@ import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
-import com.tunjid.fingergestures.models.State;
-import com.tunjid.fingergestures.models.TextLink;
+import com.tunjid.fingergestures.models.AppState;
+import com.tunjid.fingergestures.models.UiState;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -102,58 +98,36 @@ public class AppViewModel extends AndroidViewModel {
             AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW, SUPPORT})
     public @interface AdapterIndex {}
 
-    private static final String RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava";
-    private static final String COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker";
-    private static final String ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap";
-    private static final String GET_SET_ICON_LINK = "http://www.myiconfinder.com/getseticons";
-    private static final String IMAGE_CROPPER_LINK = "https://github.com/ArthurHub/Android-Image-Cropper";
-    private static final String MATERIAL_DESIGN_ICONS_LINK = "https://materialdesignicons.com/";
-
-    public final TextLink[] links;
-    public final List<Integer> availableActions;
-    public final List<ApplicationInfo> installedApps;
-
-    private State state;
+    public final AppState state;
+    private UiState uiState;
     private final String[] quips;
     private final AtomicInteger quipCounter;
     private final CompositeDisposable disposable;
-    private final PublishProcessor<State> stateProcessor;
+    private final PublishProcessor<UiState> stateProcessor;
     private final PublishProcessor<String> shillProcessor;
-    private final Queue<Integer> permissionsQueue;
 
     public AppViewModel(@NonNull Application application) {
         super(application);
 
-        state = new State(application);
+        uiState = new UiState(application);
+        state = new AppState(application);
         disposable = new CompositeDisposable();
-        installedApps = new ArrayList<>();
-        availableActions = new ArrayList<>();
-        permissionsQueue = new ArrayDeque<>();
         quipCounter = new AtomicInteger(-1);
 
         stateProcessor = PublishProcessor.create();
         shillProcessor = PublishProcessor.create();
 
         quips = application.getResources().getStringArray(R.array.upsell_text);
-        links = new TextLink[]{
-                new TextLink(application.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
-                new TextLink(application.getString(R.string.rxjava), RX_JAVA_LINK),
-                new TextLink(application.getString(R.string.color_picker), COLOR_PICKER_LINK),
-                new TextLink(application.getString(R.string.image_cropper), IMAGE_CROPPER_LINK),
-                new TextLink(application.getString(R.string.material_design_icons), MATERIAL_DESIGN_ICONS_LINK),
-                new TextLink(application.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)};
     }
 
     @Override
     protected void onCleared() {
         super.onCleared();
         disposable.clear();
-        permissionsQueue.clear();
+        state.permissionsQueue.clear();
     }
 
-    public Flowable<State> state() {
-        return stateProcessor.distinct();
-    }
+    public Flowable<UiState> uiState() { return stateProcessor.distinct(); }
 
     public Flowable<String> shill() {
         disposable.clear();
@@ -162,7 +136,7 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public Single<DiffUtil.DiffResult> updatedApps() {
-        return App.diff(installedApps,
+        return App.diff(state.installedApps,
                 () -> getApplication().getPackageManager().getInstalledApplications(0).stream()
                         .filter(this::isUserInstalledApp)
                         .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
@@ -171,7 +145,7 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public Single<DiffUtil.DiffResult> updatedActions() {
-        return App.diff(availableActions, () -> IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList()));
+        return App.diff(state.availableActions, () -> IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList()));
     }
 
     public void shillMoar() {
@@ -183,18 +157,18 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public void checkPermissions() {
-        if (permissionsQueue.isEmpty()) stateProcessor.onNext(state = state.visibility(false));
+        if (state.permissionsQueue.isEmpty()) stateProcessor.onNext(uiState = uiState.visibility(false));
         else onPermissionAdded();
     }
 
     public void requestPermission(@MainActivity.PermissionRequest int permission) {
-        if (!permissionsQueue.contains(permission)) permissionsQueue.add(permission);
+        if (!state.permissionsQueue.contains(permission)) state.permissionsQueue.add(permission);
         onPermissionAdded();
     }
 
     public void onPermissionClicked(Consumer<Integer> consumer) {
-        if (permissionsQueue.isEmpty()) checkPermissions();
-        else consumer.accept(permissionsQueue.peek());
+        if (state.permissionsQueue.isEmpty()) checkPermissions();
+        else consumer.accept(state.permissionsQueue.peek());
     }
 
     public Optional<Integer> onPermissionChange(int requestCode) {
@@ -224,13 +198,13 @@ public class AppViewModel extends AndroidViewModel {
             default:
                 return Optional.empty();
         }
-        if (shouldRemove) permissionsQueue.remove(requestCode);
+        if (shouldRemove) state.permissionsQueue.remove(requestCode);
         checkPermissions();
         return result;
     }
 
     public Optional<Integer> updateBottomNav(int hash) {
-        permissionsQueue.clear();
+        state.permissionsQueue.clear();
         int id = hash == Arrays.hashCode(gestureItems)
                 ? R.id.action_directions
                 : hash == Arrays.hashCode(brightnessItems)
@@ -247,28 +221,28 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     private void onPermissionAdded() {
-        if (permissionsQueue.isEmpty()) return;
-        int permissionRequest = permissionsQueue.peek();
+        if (state.permissionsQueue.isEmpty()) return;
+        int permissionRequest = state.permissionsQueue.peek();
 
         switch (permissionRequest) {
             default:
                 return;
             case DO_NOT_DISTURB_CODE:
-                state = state.glyph(R.string.enable_do_not_disturb, R.drawable.ic_volume_loud_24dp);
+                uiState = uiState.glyph(R.string.enable_do_not_disturb, R.drawable.ic_volume_loud_24dp);
                 break;
             case ACCESSIBILITY_CODE:
-                state = state.glyph(R.string.enable_accessibility, R.drawable.ic_human_24dp);
+                uiState = uiState.glyph(R.string.enable_accessibility, R.drawable.ic_human_24dp);
                 break;
             case SETTINGS_CODE:
-                state = state.glyph(R.string.enable_write_settings, R.drawable.ic_settings_white_24dp);
+                uiState = uiState.glyph(R.string.enable_write_settings, R.drawable.ic_settings_white_24dp);
                 break;
             case STORAGE_CODE:
-                state = state.glyph(R.string.enable_storage_settings, R.drawable.ic_storage_24dp);
+                uiState = uiState.glyph(R.string.enable_storage_settings, R.drawable.ic_storage_24dp);
                 break;
         }
 
-        state = state.visibility(true);
-        stateProcessor.onNext(state);
+        uiState = uiState.visibility(true);
+        stateProcessor.onNext(uiState);
     }
 
     private void startShilling() {

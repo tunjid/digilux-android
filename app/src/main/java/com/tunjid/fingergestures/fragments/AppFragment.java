@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProviders;
 
 import static com.tunjid.fingergestures.BackgroundManager.DAY_WALLPAPER_PICK_CODE;
 import static com.tunjid.fingergestures.BackgroundManager.NIGHT_WALLPAPER_PICK_CODE;
@@ -74,7 +75,7 @@ public class AppFragment extends MainActivityFragment
 
         listManager = new ListManagerBuilder<AppViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
-                .withAdapter(new AppAdapter(items, this))
+                .withAdapter(new AppAdapter(items, ViewModelProviders.of(requireActivity()).get(AppViewModel.class).state, this))
                 .withLinearLayoutManager()
                 .addDecoration(divider())
                 .addScrollListener((dx, dy) -> { if (abs(dy) > 3) toggleToolbar(dy < 0); })

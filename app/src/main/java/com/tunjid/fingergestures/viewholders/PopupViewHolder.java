@@ -25,8 +25,8 @@ public class PopupViewHolder extends DiffViewHolder<Integer> {
 
     private RecyclerView recyclerView;
 
-    public PopupViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
-        super(itemView, listener);
+    public PopupViewHolder(View itemView, List<Integer> items, AppAdapter.AppAdapterListener listener) {
+        super(itemView, items, listener);
 
         PopUpGestureConsumer buttonManager = PopUpGestureConsumer.getInstance();
 

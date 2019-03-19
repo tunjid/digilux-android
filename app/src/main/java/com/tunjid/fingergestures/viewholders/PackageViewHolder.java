@@ -28,9 +28,10 @@ public class PackageViewHolder extends InteractiveViewHolder<PackageAdapter.Pack
     }
 
     public void bind(ApplicationInfo info) {
-        PackageManager packageManager = itemView.getContext().getPackageManager();
         if (info == null) return;
+        PackageManager packageManager = itemView.getContext().getPackageManager();
 
+        packageName = info.packageName;
         imageView.setImageDrawable(packageManager.getApplicationIcon(info));
         if (textView != null) textView.setText(packageManager.getApplicationLabel(info));
     }
