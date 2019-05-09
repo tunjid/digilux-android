@@ -31,7 +31,7 @@ import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.EXCLUDED_ROTATION_LOCK;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.ROTATION_LOCK;
 
-public class PackageFragment extends MainActivityFragment implements PackageAdapter.PackageClickListener {
+public class PackageFragment extends MainActivityFragment {
 
     private static final String ARG_PERSISTED_SET = "PERSISTED_SET";
 
@@ -61,7 +61,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         Toolbar toolbar = root.findViewById(R.id.title_bar);
         ProgressBar progressBar = root.findViewById(R.id.progress_bar);
         ListManager<PackageViewHolder, Void> listManager = new ListManagerBuilder<PackageViewHolder, Void>()
-                .withAdapter(new PackageAdapter(false, viewModel.state.installedApps, this))
+                .withAdapter(new PackageAdapter(false, viewModel.state.installedApps, this::onPackageClicked))
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withLinearLayoutManager()
                 .addDecoration(divider())
@@ -79,9 +79,7 @@ public class PackageFragment extends MainActivityFragment implements PackageAdap
         return root;
     }
 
-
-    @Override
-    public void onPackageClicked(String packageName) {
+    private void onPackageClicked(String packageName) {
         Bundle args = getArguments();
         if (args == null) {
             showSnackbar(R.string.generic_error);

@@ -4,6 +4,7 @@ import android.content.pm.ApplicationInfo;
 import android.view.View;
 import android.widget.TextView;
 
+import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
@@ -14,10 +15,7 @@ import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 import java.util.List;
 import java.util.function.Supplier;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS;
@@ -25,7 +23,6 @@ import static com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
 
     private final String persistedSet;
-    private RecyclerView rotationList;
 
     public RotationViewHolder(View itemView,
                               @RotationGestureConsumer.PersistedSet String persistedSet,
@@ -34,17 +31,19 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
         super(itemView, items, listener);
         this.persistedSet = persistedSet;
 
-        RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
-
-        rotationList = itemView.findViewById(R.id.item_list);
-        rotationList.setLayoutManager(new GridLayoutManager(itemView.getContext(), 3));
-        rotationList.setAdapter(new PackageAdapter(true, items, getPackageClickListener(persistedSet)));
+        listManager = new ListManagerBuilder<PackageViewHolder, Void>()
+                .withAdapter(new PackageAdapter(true, items, getPackageClickListener(persistedSet)))
+                .withRecyclerView(itemView.findViewById(R.id.item_list))
+                .withGridLayoutManager(3)
+                .build();
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
             if (!App.canWriteToSettings())
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.permission_required).show();
-            else if (!gestureConsumer.canAutoRotate())
+
+            else if (!RotationGestureConsumer.getInstance().canAutoRotate())
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.auto_rotate_prompt).show();
+
             else
                 adapterListener.showBottomSheetFragment(PackageFragment.newInstance(persistedSet));
         });
@@ -72,11 +71,6 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
     @Override
     String getSizeCacheKey() {
         return persistedSet;
-    }
-
-    @Nullable @Override
-    PackageAdapter getAdapter() {
-        return (PackageAdapter) rotationList.getAdapter();
     }
 
     @Override
