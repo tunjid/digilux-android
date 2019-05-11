@@ -18,13 +18,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
+import android.view.WindowInsets;
 import android.widget.TextSwitcher;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.androidbootstrap.material.animator.FabExtensionAnimator;
 import com.tunjid.androidbootstrap.view.animator.ViewHider;
@@ -35,8 +34,8 @@ import com.tunjid.fingergestures.TrialView;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
 import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.AppFragment;
-import com.tunjid.fingergestures.models.UiState;
 import com.tunjid.fingergestures.models.TextLink;
+import com.tunjid.fingergestures.models.UiState;
 import com.tunjid.fingergestures.viewholders.DiffViewHolder;
 import com.tunjid.fingergestures.viewmodels.AppViewModel;
 
@@ -60,11 +59,16 @@ import io.reactivex.disposables.CompositeDisposable;
 
 import static android.content.Intent.ACTION_SEND;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+import static android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
 import static android.view.animation.AnimationUtils.loadAnimation;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
-import static com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE;
-import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT;
+import static com.tunjid.androidbootstrap.view.util.ViewUtil.getLayoutParams;
 import static com.tunjid.fingergestures.App.nullCheck;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
@@ -77,14 +81,27 @@ public class MainActivity extends FingerGestureActivity {
     public static final int ACCESSIBILITY_CODE = 300;
     public static final int DO_NOT_DISTURB_CODE = 400;
 
+    private static final int DEFAULT_SYSTEM_UI_FLAGS = SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({STORAGE_CODE, SETTINGS_CODE, ACCESSIBILITY_CODE, DO_NOT_DISTURB_CODE})
     public @interface PermissionRequest {}
 
     private static final String[] STORAGE_PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE};
 
+    public int topInset;
+    public int bottomInset;
+
+    private boolean insetsApplied;
+
+    private View topInsetView;
+    private View bottomInsetView;
+    private Toolbar toolbar;
     private ViewGroup constraintLayout;
-    private TextSwitcher switcher;
+    private TextSwitcher shillSwitcher;
     private MaterialButton permissionText;
     private BottomSheetBehavior bottomSheetBehavior;
 
@@ -112,17 +129,13 @@ public class MainActivity extends FingerGestureActivity {
         viewModel = ViewModelProviders.of(this).get(AppViewModel.class);
         disposables = new CompositeDisposable();
 
-        Window window = getWindow();
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorBackground));
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-
-        switcher = findViewById(R.id.upgrade_prompt);
+        toolbar = findViewById(R.id.toolbar);
+        topInsetView = findViewById(R.id.top_inset);
+        bottomInsetView = findViewById(R.id.bottom_inset);
+        shillSwitcher = findViewById(R.id.upgrade_prompt);
         permissionText = findViewById(R.id.permission_view);
         constraintLayout = findViewById(R.id.constraint_layout);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         fabHider = ViewHider.of(permissionText).setDirection(ViewHider.BOTTOM).build();
         barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build();
@@ -134,6 +147,12 @@ public class MainActivity extends FingerGestureActivity {
         permissionText.setOnClickListener(view -> viewModel.onPermissionClicked(this::onPermissionClicked));
         bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottom_sheet));
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected);
+
+        Window window = getWindow();
+        window.getDecorView().setSystemUiVisibility(DEFAULT_SYSTEM_UI_FLAGS);
+        window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorBackground));
+        window.setNavigationBarColor(ContextCompat.getColor(this, R.color.colorPrimary));
+        constraintLayout.setOnApplyWindowInsetsListener((view, insets) -> consumeSystemInsets(insets));
 
         disposables.add(viewModel.uiState().subscribe(this::onStateChanged, Throwable::printStackTrace));
 
@@ -201,13 +220,16 @@ public class MainActivity extends FingerGestureActivity {
                 PurchasesManager purchasesManager = PurchasesManager.getInstance();
                 boolean isTrialRunning = purchasesManager.isTrialRunning();
 
-                Snackbar snackbar = Snackbar.make(coordinator, purchasesManager.getTrialPeriodText(), isTrialRunning ? LENGTH_SHORT : LENGTH_INDEFINITE);
-                if (!isTrialRunning) snackbar.setAction(android.R.string.yes, view -> {
-                    purchasesManager.startTrial();
-                    recreate();
-                });
+                withSnackbar(snackbar -> {
+                    snackbar.setText(purchasesManager.getTrialPeriodText());
+                    snackbar.setDuration(isTrialRunning ? LENGTH_SHORT : LENGTH_INDEFINITE);
+                    if (!isTrialRunning) snackbar.setAction(android.R.string.yes, view -> {
+                        purchasesManager.startTrial();
+                        recreate();
+                    });
 
-                snackbar.show();
+                    snackbar.show();
+                });
                 break;
             case R.id.action_directions:
                 showAppFragment(viewModel.gestureItems);
@@ -257,7 +279,7 @@ public class MainActivity extends FingerGestureActivity {
         DiffViewHolder.onActivityDestroyed();
 
         if (disposables != null) disposables.clear();
-        switcher = null;
+        shillSwitcher = null;
         constraintLayout = null;
         permissionText = null;
         bottomSheetBehavior = null;
@@ -378,30 +400,30 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void shill() {
-        disposables.add(viewModel.shill().subscribe(switcher::setText, Throwable::printStackTrace));
+        disposables.add(viewModel.shill().subscribe(shillSwitcher::setText, Throwable::printStackTrace));
     }
 
     private void hideAds() {
         viewModel.calmIt();
-        if (switcher.getVisibility() == View.GONE) return;
+        if (shillSwitcher.getVisibility() == View.GONE) return;
 
         Transition hideTransition = getTransition();
         hideTransition.addListener(new TransitionListenerAdapter() {
             public void onTransitionEnd(Transition transition) { showSnackbar(R.string.billing_thanks); }
         });
         TransitionManager.beginDelayedTransition(constraintLayout, hideTransition);
-        switcher.setVisibility(View.GONE);
+        shillSwitcher.setVisibility(View.GONE);
     }
 
     private void setUpSwitcher() {
-        switcher.setFactory(() -> {
-            View view = LayoutInflater.from(this).inflate(R.layout.text_switch, switcher, false);
+        shillSwitcher.setFactory(() -> {
+            View view = LayoutInflater.from(this).inflate(R.layout.text_switch, shillSwitcher, false);
             view.setOnClickListener(clicked -> viewModel.shillMoar());
             return view;
         });
 
-        switcher.setInAnimation(loadAnimation(this, android.R.anim.slide_in_left));
-        switcher.setOutAnimation(loadAnimation(this, android.R.anim.slide_out_right));
+        shillSwitcher.setInAnimation(loadAnimation(this, android.R.anim.slide_in_left));
+        shillSwitcher.setOutAnimation(loadAnimation(this, android.R.anim.slide_out_right));
     }
 
     private void onStateChanged(UiState uiState) {
@@ -415,5 +437,22 @@ public class MainActivity extends FingerGestureActivity {
 
     private Transition getTransition() {
         return new AutoTransition().excludeTarget(RecyclerView.class, true);
+    }
+
+    private WindowInsets consumeSystemInsets(WindowInsets insets) {
+        if (insetsApplied) return insets;
+
+        topInset = insets.getSystemWindowInsetTop();
+        int leftInset = insets.getSystemWindowInsetLeft();
+        int rightInset = insets.getSystemWindowInsetRight();
+        bottomInset = insets.getSystemWindowInsetBottom();
+
+        getLayoutParams(toolbar).topMargin = topInset;
+        getLayoutParams(topInsetView).height = topInset;
+        getLayoutParams(bottomInsetView).height = bottomInset;
+        constraintLayout.setPadding(leftInset, 0, rightInset, 0);
+
+        insetsApplied = true;
+        return insets;
     }
 }
