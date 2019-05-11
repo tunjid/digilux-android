@@ -13,23 +13,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.RecyclerView;
 
 import static android.transition.TransitionManager.beginDelayedTransition;
-import static com.tunjid.fingergestures.App.nullCheck;
 
 public abstract class DiffViewHolder<T> extends AppViewHolder {
 
     private static final Map<String, Integer> sizeMap = new HashMap<>();
 
     protected final List<T> items;
-    protected ListManager<?, Void> listManager;
+    private final ListManager<?, Void> listManager;
 
     DiffViewHolder(View itemView, List<T> items, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
         this.items = items;
+        listManager = createListManager(itemView);
     }
 
     public static void onActivityDestroyed() { sizeMap.clear(); }
@@ -43,6 +41,8 @@ public abstract class DiffViewHolder<T> extends AppViewHolder {
     abstract String getSizeCacheKey();
 
     abstract Supplier<List<T>> getListSupplier();
+
+    abstract ListManager<?, Void> createListManager(View itemView);
 
     private void onDiff(DiffUtil.DiffResult diffResult) {
         String key = getSizeCacheKey();

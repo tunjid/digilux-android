@@ -4,6 +4,7 @@ import android.content.pm.ApplicationInfo;
 import android.view.View;
 import android.widget.TextView;
 
+import com.tunjid.androidbootstrap.recyclerview.ListManager;
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
@@ -30,12 +31,6 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
                               AppAdapter.AppAdapterListener listener) {
         super(itemView, items, listener);
         this.persistedSet = persistedSet;
-
-        listManager = new ListManagerBuilder<PackageViewHolder, Void>()
-                .withAdapter(new PackageAdapter(true, items, getPackageClickListener(persistedSet)))
-                .withRecyclerView(itemView.findViewById(R.id.item_list))
-                .withGridLayoutManager(3)
-                .build();
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
             if (!App.canWriteToSettings())
@@ -78,7 +73,16 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
         return () -> RotationGestureConsumer.getInstance().getList(persistedSet);
     }
 
-    private PackageAdapter.PackageClickListener getPackageClickListener(@RotationGestureConsumer.PersistedSet String preferenceName) {
+    @Override
+    ListManager<?, Void> createListManager(View itemView) {
+        return new ListManagerBuilder<PackageViewHolder, Void>()
+                .withAdapter(new PackageAdapter(true, items, getPackageClickListener()))
+                .withRecyclerView(itemView.findViewById(R.id.item_list))
+                .withGridLayoutManager(3)
+                .build();
+    }
+
+    private PackageAdapter.PackageClickListener getPackageClickListener() {
         return packageName -> {
             RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
             AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
@@ -91,9 +95,9 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
             else if (!gestureConsumer.isRemovable(packageName))
                 builder.setMessage(R.string.auto_rotate_cannot_remove);
 
-            else builder.setTitle(gestureConsumer.getRemoveText(preferenceName))
+            else builder.setTitle(gestureConsumer.getRemoveText(persistedSet))
                         .setPositiveButton(R.string.yes, ((dialog, which) -> {
-                            gestureConsumer.removeFromSet(packageName, preferenceName);
+                            gestureConsumer.removeFromSet(packageName, persistedSet);
                             bind();
                         }))
                         .setNegativeButton(R.string.no, ((dialog, which) -> dialog.dismiss()));

@@ -17,6 +17,7 @@ import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
+import com.tunjid.androidbootstrap.recyclerview.ListManager;
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
@@ -43,21 +44,6 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<String> {
                 .setMessage(R.string.discrete_brightness_description)
                 .show());
 
-        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(itemView.getContext());
-        layoutManager.setJustifyContent(JustifyContent.FLEX_START);
-        layoutManager.setFlexDirection(FlexDirection.ROW);
-        layoutManager.setAlignItems(AlignItems.CENTER);
-
-        listManager = new ListManagerBuilder<DiscreteItemViewHolder, Void>()
-                .withAdapter(new DiscreteBrightnessAdapter(items, discreteValue -> {
-                    BrightnessGestureConsumer.getInstance().removeDiscreteBrightnessValue(discreteValue);
-                    adapterListener.notifyItemChanged(SLIDER_DELTA);
-                    bind();
-                }))
-                .withRecyclerView(itemView.findViewById(R.id.item_list))
-                .withCustomLayoutManager(layoutManager)
-                .build();
-
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
             if (App.canWriteToSettings()) requestDiscreteValue(builder);
@@ -81,6 +67,24 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<String> {
     @Override
     Supplier<List<String>> getListSupplier() {
         return BrightnessGestureConsumer.getInstance()::getDiscreteBrightnessValues;
+    }
+
+    @Override
+    ListManager<?, Void> createListManager(View itemView) {
+        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(itemView.getContext());
+        layoutManager.setJustifyContent(JustifyContent.FLEX_START);
+        layoutManager.setFlexDirection(FlexDirection.ROW);
+        layoutManager.setAlignItems(AlignItems.CENTER);
+
+        return new ListManagerBuilder<DiscreteItemViewHolder, Void>()
+                .withAdapter(new DiscreteBrightnessAdapter(items, discreteValue -> {
+                    BrightnessGestureConsumer.getInstance().removeDiscreteBrightnessValue(discreteValue);
+                    adapterListener.notifyItemChanged(SLIDER_DELTA);
+                    bind();
+                }))
+                .withRecyclerView(itemView.findViewById(R.id.item_list))
+                .withCustomLayoutManager(layoutManager)
+                .build();
     }
 
     private void onDiscreteValueEntered(DialogInterface dialogInterface, EditText editText) {

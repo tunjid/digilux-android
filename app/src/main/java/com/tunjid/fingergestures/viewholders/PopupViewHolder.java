@@ -3,6 +3,7 @@ package com.tunjid.fingergestures.viewholders;
 import android.view.View;
 import android.widget.TextView;
 
+import com.tunjid.androidbootstrap.recyclerview.ListManager;
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
@@ -23,12 +24,6 @@ public class PopupViewHolder extends DiffViewHolder<Integer> {
 
     public PopupViewHolder(View itemView, List<Integer> items, AppAdapter.AppAdapterListener listener) {
         super(itemView, items, listener);
-
-        listManager = new ListManagerBuilder<ActionViewHolder, Void>()
-                .withAdapter(new ActionAdapter(true, true, items, this::onActionClicked))
-                .withRecyclerView(itemView.findViewById(R.id.item_list))
-                .withGridLayoutManager(3)
-                .build();
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
             if (!App.canWriteToSettings())
@@ -65,6 +60,15 @@ public class PopupViewHolder extends DiffViewHolder<Integer> {
     @Override
     Supplier<List<Integer>> getListSupplier() {
         return PopUpGestureConsumer.getInstance()::getList;
+    }
+
+    @Override
+    ListManager<?, Void> createListManager(View itemView) {
+        return new ListManagerBuilder<ActionViewHolder, Void>()
+                .withAdapter(new ActionAdapter(true, true, items, this::onActionClicked))
+                .withRecyclerView(itemView.findViewById(R.id.item_list))
+                .withGridLayoutManager(3)
+                .build();
     }
 
     private void onActionClicked(@GestureConsumer.GestureAction int action) {
