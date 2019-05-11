@@ -4,6 +4,7 @@ import android.transition.AutoTransition;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.tunjid.androidbootstrap.recyclerview.ListManager;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 
@@ -12,22 +13,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.RecyclerView;
 
 import static android.transition.TransitionManager.beginDelayedTransition;
-import static com.tunjid.fingergestures.App.nullCheck;
 
 public abstract class DiffViewHolder<T> extends AppViewHolder {
 
     private static final Map<String, Integer> sizeMap = new HashMap<>();
 
     protected final List<T> items;
+    private final ListManager<?, Void> listManager;
 
     DiffViewHolder(View itemView, List<T> items, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
         this.items = items;
+        listManager = createListManager(itemView);
     }
 
     public static void onActivityDestroyed() { sizeMap.clear(); }
@@ -40,10 +40,9 @@ public abstract class DiffViewHolder<T> extends AppViewHolder {
 
     abstract String getSizeCacheKey();
 
-    @Nullable
-    abstract RecyclerView.Adapter getAdapter();
-
     abstract Supplier<List<T>> getListSupplier();
+
+    abstract ListManager<?, Void> createListManager(View itemView);
 
     private void onDiff(DiffUtil.DiffResult diffResult) {
         String key = getSizeCacheKey();
@@ -54,6 +53,6 @@ public abstract class DiffViewHolder<T> extends AppViewHolder {
         if (oldSize != newSize) beginDelayedTransition((ViewGroup) itemView, new AutoTransition());
         sizeMap.put(key, newSize);
 
-        nullCheck(getAdapter(), diffResult::dispatchUpdatesTo);
+        listManager.onDiff(diffResult);
     }
 }
