@@ -69,7 +69,8 @@ public class AppViewModel extends AndroidViewModel {
     public static final int AUDIO_DELTA = DISCRETE_BRIGHTNESS + 1;
     public static final int AUDIO_STREAM_TYPE = AUDIO_DELTA + 1;
     public static final int AUDIO_SLIDER_SHOW = AUDIO_STREAM_TYPE + 1;
-    public static final int SUPPORT = AUDIO_SLIDER_SHOW + 1;
+    public static final int NAV_BAR_COLOR = AUDIO_SLIDER_SHOW + 1;
+    public static final int SUPPORT = NAV_BAR_COLOR + 1;
 
     public final int[] gestureItems = {PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON,
             MAP_RIGHT_ICON, /*AD_FREE,*/ SUPPORT, REVIEW, PADDING};
@@ -85,7 +86,7 @@ public class AppViewModel extends AndroidViewModel {
             ACCESSIBILITY_SINGLE_CLICK, ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, ROTATION_LOCK,
             EXCLUDED_ROTATION_LOCK, POPUP_ACTION, PADDING};
 
-    public final int[] appearanceItems = {PADDING, SLIDER_POSITION, SLIDER_DURATION,
+    public final int[] appearanceItems = {PADDING, SLIDER_POSITION, SLIDER_DURATION, NAV_BAR_COLOR,
             SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER, PADDING};
 
     @Retention(RetentionPolicy.SOURCE)
@@ -95,7 +96,7 @@ public class AppViewModel extends AndroidViewModel {
             AD_FREE, REVIEW, WALLPAPER_PICKER, WALLPAPER_TRIGGER, ROTATION_LOCK,
             EXCLUDED_ROTATION_LOCK, ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
             ACCESSIBILITY_SINGLE_CLICK, ANIMATES_SLIDER, ANIMATES_POPUP, DISCRETE_BRIGHTNESS,
-            AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW, SUPPORT})
+            AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW, NAV_BAR_COLOR, SUPPORT})
     public @interface AdapterIndex {}
 
     public final AppState state;
@@ -157,7 +158,8 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public void checkPermissions() {
-        if (state.permissionsQueue.isEmpty()) stateProcessor.onNext(uiState = uiState.visibility(false));
+        if (state.permissionsQueue.isEmpty())
+            stateProcessor.onNext(uiState = uiState.visibility(false));
         else onPermissionAdded();
     }
 
@@ -222,6 +224,7 @@ public class AppViewModel extends AndroidViewModel {
 
     private void onPermissionAdded() {
         if (state.permissionsQueue.isEmpty()) return;
+        @SuppressWarnings("ConstantConditions")
         int permissionRequest = state.permissionsQueue.peek();
 
         switch (permissionRequest) {

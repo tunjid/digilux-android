@@ -60,6 +60,7 @@ import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_DOWN_ICON;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_LEFT_ICON;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_RIGHT_ICON;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_UP_ICON;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.NAV_BAR_COLOR;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.PADDING;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.POPUP_ACTION;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.REVIEW;
@@ -192,6 +193,11 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         R.string.slider_animate,
                         brightnessGestureConsumer::shouldAnimateSlider,
                         brightnessGestureConsumer::setAnimatesSlider);
+            case NAV_BAR_COLOR:
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
+                        R.string.use_colored_nav,
+                        backgroundManager::usesColoredNav,
+                        backgroundManager::setUsesColoredNav);
             case AUDIO_DELTA:
                 return new SliderAdjusterViewHolder(
                         getItemView(R.layout.viewholder_slider_delta, parent),
