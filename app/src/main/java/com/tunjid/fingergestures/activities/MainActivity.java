@@ -147,12 +147,13 @@ public class MainActivity extends FingerGestureActivity {
         permissionText.setOnClickListener(view -> viewModel.onPermissionClicked(this::onPermissionClicked));
         bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottom_sheet));
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected);
+        constraintLayout.setOnApplyWindowInsetsListener((view, insets) -> consumeSystemInsets(insets));
 
         Window window = getWindow();
         window.getDecorView().setSystemUiVisibility(DEFAULT_SYSTEM_UI_FLAGS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorBackground));
-        window.setNavigationBarColor(ContextCompat.getColor(this, R.color.colorPrimary));
-        constraintLayout.setOnApplyWindowInsetsListener((view, insets) -> consumeSystemInsets(insets));
+        if (BackgroundManager.getInstance().usesColoredNav())
+            window.setNavigationBarColor(ContextCompat.getColor(this, R.color.colorPrimary));
 
         disposables.add(viewModel.uiState().subscribe(this::onStateChanged, Throwable::printStackTrace));
 
@@ -163,8 +164,7 @@ public class MainActivity extends FingerGestureActivity {
         boolean isPickIntent = startIntent != null && ACTION_SEND.equals(startIntent.getAction());
 
         if (savedInstanceState == null && isPickIntent) handleIntent(startIntent);
-        else if (savedInstanceState == null)
-            showAppFragment(viewModel.gestureItems);
+        else if (savedInstanceState == null) showAppFragment(viewModel.gestureItems);
 
         getSupportFragmentManager().registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
             @Override
@@ -214,7 +214,7 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_start_trial:
                 PurchasesManager purchasesManager = PurchasesManager.getInstance();

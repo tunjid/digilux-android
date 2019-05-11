@@ -65,6 +65,7 @@ public class BackgroundManager {
     private static final String SLIDER_DURATION = "slider duration";
     private static final String BACKGROUND_COLOR = "background color";
     private static final String SLIDER_COLOR = "slider color";
+    private static final String USES_COLORED_NAVBAR = "colored navbar";
 
     private static final String ERROR_NEED_PERMISSION = "Need permission";
     private static final String ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager";
@@ -91,7 +92,6 @@ public class BackgroundManager {
     public static final int DAY_WALLPAPER_PICK_CODE = 0;
     public static final int NIGHT_WALLPAPER_PICK_CODE = 1;
     private static final int INVALID_WALLPAPER_PICK_CODE = -1;
-
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({INVALID_WALLPAPER_PICK_CODE, DAY_WALLPAPER_PICK_CODE, NIGHT_WALLPAPER_PICK_CODE})
@@ -130,6 +130,10 @@ public class BackgroundManager {
         return durationPercentageToMillis(getSliderDurationPercentage());
     }
 
+    public void setUsesColoredNav(boolean usesColoredNav) {
+        withApp(app -> app.getPreferences().edit().putBoolean(USES_COLORED_NAVBAR, usesColoredNav).apply());
+    }
+
     public void setSliderColor(@ColorInt int color) {
         withApp(app -> app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply());
     }
@@ -138,11 +142,13 @@ public class BackgroundManager {
         withApp(app -> app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply());
     }
 
-    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
+    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT,
+            to = GestureConsumer.HUNDRED_PERCENT) int duration) {
         withApp(app -> app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply());
     }
 
-    public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
+    public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT,
+            to = GestureConsumer.HUNDRED_PERCENT) int duration) {
         int millis = durationPercentageToMillis(duration);
         float seconds = millis / 1000F;
         return transformApp(app -> app.getString(R.string.duration_value, seconds), EMPTY);
@@ -175,6 +181,11 @@ public class BackgroundManager {
 
     private String getFileName(@WallpaperSelection int selection) {
         return selection == DAY_WALLPAPER_PICK_CODE ? DAY_WALLPAPER_NAME : NIGHT_WALLPAPER_NAME;
+    }
+
+    public boolean usesColoredNav() {
+        boolean higherThanPie = Build.VERSION.SDK_INT > Build.VERSION_CODES.P;
+        return transformApp(app -> app.getPreferences().getBoolean(USES_COLORED_NAVBAR, higherThanPie), higherThanPie);
     }
 
     @NonNull
