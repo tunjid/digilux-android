@@ -8,7 +8,6 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 
-import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
