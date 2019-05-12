@@ -64,7 +64,7 @@ public class BackgroundManager {
     private static final String SLIDER_DURATION = "slider duration";
     private static final String BACKGROUND_COLOR = "background color";
     private static final String SLIDER_COLOR = "slider color";
-    private static final String USES_COLORED_NAVBAR = "colored navbar";
+    private static final String USES_COLORED_NAV_BAR = "colored nav bar";
 
     private static final String ERROR_NEED_PERMISSION = "Need permission";
     private static final String ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager";
@@ -85,6 +85,7 @@ public class BackgroundManager {
     private static final String EXTRA_CHANGE_WALLPAPER = "com.tunjid.fingergestures.extra.changeWallpaper";
     private static final String ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper";
     public static final String ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper";
+    public static final String ACTION_NAV_BAR_CHANGED = "com.tunjid.fingergestures.action.navBarChanged";
 
     private final String[] wallpaperTargets;
 
@@ -130,7 +131,10 @@ public class BackgroundManager {
     }
 
     public void setUsesColoredNav(boolean usesColoredNav) {
-        withApp(app -> app.getPreferences().edit().putBoolean(USES_COLORED_NAVBAR, usesColoredNav).apply());
+        withApp(app -> {
+            app.getPreferences().edit().putBoolean(USES_COLORED_NAV_BAR, usesColoredNav).apply();
+            app.broadcast(new Intent(ACTION_NAV_BAR_CHANGED));
+        });
     }
 
     public void setSliderColor(@ColorInt int color) {
@@ -184,7 +188,7 @@ public class BackgroundManager {
 
     public boolean usesColoredNav() {
         boolean higherThanPie = Build.VERSION.SDK_INT > Build.VERSION_CODES.P;
-        return transformApp(app -> app.getPreferences().getBoolean(USES_COLORED_NAVBAR, higherThanPie), higherThanPie);
+        return transformApp(app -> app.getPreferences().getBoolean(USES_COLORED_NAV_BAR, higherThanPie), higherThanPie);
     }
 
     @NonNull

@@ -94,10 +94,8 @@ public class FingerGestureService extends AccessibilityService {
         getFingerprintGestureController().registerFingerprintGestureCallback(GestureMapper.getInstance(), new Handler(gestureThread.getLooper()));
 
         BackgroundManager.getInstance().restoreWallpaperChange();
-        withApp(app -> broadcastDisposable = app.broadcasts()
-                .filter(this::intentMatches)
-                .subscribe(this::onIntentReceived, Throwable::printStackTrace));
 
+        subscribeToBroadcasts();
         setWatchesWindows(RotationGestureConsumer.getInstance().canAutoRotate());
         setShowsAccessibilityButton(PopUpGestureConsumer.getInstance().hasAccessibilityButton());
     }
@@ -226,6 +224,15 @@ public class FingerGestureService extends AccessibilityService {
 
         setServiceInfo(info);
         controller.registerAccessibilityButtonCallback(accessibilityButtonCallback);
+    }
+
+    private void subscribeToBroadcasts() {
+        withApp(app -> broadcastDisposable = app.broadcasts()
+                .filter(this::intentMatches)
+                .subscribe(this::onIntentReceived, error -> {
+                    error.printStackTrace();
+                    subscribeToBroadcasts(); // Resubscribe on error
+                }));
     }
 
     private void onIntentReceived(Intent intent) {

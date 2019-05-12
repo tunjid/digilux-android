@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
 
 import com.tunjid.androidbootstrap.functions.collections.Lists;
@@ -15,7 +16,6 @@ import com.tunjid.androidbootstrap.recyclerview.diff.Differentiable;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -42,14 +42,12 @@ public class App extends android.app.Application {
     public static final String EMPTY = "";
 
     private static App instance;
-
-    private final AtomicReference<PublishProcessor<Intent>> broadcasterRef = new AtomicReference<>();
+    private final PublishProcessor<Intent> broadcaster = PublishProcessor.create();
 
     @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
-        initBroadcaster();
     }
 
     public SharedPreferences getPreferences() {
@@ -57,21 +55,19 @@ public class App extends android.app.Application {
     }
 
     public void broadcast(Intent intent) {
-        PublishProcessor<Intent> broadcaster = broadcasterRef.get();
-        if (broadcaster != null) broadcaster.onNext(intent);
+        broadcaster.onNext(intent);
     }
 
-    // Should never error or terminate
+    // Wrap the subject so if there's an error downstream, it doesn't propagate back up to it.
+    // This way, the broadcast stream should never error or terminate
     public Flowable<Intent> broadcasts() {
-        return broadcasterRef.get().onErrorResumeNext(initBroadcaster());
+        return Flowable.defer(() -> broadcaster).onErrorResumeNext(this::logAndResume);
     }
 
-    // If there are any errors downstream, replace the broadcaster so the app still works fine
-    private PublishProcessor<Intent> initBroadcaster() {
-        PublishProcessor<Intent> broadcaster = PublishProcessor.create();
-        broadcasterRef.set(broadcaster);
-
-        return broadcaster;
+    // Log the error, and re-wrap the broadcast processor
+    private Flowable<Intent> logAndResume(Throwable throwable) {
+        Log.e("App Broadcasts", "Error in broadcast stream", throwable);
+        return broadcasts();
     }
 
     @Nullable

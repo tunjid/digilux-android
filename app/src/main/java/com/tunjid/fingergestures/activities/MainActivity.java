@@ -72,6 +72,7 @@ import static com.tunjid.fingergestures.App.nullCheck;
 import static com.tunjid.fingergestures.App.settingsIntent;
 import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
+import static com.tunjid.fingergestures.BackgroundManager.ACTION_NAV_BAR_CHANGED;
 import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
 import static com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR;
 
@@ -142,8 +143,7 @@ public class MainActivity extends FingerGestureActivity {
         Window window = getWindow();
         window.getDecorView().setSystemUiVisibility(DEFAULT_SYSTEM_UI_FLAGS);
         window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorBackground));
-        if (BackgroundManager.getInstance().usesColoredNav())
-            window.setNavigationBarColor(ContextCompat.getColor(this, R.color.colorPrimary));
+        window.setNavigationBarColor(getNavBarColor());
 
         setSupportActionBar(toolbar);
         toggleBottomSheet(false);
@@ -176,11 +176,10 @@ public class MainActivity extends FingerGestureActivity {
         else hideAds();
 
         if (!accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
-        invalidateOptionsMenu();
 
+        invalidateOptionsMenu();
+        subscribeToBroadcasts();
         disposables.add(viewModel.uiState().subscribe(this::onStateChanged, Throwable::printStackTrace));
-        withApp(app -> disposables.add(app.broadcasts().filter(this::intentMatches)
-                .subscribe(this::onBroadcastReceived, Throwable::printStackTrace)));
     }
 
     @Override
@@ -410,17 +409,36 @@ public class MainActivity extends FingerGestureActivity {
         permissionText.post(uiState.fabVisible ? fabHider::show : fabHider::hide);
     }
 
+    private void subscribeToBroadcasts() {
+        withApp(app -> disposables.add(app.broadcasts()
+                .filter(this::intentMatches)
+                .subscribe(this::onBroadcastReceived, error -> {
+                    error.printStackTrace();
+                    subscribeToBroadcasts(); // Resubscribe on error
+                })));
+    }
+
     private void onBroadcastReceived(Intent intent) {
         String action = intent.getAction();
         if (ACTION_EDIT_WALLPAPER.equals(action))
             showSnackbar(R.string.error_wallpaper_google_photos);
         else if (ACTION_SHOW_SNACK_BAR.equals(action))
             showSnackbar(intent.getIntExtra(EXTRA_SHOW_SNACK_BAR, R.string.generic_error));
+        else if (ACTION_NAV_BAR_CHANGED.equals(action))
+            getWindow().setNavigationBarColor(getNavBarColor());
     }
 
     private boolean intentMatches(Intent intent) {
         String action = intent.getAction();
-        return ACTION_EDIT_WALLPAPER.equals(action) || ACTION_SHOW_SNACK_BAR.equals(action);
+        return ACTION_EDIT_WALLPAPER.equals(action)
+                || ACTION_SHOW_SNACK_BAR.equals(action)
+                || ACTION_NAV_BAR_CHANGED.equals(action);
+    }
+
+    private int getNavBarColor() {
+        return ContextCompat.getColor(this, BackgroundManager.getInstance().usesColoredNav()
+                ? R.color.colorPrimary
+                : R.color.black);
     }
 
     private ColorStateList getFabTint() {
