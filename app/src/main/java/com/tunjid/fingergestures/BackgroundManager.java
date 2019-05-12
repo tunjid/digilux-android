@@ -41,7 +41,6 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.palette.graphics.Palette;
 import io.reactivex.Single;
 
@@ -392,8 +391,7 @@ public class BackgroundManager {
         if (componentName == null) return false;
 
         boolean handled = componentName.getPackageName().equals("com.google.android.apps.photos");
-        if (handled)
-            withApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(intent));
+        if (handled) withApp(app -> app.broadcast(intent));
 
         return handled;
     }

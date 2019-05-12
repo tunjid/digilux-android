@@ -4,15 +4,15 @@ import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.media.AudioManager;
-import androidx.annotation.IdRes;
-import androidx.annotation.IntDef;
-import androidx.annotation.IntRange;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 
 import java.util.function.BiFunction;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.IntDef;
+import androidx.annotation.IntRange;
 
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALARMS;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
@@ -80,7 +80,8 @@ public class AudioGestureConsumer implements GestureConsumer {
         return App.transformApp(app -> app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE), DEF_INCREMENT_VALUE);
     }
 
-    public void setVolumeDelta(@IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT) int volumeDelta) {
+    public void setVolumeDelta(@IntRange(from = ZERO_PERCENT,
+            to = HUNDRED_PERCENT) int volumeDelta) {
         withApp(app -> app.getPreferences().edit().putInt(INCREMENT_VALUE, volumeDelta).apply());
     }
 
@@ -204,7 +205,7 @@ public class AudioGestureConsumer implements GestureConsumer {
 
     private void broadcastExpandVolumeIntent() {
         Intent expandVolumeIntent = new Intent(ACTION_EXPAND_VOLUME_CONTROLS);
-        delay(EXPAND_VOLUME_DELAY, MILLISECONDS, () -> withApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(expandVolumeIntent)));
+        delay(EXPAND_VOLUME_DELAY, MILLISECONDS, () -> withApp(app -> app.broadcast(expandVolumeIntent)));
     }
 
     @AudioStream

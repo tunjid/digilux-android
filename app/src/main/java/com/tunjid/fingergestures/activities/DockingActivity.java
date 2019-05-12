@@ -2,14 +2,15 @@ package com.tunjid.fingergestures.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -57,6 +58,6 @@ public class DockingActivity extends AppCompatActivity {
     }
 
     private void toggleDock() {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_TOGGLE_DOCK));
+        withApp(app -> app.broadcast(new Intent(ACTION_TOGGLE_DOCK)));
     }
 }

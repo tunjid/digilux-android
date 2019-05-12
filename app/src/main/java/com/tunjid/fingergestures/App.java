@@ -15,6 +15,7 @@ import com.tunjid.androidbootstrap.recyclerview.diff.Differentiable;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -23,8 +24,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
@@ -40,14 +43,35 @@ public class App extends android.app.Application {
 
     private static App instance;
 
+    private final AtomicReference<PublishProcessor<Intent>> broadcasterRef = new AtomicReference<>();
+
     @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
+        initBroadcaster();
     }
 
     public SharedPreferences getPreferences() {
         return getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+    }
+
+    public void broadcast(Intent intent) {
+        PublishProcessor<Intent> broadcaster = broadcasterRef.get();
+        if (broadcaster != null) broadcaster.onNext(intent);
+    }
+
+    // Should never error or terminate
+    public Flowable<Intent> broadcasts() {
+        return broadcasterRef.get().onErrorResumeNext(initBroadcaster());
+    }
+
+    // If there are any errors downstream, replace the broadcaster so the app still works fine
+    private PublishProcessor<Intent> initBroadcaster() {
+        PublishProcessor<Intent> broadcaster = PublishProcessor.create();
+        broadcasterRef.set(broadcaster);
+
+        return broadcaster;
     }
 
     @Nullable

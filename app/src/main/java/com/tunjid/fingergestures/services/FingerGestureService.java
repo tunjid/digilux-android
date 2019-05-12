@@ -6,10 +6,7 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Path;
@@ -37,12 +34,13 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import io.reactivex.disposables.Disposable;
 
 import static android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_ACCESSIBILITY_BUTTON;
 import static android.content.Intent.ACTION_SCREEN_ON;
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK;
+import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.PopUpGestureConsumer.ACTION_ACCESSIBILITY_BUTTON;
 import static com.tunjid.fingergestures.PopUpGestureConsumer.ACTION_SHOW_POPUP;
 import static com.tunjid.fingergestures.PopUpGestureConsumer.EXTRA_SHOWS_ACCESSIBILITY_BUTTON;
@@ -78,58 +76,11 @@ public class FingerGestureService extends AccessibilityService {
     private View overlayView;
 
     private HandlerThread gestureThread;
+    private Disposable broadcastDisposable;
 
     private final AccessibilityButtonCallback accessibilityButtonCallback = new AccessibilityButtonCallback() {
         @Override
         public void onClicked(AccessibilityButtonController controller) { PopUpGestureConsumer.getInstance().showPopup(); }
-    };
-
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action == null) return;
-            switch (action) {
-                case ACTION_SCREEN_ON:
-                    BrightnessGestureConsumer.getInstance().onScreenTurnedOn();
-                    break;
-                case ACTION_NOTIFICATION_DOWN:
-                    if (notificationsShowing()) expandQuickSettings();
-                    else performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
-                    break;
-                case ACTION_NOTIFICATION_UP:
-                    closeNotifications();
-                    break;
-                case ACTION_NOTIFICATION_TOGGLE:
-                    if (isQuickSettingsShowing()) closeNotifications();
-                    else if (notificationsShowing()) expandQuickSettings();
-                    else performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
-                    break;
-                case ACTION_EXPAND_VOLUME_CONTROLS:
-                    expandAudioControls();
-                    break;
-                case ACTION_SCREEN_DIMMER_CHANGED:
-                    adjustDimmer();
-                    break;
-                case ACTION_TOGGLE_DOCK:
-                    performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN);
-                    App.delay(DELAY, MILLISECONDS, () -> performGlobalAction(GLOBAL_ACTION_RECENTS));
-                    break;
-                case ACTION_WATCH_WINDOW_CHANGES:
-                    setWatchesWindows(intent.getBooleanExtra(EXTRA_WATCHES_WINDOWS, false));
-                    break;
-                case ACTION_ACCESSIBILITY_BUTTON:
-                    setShowsAccessibilityButton(intent.getBooleanExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, false));
-                    break;
-                case ACTION_GLOBAL_ACTION:
-                    int globalAction = intent.getIntExtra(EXTRA_GLOBAL_ACTION, -1);
-                    if (globalAction != -1) performGlobalAction(globalAction);
-                    break;
-                case ACTION_SHOW_POPUP:
-                    PopUpGestureConsumer.getInstance().showPopup();
-                    break;
-            }
-        }
     };
 
     @Override
@@ -142,22 +93,11 @@ public class FingerGestureService extends AccessibilityService {
 
         getFingerprintGestureController().registerFingerprintGestureCallback(GestureMapper.getInstance(), new Handler(gestureThread.getLooper()));
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_SCREEN_DIMMER_CHANGED);
-        filter.addAction(ACTION_EXPAND_VOLUME_CONTROLS);
-        filter.addAction(ACTION_ACCESSIBILITY_BUTTON);
-        filter.addAction(ACTION_WATCH_WINDOW_CHANGES);
-        filter.addAction(ACTION_NOTIFICATION_TOGGLE);
-        filter.addAction(ACTION_NOTIFICATION_DOWN);
-        filter.addAction(ACTION_NOTIFICATION_UP);
-        filter.addAction(ACTION_GLOBAL_ACTION);
-        filter.addAction(ACTION_TOGGLE_DOCK);
-        filter.addAction(ACTION_SHOW_POPUP);
-        filter.addAction(ACTION_SCREEN_ON);
-
         BackgroundManager.getInstance().restoreWallpaperChange();
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
-        registerReceiver(receiver, filter);
+        withApp(app -> broadcastDisposable = app.broadcasts()
+                .filter(this::intentMatches)
+                .subscribe(this::onIntentReceived, Throwable::printStackTrace));
+
         setWatchesWindows(RotationGestureConsumer.getInstance().canAutoRotate());
         setShowsAccessibilityButton(PopUpGestureConsumer.getInstance().hasAccessibilityButton());
     }
@@ -166,8 +106,8 @@ public class FingerGestureService extends AccessibilityService {
     public void onDestroy() {
         getFingerprintGestureController().unregisterFingerprintGestureCallback(GestureMapper.getInstance());
         getAccessibilityButtonController().unregisterAccessibilityButtonCallback(accessibilityButtonCallback);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
 
+        if (broadcastDisposable != null) broadcastDisposable.dispose();
         if (gestureThread != null) gestureThread.quitSafely();
         gestureThread = null;
 
@@ -286,6 +226,73 @@ public class FingerGestureService extends AccessibilityService {
 
         setServiceInfo(info);
         controller.registerAccessibilityButtonCallback(accessibilityButtonCallback);
+    }
+
+    private void onIntentReceived(Intent intent) {
+        String action = intent.getAction();
+        if (action == null) return;
+        switch (action) {
+            case ACTION_SCREEN_ON:
+                BrightnessGestureConsumer.getInstance().onScreenTurnedOn();
+                break;
+            case ACTION_NOTIFICATION_DOWN:
+                if (notificationsShowing()) expandQuickSettings();
+                else performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
+                break;
+            case ACTION_NOTIFICATION_UP:
+                closeNotifications();
+                break;
+            case ACTION_NOTIFICATION_TOGGLE:
+                if (isQuickSettingsShowing()) closeNotifications();
+                else if (notificationsShowing()) expandQuickSettings();
+                else performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
+                break;
+            case ACTION_EXPAND_VOLUME_CONTROLS:
+                expandAudioControls();
+                break;
+            case ACTION_SCREEN_DIMMER_CHANGED:
+                adjustDimmer();
+                break;
+            case ACTION_TOGGLE_DOCK:
+                performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN);
+                App.delay(DELAY, MILLISECONDS, () -> performGlobalAction(GLOBAL_ACTION_RECENTS));
+                break;
+            case ACTION_WATCH_WINDOW_CHANGES:
+                setWatchesWindows(intent.getBooleanExtra(EXTRA_WATCHES_WINDOWS, false));
+                break;
+            case ACTION_ACCESSIBILITY_BUTTON:
+                setShowsAccessibilityButton(intent.getBooleanExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, false));
+                break;
+            case ACTION_GLOBAL_ACTION:
+                int globalAction = intent.getIntExtra(EXTRA_GLOBAL_ACTION, -1);
+                if (globalAction != -1) performGlobalAction(globalAction);
+                break;
+            case ACTION_SHOW_POPUP:
+                PopUpGestureConsumer.getInstance().showPopup();
+                break;
+        }
+    }
+
+    private boolean intentMatches(Intent intent) {
+        String action = intent.getAction();
+        if (action == null) return false;
+
+        switch (action) {
+            case ACTION_SCREEN_DIMMER_CHANGED:
+            case ACTION_EXPAND_VOLUME_CONTROLS:
+            case ACTION_ACCESSIBILITY_BUTTON:
+            case ACTION_WATCH_WINDOW_CHANGES:
+            case ACTION_NOTIFICATION_TOGGLE:
+            case ACTION_NOTIFICATION_DOWN:
+            case ACTION_NOTIFICATION_UP:
+            case ACTION_GLOBAL_ACTION:
+            case ACTION_TOGGLE_DOCK:
+            case ACTION_SHOW_POPUP:
+            case ACTION_SCREEN_ON:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private String getSystemUiString(String resourceID, String defaultValue) {

@@ -1,10 +1,7 @@
 package com.tunjid.fingergestures.activities;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
@@ -27,7 +24,6 @@ import com.google.android.material.button.MaterialButton;
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment;
 import com.tunjid.androidbootstrap.material.animator.FabExtensionAnimator;
 import com.tunjid.androidbootstrap.view.animator.ViewHider;
-import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.TrialView;
@@ -53,7 +49,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.disposables.CompositeDisposable;
 
@@ -69,7 +64,13 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT;
 import static com.tunjid.androidbootstrap.view.util.ViewUtil.getLayoutParams;
+import static com.tunjid.fingergestures.App.accessibilityIntent;
+import static com.tunjid.fingergestures.App.accessibilityServiceEnabled;
+import static com.tunjid.fingergestures.App.doNotDisturbIntent;
+import static com.tunjid.fingergestures.App.hasStoragePermission;
 import static com.tunjid.fingergestures.App.nullCheck;
+import static com.tunjid.fingergestures.App.settingsIntent;
+import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
 import static com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR;
@@ -110,17 +111,6 @@ public class MainActivity extends FingerGestureActivity {
 
     private AppViewModel viewModel;
 
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (ACTION_EDIT_WALLPAPER.equals(action))
-                showSnackbar(R.string.error_wallpaper_google_photos);
-            else if (ACTION_SHOW_SNACK_BAR.equals(action))
-                showSnackbar(intent.getIntExtra(EXTRA_SHOW_SNACK_BAR, R.string.generic_error));
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,8 +145,6 @@ public class MainActivity extends FingerGestureActivity {
         if (BackgroundManager.getInstance().usesColoredNav())
             window.setNavigationBarColor(ContextCompat.getColor(this, R.color.colorPrimary));
 
-        disposables.add(viewModel.uiState().subscribe(this::onStateChanged, Throwable::printStackTrace));
-
         setSupportActionBar(toolbar);
         toggleBottomSheet(false);
 
@@ -187,14 +175,12 @@ public class MainActivity extends FingerGestureActivity {
         if (PurchasesManager.getInstance().hasAds()) shill();
         else hideAds();
 
-        if (!App.accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
+        if (!accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
         invalidateOptionsMenu();
 
-        IntentFilter filter = new IntentFilter(ACTION_EDIT_WALLPAPER);
-        filter.addAction(ACTION_SHOW_SNACK_BAR);
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
-        registerReceiver(receiver, filter);
+        disposables.add(viewModel.uiState().subscribe(this::onStateChanged, Throwable::printStackTrace));
+        withApp(app -> disposables.add(app.broadcasts().filter(this::intentMatches)
+                .subscribe(this::onBroadcastReceived, Throwable::printStackTrace)));
     }
 
     @Override
@@ -264,21 +250,14 @@ public class MainActivity extends FingerGestureActivity {
 
     @Override
     protected void onPause() {
-        unregisterReceiver(receiver);
+        if (disposables != null) disposables.clear();
         super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        System.gc();
     }
 
     @Override
     protected void onDestroy() {
         DiffViewHolder.onActivityDestroyed();
 
-        if (disposables != null) disposables.clear();
         shillSwitcher = null;
         constraintLayout = null;
         permissionText = null;
@@ -337,7 +316,7 @@ public class MainActivity extends FingerGestureActivity {
 
         if (!ACTION_SEND.equals(action) || type == null || !type.startsWith("image/")) return;
 
-        if (!App.hasStoragePermission()) {
+        if (!hasStoragePermission()) {
             showSnackbar(R.string.enable_storage_settings);
             showAppFragment(viewModel.gestureItems);
             return;
@@ -363,15 +342,15 @@ public class MainActivity extends FingerGestureActivity {
     }
 
     private void askForSettings() {
-        showPermissionDialog(R.string.settings_permission_request, () -> startActivityForResult(App.settingsIntent(), SETTINGS_CODE));
+        showPermissionDialog(R.string.settings_permission_request, () -> startActivityForResult(settingsIntent(), SETTINGS_CODE));
     }
 
     private void askForAccessibility() {
-        showPermissionDialog(R.string.accessibility_permissions_request, () -> startActivityForResult(App.accessibilityIntent(), ACCESSIBILITY_CODE));
+        showPermissionDialog(R.string.accessibility_permissions_request, () -> startActivityForResult(accessibilityIntent(), ACCESSIBILITY_CODE));
     }
 
     private void askForDoNotDisturb() {
-        showPermissionDialog(R.string.do_not_disturb_permissions_request, () -> startActivityForResult(App.doNotDisturbIntent(), DO_NOT_DISTURB_CODE));
+        showPermissionDialog(R.string.do_not_disturb_permissions_request, () -> startActivityForResult(doNotDisturbIntent(), DO_NOT_DISTURB_CODE));
     }
 
     private void showPermissionDialog(@StringRes int stringRes, Runnable yesAction) {
@@ -429,6 +408,19 @@ public class MainActivity extends FingerGestureActivity {
     private void onStateChanged(UiState uiState) {
         permissionText.post(() -> fabExtensionAnimator.updateGlyphs(uiState.glyphState));
         permissionText.post(uiState.fabVisible ? fabHider::show : fabHider::hide);
+    }
+
+    private void onBroadcastReceived(Intent intent) {
+        String action = intent.getAction();
+        if (ACTION_EDIT_WALLPAPER.equals(action))
+            showSnackbar(R.string.error_wallpaper_google_photos);
+        else if (ACTION_SHOW_SNACK_BAR.equals(action))
+            showSnackbar(intent.getIntExtra(EXTRA_SHOW_SNACK_BAR, R.string.generic_error));
+    }
+
+    private boolean intentMatches(Intent intent) {
+        String action = intent.getAction();
+        return ACTION_EDIT_WALLPAPER.equals(action) || ACTION_SHOW_SNACK_BAR.equals(action);
     }
 
     private ColorStateList getFabTint() {
