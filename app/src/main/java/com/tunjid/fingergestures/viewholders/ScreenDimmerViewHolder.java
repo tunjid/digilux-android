@@ -5,7 +5,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
 
-import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesVerifier;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
@@ -16,12 +16,12 @@ public class ScreenDimmerViewHolder extends AppViewHolder {
 
     private final Button goToSettings;
     private final Switch overLayToggle;
-    private final PurchasesManager purchasesManager;
+    private final PurchasesVerifier purchasesManager;
     private final BrightnessGestureConsumer brightnessGestureConsumer;
 
     public ScreenDimmerViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
-        purchasesManager = PurchasesManager.getInstance();
+        purchasesManager = PurchasesVerifier.getInstance();
         brightnessGestureConsumer = BrightnessGestureConsumer.getInstance();
 
         goToSettings = itemView.findViewById(R.id.go_to_settings);

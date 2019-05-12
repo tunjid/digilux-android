@@ -9,16 +9,16 @@ import android.widget.TextView;
 
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesVerifier;
 
 public class AdFreeViewHolder extends AppViewHolder {
 
-    private final PurchasesManager purchasesManager;
+    private final PurchasesVerifier purchasesManager;
     private final TextView title;
 
     public AdFreeViewHolder(View itemView, AppAdapter.AppAdapterListener listener) {
         super(itemView, listener);
-        purchasesManager = PurchasesManager.getInstance();
+        purchasesManager = PurchasesVerifier.getInstance();
         title = itemView.findViewById(R.id.title);
     }
 
@@ -53,8 +53,8 @@ public class AdFreeViewHolder extends AppViewHolder {
                 .setTitle(R.string.purchase_options)
                 .setItems(R.array.purchase_options, (dialog, index) ->
                         adapterListener.purchase(index == 0
-                                ? PurchasesManager.AD_FREE_SKU
-                                : PurchasesManager.PREMIUM_SKU)
+                                ? PurchasesVerifier.AD_FREE_SKU
+                                : PurchasesVerifier.PREMIUM_SKU)
                 )
                 .show();
     }
@@ -64,8 +64,8 @@ public class AdFreeViewHolder extends AppViewHolder {
         boolean notPremium = purchasesManager.isNotPremium();
 
         Runnable action = notPremium
-                ? () -> adapterListener.purchase(PurchasesManager.PREMIUM_SKU)
-                : () -> adapterListener.purchase(PurchasesManager.AD_FREE_SKU);
+                ? () -> adapterListener.purchase(PurchasesVerifier.PREMIUM_SKU)
+                : () -> adapterListener.purchase(PurchasesVerifier.AD_FREE_SKU);
 
         @StringRes int title = notPremium
                 ? R.string.go_premium_title

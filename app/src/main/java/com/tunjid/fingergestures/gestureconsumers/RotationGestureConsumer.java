@@ -10,7 +10,7 @@ import android.view.accessibility.AccessibilityEvent;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.SetManager;
-import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesVerifier;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -147,7 +147,7 @@ public class RotationGestureConsumer implements GestureConsumer {
     private boolean canAddToSet(String preferenceName) {
         Set<String> set = setManager.getSet(preferenceName);
         long count = set.stream().filter(this::isRemovable).count();
-        return count < 2 || PurchasesManager.getInstance().isPremiumNotTrial();
+        return count < 2 || PurchasesVerifier.getInstance().isPremiumNotTrial();
     }
 
     private int compareApplicationInfo(ApplicationInfo infoA, ApplicationInfo infoB) {

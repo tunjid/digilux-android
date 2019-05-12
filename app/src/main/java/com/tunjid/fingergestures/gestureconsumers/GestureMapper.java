@@ -11,7 +11,7 @@ import androidx.annotation.StringRes;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
-import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesVerifier;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -137,7 +137,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public String getSwipeDelayText(int percentage) {
-        return App.transformApp(app -> app.getString(PurchasesManager.getInstance().isNotPremium()
+        return App.transformApp(app -> app.getString(PurchasesVerifier.getInstance().isNotPremium()
                 ? R.string.go_premium_text
                 : R.string.double_swipe_delay, delayPercentageToMillis(percentage)), "");
     }
@@ -253,7 +253,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
 
     @GestureConsumer.GestureAction
     private int directionToAction(@GestureDirection String direction) {
-        if (isDouble(direction) && PurchasesManager.getInstance().isNotPremium()) return DO_NOTHING;
+        if (isDouble(direction) && PurchasesVerifier.getInstance().isNotPremium()) return DO_NOTHING;
 
         int gesture = App.transformApp(app -> app.getPreferences().getInt(direction, UNASSIGNED_GESTURE), UNASSIGNED_GESTURE);
         if (gesture != UNASSIGNED_GESTURE) return gesture;

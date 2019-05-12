@@ -13,7 +13,7 @@ import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.ActionAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
-import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesVerifier;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 import com.tunjid.fingergestures.viewholders.ActionViewHolder;
@@ -113,7 +113,7 @@ public class ActionFragment extends MainActivityFragment implements ActionAdapte
             else new AlertDialog.Builder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
-                    .setPositiveButton(R.string.continue_text, (dialog, which) -> purchase(PurchasesManager.PREMIUM_SKU))
+                    .setPositiveButton(R.string.continue_text, (dialog, which) -> purchase(PurchasesVerifier.PREMIUM_SKU))
                     .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                     .show();
         }

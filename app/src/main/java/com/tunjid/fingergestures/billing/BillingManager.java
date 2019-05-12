@@ -51,7 +51,7 @@ public class BillingManager {
     private final Consumer<Throwable> errorHandler = throwable -> {};
 
     public BillingManager() {
-        billingClient = BillingClient.newBuilder(App.getInstance()).setListener(PurchasesManager.getInstance()).build();
+        billingClient = BillingClient.newBuilder(App.getInstance()).setListener(PurchasesVerifier.getInstance()).build();
         disposables.add(checkClient().subscribe(this::queryPurchases, errorHandler));
     }
 
@@ -73,7 +73,7 @@ public class BillingManager {
             PurchasesResult result = billingClient.queryPurchases(SkuType.INAPP);
             if (billingClient == null || result.getResponseCode() != BillingResponse.OK) return;
 
-            PurchasesManager purchasesManager = PurchasesManager.getInstance();
+            PurchasesVerifier purchasesManager = PurchasesVerifier.getInstance();
             purchasesManager.onPurchasesQueried(result.getResponseCode(), result.getPurchasesList());
         }, errorHandler));
     }
@@ -86,7 +86,7 @@ public class BillingManager {
     @SuppressWarnings("unused")
     private void consumeAll() {
         disposables.add(checkClient().subscribe(() -> {
-            PurchasesManager.getInstance().clearPurchases();
+            PurchasesVerifier.getInstance().clearPurchases();
             PurchasesResult result = billingClient.queryPurchases(SkuType.INAPP);
             if (billingClient == null || result.getResponseCode() != BillingResponse.OK) return;
             for (Purchase item : result.getPurchasesList()) consume(item.getPurchaseToken());

@@ -13,7 +13,7 @@ import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesVerifier;
 
 import java.util.function.Consumer;
 
@@ -125,7 +125,7 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
     }
 
     private void getColorFromWallpaper(View indicator) {
-        if (PurchasesManager.getInstance().isNotPremium()) {
+        if (PurchasesVerifier.getInstance().isNotPremium()) {
             goPremium(R.string.premium_prompt_slider);
             return;
         }

@@ -9,7 +9,7 @@ import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.activities.MainActivity;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
-import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesVerifier;
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
@@ -181,7 +181,7 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         R.string.adjust_double_swipe_settings,
                         mapper::setDoubleSwipeDelay,
                         mapper::getDoubleSwipeDelay,
-                        () -> PurchasesManager.getInstance().isPremium(),
+                        () -> PurchasesVerifier.getInstance().isPremium(),
                         mapper::getSwipeDelayText);
             case ANIMATES_POPUP:
                 return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
@@ -270,7 +270,7 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
     }
 
     public interface AppAdapterListener extends InteractiveAdapter.AdapterListener {
-        void purchase(@PurchasesManager.SKU String sku);
+        void purchase(@PurchasesVerifier.SKU String sku);
 
         void pickWallpaper(@BackgroundManager.WallpaperSelection int selection);
 

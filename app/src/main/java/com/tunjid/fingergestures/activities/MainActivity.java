@@ -28,7 +28,7 @@ import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.TrialView;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
-import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesVerifier;
 import com.tunjid.fingergestures.fragments.AppFragment;
 import com.tunjid.fingergestures.models.TextLink;
 import com.tunjid.fingergestures.models.UiState;
@@ -172,7 +172,7 @@ public class MainActivity extends FingerGestureActivity {
     protected void onResume() {
         super.onResume();
 
-        if (PurchasesManager.getInstance().hasAds()) shill();
+        if (PurchasesVerifier.getInstance().hasAds()) shill();
         else hideAds();
 
         if (!accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
@@ -191,7 +191,7 @@ public class MainActivity extends FingerGestureActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem item = menu.findItem(R.id.action_start_trial);
-        boolean isTrialVisible = !PurchasesManager.getInstance().isPremiumNotTrial();
+        boolean isTrialVisible = !PurchasesVerifier.getInstance().isPremiumNotTrial();
 
         if (item != null) item.setVisible(isTrialVisible);
         if (isTrialVisible && item != null) item.setActionView(new TrialView(this, item));
@@ -202,7 +202,7 @@ public class MainActivity extends FingerGestureActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_start_trial:
-                PurchasesManager purchasesManager = PurchasesManager.getInstance();
+                PurchasesVerifier purchasesManager = PurchasesVerifier.getInstance();
                 boolean isTrialRunning = purchasesManager.isTrialRunning();
 
                 withSnackbar(snackbar -> {

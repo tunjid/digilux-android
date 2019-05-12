@@ -16,7 +16,7 @@ import com.tunjid.fingergestures.BrightnessLookup;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.SetManager;
 import com.tunjid.fingergestures.activities.BrightnessActivity;
-import com.tunjid.fingergestures.billing.PurchasesManager;
+import com.tunjid.fingergestures.billing.PurchasesVerifier;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -144,7 +144,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
         final int threshold = adaptiveThresholdToLux(getAdaptiveBrightnessThreshold());
         final boolean restoresAdaptiveBrightness = restoresAdaptiveBrightnessOnDisplaySleep();
-        final boolean toggleAndLeave = restoresAdaptiveBrightness && PurchasesManager.getInstance().isNotPremium();
+        final boolean toggleAndLeave = restoresAdaptiveBrightness && PurchasesVerifier.getInstance().isNotPremium();
 
         if (!restoresAdaptiveBrightness) return;
 
@@ -292,7 +292,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public boolean supportsAmbientThreshold() {
-        return PurchasesManager.getInstance().isPremium()
+        return PurchasesVerifier.getInstance().isPremium()
                 && restoresAdaptiveBrightnessOnDisplaySleep()
                 && hasBrightnessSensor();
     }
@@ -303,7 +303,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     public boolean isDimmerEnabled() {
         return hasOverlayPermission()
-                && PurchasesManager.getInstance().isPremium()
+                && PurchasesVerifier.getInstance().isPremium()
                 && transformApp(app -> app.getPreferences().getBoolean(SCREEN_DIMMER_ENABLED, false), false);
     }
 
@@ -320,7 +320,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public boolean canAdjustDelta() {
-        return noDiscreteBrightness() || PurchasesManager.getInstance().isPremium();
+        return noDiscreteBrightness() || PurchasesVerifier.getInstance().isPremium();
     }
 
     public void addDiscreteBrightnessValue(String discreteValue) {
@@ -332,7 +332,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
     }
 
     public String getAdjustDeltaText(int percentage) {
-        return transformApp(app -> PurchasesManager.getInstance().isPremium() && !noDiscreteBrightness()
+        return transformApp(app -> PurchasesVerifier.getInstance().isPremium() && !noDiscreteBrightness()
                 ? app.getString(R.string.delta_percent_premium, percentage)
                 : app.getString(R.string.delta_percent, percentage), EMPTY_STRING);
     }
@@ -346,7 +346,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         if (!hasBrightnessSensor())
             return transformApp(app -> app.getString(R.string.unavailable_brightness_sensor), EMPTY_STRING);
 
-        if (PurchasesManager.getInstance().isNotPremium())
+        if (PurchasesVerifier.getInstance().isNotPremium())
             return transformApp(app -> app.getString(R.string.go_premium_text), EMPTY_STRING);
 
         if (!restoresAdaptiveBrightnessOnDisplaySleep())
@@ -426,7 +426,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
 
     private boolean shouldRemoveDimmerOnChange(@GestureAction int gestureAction) {
         return gestureAction == MINIMIZE_BRIGHTNESS || gestureAction == MAXIMIZE_BRIGHTNESS
-                || (shouldShowDimmer() && PurchasesManager.getInstance().isNotPremium());
+                || (shouldShowDimmer() && PurchasesVerifier.getInstance().isNotPremium());
     }
 
     private boolean noDiscreteBrightness() {
