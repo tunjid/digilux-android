@@ -1,5 +1,19 @@
 apply plugin: 'com.android.application'
 
+def keystoreProps = new Properties()
+def propertiesFile = file("keystore.properties")
+
+def keyAliasProp, keyPasswordProp, storePasswordProp, storeFileProp
+def hasKeyInfo = propertiesFile.exists()
+
+if (hasKeyInfo) {
+    keystoreProps.load(new FileInputStream(propertiesFile))
+    storeFileProp = file("release.keystore")
+    keyAliasProp = keystoreProps['alias']
+    keyPasswordProp = keystoreProps['aliasPassword']
+    storePasswordProp = keystoreProps['keystorePassword']
+}
+
 android {
     compileSdkVersion 28
     buildToolsVersion '28.0.3'
@@ -11,24 +25,21 @@ android {
         versionName "8.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     signingConfigs {
-        release {
-            def keystoreProps = new Properties()
-            def propertiesFile = file("keystore.properties")
-            keystoreProps.load(new FileInputStream(propertiesFile))
-            storeFile file("release.keystore")
-            keyAlias keystoreProps['alias']
-            keyPassword keystoreProps['aliasPassword']
-            storePassword keystoreProps['keystorePassword']
-        }
-        staging {
-            def keystoreProps = new Properties()
-            def propertiesFile = file("keystore.properties")
-            keystoreProps.load(new FileInputStream(propertiesFile))
-            storeFile file("release.keystore")
-            keyAlias keystoreProps['alias']
-            keyPassword keystoreProps['aliasPassword']
-            storePassword keystoreProps['keystorePassword']
+        if (hasKeyInfo) {
+            release {
+                storeFile storeFileProp
+                keyAlias keyAliasProp
+                keyPassword keyPasswordProp
+                storePassword storePasswordProp
+            }
+            staging {
+                storeFile storeFileProp
+                keyAlias keyAliasProp
+                keyPassword keyPasswordProp
+                storePassword storePasswordProp
+            }
         }
     }
     buildTypes {
@@ -38,14 +49,14 @@ android {
         }
         staging {
             debuggable true
-            signingConfig signingConfigs.staging
             buildConfigField "boolean", "DEV", "false"
+            if (hasKeyInfo) signingConfig signingConfigs.staging
         }
         release {
             minifyEnabled true
-            signingConfig signingConfigs.release
             buildConfigField "boolean", "DEV", "false"
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasKeyInfo) signingConfig signingConfigs.release
         }
     }
     compileOptions {
