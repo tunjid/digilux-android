@@ -16,6 +16,7 @@
 package com.tunjid.fingergestures.billing;
 
 import android.app.Activity;
+import android.content.Context;
 
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClient.BillingResponse;
@@ -24,7 +25,6 @@ import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.Purchase.PurchasesResult;
-import com.tunjid.fingergestures.App;
 
 import java.util.concurrent.TimeUnit;
 
@@ -50,8 +50,8 @@ public class BillingManager {
     private CompositeDisposable disposables = new CompositeDisposable();
     private final Consumer<Throwable> errorHandler = throwable -> {};
 
-    public BillingManager() {
-        billingClient = BillingClient.newBuilder(App.getInstance()).setListener(PurchasesVerifier.getInstance()).build();
+    public BillingManager(Context context) {
+        billingClient = BillingClient.newBuilder(context).setListener(PurchasesManager.getInstance()).build();
         disposables.add(checkClient().subscribe(this::queryPurchases, errorHandler));
     }
 
@@ -73,7 +73,7 @@ public class BillingManager {
             PurchasesResult result = billingClient.queryPurchases(SkuType.INAPP);
             if (billingClient == null || result.getResponseCode() != BillingResponse.OK) return;
 
-            PurchasesVerifier purchasesManager = PurchasesVerifier.getInstance();
+            PurchasesManager purchasesManager = PurchasesManager.getInstance();
             purchasesManager.onPurchasesQueried(result.getResponseCode(), result.getPurchasesList());
         }, errorHandler));
     }
@@ -86,7 +86,7 @@ public class BillingManager {
     @SuppressWarnings("unused")
     private void consumeAll() {
         disposables.add(checkClient().subscribe(() -> {
-            PurchasesVerifier.getInstance().clearPurchases();
+            PurchasesManager.getInstance().clearPurchases();
             PurchasesResult result = billingClient.queryPurchases(SkuType.INAPP);
             if (billingClient == null || result.getResponseCode() != BillingResponse.OK) return;
             for (Purchase item : result.getPurchasesList()) consume(item.getPurchaseToken());

@@ -15,7 +15,7 @@ import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.PackageAdapter;
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment;
-import com.tunjid.fingergestures.billing.PurchasesVerifier;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer;
 import com.tunjid.fingergestures.viewholders.PackageViewHolder;
 import com.tunjid.fingergestures.viewmodels.AppViewModel;
@@ -101,7 +101,7 @@ public class PackageFragment extends MainActivityFragment {
             new AlertDialog.Builder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.auto_rotate_description)))
-                    .setPositiveButton(R.string.continue_text, (dialog, which) -> purchase(PurchasesVerifier.PREMIUM_SKU))
+                    .setPositiveButton(R.string.continue_text, (dialog, which) -> purchase(PurchasesManager.PREMIUM_SKU))
                     .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                     .show();
             return;

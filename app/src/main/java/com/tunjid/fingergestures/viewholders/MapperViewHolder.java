@@ -8,7 +8,7 @@ import android.widget.TextView;
 import com.tunjid.androidbootstrap.core.text.SpanBuilder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.billing.PurchasesVerifier;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.ActionFragment;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
@@ -57,7 +57,7 @@ public class MapperViewHolder extends AppViewHolder {
         subtitle.setText(getFormattedText(doubleDirection, mapper.getMappedAction(doubleDirection)));
 
         subtitle.setOnClickListener(view -> {
-            boolean notPremium = PurchasesVerifier.getInstance().isNotPremium();
+            boolean notPremium = PurchasesManager.getInstance().isNotPremium();
             if (notPremium) goPremium(R.string.premium_prompt_double_swipe);
             else onClick(doubleDirection);
         });

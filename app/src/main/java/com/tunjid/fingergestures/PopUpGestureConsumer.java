@@ -4,7 +4,7 @@ package com.tunjid.fingergestures;
 import android.content.Intent;
 
 import com.tunjid.fingergestures.activities.PopupActivity;
-import com.tunjid.fingergestures.billing.PurchasesVerifier;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
@@ -98,6 +98,6 @@ public class PopUpGestureConsumer implements GestureConsumer {
     }
 
     private boolean canAddToSet(String preferenceName) {
-        return setManager.getSet(preferenceName).size() < 2 || PurchasesVerifier.getInstance().isPremiumNotTrial();
+        return setManager.getSet(preferenceName).size() < 2 || PurchasesManager.getInstance().isPremiumNotTrial();
     }
 }

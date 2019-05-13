@@ -13,7 +13,7 @@ import com.tunjid.androidbootstrap.functions.Consumer;
 import com.tunjid.androidbootstrap.view.animator.ViewHider;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.billing.BillingManager;
-import com.tunjid.fingergestures.billing.PurchasesVerifier;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import io.reactivex.disposables.CompositeDisposable;
 
@@ -42,7 +42,7 @@ public abstract class FingerGestureActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        billingManager = new BillingManager();
+        billingManager = new BillingManager(getApplicationContext());
     }
 
     @Override
@@ -65,7 +65,7 @@ public abstract class FingerGestureActivity extends BaseActivity {
         else barHider.hide();
     }
 
-    public void purchase(@PurchasesVerifier.SKU String sku) {
+    public void purchase(@PurchasesManager.SKU String sku) {
         if (billingManager == null) showSnackbar(R.string.generic_error);
         else disposables.add(billingManager.initiatePurchaseFlow(this, sku)
                 .subscribe(launchStatus -> {

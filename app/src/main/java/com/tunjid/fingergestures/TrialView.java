@@ -14,7 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.tunjid.fingergestures.billing.PurchasesVerifier;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 
 import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
@@ -44,7 +44,7 @@ public class TrialView extends FrameLayout {
         setOnClickListener(clickListener);
         imageView.setOnClickListener(clickListener);
 
-        Flowable<Long> flowable = PurchasesVerifier.getInstance().getTrialFlowable();
+        Flowable<Long> flowable = PurchasesManager.getInstance().getTrialFlowable();
 
         if (flowable == null) changeState(false);
         else disposable = flowable.map(String::valueOf)

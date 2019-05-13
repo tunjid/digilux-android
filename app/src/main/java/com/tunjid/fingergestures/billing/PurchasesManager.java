@@ -1,6 +1,8 @@
 package com.tunjid.fingergestures.billing;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.Purchase;
@@ -24,7 +26,7 @@ import static com.tunjid.fingergestures.App.transformApp;
 import static com.tunjid.fingergestures.App.withApp;
 
 
-public class PurchasesVerifier implements PurchasesUpdatedListener {
+public class PurchasesManager implements PurchasesUpdatedListener {
 
     private static final int FIRST_TRIAL_PERIOD = 60 * 10;
     private static final int SECOND_TRIAL_PERIOD = 60;
@@ -33,26 +35,28 @@ public class PurchasesVerifier implements PurchasesUpdatedListener {
 
     public static final String AD_FREE_SKU = "ad.free";
     public static final String PREMIUM_SKU = "premium";
+    public static final String ACTION_LOCKED_CONTENT_CHANGED = "com.tunjid.fingergestures.action.lockedContentChanged";
     private static final String PURCHASES = "purchases";
+    private static final String HAS_LOCKED_CONTENT = "has locked content";
     private static final Set<String> EMPTY = new HashSet<>();
 
     @Retention(RetentionPolicy.SOURCE)
     @StringDef({AD_FREE_SKU, PREMIUM_SKU})
     public @interface SKU {}
 
-    private static PurchasesVerifier instance;
+    private static PurchasesManager instance;
 
     private int numTrials;
     private boolean isTrial;
 
     private Flowable<Long> trialFlowable;
 
-    public static PurchasesVerifier getInstance() {
-        if (instance == null) instance = new PurchasesVerifier();
+    public static PurchasesManager getInstance() {
+        if (instance == null) instance = new PurchasesManager();
         return instance;
     }
 
-    private PurchasesVerifier() { }
+    private PurchasesManager() { }
 
     @Override
     public void onPurchasesUpdated(int responseCode, @Nullable List<Purchase> purchases) {
@@ -68,35 +72,46 @@ public class PurchasesVerifier implements PurchasesUpdatedListener {
         preferences.edit().putStringSet(PURCHASES, skus).apply();
     }
 
+    public void setHasLockedContent(boolean hasLockedContent) {
+        withApp(app -> {
+            app.getPreferences().edit().putBoolean(HAS_LOCKED_CONTENT, hasLockedContent).apply();
+            app.broadcast(new Intent(ACTION_LOCKED_CONTENT_CHANGED));
+        });
+    }
+
+    public boolean hasLockedContent() {
+        return transformApp(app -> app.getPreferences().getBoolean(HAS_LOCKED_CONTENT, false), false);
+    }
+
     @SuppressWarnings("SimplifiableIfStatement")
     public boolean isNotPremium() {
-        return false;
-//        if (isTrial) return false;
+        if (!hasLockedContent()) return false;
+        if (isTrial) return false;
 //        if (BuildConfig.DEV) return false;
-//        return !transformApp(app -> app.getPreferences().getStringSet(PURCHASES, EMPTY).contains(PREMIUM_SKU), false);
+        return !transformApp(app -> getPurchaseSet(app).contains(PREMIUM_SKU), false);
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
     public boolean hasNotGoneAdFree() {
-        return false;
-//        if (isTrial) return false;
-//        return !transformApp(app -> app.getPreferences().getStringSet(PURCHASES, EMPTY).contains(AD_FREE_SKU), false);
+        if (!hasLockedContent()) return false;
+        if (isTrial) return false;
+        return !transformApp(app -> getPurchaseSet(app).contains(AD_FREE_SKU), false);
     }
 
     public boolean isPremium() {
-        return true;
-//        return !isNotPremium();
+        if (!hasLockedContent()) return true;
+        return !isNotPremium();
     }
 
     public boolean isPremiumNotTrial() {
-        return true;
+        if (!hasLockedContent()) return true;
 //        if (BuildConfig.DEV) return true;
-//        return transformApp(app -> app.getPreferences().getStringSet(PURCHASES, EMPTY).contains(PREMIUM_SKU), false);
+        return transformApp(app -> getPurchaseSet(app).contains(PREMIUM_SKU), false);
     }
 
     public boolean hasAds() {
-        return false;
-//        return isNotPremium() && hasNotGoneAdFree();
+        if (!hasLockedContent()) return false;
+        return isNotPremium() && hasNotGoneAdFree();
     }
 
     @Nullable
@@ -145,18 +160,19 @@ public class PurchasesVerifier implements PurchasesUpdatedListener {
         withApp(app -> app.getPreferences().edit().remove(PURCHASES).apply());
     }
 
+    // App is open source, do a psuedo check.
     private boolean filterPurchases(Purchase purchase) {
-        String json = purchase.getOriginalJson();
-        String signature = purchase.getSignature();
+//        String json = purchase.getOriginalJson();
+//        String signature = purchase.getSignature();
 
-        return isTrue(json, signature);
+        return !TextUtils.isEmpty(purchase.getOriginalJson());
     }
 
     private int getTrialPeriod() {
         return numTrials == 0 ? FIRST_TRIAL_PERIOD : numTrials == 1 ? SECOND_TRIAL_PERIOD : FINAL_TRIAL_PERIOD;
     }
 
-    private boolean isTrue(String json, String signature) {
-        return true;
+    private Set<String> getPurchaseSet(App app) {
+        return app.getPreferences().getStringSet(PURCHASES, EMPTY);
     }
 }

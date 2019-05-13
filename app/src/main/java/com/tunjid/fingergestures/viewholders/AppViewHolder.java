@@ -11,7 +11,7 @@ import android.view.View;
 import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.adapters.AppAdapter;
-import com.tunjid.fingergestures.billing.PurchasesVerifier;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 
 public class AppViewHolder extends InteractiveViewHolder<AppAdapter.AppAdapterListener> {
 
@@ -34,7 +34,7 @@ public class AppViewHolder extends InteractiveViewHolder<AppAdapter.AppAdapterLi
         new AlertDialog.Builder(context)
                 .setTitle(R.string.go_premium_title)
                 .setMessage(context.getString(R.string.go_premium_body, context.getString(description)))
-                .setPositiveButton(R.string.continue_text, (dialog, which) -> adapterListener.purchase(PurchasesVerifier.PREMIUM_SKU))
+                .setPositiveButton(R.string.continue_text, (dialog, which) -> adapterListener.purchase(PurchasesManager.PREMIUM_SKU))
                 .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                 .show();
     }

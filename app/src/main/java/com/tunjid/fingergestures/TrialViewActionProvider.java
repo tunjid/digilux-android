@@ -5,6 +5,7 @@ import androidx.core.view.ActionProvider;
 import android.view.MenuItem;
 import android.view.View;
 
+@SuppressWarnings("unused") // Created via XML
 public class TrialViewActionProvider extends ActionProvider {
 
     public TrialViewActionProvider(Context context) {

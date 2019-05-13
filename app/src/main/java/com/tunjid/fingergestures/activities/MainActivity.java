@@ -28,7 +28,7 @@ import com.tunjid.fingergestures.BackgroundManager;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.TrialView;
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity;
-import com.tunjid.fingergestures.billing.PurchasesVerifier;
+import com.tunjid.fingergestures.billing.PurchasesManager;
 import com.tunjid.fingergestures.fragments.AppFragment;
 import com.tunjid.fingergestures.models.TextLink;
 import com.tunjid.fingergestures.models.UiState;
@@ -73,6 +73,7 @@ import static com.tunjid.fingergestures.App.settingsIntent;
 import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_NAV_BAR_CHANGED;
+import static com.tunjid.fingergestures.billing.PurchasesManager.ACTION_LOCKED_CONTENT_CHANGED;
 import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
 import static com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR;
 
@@ -172,7 +173,7 @@ public class MainActivity extends FingerGestureActivity {
     protected void onResume() {
         super.onResume();
 
-        if (PurchasesVerifier.getInstance().hasAds()) shill();
+        if (PurchasesManager.getInstance().hasAds()) shill();
         else hideAds();
 
         if (!accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE);
@@ -191,7 +192,7 @@ public class MainActivity extends FingerGestureActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem item = menu.findItem(R.id.action_start_trial);
-        boolean isTrialVisible = !PurchasesVerifier.getInstance().isPremiumNotTrial();
+        boolean isTrialVisible = !PurchasesManager.getInstance().isPremiumNotTrial();
 
         if (item != null) item.setVisible(isTrialVisible);
         if (isTrialVisible && item != null) item.setActionView(new TrialView(this, item));
@@ -202,7 +203,7 @@ public class MainActivity extends FingerGestureActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_start_trial:
-                PurchasesVerifier purchasesManager = PurchasesVerifier.getInstance();
+                PurchasesManager purchasesManager = PurchasesManager.getInstance();
                 boolean isTrialRunning = purchasesManager.isTrialRunning();
 
                 withSnackbar(snackbar -> {
@@ -426,13 +427,16 @@ public class MainActivity extends FingerGestureActivity {
             showSnackbar(intent.getIntExtra(EXTRA_SHOW_SNACK_BAR, R.string.generic_error));
         else if (ACTION_NAV_BAR_CHANGED.equals(action))
             getWindow().setNavigationBarColor(getNavBarColor());
+        else if (ACTION_LOCKED_CONTENT_CHANGED.equals(action))
+            recreate();
     }
 
     private boolean intentMatches(Intent intent) {
         String action = intent.getAction();
         return ACTION_EDIT_WALLPAPER.equals(action)
                 || ACTION_SHOW_SNACK_BAR.equals(action)
-                || ACTION_NAV_BAR_CHANGED.equals(action);
+                || ACTION_NAV_BAR_CHANGED.equals(action)
+                || ACTION_LOCKED_CONTENT_CHANGED.equals(action);
     }
 
     private int getNavBarColor() {
