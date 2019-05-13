@@ -56,6 +56,7 @@ import static com.tunjid.fingergestures.viewmodels.AppViewModel.DOUBLE_SWIPE_SET
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.ENABLE_ACCESSIBILITY_BUTTON;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.ENABLE_WATCH_WINDOWS;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.EXCLUDED_ROTATION_LOCK;
+import static com.tunjid.fingergestures.viewmodels.AppViewModel.LOCKED_CONTENT;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_DOWN_ICON;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_LEFT_ICON;
 import static com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_RIGHT_ICON;
@@ -98,6 +99,7 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
         PopUpGestureConsumer popUpGestureConsumer = PopUpGestureConsumer.getInstance();
         AudioGestureConsumer audioGestureConsumer = AudioGestureConsumer.getInstance();
         BackgroundManager backgroundManager = BackgroundManager.getInstance();
+        PurchasesManager purchasesManager = PurchasesManager.getInstance();
 
         switch (viewType) {
             case PADDING:
@@ -198,6 +200,11 @@ public class AppAdapter extends InteractiveAdapter<AppViewHolder, AppAdapter.App
                         R.string.use_colored_nav,
                         backgroundManager::usesColoredNav,
                         backgroundManager::setUsesColoredNav);
+            case LOCKED_CONTENT:
+                return new ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),
+                        R.string.set_locked_content,
+                        purchasesManager::hasLockedContent,
+                        purchasesManager::setHasLockedContent);
             case AUDIO_DELTA:
                 return new SliderAdjusterViewHolder(
                         getItemView(R.layout.viewholder_slider_delta, parent),

@@ -73,6 +73,7 @@ import static com.tunjid.fingergestures.App.settingsIntent;
 import static com.tunjid.fingergestures.App.withApp;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER;
 import static com.tunjid.fingergestures.BackgroundManager.ACTION_NAV_BAR_CHANGED;
+import static com.tunjid.fingergestures.billing.PurchasesManager.ACTION_LOCKED_CONTENT_CHANGED;
 import static com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR;
 import static com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR;
 
@@ -426,13 +427,16 @@ public class MainActivity extends FingerGestureActivity {
             showSnackbar(intent.getIntExtra(EXTRA_SHOW_SNACK_BAR, R.string.generic_error));
         else if (ACTION_NAV_BAR_CHANGED.equals(action))
             getWindow().setNavigationBarColor(getNavBarColor());
+        else if (ACTION_LOCKED_CONTENT_CHANGED.equals(action))
+            recreate();
     }
 
     private boolean intentMatches(Intent intent) {
         String action = intent.getAction();
         return ACTION_EDIT_WALLPAPER.equals(action)
                 || ACTION_SHOW_SNACK_BAR.equals(action)
-                || ACTION_NAV_BAR_CHANGED.equals(action);
+                || ACTION_NAV_BAR_CHANGED.equals(action)
+                || ACTION_LOCKED_CONTENT_CHANGED.equals(action);
     }
 
     private int getNavBarColor() {

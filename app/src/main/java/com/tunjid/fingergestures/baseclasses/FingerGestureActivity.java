@@ -42,7 +42,7 @@ public abstract class FingerGestureActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        billingManager = new BillingManager();
+        billingManager = new BillingManager(getApplicationContext());
     }
 
     @Override
