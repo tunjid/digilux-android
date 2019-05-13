@@ -5,9 +5,6 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringDef;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.tunjid.fingergestures.App;
@@ -20,6 +17,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.StringDef;
 
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 import static com.tunjid.fingergestures.App.withApp;
@@ -129,7 +129,7 @@ public class RotationGestureConsumer implements GestureConsumer {
             Intent intent = new Intent(ACTION_WATCH_WINDOW_CHANGES);
             intent.putExtra(EXTRA_WATCHES_WINDOWS, enabled);
 
-            LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
+            app.broadcast(intent);
         });
     }
 

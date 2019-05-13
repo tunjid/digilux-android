@@ -10,8 +10,6 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper;
 
 import java.util.List;
 
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import static com.tunjid.fingergestures.App.transformApp;
 import static com.tunjid.fingergestures.App.withApp;
 
@@ -36,7 +34,7 @@ public class PopUpGestureConsumer implements GestureConsumer {
 
     @Override
     public void onGestureActionTriggered(int gestureAction) {
-        withApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(new Intent(ACTION_SHOW_POPUP)));
+        withApp(app -> app.broadcast(new Intent(ACTION_SHOW_POPUP)));
     }
 
     @Override
@@ -94,11 +92,8 @@ public class PopUpGestureConsumer implements GestureConsumer {
     public void enableAccessibilityButton(boolean enabled) {
         withApp(app -> {
             app.getPreferences().edit().putBoolean(ACCESSIBILITY_BUTTON_ENABLED, enabled).apply();
-
-            Intent intent = new Intent(ACTION_ACCESSIBILITY_BUTTON);
-            intent.putExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, enabled);
-
-            LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
+            app.broadcast(new Intent(ACTION_ACCESSIBILITY_BUTTON)
+                    .putExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, enabled));
         });
     }
 

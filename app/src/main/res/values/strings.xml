@@ -100,6 +100,12 @@
     <!-- Use Logarithmic Scale ViewHolder-->
     <string name="use_logarithmic_scale">Use Android Pie logarithmic brightness scale</string>
 
+    <!-- Use Colored Nav ViewHolder-->
+    <string name="use_colored_nav">Use colored navigation bar</string>
+
+    <!-- Use Colored Nav ViewHolder-->
+    <string name="set_locked_content">Lock certain features to allow for donation</string>
+
     <!-- Show Slider ViewHolder-->
     <string name="show_slider">Show the slider when adjusting brightness</string>
     <string name="slider_animate">Animate brightness slider entrance and exit</string>

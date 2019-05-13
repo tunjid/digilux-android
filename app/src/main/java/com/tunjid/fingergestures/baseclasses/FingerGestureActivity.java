@@ -3,10 +3,13 @@ package com.tunjid.fingergestures.baseclasses;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+
 import com.google.android.material.snackbar.Snackbar;
+
 import android.view.ViewGroup;
 
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseActivity;
+import com.tunjid.androidbootstrap.functions.Consumer;
 import com.tunjid.androidbootstrap.view.animator.ViewHider;
 import com.tunjid.fingergestures.R;
 import com.tunjid.fingergestures.billing.BillingManager;
@@ -39,7 +42,7 @@ public abstract class FingerGestureActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        billingManager = new BillingManager();
+        billingManager = new BillingManager(getApplicationContext());
     }
 
     @Override
@@ -51,7 +54,10 @@ public abstract class FingerGestureActivity extends BaseActivity {
     }
 
     public void showSnackbar(@StringRes int resource) {
-        Snackbar.make(coordinator, resource, LENGTH_SHORT).show();
+        withSnackbar(snackbar -> {
+            snackbar.setText(resource);
+            snackbar.show();
+        });
     }
 
     public void toggleToolbar(boolean visible) {
@@ -78,5 +84,11 @@ public abstract class FingerGestureActivity extends BaseActivity {
                             break;
                     }
                 }, throwable -> showSnackbar(R.string.generic_error)));
+    }
+
+    protected void withSnackbar(Consumer<Snackbar> consumer) {
+        Snackbar snackbar = Snackbar.make(coordinator, R.string.app_name, LENGTH_SHORT);
+        snackbar.getView().setOnApplyWindowInsetsListener((view, insets) -> insets);
+        consumer.accept(snackbar);
     }
 }

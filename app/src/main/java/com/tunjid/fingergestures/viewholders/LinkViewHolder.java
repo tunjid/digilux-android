@@ -13,7 +13,7 @@ import com.tunjid.fingergestures.adapters.AppAdapter;
 public class LinkViewHolder extends AppViewHolder {
 
     private static final String APP_URI = "market://details?id=com.tunjid.fingergestures";
-    private static final String SUPPORT_LINK = "https://plus.google.com/communities/101040733188459773494";
+    private static final String SUPPORT_LINK = "https://github.com/tunjid/digilux-android/issues";
 
     public static final LinkItem REVIEW_LINK_ITEM = new LinkItem(R.string.review_app, R.drawable.ic_rate_review_white_24dp, APP_URI);
     public static final LinkItem SUPPORT_LINK_ITEM = new LinkItem(R.string.help_support, R.drawable.ic_help_24dp, SUPPORT_LINK);

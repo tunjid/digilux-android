@@ -25,7 +25,6 @@ import java.util.function.Function;
 
 import androidx.annotation.FloatRange;
 import androidx.annotation.IntRange;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
@@ -103,7 +102,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
             byteValue = originalValue;
             intent.setAction(ACTION_SCREEN_DIMMER_CHANGED);
             intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
-            LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
+            app.broadcast(intent);
         }
         else if (shouldRemoveDimmerOnChange(gestureAction)) {
             removeDimmer();
@@ -224,19 +223,23 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return percentToByte(asPercentage);
     }
 
-    public void setIncrementPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int incrementValue) {
+    public void setIncrementPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT,
+            to = GestureConsumer.HUNDRED_PERCENT) int incrementValue) {
         withApp(app -> app.getPreferences().edit().putInt(INCREMENT_VALUE, incrementValue).apply());
     }
 
-    public void setPositionPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int positionPercentage) {
+    public void setPositionPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT,
+            to = GestureConsumer.HUNDRED_PERCENT) int positionPercentage) {
         withApp(app -> app.getPreferences().edit().putInt(SLIDER_POSITION, positionPercentage).apply());
     }
 
-    private void setDimmerPercent(@FloatRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) float percentage) {
+    private void setDimmerPercent(@FloatRange(from = GestureConsumer.ZERO_PERCENT,
+            to = GestureConsumer.HUNDRED_PERCENT) float percentage) {
         withApp(app -> app.getPreferences().edit().putFloat(SCREEN_DIMMER_DIM_PERCENT, percentage).apply());
     }
 
-    public void setAdaptiveBrightnessThreshold(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int threshold) {
+    public void setAdaptiveBrightnessThreshold(@IntRange(from = GestureConsumer.ZERO_PERCENT,
+            to = GestureConsumer.HUNDRED_PERCENT) int threshold) {
         withApp(app -> app.getPreferences().edit().putInt(ADAPTIVE_BRIGHTNESS_THRESHOLD, threshold).apply());
     }
 
@@ -338,7 +341,8 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         return discreteBrightnessManager.getList(DISCRETE_BRIGHTNESS_SET);
     }
 
-    public String getAdaptiveBrightnessThresholdText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int percent) {
+    public String getAdaptiveBrightnessThresholdText(@IntRange(from = GestureConsumer.ZERO_PERCENT,
+            to = GestureConsumer.HUNDRED_PERCENT) int percent) {
         if (!hasBrightnessSensor())
             return transformApp(app -> app.getString(R.string.unavailable_brightness_sensor), EMPTY_STRING);
 
@@ -364,7 +368,7 @@ public class BrightnessGestureConsumer implements GestureConsumer {
         setDimmerPercent(MIN_DIM_PERCENT);
         Intent intent = new Intent(ACTION_SCREEN_DIMMER_CHANGED);
         intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, getScreenDimmerDimPercent());
-        withApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(intent));
+        withApp(app -> app.broadcast(intent));
     }
 
     public int percentToByte(int percentage) {

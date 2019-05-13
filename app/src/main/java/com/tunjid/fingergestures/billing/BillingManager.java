@@ -16,6 +16,7 @@
 package com.tunjid.fingergestures.billing;
 
 import android.app.Activity;
+import android.content.Context;
 
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClient.BillingResponse;
@@ -24,7 +25,6 @@ import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.Purchase.PurchasesResult;
-import com.tunjid.fingergestures.App;
 
 import java.util.concurrent.TimeUnit;
 
@@ -50,8 +50,8 @@ public class BillingManager {
     private CompositeDisposable disposables = new CompositeDisposable();
     private final Consumer<Throwable> errorHandler = throwable -> {};
 
-    public BillingManager() {
-        billingClient = BillingClient.newBuilder(App.getInstance()).setListener(PurchasesManager.getInstance()).build();
+    public BillingManager(Context context) {
+        billingClient = BillingClient.newBuilder(context).setListener(PurchasesManager.getInstance()).build();
         disposables.add(checkClient().subscribe(this::queryPurchases, errorHandler));
     }
 

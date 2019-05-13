@@ -2,9 +2,6 @@ package com.tunjid.fingergestures.gestureconsumers;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.os.Build;
-
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.tunjid.fingergestures.App;
 
@@ -84,7 +81,7 @@ public class GlobalActionGestureConsumer implements GestureConsumer {
         Intent intent = new Intent(ACTION_GLOBAL_ACTION);
         intent.putExtra(EXTRA_GLOBAL_ACTION, action);
 
-        LocalBroadcastManager.getInstance(app).sendBroadcast(intent);
+        app.broadcast(intent);
     }
 }
 

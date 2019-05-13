@@ -41,7 +41,6 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.palette.graphics.Palette;
 import io.reactivex.Single;
 
@@ -65,6 +64,7 @@ public class BackgroundManager {
     private static final String SLIDER_DURATION = "slider duration";
     private static final String BACKGROUND_COLOR = "background color";
     private static final String SLIDER_COLOR = "slider color";
+    private static final String USES_COLORED_NAV_BAR = "colored nav bar";
 
     private static final String ERROR_NEED_PERMISSION = "Need permission";
     private static final String ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager";
@@ -85,13 +85,13 @@ public class BackgroundManager {
     private static final String EXTRA_CHANGE_WALLPAPER = "com.tunjid.fingergestures.extra.changeWallpaper";
     private static final String ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper";
     public static final String ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper";
+    public static final String ACTION_NAV_BAR_CHANGED = "com.tunjid.fingergestures.action.navBarChanged";
 
     private final String[] wallpaperTargets;
 
     public static final int DAY_WALLPAPER_PICK_CODE = 0;
     public static final int NIGHT_WALLPAPER_PICK_CODE = 1;
     private static final int INVALID_WALLPAPER_PICK_CODE = -1;
-
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({INVALID_WALLPAPER_PICK_CODE, DAY_WALLPAPER_PICK_CODE, NIGHT_WALLPAPER_PICK_CODE})
@@ -130,6 +130,13 @@ public class BackgroundManager {
         return durationPercentageToMillis(getSliderDurationPercentage());
     }
 
+    public void setUsesColoredNav(boolean usesColoredNav) {
+        withApp(app -> {
+            app.getPreferences().edit().putBoolean(USES_COLORED_NAV_BAR, usesColoredNav).apply();
+            app.broadcast(new Intent(ACTION_NAV_BAR_CHANGED));
+        });
+    }
+
     public void setSliderColor(@ColorInt int color) {
         withApp(app -> app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply());
     }
@@ -138,11 +145,13 @@ public class BackgroundManager {
         withApp(app -> app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply());
     }
 
-    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
+    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT,
+            to = GestureConsumer.HUNDRED_PERCENT) int duration) {
         withApp(app -> app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply());
     }
 
-    public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT) int duration) {
+    public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT,
+            to = GestureConsumer.HUNDRED_PERCENT) int duration) {
         int millis = durationPercentageToMillis(duration);
         float seconds = millis / 1000F;
         return transformApp(app -> app.getString(R.string.duration_value, seconds), EMPTY);
@@ -175,6 +184,11 @@ public class BackgroundManager {
 
     private String getFileName(@WallpaperSelection int selection) {
         return selection == DAY_WALLPAPER_PICK_CODE ? DAY_WALLPAPER_NAME : NIGHT_WALLPAPER_NAME;
+    }
+
+    public boolean usesColoredNav() {
+        boolean higherThanPie = Build.VERSION.SDK_INT > Build.VERSION_CODES.P;
+        return transformApp(app -> app.getPreferences().getBoolean(USES_COLORED_NAV_BAR, higherThanPie), higherThanPie);
     }
 
     @NonNull
@@ -381,8 +395,7 @@ public class BackgroundManager {
         if (componentName == null) return false;
 
         boolean handled = componentName.getPackageName().equals("com.google.android.apps.photos");
-        if (handled)
-            withApp(app -> LocalBroadcastManager.getInstance(app).sendBroadcast(intent));
+        if (handled) withApp(app -> app.broadcast(intent));
 
         return handled;
     }

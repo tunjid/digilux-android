@@ -3,6 +3,8 @@ package com.tunjid.fingergestures.viewholders;
 import android.view.View;
 import android.widget.TextView;
 
+import com.tunjid.androidbootstrap.recyclerview.ListManager;
+import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder;
 import com.tunjid.fingergestures.App;
 import com.tunjid.fingergestures.PopUpGestureConsumer;
 import com.tunjid.fingergestures.R;
@@ -14,31 +16,20 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer;
 import java.util.List;
 import java.util.function.Supplier;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import static com.tunjid.fingergestures.activities.MainActivity.SETTINGS_CODE;
 
 public class PopupViewHolder extends DiffViewHolder<Integer> {
 
-    private RecyclerView recyclerView;
-
     public PopupViewHolder(View itemView, List<Integer> items, AppAdapter.AppAdapterListener listener) {
         super(itemView, items, listener);
-
-        PopUpGestureConsumer buttonManager = PopUpGestureConsumer.getInstance();
-
-        recyclerView = itemView.findViewById(R.id.item_list);
-        recyclerView.setLayoutManager(new GridLayoutManager(itemView.getContext(), 3));
-        recyclerView.setAdapter(new ActionAdapter(true, true, items, this::onActionClicked));
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
             if (!App.canWriteToSettings())
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.permission_required).show();
 
-            else if (!buttonManager.hasAccessibilityButton())
+            else if (!PopUpGestureConsumer.getInstance().hasAccessibilityButton())
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.popup_prompt).show();
 
             else
@@ -66,14 +57,18 @@ public class PopupViewHolder extends DiffViewHolder<Integer> {
         return getClass().getSimpleName();
     }
 
-    @Nullable @Override
-    ActionAdapter getAdapter() {
-        return (ActionAdapter) recyclerView.getAdapter();
-    }
-
     @Override
     Supplier<List<Integer>> getListSupplier() {
         return PopUpGestureConsumer.getInstance()::getList;
+    }
+
+    @Override
+    ListManager<?, Void> createListManager(View itemView) {
+        return new ListManagerBuilder<ActionViewHolder, Void>()
+                .withAdapter(new ActionAdapter(true, true, items, this::onActionClicked))
+                .withRecyclerView(itemView.findViewById(R.id.item_list))
+                .withGridLayoutManager(3)
+                .build();
     }
 
     private void onActionClicked(@GestureConsumer.GestureAction int action) {

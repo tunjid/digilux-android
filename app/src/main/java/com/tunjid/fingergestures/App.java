@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
 
 import com.tunjid.androidbootstrap.functions.collections.Lists;
@@ -23,8 +24,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
@@ -39,6 +42,7 @@ public class App extends android.app.Application {
     public static final String EMPTY = "";
 
     private static App instance;
+    private final PublishProcessor<Intent> broadcaster = PublishProcessor.create();
 
     @Override
     public void onCreate() {
@@ -48,6 +52,22 @@ public class App extends android.app.Application {
 
     public SharedPreferences getPreferences() {
         return getSharedPreferences(BRIGHTNESS_PREFS, MODE_PRIVATE);
+    }
+
+    public void broadcast(Intent intent) {
+        broadcaster.onNext(intent);
+    }
+
+    // Wrap the subject so if there's an error downstream, it doesn't propagate back up to it.
+    // This way, the broadcast stream should never error or terminate
+    public Flowable<Intent> broadcasts() {
+        return Flowable.defer(() -> broadcaster).onErrorResumeNext(this::logAndResume);
+    }
+
+    // Log the error, and re-wrap the broadcast processor
+    private Flowable<Intent> logAndResume(Throwable throwable) {
+        Log.e("App Broadcasts", "Error in broadcast stream", throwable);
+        return broadcasts();
     }
 
     @Nullable
