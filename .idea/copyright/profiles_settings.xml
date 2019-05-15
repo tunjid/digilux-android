@@ -1,0 +1,9 @@
+<component name="CopyrightManager">
+  <settings default="tj-gnu">
+    <module2copyright>
+      <element module="Project Source Files" copyright="tj-gnu" />
+      <element module="All" copyright="tj-gnu" />
+      <element module="TjSharedScope" copyright="tj-gnu" />
+    </module2copyright>
+  </settings>
+</component>

@@ -53,3 +53,24 @@ Supported devices include:
 * The Essential Phone
 * One Plus 5T (One Plus removed support in Pie, dunno why) 
 * Xiaomi Mi A1 (Xiaomi removed support in Pie, dunno why) 
+
+License follows; because this app uses Android Accessibility APIs, it's licenced under the GNU General Public License.
+This is because Accessibility APIs allow a level of introspection on what's running on the user's phone, I think any app based off this source code
+should be freely accessible to the public so they can see what the app is really doing.
+
+## License
+
+Copyright (c) 2017, 2018, 2019 Adetunji Dahunsi.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
