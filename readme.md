@@ -1,5 +1,8 @@
 ## DigiLux Android App
 
+[![Play Badge](https://play.google.com/intl/en/badges/images/badge_new.png)](https://play.google.com/store/apps/details?id=com.tunjid.fingergestures)
+
+
 Please note: Devices with large circular fingerprint sensors are most likely to be supported, others cannot because of hardware limitations. You're more than welcome to try, but there are no guarantees you device will be supported; no Samsung support.
 
 Enjoy your large screen, but find using the notification shade brightness widget one handed difficult or inaccessible? Always been upset that you have physical controls to manage your phone's volume, but not its brightness? Well, worry no more! This app lets you use your finger print sensor as dedicated brightness control hardware in addition to many other single handed use niceties.
