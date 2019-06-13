@@ -23,7 +23,10 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Path;
@@ -100,6 +103,11 @@ public class FingerGestureService extends AccessibilityService {
         public void onClicked(AccessibilityButtonController controller) { PopUpGestureConsumer.getInstance().showPopup(); }
     };
 
+    private final BroadcastReceiver screenWakeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) { onIntentReceived(intent); }
+    };
+
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
@@ -113,12 +121,14 @@ public class FingerGestureService extends AccessibilityService {
         BackgroundManager.getInstance().restoreWallpaperChange();
 
         subscribeToBroadcasts();
+        registerReceiver(screenWakeReceiver, new IntentFilter(ACTION_SCREEN_ON));
         setWatchesWindows(RotationGestureConsumer.getInstance().canAutoRotate());
         setShowsAccessibilityButton(PopUpGestureConsumer.getInstance().hasAccessibilityButton());
     }
 
     @Override
     public void onDestroy() {
+        unregisterReceiver(screenWakeReceiver);
         getFingerprintGestureController().unregisterFingerprintGestureCallback(GestureMapper.getInstance());
         getAccessibilityButtonController().unregisterAccessibilityButtonCallback(accessibilityButtonCallback);
 
