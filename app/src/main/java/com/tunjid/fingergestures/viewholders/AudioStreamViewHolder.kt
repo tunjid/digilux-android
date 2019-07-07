@@ -25,7 +25,7 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity.Companion.DO_NOT_DISTURB_CODE
 import com.tunjid.fingergestures.adapters.AppAdapter
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
-import com.tunjid.fingergestures.viewmodels.AppViewModel.AUDIO_DELTA
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.AUDIO_DELTA
 
 
 class AudioStreamViewHolder(

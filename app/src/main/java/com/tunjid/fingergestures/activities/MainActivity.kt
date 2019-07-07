@@ -262,7 +262,7 @@ class MainActivity : FingerGestureActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        viewModel.onPermissionChange(requestCode).ifPresent(this::showSnackbar)
+        viewModel.onPermissionChange(requestCode)?.apply { showSnackbar(this) }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -270,7 +270,7 @@ class MainActivity : FingerGestureActivity() {
         if (requestCode != STORAGE_CODE || grantResults.isEmpty() || grantResults[0] != PERMISSION_GRANTED)
             return
 
-        viewModel.onPermissionChange(requestCode).ifPresent(this::showSnackbar)
+        viewModel.onPermissionChange(requestCode)?.apply { showSnackbar(this) }
         currentFragment?.notifyDataSetChanged()
     }
 
@@ -360,7 +360,7 @@ class MainActivity : FingerGestureActivity() {
     }
 
     private fun updateBottomNav(fragment: AppFragment, bottomNavigationView: BottomNavigationView) =
-            viewModel.updateBottomNav(Arrays.hashCode(fragment.items)).ifPresent { bottomNavigationView.selectedItemId = it }
+            viewModel.updateBottomNav(Arrays.hashCode(fragment.items))?.apply { bottomNavigationView.selectedItemId = this }
 
     private fun showLink(textLink: TextLink) {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(textLink.link))

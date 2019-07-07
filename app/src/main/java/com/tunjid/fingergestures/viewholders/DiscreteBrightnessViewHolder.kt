@@ -41,7 +41,7 @@ import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapter
 import com.tunjid.fingergestures.adapters.DiscreteBrightnessAdapter
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
-import com.tunjid.fingergestures.viewmodels.AppViewModel.SLIDER_DELTA
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_DELTA
 
 class DiscreteBrightnessViewHolder(
         itemView: View,

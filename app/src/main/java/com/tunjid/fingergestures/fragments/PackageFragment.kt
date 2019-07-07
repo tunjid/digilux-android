@@ -38,8 +38,8 @@ import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.AppViewModel.EXCLUDED_ROTATION_LOCK
-import com.tunjid.fingergestures.viewmodels.AppViewModel.ROTATION_LOCK
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.EXCLUDED_ROTATION_LOCK
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ROTATION_LOCK
 
 class PackageFragment : MainActivityFragment() {
 

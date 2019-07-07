@@ -44,11 +44,11 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_DOWN_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_LEFT_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_RIGHT_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_UP_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.POPUP_ACTION
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_DOWN_ICON
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_LEFT_ICON
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_RIGHT_ICON
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_UP_ICON
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.POPUP_ACTION
 
 class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener {
 
