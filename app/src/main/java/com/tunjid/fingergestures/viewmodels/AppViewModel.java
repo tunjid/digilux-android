@@ -143,7 +143,7 @@ public class AppViewModel extends AndroidViewModel {
     protected void onCleared() {
         super.onCleared();
         disposable.clear();
-        state.permissionsQueue.clear();
+        state.getPermissionsQueue().clear();
     }
 
     public Flowable<UiState> uiState() { return stateProcessor.distinct(); }
@@ -155,7 +155,7 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public Single<DiffUtil.DiffResult> updatedApps() {
-        return App.Companion.diff(state.installedApps,
+        return App.Companion.diff(state.getInstalledApps(),
                 () -> getApplication().getPackageManager().getInstalledApplications(0).stream()
                         .filter(this::isUserInstalledApp)
                         .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
@@ -164,7 +164,7 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public Single<DiffUtil.DiffResult> updatedActions() {
-        return App.Companion.diff(state.availableActions, () -> IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList()));
+        return App.Companion.diff(state.getAvailableActions(), () -> IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList()));
     }
 
     public void shillMoar() {
@@ -176,19 +176,19 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public void checkPermissions() {
-        if (state.permissionsQueue.isEmpty())
+        if (state.getPermissionsQueue().isEmpty())
             stateProcessor.onNext(uiState = uiState.visibility(false));
         else onPermissionAdded();
     }
 
     public void requestPermission(@MainActivity.PermissionRequest int permission) {
-        if (!state.permissionsQueue.contains(permission)) state.permissionsQueue.add(permission);
+        if (!state.getPermissionsQueue().contains(permission)) state.getPermissionsQueue().add(permission);
         onPermissionAdded();
     }
 
     public void onPermissionClicked(Consumer<Integer> consumer) {
-        if (state.permissionsQueue.isEmpty()) checkPermissions();
-        else consumer.accept(state.permissionsQueue.peek());
+        if (state.getPermissionsQueue().isEmpty()) checkPermissions();
+        else consumer.accept(state.getPermissionsQueue().peek());
     }
 
     public Optional<Integer> onPermissionChange(int requestCode) {
@@ -218,13 +218,13 @@ public class AppViewModel extends AndroidViewModel {
             default:
                 return Optional.empty();
         }
-        if (shouldRemove) state.permissionsQueue.remove(requestCode);
+        if (shouldRemove) state.getPermissionsQueue().remove(requestCode);
         checkPermissions();
         return result;
     }
 
     public Optional<Integer> updateBottomNav(int hash) {
-        state.permissionsQueue.clear();
+        state.getPermissionsQueue().clear();
         int id = hash == Arrays.hashCode(gestureItems)
                 ? R.id.action_directions
                 : hash == Arrays.hashCode(brightnessItems)
@@ -241,8 +241,8 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     private void onPermissionAdded() {
-        if (state.permissionsQueue.isEmpty()) return;
-        int permissionRequest = state.permissionsQueue.peek();
+        if (state.getPermissionsQueue().isEmpty()) return;
+        int permissionRequest = state.getPermissionsQueue().peek();
 
         switch (permissionRequest) {
             default:

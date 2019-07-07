@@ -15,38 +15,18 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.models;
+package com.tunjid.fingergestures.models
 
-import androidx.annotation.NonNull;
+class TextLink(
+        private val text: CharSequence,
+        val link: String
+) : CharSequence {
 
-public class TextLink implements CharSequence {
+    override fun toString(): String = text.toString()
 
-    private final CharSequence text;
-    public final String link;
+    override val length: Int get() = text.length
 
-    public TextLink(CharSequence text, String link) {
-        this.text = text;
-        this.link = link;
-    }
+    override fun get(index: Int): Char = text[index]
 
-    @Override
-    @NonNull
-    public String toString() {
-        return text.toString();
-    }
-
-    @Override
-    public int length() {
-        return text.length();
-    }
-
-    @Override
-    public char charAt(int index) {
-        return text.charAt(index);
-    }
-
-    @Override
-    public CharSequence subSequence(int start, int end) {
-        return text.subSequence(start, end);
-    }
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = text.subSequence(startIndex, endIndex)
 }
