@@ -31,8 +31,8 @@ import android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION
 
 class ScreenDimmerViewHolder(itemView: View, listener: AppAdapter.AppAdapterListener) : AppViewHolder(itemView, listener) {
 
-    private val purchasesManager: PurchasesManager = PurchasesManager.getInstance()
-    private val brightnessGestureConsumer: BrightnessGestureConsumer = BrightnessGestureConsumer.getInstance()
+    private val purchasesManager: PurchasesManager = PurchasesManager.instance
+    private val brightnessGestureConsumer: BrightnessGestureConsumer = BrightnessGestureConsumer.instance
     private val goToSettings: Button = itemView.findViewById(R.id.go_to_settings)
     private val overLayToggle: Switch = itemView.findViewById<Switch>(R.id.toggle).apply {
         setOnCheckedChangeListener { _, isChecked -> brightnessGestureConsumer.isDimmerEnabled = isChecked }

@@ -46,7 +46,7 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
         ) volumeDelta) = App.withApp { app -> app.preferences.edit().putInt(INCREMENT_VALUE, volumeDelta).apply() }
 
 
-    private var streamType: Int
+    var streamType: Int
         get() = App.transformApp({ app -> app.preferences.getInt(AUDIO_STREAM_TYPE, STREAM_TYPE_DEFAULT) }, STREAM_TYPE_DEFAULT)
         set(@IdRes resId) {
             @AudioStream val streamType = getStreamTypeFromId(resId)
@@ -101,7 +101,8 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
         val turnDnDOff = ringStream && newVolume != 0 && increase
 
         if (turnDnDOn || turnDnDOff) App.withApp { app ->
-            val notificationManager = app.getSystemService(NotificationManager::class.java) ?: return@withApp
+            val notificationManager = app.getSystemService(NotificationManager::class.java)
+                    ?: return@withApp
 
             val filter = if (turnDnDOn) INTERRUPTION_FILTER_ALARMS else INTERRUPTION_FILTER_ALL
             if (notificationManager.currentInterruptionFilter == filter) return@withApp
@@ -122,7 +123,7 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
             min(currentValue + normalizePercentageForStream(volumeDelta, stream, audioManager), audioManager.getStreamMaxVolume(stream))
 
     private fun adjustAudio(increase: Boolean) {
-        requireAppAndAudioManager({ app, audioManager ->
+        requireAppAndAudioManager({ _, audioManager ->
             if (!App.hasDoNotDisturbAccess()) return@requireAppAndAudioManager Void.TYPE
             when (val streamType = streamType) {
                 STREAM_TYPE_DEFAULT -> audioManager.adjustSuggestedStreamVolume(if (increase) ADJUST_RAISE else ADJUST_LOWER, streamType, flags)
@@ -152,15 +153,13 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
         }, EMPTY_STRING)
     }
 
-    fun getStreamTitle(@IdRes resId: Int): String {
-        when (getStreamTypeFromId(resId)) {
-            STREAM_TYPE_DEFAULT -> return App.transformApp({ app -> app.getString(R.string.audio_stream_default) }, EMPTY_STRING)
-            STREAM_TYPE_MEDIA -> return requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_media, audioManager.getStreamMaxVolume(STREAM_TYPE_MEDIA)) }, EMPTY_STRING)
-            STREAM_TYPE_RING -> return requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_ringtone, audioManager.getStreamMaxVolume(STREAM_TYPE_RING)) }, EMPTY_STRING)
-            STREAM_TYPE_ALARM -> return requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_alarm, audioManager.getStreamMaxVolume(STREAM_TYPE_ALARM)) }, EMPTY_STRING)
-            STREAM_TYPE_ALL -> return requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_all, getMaxSteps(audioManager)) }, EMPTY_STRING)
-            else -> return App.transformApp({ app -> app.getString(R.string.audio_stream_default) }, EMPTY_STRING)
-        }
+    fun getStreamTitle(@IdRes resId: Int): String = when (getStreamTypeFromId(resId)) {
+        STREAM_TYPE_DEFAULT -> App.transformApp({ app -> app.getString(R.string.audio_stream_default) }, EMPTY_STRING)
+        STREAM_TYPE_MEDIA -> requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_media, audioManager.getStreamMaxVolume(STREAM_TYPE_MEDIA)) }, EMPTY_STRING)
+        STREAM_TYPE_RING -> requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_ringtone, audioManager.getStreamMaxVolume(STREAM_TYPE_RING)) }, EMPTY_STRING)
+        STREAM_TYPE_ALARM -> requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_alarm, audioManager.getStreamMaxVolume(STREAM_TYPE_ALARM)) }, EMPTY_STRING)
+        STREAM_TYPE_ALL -> requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_all, getMaxSteps(audioManager)) }, EMPTY_STRING)
+        else -> App.transformApp({ app -> app.getString(R.string.audio_stream_default) }, EMPTY_STRING)
     }
 
     private fun normalizePercentageForStream(percentage: Int, streamType: Int, audioManager: AudioManager): Int {

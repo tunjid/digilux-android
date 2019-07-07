@@ -40,7 +40,7 @@ class AudioStreamViewHolder(
         val hasDoNotDisturbAccess = App.hasDoNotDisturbAccess()
         if (!hasDoNotDisturbAccess) adapterListener.requestPermission(DO_NOT_DISTURB_CODE)
 
-        val gestureConsumer = AudioGestureConsumer.getInstance()
+        val gestureConsumer = AudioGestureConsumer.instance
 
         radioGroup.check(gestureConsumer.checkedId)
         radioGroup.setOnCheckedChangeListener { _, checkedId -> onStreamPicked(checkedId) }
@@ -56,7 +56,7 @@ class AudioStreamViewHolder(
     }
 
     private fun onStreamPicked(checkedId: Int) {
-        AudioGestureConsumer.getInstance().streamType = checkedId
+        AudioGestureConsumer.instance.streamType = checkedId
         adapterListener.notifyItemChanged(AUDIO_DELTA)
     }
 }

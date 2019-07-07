@@ -63,17 +63,17 @@ class PopupActivity : AppCompatActivity() {
 
         val items = ArrayList<Int>()
         val spanSizer = AtomicInteger(0)
-        val backgroundManager = BackgroundManager.getInstance()
+        val backgroundManager = BackgroundManager.instance
 
         val listManager = ListManagerBuilder<ActionViewHolder, Void>()
                 .withRecyclerView(findViewById(R.id.item_list))
                 .withGridLayoutManager(6)
-                .withAdapter(ActionAdapter(true, true, items, ActionAdapter.ActionClickListener { this.onActionClicked(it) }))
+                .withAdapter(ActionAdapter(isHorizontal = true, showsText = true, list = items, listener = object : ActionAdapter.ActionClickListener {
+                    override fun onActionClicked(actionRes: Int) = this@PopupActivity.onActionClicked(actionRes)
+                }))
                 .onLayoutManager { manager ->
-                    (manager as GridLayoutManager).spanSizeLookup = object : SpanSizeLookup() {
-                        override fun getSpanSize(position: Int): Int {
-                            return spanSizer.get()
-                        }
+                    (manager as? GridLayoutManager)?.spanSizeLookup = object : SpanSizeLookup() {
+                        override fun getSpanSize(position: Int): Int = spanSizer.get()
                     }
                 }
                 .build()
@@ -82,7 +82,7 @@ class PopupActivity : AppCompatActivity() {
         text.setTextColor(backgroundManager.sliderColor)
         this.findViewById<MaterialCardView>(R.id.card).setCardBackgroundColor(backgroundManager.backgroundColor)
 
-        disposables.add(App.diff(items) { PopUpGestureConsumer.getInstance().list }.subscribe({ result ->
+        disposables.add(App.diff(items) { PopUpGestureConsumer.instance.list }.subscribe({ result ->
             val size = items.size
             listManager.onDiff(result)
             spanSizer.set(if (size == 1) 6 else if (size == 2) 3 else 2)
@@ -98,7 +98,7 @@ class PopupActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (PopUpGestureConsumer.getInstance().shouldAnimatePopup())
+        if (PopUpGestureConsumer.instance.shouldAnimatePopup())
             overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
     }
 
@@ -109,7 +109,7 @@ class PopupActivity : AppCompatActivity() {
 
     override fun finish() {
         super.finish()
-        val shouldAnimate = PopUpGestureConsumer.getInstance().shouldAnimatePopup()
+        val shouldAnimate = PopUpGestureConsumer.instance.shouldAnimatePopup()
         if (shouldAnimate)
             overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
         else
@@ -119,7 +119,7 @@ class PopupActivity : AppCompatActivity() {
 
     private fun onActionClicked(@GestureConsumer.GestureAction action: Int) {
         finish()
-        GestureMapper.getInstance().performAction(action)
+        GestureMapper.instance.performAction(action)
     }
 }
 

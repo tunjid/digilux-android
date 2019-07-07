@@ -28,7 +28,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 
 class AdFreeViewHolder(itemView: View, listener: AppAdapter.AppAdapterListener) : AppViewHolder(itemView, listener) {
 
-    private val purchasesManager: PurchasesManager = PurchasesManager.getInstance()
+    private val purchasesManager: PurchasesManager = PurchasesManager.instance
     private val title: TextView = itemView.findViewById(R.id.title)
 
     override fun bind() {

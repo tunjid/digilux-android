@@ -55,7 +55,6 @@ import io.reactivex.schedulers.Schedulers.computation
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
-import java.util.function.IntConsumer
 
 class BackgroundManager private constructor() {
 
@@ -76,9 +75,9 @@ class BackgroundManager private constructor() {
         }
 
     var sliderDurationPercentage: Int
-        @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
+        @IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
         get() = App.transformApp({ app -> app.preferences.getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT) }, GestureConsumer.FIFTY_PERCENT)
-        set(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
+        set(@IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
             duration) {
             App.withApp { app -> app.preferences.edit().putInt(SLIDER_DURATION, duration).apply() }
         }
@@ -88,8 +87,8 @@ class BackgroundManager private constructor() {
 
     val screenAspectRatio: IntArray?
         get() {
-            val displayMetrics = App.transformApp { app -> app.getResources().getDisplayMetrics() }
-            return if (displayMetrics == null) null else intArrayOf(displayMetrics!!.widthPixels, displayMetrics!!.heightPixels)
+            val displayMetrics = App.transformApp { app -> app.resources.displayMetrics }
+            return if (displayMetrics == null) null else intArrayOf(displayMetrics.widthPixels, displayMetrics.heightPixels)
         }
 
     val screenDimensionRatio: String
@@ -122,14 +121,13 @@ class BackgroundManager private constructor() {
         return App.transformApp({ app -> app.getString(R.string.duration_value, seconds) }, App.EMPTY)
     }
 
-    fun requestWallPaperConstant(@StringRes titleRes: Int, context: Context, consumer: IntConsumer) {
+    fun requestWallPaperConstant(@StringRes titleRes: Int, context: Context, consumer: (Int) -> Unit) {
         AlertDialog.Builder(context)
                 .setTitle(titleRes)
                 .setItems(wallpaperTargets) { _, index ->
-                    consumer.accept(if (index == 0)
-                        DAY_WALLPAPER_PICK_CODE
-                    else
-                        NIGHT_WALLPAPER_PICK_CODE)
+                    consumer.invoke(
+                            if (index == 0) DAY_WALLPAPER_PICK_CODE
+                            else NIGHT_WALLPAPER_PICK_CODE)
                 }
                 .show()
     }
@@ -267,25 +265,22 @@ class BackgroundManager private constructor() {
             INVALID_WALLPAPER_PICK_CODE
     }
 
-    private fun reInitializeWallpaperChange(@WallpaperSelection selection: Int) {
-        App.withApp { app ->
-            val preferences = app.preferences
-            val isDay = selection == DAY_WALLPAPER_PICK_CODE
-            val hasCalendar = preferences.getBoolean(if (isDay) DAY_WALLPAPER_SET else NIGHT_WALLPAPER_SET, false)
-            if (!hasCalendar) return@App.withApp { }
+    private fun reInitializeWallpaperChange(@WallpaperSelection selection: Int) = App.withApp { app ->
+        val preferences = app.preferences
+        val isDay = selection == DAY_WALLPAPER_PICK_CODE
+        val hasCalendar = preferences.getBoolean(if (isDay) DAY_WALLPAPER_SET else NIGHT_WALLPAPER_SET, false)
+        if (!hasCalendar) return@withApp
 
-            val calendar = getMainWallpaperCalendar(selection)
-            setWallpaperChangeTime(selection, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
-        }
+        val calendar = getMainWallpaperCalendar(selection)
+        setWallpaperChangeTime(selection, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
     }
 
     private fun setWallpaperChangeTime(@WallpaperSelection selection: Int, hourOfDay: Int, minute: Int, adding: Boolean) {
-        val hour = if (hourOfDay > 12 && selection == DAY_WALLPAPER_PICK_CODE)
-            hourOfDay - 12
-        else if (hourOfDay < 12 && selection == NIGHT_WALLPAPER_PICK_CODE)
-            hourOfDay + 12
-        else
-            hourOfDay
+        val hour = when {
+            hourOfDay > 12 && selection == DAY_WALLPAPER_PICK_CODE -> hourOfDay - 12
+            hourOfDay < 12 && selection == NIGHT_WALLPAPER_PICK_CODE -> hourOfDay + 12
+            else -> hourOfDay
+        }
 
         val isDayWallpaper = selection == DAY_WALLPAPER_PICK_CODE
 
@@ -303,7 +298,7 @@ class BackgroundManager private constructor() {
                 ?: return
 
         val alarmIntent = getWallpaperPendingIntent(selection)
-        alarmManager!!.setRepeating(RTC_WAKEUP, calendar.timeInMillis, INTERVAL_DAY, alarmIntent)
+        alarmManager.setRepeating(RTC_WAKEUP, calendar.timeInMillis, INTERVAL_DAY, alarmIntent)
     }
 
     @TargetApi(Build.VERSION_CODES.O_MR1)

@@ -25,7 +25,7 @@ import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.App.Companion.withApp
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.ACTION_TOGGLE_DOCK
+import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.Companion.ACTION_TOGGLE_DOCK
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class DockingActivity : AppCompatActivity() {
@@ -39,7 +39,7 @@ class DockingActivity : AppCompatActivity() {
         wasMultiWindowMode = savedInstanceState != null && savedInstanceState.getBoolean(CONFIGURATION_CHANGE_KEY)
         setContentView(R.layout.activity_docking)
         findViewById<View>(R.id.logo).visibility = if (isInMultiWindowMode) View.VISIBLE else View.GONE
-        findViewById<View>(R.id.constraint_layout).setBackgroundColor(BackgroundManager.getInstance().backgroundColor)
+        findViewById<View>(R.id.constraint_layout).setBackgroundColor(BackgroundManager.instance.backgroundColor)
         handleIntent(false)
     }
 

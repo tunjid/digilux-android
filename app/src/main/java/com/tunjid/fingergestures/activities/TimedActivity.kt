@@ -41,7 +41,7 @@ abstract class TimedActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_brightness)
 
-        backgroundManager = BackgroundManager.getInstance()
+        backgroundManager = BackgroundManager.instance
 
         val window = window
         window.setLayout(MATCH_PARENT, MATCH_PARENT)
@@ -71,7 +71,7 @@ abstract class TimedActivity : AppCompatActivity() {
     }
 
     private fun countdownDisposable(): Disposable {
-        return Flowable.interval(backgroundManager.sliderDurationMillis.toLong(), MILLISECONDS).subscribe({ i ->
+        return Flowable.interval(backgroundManager.sliderDurationMillis.toLong(), MILLISECONDS).subscribe({
             if (LocalTime.now().isBefore(endTime)) return@subscribe
             reference.get().dispose()
             finish()

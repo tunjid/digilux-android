@@ -46,8 +46,8 @@ class LinkViewHolder(
 
     companion object {
 
-        private val APP_URI = "market://details?id=com.tunjid.fingergestures"
-        private val SUPPORT_LINK = "https://github.com/tunjid/digilux-android/issues"
+        private const val APP_URI = "market://details?id=com.tunjid.fingergestures"
+        private const val SUPPORT_LINK = "https://github.com/tunjid/digilux-android/issues"
 
         val REVIEW_LINK_ITEM = LinkItem(R.string.review_app, R.drawable.ic_rate_review_white_24dp, APP_URI)
         val SUPPORT_LINK_ITEM = LinkItem(R.string.help_support, R.drawable.ic_help_24dp, SUPPORT_LINK)

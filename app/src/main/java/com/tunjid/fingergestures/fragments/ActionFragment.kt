@@ -23,7 +23,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.ViewModelProviders
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
@@ -32,20 +34,16 @@ import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_DOWN_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_LEFT_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_RIGHT_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_UP_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModelProviders
-
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_DOWN_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_LEFT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_RIGHT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOUBLE_UP_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE
 import com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_DOWN_ICON
 import com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_LEFT_ICON
 import com.tunjid.fingergestures.viewmodels.AppViewModel.MAP_RIGHT_ICON
@@ -78,11 +76,7 @@ class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener
     }
 
     override fun onActionClicked(@GestureConsumer.GestureAction actionRes: Int) {
-        val args = arguments
-        if (args == null) {
-            showSnackbar(R.string.generic_error)
-            return
-        }
+        val args = arguments ?: return showSnackbar(R.string.generic_error)
 
         @GestureMapper.GestureDirection
         val direction = args.getString(ARG_DIRECTION)
@@ -93,12 +87,12 @@ class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener
 
         val fragment = currentAppFragment ?: return
 
-        val mapper = GestureMapper.getInstance()
+        val mapper = GestureMapper.instance
 
         if (isPopUpInstance) {
             val context = requireContext()
             when {
-                PopUpGestureConsumer.getInstance().addToSet(actionRes) -> fragment.notifyItemChanged(POPUP_ACTION)
+                PopUpGestureConsumer.instance.addToSet(actionRes) -> fragment.notifyItemChanged(POPUP_ACTION)
                 else -> AlertDialog.Builder(context)
                         .setTitle(R.string.go_premium_title)
                         .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))

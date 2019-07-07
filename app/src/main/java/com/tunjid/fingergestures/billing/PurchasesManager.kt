@@ -49,19 +49,22 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
         get() = if (!hasLockedContent()) true else !isNotPremium
 
     //        if (BuildConfig.DEV) return true;
-    fun isPremiumNotTrial(): Boolean = if (!hasLockedContent()) true else App.transformApp({ app -> getPurchaseSet(app).contains(PREMIUM_SKU) }, false)
+    val isPremiumNotTrial: Boolean
+        get() = if (!hasLockedContent()) true else App.transformApp({ app -> getPurchaseSet(app).contains(PREMIUM_SKU) }, false)
 
-    fun isTrialRunning(): Boolean = trialFlowable != null
+    val isTrialRunning: Boolean
+        get() = trialFlowable != null
 
-    fun getTrialPeriodText(): String {
-        if (isTrialRunning())
-            return App.transformApp({ app -> app.getString(R.string.trial_running) }, App.EMPTY)
+    val trialPeriodText: String
+        get() {
+            if (isTrialRunning)
+                return App.transformApp({ app -> app.getString(R.string.trial_running) }, App.EMPTY)
 
-        val trialPeriod = trialPeriod
-        val periodText = if (trialPeriod == FIRST_TRIAL_PERIOD) "10m" else if (trialPeriod == SECOND_TRIAL_PERIOD) "60s" else "10s"
+            val trialPeriod = trialPeriod
+            val periodText = if (trialPeriod == FIRST_TRIAL_PERIOD) "10m" else if (trialPeriod == SECOND_TRIAL_PERIOD) "60s" else "10s"
 
-        return App.transformApp({ app -> app.getString(R.string.trial_text, periodText) }, App.EMPTY)
-    }
+            return App.transformApp({ app -> app.getString(R.string.trial_text, periodText) }, App.EMPTY)
+        }
 
     private val trialPeriod: Int
         get() = if (numTrials == 0) FIRST_TRIAL_PERIOD else if (numTrials == 1) SECOND_TRIAL_PERIOD else FINAL_TRIAL_PERIOD

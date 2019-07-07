@@ -79,7 +79,7 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
     }
 
     private fun canAddToSet(preferenceName: String): Boolean =
-            setManager.getSet(preferenceName).size < 2 || PurchasesManager.instance.isPremiumNotTrial()
+            setManager.getSet(preferenceName).size < 2 || PurchasesManager.instance.isPremiumNotTrial
 
     companion object {
 

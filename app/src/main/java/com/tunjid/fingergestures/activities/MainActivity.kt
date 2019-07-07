@@ -65,13 +65,13 @@ import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
 import com.tunjid.fingergestures.App.Companion.withApp
 import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.BackgroundManager.ACTION_EDIT_WALLPAPER
-import com.tunjid.fingergestures.BackgroundManager.ACTION_NAV_BAR_CHANGED
+import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_EDIT_WALLPAPER
+import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_NAV_BAR_CHANGED
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.TrialView
 import com.tunjid.fingergestures.baseclasses.FingerGestureActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.billing.PurchasesManager.ACTION_LOCKED_CONTENT_CHANGED
+import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.models.UiState
@@ -100,7 +100,7 @@ class MainActivity : FingerGestureActivity() {
     private lateinit var viewModel: AppViewModel
 
     private val navBarColor: Int
-        get() = ContextCompat.getColor(this, if (BackgroundManager.getInstance().usesColoredNav())
+        get() = ContextCompat.getColor(this, if (BackgroundManager.instance.usesColoredNav())
             R.color.colorPrimary
         else
             R.color.black)
@@ -173,7 +173,7 @@ class MainActivity : FingerGestureActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (PurchasesManager.getInstance().hasAds())
+        if (PurchasesManager.instance.hasAds())
             shill()
         else
             hideAds()
@@ -192,7 +192,7 @@ class MainActivity : FingerGestureActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val item = menu.findItem(R.id.action_start_trial)
-        val isTrialVisible = !PurchasesManager.getInstance().isPremiumNotTrial
+        val isTrialVisible = !PurchasesManager.instance.isPremiumNotTrial
 
         if (item != null) item.isVisible = isTrialVisible
         if (isTrialVisible && item != null) item.actionView = TrialView(this, item)
@@ -202,7 +202,7 @@ class MainActivity : FingerGestureActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_start_trial -> {
-                val purchasesManager = PurchasesManager.getInstance()
+                val purchasesManager = PurchasesManager.instance
                 val isTrialRunning = purchasesManager.isTrialRunning
 
                 withSnackbar { snackbar ->
@@ -317,12 +317,11 @@ class MainActivity : FingerGestureActivity() {
 
         showFragment(toShow)
 
-        BackgroundManager.getInstance().requestWallPaperConstant(R.string.choose_target, this) { selection ->
+        BackgroundManager.instance.requestWallPaperConstant(R.string.choose_target, this) { selection ->
             val shown = supportFragmentManager.findFragmentByTag(tag) as AppFragment?
-            if (shown != null && shown.isVisible)
-                shown.cropImage(imageUri, selection)
-            else
-                showSnackbar(R.string.error_wallpaper)
+
+            if (shown != null && shown.isVisible) shown.cropImage(imageUri, selection)
+            else showSnackbar(R.string.error_wallpaper)
         }
     }
 

@@ -53,7 +53,7 @@ class DiscreteBrightnessViewHolder(
         get() = javaClass.simpleName
 
     override val listSupplier: () -> List<String>
-        get() = { BrightnessGestureConsumer.getInstance().discreteBrightnessValues }
+        get() = { BrightnessGestureConsumer.instance.discreteBrightnessValues }
 
     init {
 
@@ -89,7 +89,7 @@ class DiscreteBrightnessViewHolder(
         return ListManagerBuilder<DiscreteItemViewHolder, Void>()
                 .withAdapter(DiscreteBrightnessAdapter(items, object : DiscreteBrightnessAdapter.BrightnessValueClickListener {
                     override fun onDiscreteBrightnessClicked(discreteValue: String) {
-                        BrightnessGestureConsumer.getInstance().removeDiscreteBrightnessValue(discreteValue)
+                        BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(discreteValue)
                         adapterListener.notifyItemChanged(SLIDER_DELTA)
                         bind()
                     }
@@ -110,7 +110,7 @@ class DiscreteBrightnessViewHolder(
         }
 
         if (isValidValue(value)) {
-            BrightnessGestureConsumer.getInstance().addDiscreteBrightnessValue(discreteValue)
+            BrightnessGestureConsumer.instance.addDiscreteBrightnessValue(discreteValue)
             adapterListener.notifyItemChanged(SLIDER_DELTA)
             bind()
         }

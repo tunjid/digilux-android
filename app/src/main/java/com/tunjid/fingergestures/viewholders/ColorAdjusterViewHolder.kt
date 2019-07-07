@@ -46,7 +46,7 @@ class ColorAdjusterViewHolder(
     init {
         val context = itemView.context
 
-        backgroundManager = BackgroundManager.getInstance()
+        backgroundManager = BackgroundManager.instance
 
         backgroundIndicator = itemView.findViewById(R.id.slider_background_color_indicator)
         sliderIndicator = itemView.findViewById(R.id.slider_color_indicator)
@@ -136,7 +136,7 @@ class ColorAdjusterViewHolder(
     }
 
     private fun getColorFromWallpaper(indicator: View) {
-        if (PurchasesManager.getInstance().isNotPremium) return goPremium(R.string.premium_prompt_slider)
+        if (PurchasesManager.instance.isNotPremium) return goPremium(R.string.premium_prompt_slider)
 
         AlertDialog.Builder(indicator.context)
                 .setTitle(R.string.choose_target)

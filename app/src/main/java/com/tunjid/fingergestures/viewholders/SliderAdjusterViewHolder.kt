@@ -17,17 +17,12 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import android.view.View
 import android.widget.SeekBar
 import android.widget.TextView
-
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
 import com.tunjid.fingergestures.R
-
-import java.util.function.Consumer
-import java.util.function.Function
-import java.util.function.Supplier
 
 class SliderAdjusterViewHolder(itemView: View,
                                @StringRes titleRes: Int,

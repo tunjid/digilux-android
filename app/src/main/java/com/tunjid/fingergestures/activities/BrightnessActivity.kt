@@ -18,6 +18,7 @@
 package com.tunjid.fingergestures.activities
 
 import android.content.Intent
+import android.graphics.PorterDuff.Mode.SRC_IN
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
@@ -26,15 +27,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
-
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
-
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
-
-import android.graphics.PorterDuff.Mode.SRC_IN
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.CURRENT_BRIGHTNESS_BYTE
+import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.CURRENT_BRIGHTNESS_BYTE
 
 class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
 
@@ -50,7 +47,7 @@ class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_brightness)
 
-        brightnessGestureConsumer = BrightnessGestureConsumer.getInstance()
+        brightnessGestureConsumer = BrightnessGestureConsumer.instance
 
         val sliderColor = backgroundManager.sliderColor
         val sliderBackgroundColor = backgroundManager.backgroundColor
@@ -100,13 +97,13 @@ class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
     }
 
     override fun onProgressChanged(seekBar: SeekBar, percentage: Int, fromUser: Boolean) {
-        var percentage = percentage
+        var value = percentage
         updateEndTime()
 
         if (!fromUser) return
-        if (percentage == 100) percentage--
+        if (value == 100) value--
 
-        brightnessByte = brightnessGestureConsumer.percentToByte(percentage)
+        brightnessByte = brightnessGestureConsumer.percentToByte(value)
         brightnessGestureConsumer.saveBrightness(brightnessByte)
 
         if (seekBarText.visibility != View.VISIBLE) return

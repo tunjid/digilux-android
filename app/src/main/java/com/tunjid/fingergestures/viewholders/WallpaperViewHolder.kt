@@ -28,8 +28,8 @@ import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.Picasso
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.BackgroundManager.DAY_WALLPAPER_PICK_CODE
-import com.tunjid.fingergestures.BackgroundManager.NIGHT_WALLPAPER_PICK_CODE
+import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
+import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapter
@@ -39,7 +39,7 @@ class WallpaperViewHolder(
         appAdapterListener: AppAdapter.AppAdapterListener
 ) : AppViewHolder(itemView, appAdapterListener) {
 
-    private val backgroundManager: BackgroundManager = BackgroundManager.getInstance()
+    private val backgroundManager: BackgroundManager = BackgroundManager.instance
     private val current: ImageView = itemView.findViewById(R.id.current_wallpaper)
     private val day: ImageView = itemView.findViewById(R.id.main_wallpaper)
     private val night: ImageView = itemView.findViewById(R.id.alt_wallpaper)

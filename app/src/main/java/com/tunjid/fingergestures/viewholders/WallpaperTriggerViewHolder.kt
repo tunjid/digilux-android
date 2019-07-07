@@ -25,8 +25,8 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.BackgroundManager.DAY_WALLPAPER_PICK_CODE
-import com.tunjid.fingergestures.BackgroundManager.NIGHT_WALLPAPER_PICK_CODE
+import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
+import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.AppAdapter
 import java.text.SimpleDateFormat
@@ -39,7 +39,7 @@ class WallpaperTriggerViewHolder(
         appAdapterListener: AppAdapter.AppAdapterListener
 ) : AppViewHolder(itemView, appAdapterListener) {
 
-    private val backgroundManager: BackgroundManager = BackgroundManager.getInstance()
+    private val backgroundManager: BackgroundManager = BackgroundManager.instance
     private val start: TextView = itemView.findViewById(R.id.start)
     private val end: TextView = itemView.findViewById(R.id.end)
 

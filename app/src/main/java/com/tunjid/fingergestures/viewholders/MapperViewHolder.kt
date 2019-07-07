@@ -29,11 +29,11 @@ import com.tunjid.fingergestures.adapters.AppAdapter
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.GestureDirection
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE
 
 class MapperViewHolder(
         itemView: View,
@@ -44,7 +44,7 @@ class MapperViewHolder(
     private val title: TextView
     private val subtitle: TextView
 
-    private val mapper: GestureMapper = GestureMapper.getInstance()
+    private val mapper: GestureMapper = GestureMapper.instance
 
     @GestureDirection
     private val doubleDirection: String
@@ -69,7 +69,7 @@ class MapperViewHolder(
         subtitle.text = getFormattedText(doubleDirection, mapper.getMappedAction(doubleDirection))
 
         subtitle.setOnClickListener {
-            val notPremium = PurchasesManager.getInstance().isNotPremium
+            val notPremium = PurchasesManager.instance.isNotPremium
 
             if (notPremium) goPremium(R.string.premium_prompt_double_swipe)
             else onClick(doubleDirection)
@@ -80,7 +80,7 @@ class MapperViewHolder(
             adapterListener.showBottomSheetFragment(ActionFragment.directionInstance(direction))
 
     private fun getFormattedText(@GestureDirection direction: String, text: String): CharSequence {
-        val mapper = GestureMapper.getInstance()
+        val mapper = GestureMapper.instance
         val context = itemView.context
         return SpanBuilder.format(context.getString(R.string.mapper_format),
                 SpanBuilder.of(mapper.getDirectionName(direction)).bold().build(),

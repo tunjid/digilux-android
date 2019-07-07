@@ -30,7 +30,7 @@ import com.tunjid.fingergestures.adapters.AppAdapter
 import com.tunjid.fingergestures.adapters.PackageAdapter
 import com.tunjid.fingergestures.fragments.PackageFragment
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS
+import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
 
 class RotationViewHolder(itemView: View,
                          @param:RotationGestureConsumer.PersistedSet override val sizeCacheKey: String,
@@ -39,11 +39,11 @@ class RotationViewHolder(itemView: View,
 ) : DiffViewHolder<ApplicationInfo>(itemView, items, listener) {
 
     override val listSupplier: () -> List<ApplicationInfo>
-        get() = { RotationGestureConsumer.getInstance().getList(sizeCacheKey) }
+        get() = { RotationGestureConsumer.instance.getList(sizeCacheKey) }
 
     private val packageClickListener = object : PackageAdapter.PackageClickListener {
         override fun onPackageClicked(packageName: String) {
-            val gestureConsumer = RotationGestureConsumer.getInstance()
+            val gestureConsumer = RotationGestureConsumer.instance
             val builder = AlertDialog.Builder(itemView.context)
 
             when {
@@ -66,7 +66,7 @@ class RotationViewHolder(itemView: View,
         itemView.findViewById<View>(R.id.add).setOnClickListener {
             when {
                 !App.canWriteToSettings() -> AlertDialog.Builder(itemView.context).setMessage(R.string.permission_required).show()
-                !RotationGestureConsumer.getInstance().canAutoRotate() -> AlertDialog.Builder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
+                !RotationGestureConsumer.instance.canAutoRotate() -> AlertDialog.Builder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
                 else -> adapterListener.showBottomSheetFragment(PackageFragment.newInstance(sizeCacheKey))
             }
         }

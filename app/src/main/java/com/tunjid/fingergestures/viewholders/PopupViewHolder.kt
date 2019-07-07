@@ -37,14 +37,14 @@ class PopupViewHolder(itemView: View, items: List<Int>, listener: AppAdapter.App
         get() = javaClass.simpleName
 
     override val listSupplier: () -> List<Int>
-        get() = { PopUpGestureConsumer.getInstance().list }
+        get() = { PopUpGestureConsumer.instance.list }
 
     init {
 
         itemView.findViewById<View>(R.id.add).setOnClickListener {
             when {
                 !App.canWriteToSettings() -> AlertDialog.Builder(itemView.context).setMessage(R.string.permission_required).show()
-                !PopUpGestureConsumer.getInstance().hasAccessibilityButton() -> AlertDialog.Builder(itemView.context).setMessage(R.string.popup_prompt).show()
+                !PopUpGestureConsumer.instance.hasAccessibilityButton() -> AlertDialog.Builder(itemView.context).setMessage(R.string.popup_prompt).show()
                 else -> adapterListener.showBottomSheetFragment(ActionFragment.popUpInstance())
             }
         }
@@ -77,7 +77,7 @@ class PopupViewHolder(itemView: View, items: List<Int>, listener: AppAdapter.App
     }
 
     private fun onActionClicked(@GestureConsumer.GestureAction action: Int) {
-        val buttonManager = PopUpGestureConsumer.getInstance()
+        val buttonManager = PopUpGestureConsumer.instance
 
         val builder = AlertDialog.Builder(itemView.context)
 

@@ -20,35 +20,33 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-
 import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.ActionAdapter
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.DO_NOTHING
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_BACK
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_HOME
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_LOCK_SCREEN
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_POWER_DIALOG
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_RECENTS
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_SPLIT_SCREEN
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_TAKE_SCREENSHOT
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.INCREASE_AUDIO
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.INCREASE_BRIGHTNESS
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.MAXIMIZE_BRIGHTNESS
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.MINIMIZE_BRIGHTNESS
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.NOTIFICATION_DOWN
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.NOTIFICATION_TOGGLE
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.NOTIFICATION_UP
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.REDUCE_AUDIO
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.REDUCE_BRIGHTNESS
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.SHOW_POPUP
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_AUTO_ROTATE
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_DOCK
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_FLASHLIGHT
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_HOME
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_LOCK_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_TAKE_SCREENSHOT
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.SHOW_POPUP
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_DOCK
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT
 
 
 class ActionViewHolder(
@@ -65,10 +63,10 @@ class ActionViewHolder(
     fun bind(@GestureConsumer.GestureAction action: Int) {
         this.action = action
 
-        val backgroundManager = BackgroundManager.getInstance()
+        val backgroundManager = BackgroundManager.instance
 
         textView.visibility = if (showsText) View.VISIBLE else View.GONE
-        textView.setText(GestureMapper.getInstance().resourceForAction(action))
+        textView.setText(GestureMapper.instance.resourceForAction(action))
 
         val iconRes = actionToIcon(action)
         val iconColor = backgroundManager.sliderColor
