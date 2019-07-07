@@ -82,7 +82,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
 
     var isDimmerEnabled: Boolean
         get() = (hasOverlayPermission()
-                && PurchasesManager.getInstance().isPremium
+                && PurchasesManager.instance.isPremium
                 && App.transformApp({ app -> app.preferences.getBoolean(SCREEN_DIMMER_ENABLED, false) }, false))
         set(enabled) {
             App.withApp { app -> app.preferences.edit().putBoolean(SCREEN_DIMMER_ENABLED, enabled).apply() }
@@ -154,7 +154,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
 
         val threshold = adaptiveThresholdToLux(adaptiveBrightnessThreshold)
         val restoresAdaptiveBrightness = restoresAdaptiveBrightnessOnDisplaySleep()
-        val toggleAndLeave = restoresAdaptiveBrightness && PurchasesManager.getInstance().isNotPremium
+        val toggleAndLeave = restoresAdaptiveBrightness && PurchasesManager.instance.isNotPremium
 
         if (!restoresAdaptiveBrightness) return
 
@@ -221,92 +221,71 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     private fun adjustByte(byteValue: Int, increase: Boolean): Int {
         val delta = incrementPercentage
         var asPercentage = byteToPercentage(byteValue)
-        if (increase)
-            asPercentage = Math.min(asPercentage + delta, 100)
-        else
-            asPercentage = Math.max(asPercentage - delta, 0)
+
+        asPercentage = if (increase) min(asPercentage + delta, 100)
+        else max(asPercentage - delta, 0)
 
         return percentToByte(asPercentage)
     }
 
     private fun setDimmerPercent(@FloatRange(from = GestureConsumer.ZERO_PERCENT.toDouble(), to = GestureConsumer.HUNDRED_PERCENT.toDouble())
-                                 percentage: Float) {
-        App.withApp { app -> app.preferences.edit().putFloat(SCREEN_DIMMER_DIM_PERCENT, percentage).apply() }
-    }
+                                 percentage: Float) =
+            App.withApp { app -> app.preferences.edit().putFloat(SCREEN_DIMMER_DIM_PERCENT, percentage).apply() }
 
-    fun shouldRestoreAdaptiveBrightnessOnDisplaySleep(restore: Boolean) {
-        App.withApp { app -> app.preferences.edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply() }
-    }
+    fun shouldRestoreAdaptiveBrightnessOnDisplaySleep(restore: Boolean) =
+            App.withApp { app -> app.preferences.edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply() }
 
-    fun shouldUseLogarithmicScale(isLogarithmic: Boolean) {
-        App.withApp { app -> app.preferences.edit().putBoolean(LOGARITHMIC_SCALE, isLogarithmic).apply() }
-    }
+    fun shouldUseLogarithmicScale(isLogarithmic: Boolean) =
+            App.withApp { app -> app.preferences.edit().putBoolean(LOGARITHMIC_SCALE, isLogarithmic).apply() }
 
-    fun setSliderVisible(visible: Boolean) {
-        App.withApp { app -> app.preferences.edit().putBoolean(SLIDER_VISIBLE, visible).apply() }
-    }
+    fun setSliderVisible(visible: Boolean) =
+            App.withApp { app -> app.preferences.edit().putBoolean(SLIDER_VISIBLE, visible).apply() }
 
-    fun setAnimatesSlider(visible: Boolean) {
-        App.withApp { app -> app.preferences.edit().putBoolean(ANIMATES_SLIDER, visible).apply() }
-    }
+    fun setAnimatesSlider(visible: Boolean) =
+            App.withApp { app -> app.preferences.edit().putBoolean(ANIMATES_SLIDER, visible).apply() }
 
-    fun restoresAdaptiveBrightnessOnDisplaySleep(): Boolean {
-        return App.transformApp({ app -> app.preferences.getBoolean(ADAPTIVE_BRIGHTNESS, false) }, false)
-    }
+    fun restoresAdaptiveBrightnessOnDisplaySleep(): Boolean =
+            App.transformApp({ app -> app.preferences.getBoolean(ADAPTIVE_BRIGHTNESS, false) }, false)
 
-    fun usesLogarithmicScale(): Boolean {
-        return App.transformApp({ app -> app.preferences.getBoolean(LOGARITHMIC_SCALE, App.isPieOrHigher) }, App.isPieOrHigher)
-    }
+    fun usesLogarithmicScale(): Boolean =
+            App.transformApp({ app -> app.preferences.getBoolean(LOGARITHMIC_SCALE, App.isPieOrHigher) }, App.isPieOrHigher)
 
-    fun supportsAmbientThreshold(): Boolean {
-        return (PurchasesManager.getInstance().isPremium
-                && restoresAdaptiveBrightnessOnDisplaySleep()
-                && hasBrightnessSensor())
-    }
+    fun supportsAmbientThreshold(): Boolean = (PurchasesManager.instance.isPremium
+            && restoresAdaptiveBrightnessOnDisplaySleep()
+            && hasBrightnessSensor())
 
-    fun hasOverlayPermission(): Boolean {
-        return App.transformApp(Settings::canDrawOverlays, false)
-    }
+    fun hasOverlayPermission(): Boolean = App.transformApp(Settings::canDrawOverlays, false)
 
-    fun shouldShowDimmer(): Boolean {
-        return screenDimmerDimPercent != MIN_DIM_PERCENT
-    }
+    fun shouldShowDimmer(): Boolean = screenDimmerDimPercent != MIN_DIM_PERCENT
 
-    fun shouldShowSlider(): Boolean {
-        return App.transformApp({ app -> app.preferences.getBoolean(SLIDER_VISIBLE, true) }, true)
-    }
+    fun shouldShowSlider(): Boolean =
+            App.transformApp({ app -> app.preferences.getBoolean(SLIDER_VISIBLE, true) }, true)
 
-    fun shouldAnimateSlider(): Boolean {
-        return App.transformApp({ app -> app.preferences.getBoolean(ANIMATES_SLIDER, true) }, true)
-    }
+    fun shouldAnimateSlider(): Boolean =
+            App.transformApp({ app -> app.preferences.getBoolean(ANIMATES_SLIDER, true) }, true)
 
-    fun canAdjustDelta(): Boolean {
-        return noDiscreteBrightness() || PurchasesManager.getInstance().isPremium
-    }
+    fun canAdjustDelta(): Boolean = noDiscreteBrightness() || PurchasesManager.instance.isPremium
 
     fun addDiscreteBrightnessValue(discreteValue: String) {
         discreteBrightnessManager.addToSet(discreteValue, DISCRETE_BRIGHTNESS_SET)
     }
 
-    fun removeDiscreteBrightnessValue(discreteValue: String) {
-        discreteBrightnessManager.removeFromSet(discreteValue, DISCRETE_BRIGHTNESS_SET)
-    }
+    fun removeDiscreteBrightnessValue(discreteValue: String) =
+            discreteBrightnessManager.removeFromSet(discreteValue, DISCRETE_BRIGHTNESS_SET)
 
-    fun getAdjustDeltaText(percentage: Int): String {
-        return App.transformApp({ app ->
-            if (PurchasesManager.getInstance().isPremium && !noDiscreteBrightness())
-                app.getString(R.string.delta_percent_premium, percentage)
-            else
-                app.getString(R.string.delta_percent, percentage)
-        }, EMPTY_STRING)
-    }
+    fun getAdjustDeltaText(percentage: Int): String = App.transformApp({ app ->
+        if (PurchasesManager.instance.isPremium && !noDiscreteBrightness())
+            app.getString(R.string.delta_percent_premium, percentage)
+        else
+            app.getString(R.string.delta_percent, percentage)
+    }, EMPTY_STRING)
 
     fun getAdaptiveBrightnessThresholdText(@IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
                                            percent: Int): String {
         if (!hasBrightnessSensor())
             return App.transformApp({ app -> app.getString(R.string.unavailable_brightness_sensor) }, EMPTY_STRING)
 
-        if (PurchasesManager.getInstance().isNotPremium)
+        if (PurchasesManager.instance.isNotPremium)
             return App.transformApp({ app -> app.getString(R.string.go_premium_text) }, EMPTY_STRING)
 
         if (!restoresAdaptiveBrightnessOnDisplaySleep())
@@ -315,12 +294,11 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         val lux = adaptiveThresholdToLux(percent)
 
         return App.transformApp({ app ->
-            val descriptor = app.getString(if (lux < 50)
-                R.string.adaptive_threshold_low
-            else if (lux < 1000)
-                R.string.adaptive_threshold_medium
-            else
-                R.string.adaptive_threshold_high)
+            val descriptor = app.getString(when {
+                lux < 50 -> R.string.adaptive_threshold_low
+                lux < 1000 -> R.string.adaptive_threshold_medium
+                else -> R.string.adaptive_threshold_high
+            })
 
             app.getString(R.string.adaptive_threshold, lux, descriptor)
         }, EMPTY_STRING)
@@ -333,23 +311,16 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         App.withApp { app -> app.broadcast(intent) }
     }
 
-    fun percentToByte(percentage: Int): Int {
-        return if (usesLogarithmicScale())
-            BrightnessLookup.lookup(percentage, false)
-        else
-            (percentage * MAX_BRIGHTNESS / 100).toInt()
-    }
+    fun percentToByte(percentage: Int): Int =
+            if (usesLogarithmicScale()) BrightnessLookup.lookup(percentage, false)
+            else (percentage * MAX_BRIGHTNESS / 100).toInt()
 
-    fun byteToPercentage(byteValue: Int): Int {
-        return if (usesLogarithmicScale())
-            BrightnessLookup.lookup(byteValue, true)
-        else
-            (byteValue * 100 / MAX_BRIGHTNESS).toInt()
-    }
+    fun byteToPercentage(byteValue: Int): Int =
+            if (usesLogarithmicScale()) BrightnessLookup.lookup(byteValue, true)
+            else (byteValue * 100 / MAX_BRIGHTNESS).toInt()
 
-    private fun adaptiveThresholdToLux(percentage: Int): Int {
-        return (percentage * MAX_ADAPTIVE_THRESHOLD / 100f).toInt()
-    }
+    private fun adaptiveThresholdToLux(percentage: Int): Int =
+            (percentage * MAX_ADAPTIVE_THRESHOLD / 100f).toInt()
 
     private fun findDiscreteBrightnessValue(byteValue: Int, increasing: Boolean): Int {
         val evaluated = if (byteValue < FUZZ_THRESHOLD) byteValue else if (increasing) byteValue + 2 else byteValue - 2
@@ -379,18 +350,16 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         val sensorManager = App.transformApp { app -> app.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
                 ?: return false
 
-        val lightSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_LIGHT)
+        val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         return lightSensor != null
     }
 
-    private fun shouldRemoveDimmerOnChange(@GestureConsumer.GestureAction gestureAction: Int): Boolean {
-        return (gestureAction == GestureConsumer.MINIMIZE_BRIGHTNESS || gestureAction == GestureConsumer.MAXIMIZE_BRIGHTNESS
-                || shouldShowDimmer() && PurchasesManager.getInstance().isNotPremium)
-    }
+    private fun shouldRemoveDimmerOnChange(@GestureConsumer.GestureAction gestureAction: Int): Boolean =
+            (gestureAction == GestureConsumer.MINIMIZE_BRIGHTNESS || gestureAction == GestureConsumer.MAXIMIZE_BRIGHTNESS
+                    || shouldShowDimmer() && PurchasesManager.instance.isNotPremium)
 
-    private fun noDiscreteBrightness(): Boolean {
-        return discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).isEmpty()
-    }
+    private fun noDiscreteBrightness(): Boolean =
+            discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).isEmpty()
 
     companion object {
 

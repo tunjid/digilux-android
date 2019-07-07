@@ -25,8 +25,6 @@ import android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GES
 import androidx.annotation.StringDef
 import androidx.annotation.StringRes
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.App.isPieOrHigher
-import com.tunjid.fingergestures.App.withApp
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.billing.PurchasesManager
@@ -51,31 +49,8 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.SHOW
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_AUTO_ROTATE
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_DOCK
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_FLASHLIGHT
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.DO_NOTHING
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_BACK
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_HOME
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_LOCK_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_POWER_DIALOG
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_RECENTS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_SPLIT_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.GLOBAL_TAKE_SCREENSHOT
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.INCREASE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MAXIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.MINIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_DOWN
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_TOGGLE
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.NOTIFICATION_UP
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.REDUCE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.SHOW_POPUP
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_AUTO_ROTATE
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_DOCK
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.TOGGLE_FLASHLIGHT
 import io.reactivex.Flowable.timer
 import io.reactivex.disposables.Disposable
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicReference
@@ -106,12 +81,12 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
                 .toIntArray()
 
     var doubleSwipeDelay: Int
-        get() = 
+        get() =
             App.transformApp({ app -> app.preferences.getInt(DOUBLE_SWIPE_DELAY, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE) }, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE)
         set(percentage) =
             App.withApp { app -> app.preferences.edit().putInt(DOUBLE_SWIPE_DELAY, percentage).apply() }
 
-    @Retention(RetentionPolicy.SOURCE)
+    @Retention(AnnotationRetention.SOURCE)
     @StringDef(UP_GESTURE, DOWN_GESTURE, LEFT_GESTURE, RIGHT_GESTURE, DOUBLE_UP_GESTURE, DOUBLE_DOWN_GESTURE, DOUBLE_LEFT_GESTURE, DOUBLE_RIGHT_GESTURE)
     annotation class GestureDirection
 
@@ -143,10 +118,6 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
             else
                 R.string.double_swipe_delay, delayPercentageToMillis(percentage))
         }, "")
-    }
-
-    override fun onGestureDetectionAvailabilityChanged(available: Boolean) {
-        super.onGestureDetectionAvailabilityChanged(available)
     }
 
     override fun onGestureDetected(raw: Int) {
@@ -196,11 +167,8 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
         if (hasPendingAction) doubleSwipeDisposable!!.dispose()
 
         doubleSwipeDisposable = timer(delayPercentageToMillis(doubleSwipeDelay).toLong(), MILLISECONDS)
-                .subscribe({ 
-                    val direction = directionReference.getAndSet(null)
-                            ?: return@subscribe delayPercentageToMillis(getDoubleSwipeDelay())
-                    , MILLISECONDS)
-                    .subscribe
+                .subscribe({
+                    val direction = directionReference.getAndSet(null) ?: return@subscribe
                     performAction(direction)
                 }, this::onError)
     }

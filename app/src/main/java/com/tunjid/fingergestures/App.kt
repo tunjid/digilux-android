@@ -39,11 +39,11 @@ import io.reactivex.Flowable.timer
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import io.reactivex.disposables.Disposable
+import io.reactivex.functions.Function
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.schedulers.Schedulers
 import org.reactivestreams.Publisher
 import java.util.concurrent.TimeUnit
-import java.util.function.Function
 
 class App : android.app.Application() {
     private val broadcaster = PublishProcessor.create<Intent>()
@@ -60,9 +60,8 @@ class App : android.app.Application() {
 
     // Wrap the subject so if there's an error downstream, it doesn't propagate back up to it.
     // This way, the broadcast stream should never error or terminate
-    fun broadcasts(): Flowable<Intent> {
-        return Flowable.defer { broadcaster }.onErrorResumeNext(Function<Throwable, Publisher<out Intent>> { this.logAndResume(it) })
-    }
+    fun broadcasts(): Flowable<Intent> =
+            Flowable.defer { broadcaster }.onErrorResumeNext(Function<Throwable, Publisher<out Intent>> { t -> this@App.logAndResume(t) })
 
     // Log the error, and re-wrap the broadcast processor
     private fun logAndResume(throwable: Throwable): Flowable<Intent> {

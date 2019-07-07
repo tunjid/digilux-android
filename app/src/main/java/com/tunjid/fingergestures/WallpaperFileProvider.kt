@@ -15,9 +15,9 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures;
+package com.tunjid.fingergestures
 
 
-import androidx.core.content.FileProvider;
+import androidx.core.content.FileProvider
 
-public class WallpaperFileProvider extends FileProvider {}
+class WallpaperFileProvider : FileProvider()

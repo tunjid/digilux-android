@@ -15,15 +15,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures;
+package com.tunjid.fingergestures
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
 
-public class WallpaperBroadcastReceiver extends BroadcastReceiver {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        BackgroundManager.Companion.getInstance().onIntentReceived(intent);
-    }
+class WallpaperBroadcastReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) =
+            BackgroundManager.instance.onIntentReceived(intent)
 }

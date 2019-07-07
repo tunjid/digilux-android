@@ -15,34 +15,20 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures;
+package com.tunjid.fingergestures
 
-import android.content.Context;
-import androidx.core.view.ActionProvider;
-import android.view.MenuItem;
-import android.view.View;
+import android.content.Context
+import androidx.core.view.ActionProvider
+import android.view.MenuItem
+import android.view.View
 
-@SuppressWarnings("unused") // Created via XML
-public class TrialViewActionProvider extends ActionProvider {
+// Created via XML
+@Suppress("unused")
+class TrialViewActionProvider(context: Context) : ActionProvider(context) {
 
-    public TrialViewActionProvider(Context context) {
-        super(context);
-    }
+    // Won't be called because of our min SDK version
+    override fun onCreateActionView(): View? = null
 
-    @Override
-    public View onCreateActionView() {
-        // Won't be called because of our min SDK version
-        return null;
-    }
-
-    @Override
-    public View onCreateActionView(MenuItem menuItem) {
-        return new TrialView(getContext(), menuItem);
-    }
-
-    @Override
-    public boolean onPerformDefaultAction() {
-        return super.onPerformDefaultAction();
-    }
+    override fun onCreateActionView(menuItem: MenuItem?): View = TrialView(context, menuItem!!)
 
 }

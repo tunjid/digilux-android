@@ -195,22 +195,22 @@ public class AppViewModel extends AndroidViewModel {
         boolean shouldRemove;
         Optional<Integer> result;
         switch (requestCode) {
-            case Companion.getSTORAGE_CODE():
+            case STORAGE_CODE:
                 result = Optional.of((shouldRemove = App.Companion.getHasStoragePermission())
                         ? R.string.storage_permission_granted
                         : R.string.storage_permission_denied);
                 break;
-            case Companion.getSETTINGS_CODE():
+            case SETTINGS_CODE:
                 result = Optional.of((shouldRemove = App.Companion.canWriteToSettings())
                         ? R.string.settings_permission_granted
                         : R.string.settings_permission_denied);
                 break;
-            case Companion.getACCESSIBILITY_CODE():
+            case ACCESSIBILITY_CODE:
                 result = Optional.of((shouldRemove = App.Companion.accessibilityServiceEnabled())
                         ? R.string.accessibility_permission_granted
                         : R.string.accessibility_permission_denied);
                 break;
-            case Companion.getDO_NOT_DISTURB_CODE():
+            case DO_NOT_DISTURB_CODE:
                 result = Optional.of((shouldRemove = App.Companion.hasDoNotDisturbAccess())
                         ? R.string.do_not_disturb_permission_granted
                         : R.string.do_not_disturb_permission_denied);
@@ -247,16 +247,16 @@ public class AppViewModel extends AndroidViewModel {
         switch (permissionRequest) {
             default:
                 return;
-            case Companion.getDO_NOT_DISTURB_CODE():
+            case DO_NOT_DISTURB_CODE:
                 uiState = uiState.glyph(R.string.enable_do_not_disturb, R.drawable.ic_volume_loud_24dp);
                 break;
-            case Companion.getACCESSIBILITY_CODE():
+            case ACCESSIBILITY_CODE:
                 uiState = uiState.glyph(R.string.enable_accessibility, R.drawable.ic_human_24dp);
                 break;
-            case Companion.getSETTINGS_CODE():
+            case SETTINGS_CODE:
                 uiState = uiState.glyph(R.string.enable_write_settings, R.drawable.ic_settings_white_24dp);
                 break;
-            case Companion.getSTORAGE_CODE():
+            case STORAGE_CODE:
                 uiState = uiState.glyph(R.string.enable_storage_settings, R.drawable.ic_storage_24dp);
                 break;
         }

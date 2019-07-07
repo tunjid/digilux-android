@@ -80,7 +80,7 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
         val preferences = App.transformApp(({ it.preferences })) ?: return
 
         val skus = HashSet<String>(preferences.getStringSet(PURCHASES, EMPTY))
-        purchases.filter(this::filterPurchases).map(Purchase::getSku).forEach(skus::add)
+        purchases.filter(this::filterPurchases).map(Purchase::getSku).forEach { skus.add(it) }
 
         preferences.edit().putStringSet(PURCHASES, skus).apply()
     }
@@ -98,7 +98,7 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
 
     fun hasNotGoneAdFree(): Boolean {
         if (!hasLockedContent()) return false
-        return if (isTrial) false else !App.transformApp({ app -> getPurchaseSet(app)!!.contains(AD_FREE_SKU) }, false)
+        return if (isTrial) false else !App.transformApp({ app -> getPurchaseSet(app).contains(AD_FREE_SKU) }, false)
     }
 
     fun hasAds(): Boolean {
@@ -140,9 +140,8 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
         return !TextUtils.isEmpty(purchase.originalJson)
     }
 
-    private fun getPurchaseSet(app: App): Set<String> {
-        return app.preferences.getStringSet(PURCHASES, EMPTY)
-    }
+    private fun getPurchaseSet(app: App): Set<String> =
+            app.preferences.getStringSet(PURCHASES, EMPTY) ?: EMPTY
 
     companion object {
 

@@ -28,7 +28,7 @@ import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.SetManager
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.services.FingerGestureService.ANDROID_SYSTEM_UI_PACKAGE
+import com.tunjid.fingergestures.services.FingerGestureService.Companion.ANDROID_SYSTEM_UI_PACKAGE
 import java.util.*
 
 class RotationGestureConsumer private constructor() : GestureConsumer {
@@ -144,7 +144,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
     private fun canAddToSet(preferenceName: String): Boolean {
         val set = setManager.getSet(preferenceName)
         val count = set.filter(this::isRemovable).count()
-        return count < 2 || PurchasesManager.getInstance().isPremiumNotTrial
+        return count < 2 || PurchasesManager.instance.isPremiumNotTrial
     }
 
     private fun compareApplicationInfo(infoA: ApplicationInfo, infoB: ApplicationInfo): Int {

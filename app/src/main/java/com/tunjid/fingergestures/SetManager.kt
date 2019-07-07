@@ -18,14 +18,9 @@
 package com.tunjid.fingergestures
 
 
-import java.util.Comparator
-import java.util.HashSet
-import java.util.Objects
-import java.util.function.Function
-import java.util.stream.Collectors
-import java.util.stream.Stream
+import java.util.*
 
-class SetManager<T>(private val sorter: Comparator<T>,
+class SetManager<T: Any>(private val sorter: Comparator<T>,
                     private val addFilter: (String) -> Boolean,
                     private val stringMapper: (String) -> T?,
                     private val objectMapper: (T) -> String) {

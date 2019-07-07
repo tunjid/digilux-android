@@ -75,8 +75,8 @@ import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKE
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.models.UiState
-import com.tunjid.fingergestures.services.FingerGestureService.ACTION_SHOW_SNACK_BAR
-import com.tunjid.fingergestures.services.FingerGestureService.EXTRA_SHOW_SNACK_BAR
+import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
+import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.viewholders.DiffViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import io.reactivex.disposables.CompositeDisposable
@@ -138,7 +138,7 @@ class MainActivity : FingerGestureActivity() {
 
         permissionText.backgroundTintList = fabTint
         permissionText.setOnClickListener { viewModel.onPermissionClicked(this::onPermissionClicked) }
-        bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottom_sheet))
+        bottomSheetBehavior = BottomSheetBehavior.from(findViewById<View>(R.id.bottom_sheet))
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected)
         constraintLayout.setOnApplyWindowInsetsListener { _, insets -> consumeSystemInsets(insets) }
 
