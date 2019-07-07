@@ -57,7 +57,7 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.auto_rotate_prompt).show();
 
             else
-                adapterListener.showBottomSheetFragment(PackageFragment.newInstance(persistedSet));
+                adapterListener.showBottomSheetFragment(PackageFragment.Companion.newInstance(persistedSet));
         });
 
         TextView title = itemView.findViewById(R.id.title);
