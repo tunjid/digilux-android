@@ -44,8 +44,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.palette.graphics.Palette
-import com.tunjid.fingergestures.App.transformApp
-import com.tunjid.fingergestures.App.withApp
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import io.reactivex.Single
 import io.reactivex.Single.error
@@ -114,7 +112,7 @@ class BackgroundManager private constructor() {
         }
     }
 
-    fun getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
+    fun getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
                               duration: Int): String {
         val millis = durationPercentageToMillis(duration)
         val seconds = millis / 1000f
@@ -245,11 +243,11 @@ class BackgroundManager private constructor() {
                 ?: return
 
         val wallpaperManager = App.transformApp { app -> app.getSystemService(WallpaperManager::class.java) }
-        if (wallpaperManager == null || !wallpaperFile!!.exists()) return
+        if (wallpaperManager == null || !wallpaperFile.exists()) return
 
         if (!App.hasStoragePermission) return
         try {
-            wallpaperManager!!.setStream(FileInputStream(wallpaperFile))
+            wallpaperManager.setStream(FileInputStream(wallpaperFile))
         } catch (e: Exception) {
             e.printStackTrace()
         }
