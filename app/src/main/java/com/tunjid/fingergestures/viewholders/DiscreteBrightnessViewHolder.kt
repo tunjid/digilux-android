@@ -80,24 +80,21 @@ class DiscreteBrightnessViewHolder(
         if (!App.canWriteToSettings()) adapterListener.requestPermission(MainActivity.SETTINGS_CODE)
     }
 
-    override fun createListManager(itemView: View): ListManager<*, Void> {
-        val layoutManager = FlexboxLayoutManager(itemView.context)
-        layoutManager.justifyContent = JustifyContent.FLEX_START
-        layoutManager.flexDirection = FlexDirection.ROW
-        layoutManager.alignItems = AlignItems.CENTER
-
-        return ListManagerBuilder<DiscreteItemViewHolder, Void>()
-                .withAdapter(DiscreteBrightnessAdapter(items, object : DiscreteBrightnessAdapter.BrightnessValueClickListener {
-                    override fun onDiscreteBrightnessClicked(discreteValue: String) {
-                        BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(discreteValue)
-                        adapterListener.notifyItemChanged(SLIDER_DELTA)
-                        bind()
-                    }
-                }))
-                .withRecyclerView(itemView.findViewById(R.id.item_list))
-                .withCustomLayoutManager(layoutManager)
-                .build()
-    }
+    override fun createListManager(itemView: View): ListManager<*, Void> = ListManagerBuilder<DiscreteItemViewHolder, Void>()
+            .withAdapter(DiscreteBrightnessAdapter(items, object : DiscreteBrightnessAdapter.BrightnessValueClickListener {
+                override fun onDiscreteBrightnessClicked(discreteValue: String) {
+                    BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(discreteValue)
+                    adapterListener.notifyItemChanged(SLIDER_DELTA)
+                    bind()
+                }
+            }))
+            .withRecyclerView(itemView.findViewById(R.id.item_list))
+            .withCustomLayoutManager(FlexboxLayoutManager(itemView.context).apply {
+                justifyContent = JustifyContent.FLEX_START
+                flexDirection = FlexDirection.ROW
+                alignItems = AlignItems.CENTER
+            })
+            .build()
 
     private fun onDiscreteValueEntered(dialogInterface: DialogInterface, editText: EditText) {
         val discreteValue = editText.text.toString()

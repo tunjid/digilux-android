@@ -66,15 +66,13 @@ class PopupViewHolder(itemView: View, items: List<Int>, listener: AppAdapter.App
         if (!App.canWriteToSettings()) adapterListener.requestPermission(MainActivity.SETTINGS_CODE)
     }
 
-    override fun createListManager(itemView: View): ListManager<*, Void> {
-        return ListManagerBuilder<ActionViewHolder, Void>()
-                .withAdapter(ActionAdapter(isHorizontal = true, showsText = true, list = items, listener = object: ActionAdapter.ActionClickListener {
-                    override fun onActionClicked(actionRes: Int) = this@PopupViewHolder.onActionClicked(actionRes)
-                }))
-                .withRecyclerView(itemView.findViewById(R.id.item_list))
-                .withGridLayoutManager(3)
-                .build()
-    }
+    override fun createListManager(itemView: View): ListManager<*, Void> = ListManagerBuilder<ActionViewHolder, Void>()
+            .withAdapter(ActionAdapter(isHorizontal = true, showsText = true, list = items, listener = object : ActionAdapter.ActionClickListener {
+                override fun onActionClicked(actionRes: Int) = this@PopupViewHolder.onActionClicked(actionRes)
+            }))
+            .withRecyclerView(itemView.findViewById(R.id.item_list))
+            .withGridLayoutManager(3)
+            .build()
 
     private fun onActionClicked(@GestureConsumer.GestureAction action: Int) {
         val buttonManager = PopUpGestureConsumer.instance
