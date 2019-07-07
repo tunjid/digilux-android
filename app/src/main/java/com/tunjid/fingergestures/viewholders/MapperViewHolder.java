@@ -67,8 +67,8 @@ public class MapperViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        if (!accessibilityServiceEnabled()) adapterListener.requestPermission(ACCESSIBILITY_CODE);
-        if (!canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+        if (!Companion.accessibilityServiceEnabled()) adapterListener.requestPermission(Companion.getACCESSIBILITY_CODE());
+        if (!Companion.canWriteToSettings()) adapterListener.requestPermission(Companion.getSETTINGS_CODE());
 
         title.setText(getFormattedText(direction, mapper.getMappedAction(direction)));
         subtitle.setText(getFormattedText(doubleDirection, mapper.getMappedAction(doubleDirection)));

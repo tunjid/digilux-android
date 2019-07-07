@@ -67,7 +67,7 @@ public class RotationGestureConsumer implements GestureConsumer {
     private RotationGestureConsumer() {
         setManager = new SetManager<>(this::compareApplicationInfo, this::canAddToSet, this::fromPackageName, this::fromApplicationInfo);
         setManager.addToSet(ANDROID_SYSTEM_UI_PACKAGE, EXCLUDED_APPS);
-        withApp(app -> setManager.addToSet(app.getPackageName(), EXCLUDED_APPS));
+        Companion.withApp(app -> setManager.addToSet(app.getPackageName(), EXCLUDED_APPS));
     }
 
     public static RotationGestureConsumer getInstance() {
@@ -87,7 +87,7 @@ public class RotationGestureConsumer implements GestureConsumer {
 
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event == null) return;
-        if (!App.canWriteToSettings() || event.getEventType() != TYPE_WINDOW_STATE_CHANGED) return;
+        if (!App.Companion.canWriteToSettings() || event.getEventType() != TYPE_WINDOW_STATE_CHANGED) return;
 
         CharSequence sequence = event.getPackageName();
         if (sequence == null) return;
@@ -104,19 +104,19 @@ public class RotationGestureConsumer implements GestureConsumer {
     }
 
     public String getAddText(@PersistedSet String preferencesName) {
-        return App.transformApp(app -> app.getString(R.string.auto_rotate_add, ROTATION_APPS.equals(preferencesName)
+        return App.Companion.transformApp(app -> app.getString(R.string.auto_rotate_add, ROTATION_APPS.equals(preferencesName)
                 ? app.getString(R.string.auto_rotate_apps)
                 : app.getString(R.string.auto_rotate_apps_excluded)), EMPTY_STRING);
     }
 
     public String getRemoveText(@PersistedSet String preferencesName) {
-        return App.transformApp(app -> app.getString(R.string.auto_rotate_remove, ROTATION_APPS.equals(preferencesName)
+        return App.Companion.transformApp(app -> app.getString(R.string.auto_rotate_remove, ROTATION_APPS.equals(preferencesName)
                 ? app.getString(R.string.auto_rotate_apps)
                 : app.getString(R.string.auto_rotate_apps_excluded)), EMPTY_STRING);
     }
 
     public boolean isRemovable(String packageName) {
-        return App.transformApp(app -> (!ANDROID_SYSTEM_UI_PACKAGE.equals(packageName) && !app.getPackageName().equals(packageName)), false);
+        return App.Companion.transformApp(app -> (!ANDROID_SYSTEM_UI_PACKAGE.equals(packageName) && !app.getPackageName().equals(packageName)), false);
     }
 
     public boolean addToSet(String packageName, @PersistedSet String preferencesName) {
@@ -136,11 +136,11 @@ public class RotationGestureConsumer implements GestureConsumer {
     }
 
     public boolean canAutoRotate() {
-        return App.transformApp(app -> app.getPreferences().getBoolean(WATCHES_WINDOW_CONTENT, false), false);
+        return App.Companion.transformApp(app -> app.getPreferences().getBoolean(WATCHES_WINDOW_CONTENT, false), false);
     }
 
     public void enableWindowContentWatching(boolean enabled) {
-        withApp(app -> {
+        Companion.withApp(app -> {
             app.getPreferences().edit().putBoolean(WATCHES_WINDOW_CONTENT, enabled).apply();
 
             Intent intent = new Intent(ACTION_WATCH_WINDOW_CHANGES);
@@ -151,14 +151,14 @@ public class RotationGestureConsumer implements GestureConsumer {
     }
 
     private void setAutoRotateOn(boolean isOn) {
-        withApp(app -> {
+        Companion.withApp(app -> {
             int enabled = isOn ? ENABLE_AUTO_ROTATION : DISABLE_AUTO_ROTATION;
             Settings.System.putInt(app.getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, enabled);
         });
     }
 
     private boolean isAutoRotateOn() {
-        return App.transformApp(app -> Settings.System.getInt(app.getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, DISABLE_AUTO_ROTATION) == ENABLE_AUTO_ROTATION, false);
+        return App.Companion.transformApp(app -> Settings.System.getInt(app.getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, DISABLE_AUTO_ROTATION) == ENABLE_AUTO_ROTATION, false);
     }
 
     private boolean canAddToSet(String preferenceName) {
@@ -168,7 +168,7 @@ public class RotationGestureConsumer implements GestureConsumer {
     }
 
     private int compareApplicationInfo(ApplicationInfo infoA, ApplicationInfo infoB) {
-        return App.transformApp(app -> {
+        return App.Companion.transformApp(app -> {
             PackageManager packageManager = app.getPackageManager();
             return packageManager.getApplicationLabel(infoA).toString().compareTo(packageManager.getApplicationLabel(infoB).toString());
         }, 0);
@@ -180,7 +180,7 @@ public class RotationGestureConsumer implements GestureConsumer {
 
     @Nullable
     private ApplicationInfo fromPackageName(String packageName) {
-        return App.transformApp(app -> {
+        return App.Companion.transformApp(app -> {
             try {return app.getPackageManager().getApplicationInfo(packageName, 0);}
             catch (Exception e) {e.printStackTrace();}
 

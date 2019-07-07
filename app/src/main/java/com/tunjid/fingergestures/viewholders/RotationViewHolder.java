@@ -50,7 +50,7 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
         this.persistedSet = persistedSet;
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
-            if (!App.canWriteToSettings())
+            if (!App.Companion.canWriteToSettings())
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.permission_required).show();
 
             else if (!RotationGestureConsumer.getInstance().canAutoRotate())
@@ -74,7 +74,7 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
         super.bind();
 
         diff();
-        if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+        if (!App.Companion.canWriteToSettings()) adapterListener.requestPermission(Companion.getSETTINGS_CODE());
     }
 
     @Override
@@ -104,7 +104,7 @@ public class RotationViewHolder extends DiffViewHolder<ApplicationInfo> {
             RotationGestureConsumer gestureConsumer = RotationGestureConsumer.getInstance();
             AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
 
-            if (!App.canWriteToSettings()) builder.setMessage(R.string.permission_required);
+            if (!App.Companion.canWriteToSettings()) builder.setMessage(R.string.permission_required);
 
             else if (!gestureConsumer.canAutoRotate())
                 builder.setMessage(R.string.auto_rotate_prompt);

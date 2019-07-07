@@ -68,7 +68,7 @@ public class WallpaperViewHolder extends AppViewHolder {
     @SuppressLint("MissingPermission")
     public void bind() {
         super.bind();
-        if (App.hasStoragePermission()) {
+        if (App.Companion.getHasStoragePermission()) {
             Context context = itemView.getContext();
 
             WallpaperManager wallpaperManager = context.getSystemService(WallpaperManager.class);
@@ -79,7 +79,7 @@ public class WallpaperViewHolder extends AppViewHolder {
             wallpaperManager.getWallpaperInfo();
         }
         else {
-            adapterListener.requestPermission(MainActivity.STORAGE_CODE);
+            adapterListener.requestPermission(MainActivity.Companion.getSTORAGE_CODE());
         }
         loadImage(DAY_WALLPAPER_PICK_CODE, day);
         loadImage(NIGHT_WALLPAPER_PICK_CODE, night);

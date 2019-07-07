@@ -42,8 +42,8 @@ public class AudioStreamViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        boolean hasDoNotDisturbAccess = App.hasDoNotDisturbAccess();
-        if (!hasDoNotDisturbAccess) adapterListener.requestPermission(DO_NOT_DISTURB_CODE);
+        boolean hasDoNotDisturbAccess = App.Companion.hasDoNotDisturbAccess();
+        if (!hasDoNotDisturbAccess) adapterListener.requestPermission(Companion.getDO_NOT_DISTURB_CODE());
 
         AudioGestureConsumer gestureConsumer = AudioGestureConsumer.getInstance();
 

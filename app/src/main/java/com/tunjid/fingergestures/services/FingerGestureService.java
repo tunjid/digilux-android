@@ -254,7 +254,7 @@ public class FingerGestureService extends AccessibilityService {
     }
 
     private void subscribeToBroadcasts() {
-        withApp(app -> broadcastDisposable = app.broadcasts()
+        Companion.withApp(app -> broadcastDisposable = app.broadcasts()
                 .filter(this::intentMatches)
                 .subscribe(this::onIntentReceived, error -> {
                     error.printStackTrace();
@@ -289,7 +289,7 @@ public class FingerGestureService extends AccessibilityService {
                 break;
             case ACTION_TOGGLE_DOCK:
                 performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN);
-                App.delay(DELAY, MILLISECONDS, () -> performGlobalAction(GLOBAL_ACTION_RECENTS));
+                App.Companion.delay(DELAY, MILLISECONDS, () -> performGlobalAction(GLOBAL_ACTION_RECENTS));
                 break;
             case ACTION_WATCH_WINDOW_CHANGES:
                 setWatchesWindows(intent.getBooleanExtra(EXTRA_WATCHES_WINDOWS, false));

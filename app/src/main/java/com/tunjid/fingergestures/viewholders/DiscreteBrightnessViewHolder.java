@@ -63,7 +63,7 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<String> {
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
-            if (App.canWriteToSettings()) requestDiscreteValue(builder);
+            if (App.Companion.canWriteToSettings()) requestDiscreteValue(builder);
             else builder.setMessage(R.string.permission_required).show();
         });
     }
@@ -73,7 +73,7 @@ public class DiscreteBrightnessViewHolder extends DiffViewHolder<String> {
         super.bind();
 
         diff();
-        if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+        if (!App.Companion.canWriteToSettings()) adapterListener.requestPermission(Companion.getSETTINGS_CODE());
     }
 
     @Override

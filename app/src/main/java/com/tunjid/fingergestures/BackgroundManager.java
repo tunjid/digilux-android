@@ -124,23 +124,23 @@ public class BackgroundManager {
 
     private BackgroundManager() {
         wallpaperTargets = new String[]{
-                transformApp(app -> app.getString(R.string.day_wallpaper), EMPTY),
-                transformApp(app -> app.getString(R.string.night_wallpaper), EMPTY)};
+                Companion.transformApp(app -> app.getString(R.string.day_wallpaper), Companion.getEMPTY()),
+                Companion.transformApp(app -> app.getString(R.string.night_wallpaper), Companion.getEMPTY())};
     }
 
     @ColorInt
     public int getSliderColor() {
-        return transformApp(app -> app.getPreferences().getInt(SLIDER_COLOR, getColor(app, R.color.colorAccent)), Color.WHITE);
+        return Companion.transformApp(app -> app.getPreferences().getInt(SLIDER_COLOR, getColor(app, R.color.colorAccent)), Color.WHITE);
     }
 
     @ColorInt
     public int getBackgroundColor() {
-        return transformApp(app -> app.getPreferences().getInt(BACKGROUND_COLOR, getColor(app, R.color.colorPrimary)), Color.LTGRAY);
+        return Companion.transformApp(app -> app.getPreferences().getInt(BACKGROUND_COLOR, getColor(app, R.color.colorPrimary)), Color.LTGRAY);
     }
 
     @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
     public int getSliderDurationPercentage() {
-        return transformApp(app -> app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT), GestureConsumer.FIFTY_PERCENT);
+        return Companion.transformApp(app -> app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT), GestureConsumer.FIFTY_PERCENT);
     }
 
     public int getSliderDurationMillis() {
@@ -148,35 +148,35 @@ public class BackgroundManager {
     }
 
     public void setUsesColoredNav(boolean usesColoredNav) {
-        withApp(app -> {
+        Companion.withApp(app -> {
             app.getPreferences().edit().putBoolean(USES_COLORED_NAV_BAR, usesColoredNav).apply();
             app.broadcast(new Intent(ACTION_NAV_BAR_CHANGED));
         });
     }
 
     public void setSliderColor(@ColorInt int color) {
-        withApp(app -> app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putInt(SLIDER_COLOR, color).apply());
     }
 
     public void setBackgroundColor(@ColorInt int color) {
-        withApp(app -> app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply());
     }
 
     public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT,
             to = GestureConsumer.HUNDRED_PERCENT) int duration) {
-        withApp(app -> app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply());
     }
 
     public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT,
             to = GestureConsumer.HUNDRED_PERCENT) int duration) {
         int millis = durationPercentageToMillis(duration);
         float seconds = millis / 1000F;
-        return transformApp(app -> app.getString(R.string.duration_value, seconds), EMPTY);
+        return Companion.transformApp(app -> app.getString(R.string.duration_value, seconds), Companion.getEMPTY());
     }
 
     @Nullable
     public int[] getScreenAspectRatio() {
-        DisplayMetrics displayMetrics = transformApp(app -> app.getResources().getDisplayMetrics());
+        DisplayMetrics displayMetrics = Companion.transformApp(app -> app.getResources().getDisplayMetrics());
         return displayMetrics == null ? null : new int[]{displayMetrics.widthPixels, displayMetrics.heightPixels};
     }
 
@@ -205,12 +205,12 @@ public class BackgroundManager {
 
     public boolean usesColoredNav() {
         boolean higherThanPie = Build.VERSION.SDK_INT > Build.VERSION_CODES.P;
-        return transformApp(app -> app.getPreferences().getBoolean(USES_COLORED_NAV_BAR, higherThanPie), higherThanPie);
+        return Companion.transformApp(app -> app.getPreferences().getBoolean(USES_COLORED_NAV_BAR, higherThanPie), higherThanPie);
     }
 
     @NonNull
     public Drawable tint(@DrawableRes int drawableRes, int color) {
-        Drawable normalDrawable = transformApp(app -> ContextCompat.getDrawable(app, drawableRes));
+        Drawable normalDrawable = Companion.transformApp(app -> ContextCompat.getDrawable(app, drawableRes));
         if (normalDrawable == null) return new ColorDrawable(color);
 
         Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
@@ -220,9 +220,9 @@ public class BackgroundManager {
     }
 
     public Single<Palette> extractPalette() {
-        if (!App.hasStoragePermission()) return error(new Exception(ERROR_NEED_PERMISSION));
+        if (!App.Companion.getHasStoragePermission()) return error(new Exception(ERROR_NEED_PERMISSION));
 
-        WallpaperManager wallpaperManager = transformApp(app -> app.getSystemService(WallpaperManager.class));
+        WallpaperManager wallpaperManager = Companion.transformApp(app -> app.getSystemService(WallpaperManager.class));
         if (wallpaperManager == null) return error(new Exception(ERROR_NO_WALLPAPER_MANAGER));
 
         if (isLiveWallpaper(wallpaperManager)) {
@@ -249,7 +249,7 @@ public class BackgroundManager {
     }
 
     public void cancelAutoWallpaper() {
-        AlarmManager alarmManager = transformApp(app -> app.getSystemService(AlarmManager.class));
+        AlarmManager alarmManager = Companion.transformApp(app -> app.getSystemService(AlarmManager.class));
         if (alarmManager == null) return;
 
         PendingIntent day = getWallpaperPendingIntent(DAY_WALLPAPER_PICK_CODE);
@@ -269,7 +269,7 @@ public class BackgroundManager {
 
     public Calendar getMainWallpaperCalendar(@WallpaperSelection int selection) {
         Pair<Integer, Integer> timePair = getDefaultTime(selection);
-        SharedPreferences preferences = transformApp(App::getPreferences);
+        SharedPreferences preferences = Companion.transformApp(App::getPreferences);
         if (preferences == null) return Calendar.getInstance();
 
         int hour = preferences.getInt(selection == DAY_WALLPAPER_PICK_CODE ? DAY_WALLPAPER_HOUR : NIGHT_WALLPAPER_HOUR, timePair.first);
@@ -280,7 +280,7 @@ public class BackgroundManager {
 
     @Nullable
     private PendingIntent getWallpaperPendingIntent(@WallpaperSelection int selection) {
-        return transformApp(app -> PendingIntent.getBroadcast(app, selection, getWallPaperChangeIntent(app, selection), PendingIntent.FLAG_UPDATE_CURRENT));
+        return Companion.transformApp(app -> PendingIntent.getBroadcast(app, selection, getWallPaperChangeIntent(app, selection), PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     private Calendar calendarForTime(int hourOfDay, int minute) {
@@ -299,13 +299,13 @@ public class BackgroundManager {
         int selection = selectionFromIntent(intent);
         if (selection == INVALID_WALLPAPER_PICK_CODE) return;
 
-        File wallpaperFile = transformApp(app -> getWallpaperFile(selection, app));
+        File wallpaperFile = Companion.transformApp(app -> getWallpaperFile(selection, app));
         if (wallpaperFile == null) return;
 
-        WallpaperManager wallpaperManager = transformApp(app -> app.getSystemService(WallpaperManager.class));
+        WallpaperManager wallpaperManager = Companion.transformApp(app -> app.getSystemService(WallpaperManager.class));
         if (wallpaperManager == null || !wallpaperFile.exists()) return;
 
-        if (!App.hasStoragePermission()) return;
+        if (!App.Companion.getHasStoragePermission()) return;
         try { wallpaperManager.setStream(new FileInputStream(wallpaperFile));}
         catch (Exception e) { e.printStackTrace(); }
     }
@@ -319,7 +319,7 @@ public class BackgroundManager {
     }
 
     private void reInitializeWallpaperChange(@WallpaperSelection int selection) {
-        withApp(app -> {
+        Companion.withApp(app -> {
             SharedPreferences preferences = app.getPreferences();
             boolean isDay = selection == DAY_WALLPAPER_PICK_CODE;
             boolean hasCalendar = preferences.getBoolean(isDay ? DAY_WALLPAPER_SET : NIGHT_WALLPAPER_SET, false);
@@ -339,7 +339,7 @@ public class BackgroundManager {
 
         boolean isDayWallpaper = selection == DAY_WALLPAPER_PICK_CODE;
 
-        withApp(app -> app.getPreferences().edit()
+        Companion.withApp(app -> app.getPreferences().edit()
                 .putInt(isDayWallpaper ? DAY_WALLPAPER_HOUR : NIGHT_WALLPAPER_HOUR, hour)
                 .putInt(isDayWallpaper ? DAY_WALLPAPER_MINUTE : NIGHT_WALLPAPER_MINUTE, minute)
                 .putBoolean(isDayWallpaper ? DAY_WALLPAPER_SET : NIGHT_WALLPAPER_SET, adding)
@@ -347,7 +347,7 @@ public class BackgroundManager {
 
         Calendar calendar = calendarForTime(hourOfDay, minute);
 
-        AlarmManager alarmManager = transformApp(app -> app.getSystemService(AlarmManager.class));
+        AlarmManager alarmManager = Companion.transformApp(app -> app.getSystemService(AlarmManager.class));
         if (alarmManager == null) return;
 
         PendingIntent alarmIntent = getWallpaperPendingIntent(selection);
@@ -377,7 +377,7 @@ public class BackgroundManager {
     }
 
     public boolean willChangeWallpaper(@WallpaperSelection int selection) {
-        return transformApp(app -> {
+        return Companion.transformApp(app -> {
             Intent intent = new Intent(app, WallpaperBroadcastReceiver.class);
             intent.setAction(ACTION_CHANGE_WALLPAPER);
             intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection);
@@ -412,7 +412,7 @@ public class BackgroundManager {
         if (componentName == null) return false;
 
         boolean handled = componentName.getPackageName().equals("com.google.android.apps.photos");
-        if (handled) withApp(app -> app.broadcast(intent));
+        if (handled) Companion.withApp(app -> app.broadcast(intent));
 
         return handled;
     }

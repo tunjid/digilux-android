@@ -88,7 +88,7 @@ public class ColorAdjusterViewHolder extends AppViewHolder {
     @Override
     public void bind() {
         super.bind();
-        if (!hasStoragePermission()) adapterListener.requestPermission(MainActivity.STORAGE_CODE);
+        if (!Companion.hasStoragePermission()) adapterListener.requestPermission(MainActivity.Companion.getSTORAGE_CODE());
         else backgroundManager.extractPalette().subscribe(this::onPaletteExtracted, error -> {});
     }
 

@@ -57,7 +57,7 @@ public class NotificationGestureConsumer implements GestureConsumer {
             case NOTIFICATION_UP:
             case NOTIFICATION_DOWN:
             case NOTIFICATION_TOGGLE:
-                withApp(app -> app.broadcast(new Intent(gestureAction == NOTIFICATION_UP
+                Companion.withApp(app -> app.broadcast(new Intent(gestureAction == NOTIFICATION_UP
                         ? ACTION_NOTIFICATION_UP
                         : gestureAction == NOTIFICATION_DOWN
                         ? ACTION_NOTIFICATION_DOWN

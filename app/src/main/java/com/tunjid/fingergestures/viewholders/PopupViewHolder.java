@@ -43,7 +43,7 @@ public class PopupViewHolder extends DiffViewHolder<Integer> {
         super(itemView, items, listener);
 
         itemView.findViewById(R.id.add).setOnClickListener(view -> {
-            if (!App.canWriteToSettings())
+            if (!App.Companion.canWriteToSettings())
                 new AlertDialog.Builder(itemView.getContext()).setMessage(R.string.permission_required).show();
 
             else if (!PopUpGestureConsumer.getInstance().hasAccessibilityButton())
@@ -66,7 +66,7 @@ public class PopupViewHolder extends DiffViewHolder<Integer> {
         super.bind();
 
         diff();
-        if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE);
+        if (!App.Companion.canWriteToSettings()) adapterListener.requestPermission(Companion.getSETTINGS_CODE());
     }
 
     @Override
@@ -93,7 +93,7 @@ public class PopupViewHolder extends DiffViewHolder<Integer> {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
 
-        if (!App.canWriteToSettings()) builder.setMessage(R.string.permission_required);
+        if (!App.Companion.canWriteToSettings()) builder.setMessage(R.string.permission_required);
 
         else if (!buttonManager.hasAccessibilityButton()) builder.setMessage(R.string.popup_prompt);
 

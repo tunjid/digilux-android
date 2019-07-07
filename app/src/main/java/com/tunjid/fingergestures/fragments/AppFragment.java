@@ -137,7 +137,7 @@ public class AppFragment extends MainActivityFragment
 
     @Override
     public void pickWallpaper(@BackgroundManager.WallpaperSelection int selection) {
-        if (!App.hasStoragePermission()) showSnackbar(R.string.enable_storage_settings);
+        if (!App.Companion.getHasStoragePermission()) showSnackbar(R.string.enable_storage_settings);
         else startActivityForResult(Intent.createChooser(new Intent()
                 .setType(IMAGE_SELECTION)
                 .setAction(Intent.ACTION_GET_CONTENT), ""), selection);

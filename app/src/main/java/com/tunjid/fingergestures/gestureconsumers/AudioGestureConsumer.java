@@ -85,26 +85,26 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     public boolean canSetVolumeDelta() {
-        return hasDoNotDisturbAccess() && getStreamType() != STREAM_TYPE_DEFAULT;
+        return Companion.hasDoNotDisturbAccess() && getStreamType() != STREAM_TYPE_DEFAULT;
     }
 
     public boolean shouldShowSliders() {
-        return App.transformApp(app -> app.getPreferences().getBoolean(SHOWS_AUDIO_SLIDER, true), true);
+        return App.Companion.transformApp(app -> app.getPreferences().getBoolean(SHOWS_AUDIO_SLIDER, true), true);
     }
 
     @IntRange(from = ZERO_PERCENT, to = HUNDRED_PERCENT)
     public int getVolumeDelta() {
-        return App.transformApp(app -> app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE), DEF_INCREMENT_VALUE);
+        return App.Companion.transformApp(app -> app.getPreferences().getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE), DEF_INCREMENT_VALUE);
     }
 
     public void setVolumeDelta(@IntRange(from = ZERO_PERCENT,
             to = HUNDRED_PERCENT) int volumeDelta) {
-        withApp(app -> app.getPreferences().edit().putInt(INCREMENT_VALUE, volumeDelta).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putInt(INCREMENT_VALUE, volumeDelta).apply());
     }
 
     public void setStreamType(@IdRes int resId) {
         @AudioStream int streamType = getStreamTypeFromId(resId);
-        withApp(app -> app.getPreferences().edit().putInt(AUDIO_STREAM_TYPE, streamType).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putInt(AUDIO_STREAM_TYPE, streamType).apply());
     }
 
     private void setStreamVolume(boolean increase, AudioManager audioManager, int streamType) {
@@ -115,7 +115,7 @@ public class AudioGestureConsumer implements GestureConsumer {
         boolean turnDnDOn = ringStream && currentVolume == 0 && !increase;
         boolean turnDnDOff = ringStream && newVolume != 0 && increase;
 
-        if (turnDnDOn || turnDnDOff) withApp(app -> {
+        if (turnDnDOn || turnDnDOff) Companion.withApp(app -> {
             NotificationManager notificationManager = app.getSystemService(NotificationManager.class);
             if (notificationManager == null) return;
 
@@ -129,7 +129,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     public void setShowsSliders(boolean visible) {
-        withApp(app -> app.getPreferences().edit().putBoolean(SHOWS_AUDIO_SLIDER, visible).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putBoolean(SHOWS_AUDIO_SLIDER, visible).apply());
     }
 
     private int reduce(int currentValue, int stream, AudioManager audioManager) {
@@ -142,7 +142,7 @@ public class AudioGestureConsumer implements GestureConsumer {
 
     private void adjustAudio(boolean increase) {
         requireAppAndAudioManager((app, audioManager) -> {
-            if (!hasDoNotDisturbAccess()) return Void.TYPE;
+            if (!Companion.hasDoNotDisturbAccess()) return Void.TYPE;
             int streamType = getStreamType();
             switch (streamType) {
                 default:
@@ -166,7 +166,7 @@ public class AudioGestureConsumer implements GestureConsumer {
 
     public String getChangeText(int percentage) {
         return requireAppAndAudioManager((app, audioManager) -> {
-            if (!hasDoNotDisturbAccess()) return app.getString(R.string.enable_do_not_disturb);
+            if (!Companion.hasDoNotDisturbAccess()) return app.getString(R.string.enable_do_not_disturb);
 
             int normalized = normalizePercentageForStream(percentage, getStreamType(), audioManager);
             int maxSteps = getMaxSteps(audioManager);
@@ -181,7 +181,7 @@ public class AudioGestureConsumer implements GestureConsumer {
         switch (getStreamTypeFromId(resId)) {
             default:
             case STREAM_TYPE_DEFAULT:
-                return App.transformApp(app -> app.getString(R.string.audio_stream_default), EMPTY_STRING);
+                return App.Companion.transformApp(app -> app.getString(R.string.audio_stream_default), EMPTY_STRING);
             case STREAM_TYPE_MEDIA:
                 return requireAppAndAudioManager((app, audioManager) -> app.getString(R.string.audio_stream_media, audioManager.getStreamMaxVolume(STREAM_TYPE_MEDIA)), EMPTY_STRING);
             case STREAM_TYPE_RING:
@@ -211,7 +211,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     private int getStreamType() {
-        return App.transformApp(app -> app.getPreferences().getInt(AUDIO_STREAM_TYPE, STREAM_TYPE_DEFAULT), STREAM_TYPE_DEFAULT);
+        return App.Companion.transformApp(app -> app.getPreferences().getInt(AUDIO_STREAM_TYPE, STREAM_TYPE_DEFAULT), STREAM_TYPE_DEFAULT);
     }
 
     private int getFlags() {
@@ -222,7 +222,7 @@ public class AudioGestureConsumer implements GestureConsumer {
 
     private void broadcastExpandVolumeIntent() {
         Intent expandVolumeIntent = new Intent(ACTION_EXPAND_VOLUME_CONTROLS);
-        delay(EXPAND_VOLUME_DELAY, MILLISECONDS, () -> withApp(app -> app.broadcast(expandVolumeIntent)));
+        Companion.delay(EXPAND_VOLUME_DELAY, MILLISECONDS, () -> Companion.withApp(app -> app.broadcast(expandVolumeIntent)));
     }
 
     @AudioStream
@@ -246,7 +246,7 @@ public class AudioGestureConsumer implements GestureConsumer {
     }
 
     private <T> T requireAppAndAudioManager(BiFunction<App, AudioManager, T> biFunction, T defaultValue) {
-        return App.transformApp(app -> {
+        return App.Companion.transformApp(app -> {
             AudioManager audioManager = app.getSystemService(AudioManager.class);
             return audioManager != null ? biFunction.apply(app, audioManager) : defaultValue;
         }, defaultValue);

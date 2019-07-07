@@ -51,7 +51,7 @@ public class PopUpGestureConsumer implements GestureConsumer {
 
     @Override
     public void onGestureActionTriggered(int gestureAction) {
-        withApp(app -> app.broadcast(new Intent(ACTION_SHOW_POPUP)));
+        Companion.withApp(app -> app.broadcast(new Intent(ACTION_SHOW_POPUP)));
     }
 
     @Override
@@ -64,15 +64,15 @@ public class PopUpGestureConsumer implements GestureConsumer {
     }
 
     public boolean hasAccessibilityButton() {
-        return transformApp(app -> app.getPreferences().getBoolean(ACCESSIBILITY_BUTTON_ENABLED, false), false);
+        return Companion.transformApp(app -> app.getPreferences().getBoolean(ACCESSIBILITY_BUTTON_ENABLED, false), false);
     }
 
     public boolean isSingleClick() {
-        return transformApp(app -> app.getPreferences().getBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, false), false);
+        return Companion.transformApp(app -> app.getPreferences().getBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, false), false);
     }
 
     public boolean shouldAnimatePopup() {
-        return transformApp(app -> app.getPreferences().getBoolean(ANIMATES_POPUP, true), true);
+        return Companion.transformApp(app -> app.getPreferences().getBoolean(ANIMATES_POPUP, true), true);
     }
 
     public boolean addToSet(@GestureConsumer.GestureAction int action) {
@@ -84,18 +84,18 @@ public class PopUpGestureConsumer implements GestureConsumer {
     }
 
     public void setAnimatesPopup(boolean visible) {
-        withApp(app -> app.getPreferences().edit().putBoolean(ANIMATES_POPUP, visible).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putBoolean(ANIMATES_POPUP, visible).apply());
     }
 
     public void setSingleClick(boolean isSingleClick) {
-        withApp(app -> app.getPreferences().edit().putBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, isSingleClick).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, isSingleClick).apply());
     }
 
     public void showPopup() {
         if (isSingleClick()) getList().stream()
                 .findFirst()
                 .ifPresent(GestureMapper.getInstance()::performAction);
-        else withApp(app -> {
+        else Companion.withApp(app -> {
             Intent intent = new Intent(app, PopupActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             app.startActivity(intent);
@@ -107,7 +107,7 @@ public class PopUpGestureConsumer implements GestureConsumer {
     }
 
     public void enableAccessibilityButton(boolean enabled) {
-        withApp(app -> {
+        Companion.withApp(app -> {
             app.getPreferences().edit().putBoolean(ACCESSIBILITY_BUTTON_ENABLED, enabled).apply();
             app.broadcast(new Intent(ACTION_ACCESSIBILITY_BUTTON)
                     .putExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, enabled));

@@ -155,7 +155,7 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public Single<DiffUtil.DiffResult> updatedApps() {
-        return App.diff(state.installedApps,
+        return App.Companion.diff(state.installedApps,
                 () -> getApplication().getPackageManager().getInstalledApplications(0).stream()
                         .filter(this::isUserInstalledApp)
                         .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
@@ -164,7 +164,7 @@ public class AppViewModel extends AndroidViewModel {
     }
 
     public Single<DiffUtil.DiffResult> updatedActions() {
-        return App.diff(state.availableActions, () -> IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList()));
+        return App.Companion.diff(state.availableActions, () -> IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList()));
     }
 
     public void shillMoar() {
@@ -195,23 +195,23 @@ public class AppViewModel extends AndroidViewModel {
         boolean shouldRemove;
         Optional<Integer> result;
         switch (requestCode) {
-            case STORAGE_CODE:
-                result = Optional.of((shouldRemove = App.hasStoragePermission())
+            case Companion.getSTORAGE_CODE():
+                result = Optional.of((shouldRemove = App.Companion.getHasStoragePermission())
                         ? R.string.storage_permission_granted
                         : R.string.storage_permission_denied);
                 break;
-            case SETTINGS_CODE:
-                result = Optional.of((shouldRemove = App.canWriteToSettings())
+            case Companion.getSETTINGS_CODE():
+                result = Optional.of((shouldRemove = App.Companion.canWriteToSettings())
                         ? R.string.settings_permission_granted
                         : R.string.settings_permission_denied);
                 break;
-            case ACCESSIBILITY_CODE:
-                result = Optional.of((shouldRemove = App.accessibilityServiceEnabled())
+            case Companion.getACCESSIBILITY_CODE():
+                result = Optional.of((shouldRemove = App.Companion.accessibilityServiceEnabled())
                         ? R.string.accessibility_permission_granted
                         : R.string.accessibility_permission_denied);
                 break;
-            case DO_NOT_DISTURB_CODE:
-                result = Optional.of((shouldRemove = App.hasDoNotDisturbAccess())
+            case Companion.getDO_NOT_DISTURB_CODE():
+                result = Optional.of((shouldRemove = App.Companion.hasDoNotDisturbAccess())
                         ? R.string.do_not_disturb_permission_granted
                         : R.string.do_not_disturb_permission_denied);
                 break;
@@ -247,16 +247,16 @@ public class AppViewModel extends AndroidViewModel {
         switch (permissionRequest) {
             default:
                 return;
-            case DO_NOT_DISTURB_CODE:
+            case Companion.getDO_NOT_DISTURB_CODE():
                 uiState = uiState.glyph(R.string.enable_do_not_disturb, R.drawable.ic_volume_loud_24dp);
                 break;
-            case ACCESSIBILITY_CODE:
+            case Companion.getACCESSIBILITY_CODE():
                 uiState = uiState.glyph(R.string.enable_accessibility, R.drawable.ic_human_24dp);
                 break;
-            case SETTINGS_CODE:
+            case Companion.getSETTINGS_CODE():
                 uiState = uiState.glyph(R.string.enable_write_settings, R.drawable.ic_settings_white_24dp);
                 break;
-            case STORAGE_CODE:
+            case Companion.getSTORAGE_CODE():
                 uiState = uiState.glyph(R.string.enable_storage_settings, R.drawable.ic_storage_24dp);
                 break;
         }

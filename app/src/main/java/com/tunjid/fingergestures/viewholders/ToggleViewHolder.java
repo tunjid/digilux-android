@@ -38,6 +38,6 @@ public class ToggleViewHolder extends AppViewHolder {
         Switch toggle = itemView.findViewById(R.id.toggle);
         toggle.setText(titleRes);
         toggle.setOnClickListener(view -> consumer.accept(toggle.isChecked()));
-        disposables.add(backgroundToMain(supplier).subscribe(toggle::setChecked, Throwable::printStackTrace));
+        disposables.add(Companion.backgroundToMain(supplier).subscribe(toggle::setChecked, Throwable::printStackTrace));
     }
 }

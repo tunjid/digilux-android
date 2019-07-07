@@ -125,6 +125,6 @@ public class PackageFragment extends MainActivityFragment {
         }
 
         toggleBottomSheet(false);
-        nullCheck(getCurrentAppFragment(), fragment -> fragment.notifyItemChanged(ROTATION_APPS.equals(persistedSet) ? ROTATION_LOCK : EXCLUDED_ROTATION_LOCK));
+        Companion.nullCheck(getCurrentAppFragment(), fragment -> fragment.notifyItemChanged(ROTATION_APPS.equals(persistedSet) ? ROTATION_LOCK : EXCLUDED_ROTATION_LOCK));
     }
 }

@@ -81,10 +81,10 @@ public class SetManager<T> {
 
     public Set<String> getSet(String preferencesName) {
         Set<String> defaultValue = new HashSet<>();
-        return App.transformApp(app -> new HashSet<>(app.getPreferences().getStringSet(preferencesName, defaultValue)), defaultValue);
+        return App.Companion.transformApp(app -> new HashSet<>(app.getPreferences().getStringSet(preferencesName, defaultValue)), defaultValue);
     }
 
     private void saveSet(Set<String> set, String preferencesName) {
-        withApp(app -> app.getPreferences().edit().putStringSet(preferencesName, set).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putStringSet(preferencesName, set).apply());
     }
 }

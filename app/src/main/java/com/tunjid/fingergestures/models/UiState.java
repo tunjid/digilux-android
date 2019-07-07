@@ -51,7 +51,7 @@ public class UiState {
     }
 
     public UiState glyph(@StringRes int text, @DrawableRes int icon) {
-        GlyphState glyphState = transformApp(app -> newState(app.getText(text), getDrawable(app, icon)), this.glyphState);
+        GlyphState glyphState = Companion.transformApp(app -> newState(app.getText(text), getDrawable(app, icon)), this.glyphState);
         return new UiState(fabVisible, glyphState);
     }
 

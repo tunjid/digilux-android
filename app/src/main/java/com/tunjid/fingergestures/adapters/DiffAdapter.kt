@@ -15,32 +15,18 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.adapters;
+package com.tunjid.fingergestures.adapters
 
-import com.tunjid.androidbootstrap.recyclerview.InteractiveAdapter;
-import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder;
+import com.tunjid.androidbootstrap.recyclerview.InteractiveAdapter
+import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder
 
-import java.util.List;
+abstract class DiffAdapter<V : InteractiveViewHolder<T>, T : InteractiveAdapter.AdapterListener, S> internal constructor(internal val list: List<S>, listener: T) : InteractiveAdapter<V, T>(listener) {
 
-public abstract class DiffAdapter<V extends InteractiveViewHolder<T>, T extends InteractiveAdapter.AdapterListener, S>
-        extends InteractiveAdapter<V, T> {
-
-    final List<S> list;
-
-    DiffAdapter(List<S> list, T listener) {
-        super(listener);
-        this.list = list;
-        setHasStableIds(true);
+    init {
+        setHasStableIds(true)
     }
 
-    @Override
-    public int getItemCount() {
-        return list.size();
-    }
+    override fun getItemCount(): Int = list.size
 
-    @Override
-    public long getItemId(int position) {
-        return list.get(position).hashCode();
-    }
-
+    override fun getItemId(position: Int): Long = list[position].hashCode().toLong()
 }

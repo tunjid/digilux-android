@@ -125,14 +125,14 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public void mapGestureToAction(@GestureDirection String direction, @GestureConsumer.GestureAction int action) {
-        withApp(app -> app.getPreferences().edit().putInt(direction, action).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putInt(direction, action).apply());
     }
 
     public String getMappedAction(@GestureDirection String gestureDirection) {
         @GestureConsumer.GestureAction
         int action = directionToAction(gestureDirection);
         int stringResource = resourceForAction(action);
-        return App.transformApp(app -> app.getString(stringResource), "");
+        return App.Companion.transformApp(app -> app.getString(stringResource), "");
     }
 
     @GestureDirection
@@ -146,15 +146,15 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     public int getDoubleSwipeDelay() {
-        return App.transformApp(app -> app.getPreferences().getInt(DOUBLE_SWIPE_DELAY, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE), DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE);
+        return App.Companion.transformApp(app -> app.getPreferences().getInt(DOUBLE_SWIPE_DELAY, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE), DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE);
     }
 
     public void setDoubleSwipeDelay(int percentage) {
-        withApp(app -> app.getPreferences().edit().putInt(DOUBLE_SWIPE_DELAY, percentage).apply());
+        Companion.withApp(app -> app.getPreferences().edit().putInt(DOUBLE_SWIPE_DELAY, percentage).apply());
     }
 
     public String getSwipeDelayText(int percentage) {
-        return App.transformApp(app -> app.getString(PurchasesManager.getInstance().isNotPremium()
+        return App.Companion.transformApp(app -> app.getString(PurchasesManager.getInstance().isNotPremium()
                 ? R.string.go_premium_text
                 : R.string.double_swipe_delay, delayPercentageToMillis(percentage)), "");
     }
@@ -241,7 +241,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     private void resetIsOngoing() {
-        isSwipingDisposable = App.delay(ONGOING_RESET_DELAY, SECONDS, () -> isOngoing = false);
+        isSwipingDisposable = App.Companion.delay(ONGOING_RESET_DELAY, SECONDS, () -> isOngoing = false);
     }
 
     private int delayPercentageToMillis(int percentage) {
@@ -264,7 +264,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     }
 
     private boolean isSupportedAction(@GestureConsumer.GestureAction int action) {
-        if (action == GLOBAL_LOCK_SCREEN || action == GLOBAL_TAKE_SCREENSHOT) return isPieOrHigher();
+        if (action == GLOBAL_LOCK_SCREEN || action == GLOBAL_TAKE_SCREENSHOT) return Companion.isPieOrHigher();
         return true;
     }
 
@@ -272,7 +272,7 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     private int directionToAction(@GestureDirection String direction) {
         if (isDouble(direction) && PurchasesManager.getInstance().isNotPremium()) return DO_NOTHING;
 
-        int gesture = App.transformApp(app -> app.getPreferences().getInt(direction, UNASSIGNED_GESTURE), UNASSIGNED_GESTURE);
+        int gesture = App.Companion.transformApp(app -> app.getPreferences().getInt(direction, UNASSIGNED_GESTURE), UNASSIGNED_GESTURE);
         if (gesture != UNASSIGNED_GESTURE) return gesture;
 
         // Defaults
@@ -420,28 +420,28 @@ public final class GestureMapper extends FingerprintGestureController.Fingerprin
     public String getDirectionName(@GestureDirection String direction) {
         switch (direction) {
             case UP_GESTURE:
-                return App.transformApp(app -> app.getString(R.string.swipe_up), "");
+                return App.Companion.transformApp(app -> app.getString(R.string.swipe_up), "");
             case DOWN_GESTURE:
-                return App.transformApp(app -> app.getString(R.string.swipe_down), "");
+                return App.Companion.transformApp(app -> app.getString(R.string.swipe_down), "");
             case LEFT_GESTURE:
-                return App.transformApp(app -> app.getString(R.string.swipe_left), "");
+                return App.Companion.transformApp(app -> app.getString(R.string.swipe_left), "");
             case RIGHT_GESTURE:
-                return App.transformApp(app -> app.getString(R.string.swipe_right), "");
+                return App.Companion.transformApp(app -> app.getString(R.string.swipe_right), "");
             case DOUBLE_UP_GESTURE:
-                return App.transformApp(app -> app.getString(R.string.double_swipe_up), "");
+                return App.Companion.transformApp(app -> app.getString(R.string.double_swipe_up), "");
             case DOUBLE_DOWN_GESTURE:
-                return App.transformApp(app -> app.getString(R.string.double_swipe_down), "");
+                return App.Companion.transformApp(app -> app.getString(R.string.double_swipe_down), "");
             case DOUBLE_LEFT_GESTURE:
-                return App.transformApp(app -> app.getString(R.string.double_swipe_left), "");
+                return App.Companion.transformApp(app -> app.getString(R.string.double_swipe_left), "");
             case DOUBLE_RIGHT_GESTURE:
-                return App.transformApp(app -> app.getString(R.string.double_swipe_right), "");
+                return App.Companion.transformApp(app -> app.getString(R.string.double_swipe_right), "");
             default:
                 return "";
         }
     }
 
     private int[] getActionIds() {
-        return App.transformApp(app -> {
+        return App.Companion.transformApp(app -> {
             TypedArray array = app.getResources().obtainTypedArray(R.array.action_resources);
             int length = array.length();
 

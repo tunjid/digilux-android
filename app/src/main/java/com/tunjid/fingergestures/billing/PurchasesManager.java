@@ -80,7 +80,7 @@ public class PurchasesManager implements PurchasesUpdatedListener {
         if (purchases == null) return;
         if (responseCode != BillingClient.BillingResponse.OK) return;
 
-        SharedPreferences preferences = transformApp(App::getPreferences);
+        SharedPreferences preferences = Companion.transformApp(App::getPreferences);
         if (preferences == null) return;
 
         Set<String> skus = new HashSet<>(preferences.getStringSet(PURCHASES, EMPTY));
@@ -90,14 +90,14 @@ public class PurchasesManager implements PurchasesUpdatedListener {
     }
 
     public void setHasLockedContent(boolean hasLockedContent) {
-        withApp(app -> {
+        Companion.withApp(app -> {
             app.getPreferences().edit().putBoolean(HAS_LOCKED_CONTENT, hasLockedContent).apply();
             app.broadcast(new Intent(ACTION_LOCKED_CONTENT_CHANGED));
         });
     }
 
     public boolean hasLockedContent() {
-        return transformApp(app -> app.getPreferences().getBoolean(HAS_LOCKED_CONTENT, false), false);
+        return Companion.transformApp(app -> app.getPreferences().getBoolean(HAS_LOCKED_CONTENT, false), false);
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
@@ -105,14 +105,14 @@ public class PurchasesManager implements PurchasesUpdatedListener {
         if (!hasLockedContent()) return false;
         if (isTrial) return false;
 //        if (BuildConfig.DEV) return false;
-        return !transformApp(app -> getPurchaseSet(app).contains(PREMIUM_SKU), false);
+        return !Companion.transformApp(app -> getPurchaseSet(app).contains(PREMIUM_SKU), false);
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
     public boolean hasNotGoneAdFree() {
         if (!hasLockedContent()) return false;
         if (isTrial) return false;
-        return !transformApp(app -> getPurchaseSet(app).contains(AD_FREE_SKU), false);
+        return !Companion.transformApp(app -> getPurchaseSet(app).contains(AD_FREE_SKU), false);
     }
 
     public boolean isPremium() {
@@ -123,7 +123,7 @@ public class PurchasesManager implements PurchasesUpdatedListener {
     public boolean isPremiumNotTrial() {
         if (!hasLockedContent()) return true;
 //        if (BuildConfig.DEV) return true;
-        return transformApp(app -> getPurchaseSet(app).contains(PREMIUM_SKU), false);
+        return Companion.transformApp(app -> getPurchaseSet(app).contains(PREMIUM_SKU), false);
     }
 
     public boolean hasAds() {
@@ -160,21 +160,21 @@ public class PurchasesManager implements PurchasesUpdatedListener {
 
     public String getTrialPeriodText() {
         if (isTrialRunning())
-            return transformApp(app -> app.getString(R.string.trial_running), App.EMPTY);
+            return Companion.transformApp(app -> app.getString(R.string.trial_running), App.Companion.getEMPTY());
 
         int trialPeriod = getTrialPeriod();
         String periodText = trialPeriod == FIRST_TRIAL_PERIOD ? "10m" : trialPeriod == SECOND_TRIAL_PERIOD ? "60s" : "10s";
 
-        return transformApp(app -> app.getString(R.string.trial_text, periodText), App.EMPTY);
+        return Companion.transformApp(app -> app.getString(R.string.trial_text, periodText), App.Companion.getEMPTY());
     }
 
     void onPurchasesQueried(int responseCode, @Nullable List<Purchase> purchases) {
-        withApp(app -> app.getPreferences().edit().remove(PURCHASES).apply());
+        Companion.withApp(app -> app.getPreferences().edit().remove(PURCHASES).apply());
         onPurchasesUpdated(responseCode, purchases);
     }
 
     void clearPurchases() {
-        withApp(app -> app.getPreferences().edit().remove(PURCHASES).apply());
+        Companion.withApp(app -> app.getPreferences().edit().remove(PURCHASES).apply());
     }
 
     // App is open source, do a psuedo check.

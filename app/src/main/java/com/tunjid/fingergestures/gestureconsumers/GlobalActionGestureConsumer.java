@@ -88,7 +88,7 @@ public class GlobalActionGestureConsumer implements GestureConsumer {
                 break;
         }
 
-        if (App.isPieOrHigher()) {
+        if (App.Companion.isPieOrHigher()) {
             if (gestureAction == GLOBAL_TAKE_SCREENSHOT) action = GLOBAL_ACTION_TAKE_SCREENSHOT;
             else if (gestureAction == GLOBAL_LOCK_SCREEN) action = GLOBAL_ACTION_LOCK_SCREEN;
         }
