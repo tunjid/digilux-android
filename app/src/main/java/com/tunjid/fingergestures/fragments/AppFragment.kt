@@ -27,26 +27,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
+import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.ViewModelProviders
 import com.theartofdev.edmodo.cropper.CropImage
 import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment
 import com.tunjid.androidbootstrap.recyclerview.ListManager
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
+import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
+import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.AppAdapter
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.viewholders.AppViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-
-import java.util.Arrays
+import java.util.*
 import java.util.stream.IntStream
-import androidx.fragment.app.FragmentTransaction
-import androidx.lifecycle.ViewModelProviders
-
-import com.tunjid.fingergestures.BackgroundManager.DAY_WALLPAPER_PICK_CODE
-import com.tunjid.fingergestures.BackgroundManager.NIGHT_WALLPAPER_PICK_CODE
 import kotlin.math.abs
 
 class AppFragment : MainActivityFragment(), AppAdapter.AppAdapterListener {
@@ -128,7 +125,7 @@ class AppFragment : MainActivityFragment(), AppAdapter.AppAdapterListener {
     }
 
     fun cropImage(source: Uri?, @BackgroundManager.WallpaperSelection selection: Int) {
-        val backgroundManager = BackgroundManager.getInstance()
+        val backgroundManager = BackgroundManager.instance
         val aspectRatio = backgroundManager.screenAspectRatio ?: return
 
         val activity = activity ?: return

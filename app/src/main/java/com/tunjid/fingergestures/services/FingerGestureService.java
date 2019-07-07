@@ -118,7 +118,7 @@ public class FingerGestureService extends AccessibilityService {
 
         getFingerprintGestureController().registerFingerprintGestureCallback(GestureMapper.Companion.getInstance(), new Handler(gestureThread.getLooper()));
 
-        BackgroundManager.getInstance().restoreWallpaperChange();
+        BackgroundManager.Companion.getInstance().restoreWallpaperChange();
 
         subscribeToBroadcasts();
         registerReceiver(screenWakeReceiver, new IntentFilter(ACTION_SCREEN_ON));

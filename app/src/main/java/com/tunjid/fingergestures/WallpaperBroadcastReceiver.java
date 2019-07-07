@@ -24,6 +24,6 @@ import android.content.Intent;
 public class WallpaperBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        BackgroundManager.getInstance().onIntentReceived(intent);
+        BackgroundManager.Companion.getInstance().onIntentReceived(intent);
     }
 }

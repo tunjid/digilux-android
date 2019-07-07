@@ -35,7 +35,7 @@ import com.tunjid.fingergestures.adapters.PackageAdapter
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS
+import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel.EXCLUDED_ROTATION_LOCK
@@ -64,8 +64,8 @@ class PackageFragment : MainActivityFragment() {
                 .addDecoration(divider())
                 .build()
 
-        val persistedSet = arguments!!.getString(ARG_PERSISTED_SET)
-        toolbar.title = RotationGestureConsumer.getInstance().getAddText(persistedSet)
+        val persistedSet = arguments!!.getString(ARG_PERSISTED_SET)!!
+        toolbar.title = RotationGestureConsumer.instance.getAddText(persistedSet)
 
         disposables.add(viewModel.updatedApps().subscribe({ result ->
             TransitionManager.beginDelayedTransition(root, AutoTransition())
@@ -83,7 +83,7 @@ class PackageFragment : MainActivityFragment() {
         val persistedSet = args.getString(ARG_PERSISTED_SET)
                 ?: return showSnackbar(R.string.generic_error)
 
-        val added = RotationGestureConsumer.getInstance().addToSet(packageName, persistedSet)
+        val added = RotationGestureConsumer.instance.addToSet(packageName, persistedSet)
 
         if (!added) {
             val context = requireContext()
