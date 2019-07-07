@@ -81,15 +81,13 @@ class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener
         @GestureMapper.GestureDirection
         val direction = args.getString(ARG_DIRECTION)
 
-        val isPopUpInstance = direction == null
-
         toggleBottomSheet(false)
 
         val fragment = currentAppFragment ?: return
 
         val mapper = GestureMapper.instance
 
-        if (isPopUpInstance) {
+        if (direction == null) { // Pop up instance
             val context = requireContext()
             when {
                 PopUpGestureConsumer.instance.addToSet(actionRes) -> fragment.notifyItemChanged(POPUP_ACTION)

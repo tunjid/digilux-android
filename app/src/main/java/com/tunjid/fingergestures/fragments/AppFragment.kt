@@ -43,7 +43,6 @@ import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.viewholders.AppViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import java.util.*
-import java.util.stream.IntStream
 import kotlin.math.abs
 
 class AppFragment : MainActivityFragment(), AppAdapter.AppAdapterListener {
@@ -109,8 +108,8 @@ class AppFragment : MainActivityFragment(), AppAdapter.AppAdapterListener {
     }
 
     override fun notifyItemChanged(@AppViewModel.AdapterIndex index: Int) {
-        val index = IntStream.range(0, items.size).filter { i -> items[i] == index }.findFirst().orElse(-1)
-        if (index != -1) listManager.notifyItemChanged(index)
+        val listIndex = items.indexOf(index)
+        if (listIndex != -1) listManager.notifyItemChanged(listIndex)
     }
 
     fun notifyDataSetChanged() {
