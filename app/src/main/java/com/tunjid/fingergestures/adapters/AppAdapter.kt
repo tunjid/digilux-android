@@ -43,8 +43,8 @@ import com.tunjid.fingergestures.viewholders.AudioStreamViewHolder
 import com.tunjid.fingergestures.viewholders.ColorAdjusterViewHolder
 import com.tunjid.fingergestures.viewholders.DiscreteBrightnessViewHolder
 import com.tunjid.fingergestures.viewholders.LinkViewHolder
-import com.tunjid.fingergestures.viewholders.LinkViewHolder.REVIEW_LINK_ITEM
-import com.tunjid.fingergestures.viewholders.LinkViewHolder.SUPPORT_LINK_ITEM
+import com.tunjid.fingergestures.viewholders.LinkViewHolder.Companion.REVIEW_LINK_ITEM
+import com.tunjid.fingergestures.viewholders.LinkViewHolder.Companion.SUPPORT_LINK_ITEM
 import com.tunjid.fingergestures.viewholders.MapperViewHolder
 import com.tunjid.fingergestures.viewholders.PopupViewHolder
 import com.tunjid.fingergestures.viewholders.RotationViewHolder
@@ -113,7 +113,7 @@ class AppAdapter(
                     R.string.adaptive_brightness,
                     brightnessGestureConsumer::restoresAdaptiveBrightnessOnDisplaySleep
             ) { flag ->
-                brightnessGestureConsumer.shouldRestoreAdaptiveBrightnessOnDisplaySleep(flag!!)
+                brightnessGestureConsumer.shouldRestoreAdaptiveBrightnessOnDisplaySleep(flag)
                 adapterListener.notifyItemChanged(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS)
             }
 

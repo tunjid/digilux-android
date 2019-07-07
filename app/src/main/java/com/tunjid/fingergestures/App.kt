@@ -136,31 +136,23 @@ class App : android.app.Application() {
             return if (app != null) appTFunction.invoke(app) else defaultValue
         }
 
-        fun <T> transformApp(appTFunction: (App) -> T): T? {
-            return transformApp(appTFunction, null)
-        }
+        fun <T> transformApp(appTFunction: (App) -> T): T? = transformApp(appTFunction, null)
 
-        fun <T> nullCheck(target: T?, consumer: (T) -> Unit) {
-            if (target != null) consumer.invoke(target)
-        }
-
-        fun <T> diff(list: List<T>, supplier: () -> List<T>): Single<DiffUtil.DiffResult> {
-            return diff(list, supplier, { it.toString() })
-        }
+        fun <T> diff(list: List<T>, supplier: () -> List<T>): Single<DiffUtil.DiffResult> =
+                diff(list, supplier, { it.toString() })
 
         fun <T> diff(list: List<T>,
                      supplier: () -> List<T>,
-                     diffFunction: (T) -> String): Single<DiffUtil.DiffResult> {
-            return backgroundToMain<Diff<T>> {
-                Diff.calculate(
-                        list,
-                        supplier.invoke(),
-                        { _, newList -> newList },
-                        { item -> Differentiable.fromCharSequence { diffFunction.invoke(item) } })
-            }
-                    .doOnSuccess { diff -> Lists.replace(list, diff.items) }
-                    .map { diff -> diff.result }
-        }
+                     diffFunction: (T) -> String): Single<DiffUtil.DiffResult> =
+                backgroundToMain<Diff<T>> {
+                    Diff.calculate(
+                            list,
+                            supplier.invoke(),
+                            { _, newList -> newList },
+                            { item -> Differentiable.fromCharSequence { diffFunction.invoke(item) } })
+                }
+                        .doOnSuccess { diff -> Lists.replace(list, diff.items) }
+                        .map { diff -> diff.result }
 
         fun <T> backgroundToMain(supplier: () -> T): Single<T> {
             return Single.fromCallable<T> { supplier.invoke() }
