@@ -136,7 +136,7 @@ class App : android.app.Application() {
             return if (app != null) appTFunction.invoke(app) else defaultValue
         }
 
-        fun <T> transformApp(appTFunction: (App) -> T): T? = transformApp(appTFunction, null)
+        fun <T> transformApp(appTFunction: (App) -> T?): T? = transformApp(appTFunction, null)
 
         fun <T> diff(list: List<T>, supplier: () -> List<T>): Single<DiffUtil.DiffResult> =
                 diff(list, supplier, { it.toString() })

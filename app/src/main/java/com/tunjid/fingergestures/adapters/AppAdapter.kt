@@ -29,13 +29,13 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.DOWN_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.LEFT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.RIGHT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.UP_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.EXCLUDED_APPS
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.ROTATION_APPS
+import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.EXCLUDED_APPS
+import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewholders.AdFreeViewHolder
 import com.tunjid.fingergestures.viewholders.AppViewHolder
@@ -69,12 +69,12 @@ class AppAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppViewHolder {
         val context = parent.context
-        val brightnessGestureConsumer = BrightnessGestureConsumer.getInstance()
-        val rotationGestureConsumer = RotationGestureConsumer.getInstance()
-        val popUpGestureConsumer = PopUpGestureConsumer.getInstance()
-        val audioGestureConsumer = AudioGestureConsumer.getInstance()
-        val backgroundManager = BackgroundManager.getInstance()
-        val purchasesManager = PurchasesManager.getInstance()
+        val brightnessGestureConsumer = BrightnessGestureConsumer.instance
+        val rotationGestureConsumer = RotationGestureConsumer.instance
+        val popUpGestureConsumer = PopUpGestureConsumer.instance
+        val audioGestureConsumer = AudioGestureConsumer.instance
+        val backgroundManager = BackgroundManager.instance
+        val purchasesManager = PurchasesManager.instance
 
         return when (viewType) {
             PADDING -> AppViewHolder(getItemView(R.layout.viewholder_padding, parent))
@@ -152,13 +152,13 @@ class AppAdapter(
                     { popUpGestureConsumer.isSingleClick = it })
 
             DOUBLE_SWIPE_SETTINGS -> {
-                val mapper = GestureMapper.getInstance()
+                val mapper = GestureMapper.instance
                 SliderAdjusterViewHolder(
                         getItemView(R.layout.viewholder_slider_delta, parent),
                         R.string.adjust_double_swipe_settings,
                         { mapper.doubleSwipeDelay = it },
                         { mapper.doubleSwipeDelay },
-                        { PurchasesManager.getInstance().isPremium },
+                        { PurchasesManager.instance.isPremium },
                         mapper::getSwipeDelayText)
             }
             ANIMATES_POPUP -> ToggleViewHolder(getItemView(R.layout.viewholder_toggle, parent),

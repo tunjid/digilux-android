@@ -158,13 +158,13 @@ public class AppViewModel extends AndroidViewModel {
         return App.Companion.diff(state.getInstalledApps(),
                 () -> getApplication().getPackageManager().getInstalledApplications(0).stream()
                         .filter(this::isUserInstalledApp)
-                        .sorted(RotationGestureConsumer.getInstance().getApplicationInfoComparator())
+                        .sorted(RotationGestureConsumer.Companion.getInstance().getApplicationInfoComparator())
                         .collect(Collectors.toList()),
                 info -> info.packageName);
     }
 
     public Single<DiffUtil.DiffResult> updatedActions() {
-        return App.Companion.diff(state.getAvailableActions(), () -> IntStream.of(GestureMapper.getInstance().getActions()).boxed().collect(Collectors.toList()));
+        return App.Companion.diff(state.getAvailableActions(), () -> IntStream.of(GestureMapper.Companion.getInstance().getActions()).boxed().collect(Collectors.toList()));
     }
 
     public void shillMoar() {

@@ -15,30 +15,22 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.gestureconsumers;
+package com.tunjid.fingergestures.gestureconsumers
 
-import android.annotation.SuppressLint;
+class NothingGestureConsumer private constructor() : GestureConsumer {
 
-public class NothingGestureConsumer implements GestureConsumer {
-
-    @SuppressLint("StaticFieldLeak")
-    private static NothingGestureConsumer instance;
-
-    static NothingGestureConsumer getInstance() {
-        if (instance == null) instance = new NothingGestureConsumer();
-        return instance;
+    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
+        return gesture == GestureConsumer.DO_NOTHING
     }
 
-    private NothingGestureConsumer() {}
-
-    @Override
-    public boolean accepts(@GestureAction int gesture) {
-        return gesture == DO_NOTHING;
-    }
-
-    @Override
-    public void onGestureActionTriggered(@GestureAction int gestureAction) {
+    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
         // Do nothing
+    }
+
+    companion object {
+
+        val instance: NothingGestureConsumer by lazy { NothingGestureConsumer() }
+
     }
 }
 

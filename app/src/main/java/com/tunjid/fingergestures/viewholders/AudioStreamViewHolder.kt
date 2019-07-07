@@ -56,7 +56,7 @@ class AudioStreamViewHolder(
     }
 
     private fun onStreamPicked(checkedId: Int) {
-        AudioGestureConsumer.getInstance().setStreamType(checkedId)
+        AudioGestureConsumer.getInstance().streamType = checkedId
         adapterListener.notifyItemChanged(AUDIO_DELTA)
     }
 }

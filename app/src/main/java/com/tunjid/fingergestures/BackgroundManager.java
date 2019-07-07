@@ -138,9 +138,9 @@ public class BackgroundManager {
         return Companion.transformApp(app -> app.getPreferences().getInt(BACKGROUND_COLOR, getColor(app, R.color.colorPrimary)), Color.LTGRAY);
     }
 
-    @IntRange(from = GestureConsumer.ZERO_PERCENT, to = GestureConsumer.HUNDRED_PERCENT)
+    @IntRange(from = GestureConsumer.Companion.getZERO_PERCENT(), to = GestureConsumer.Companion.getHUNDRED_PERCENT())
     public int getSliderDurationPercentage() {
-        return Companion.transformApp(app -> app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT), GestureConsumer.FIFTY_PERCENT);
+        return Companion.transformApp(app -> app.getPreferences().getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT), GestureConsumer.Companion.getFIFTY_PERCENT());
     }
 
     public int getSliderDurationMillis() {
@@ -162,13 +162,13 @@ public class BackgroundManager {
         Companion.withApp(app -> app.getPreferences().edit().putInt(BACKGROUND_COLOR, color).apply());
     }
 
-    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.ZERO_PERCENT,
-            to = GestureConsumer.HUNDRED_PERCENT) int duration) {
+    public void setSliderDurationPercentage(@IntRange(from = GestureConsumer.Companion.getZERO_PERCENT(),
+            to = GestureConsumer.Companion.getHUNDRED_PERCENT()) int duration) {
         Companion.withApp(app -> app.getPreferences().edit().putInt(SLIDER_DURATION, duration).apply());
     }
 
-    public String getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT,
-            to = GestureConsumer.HUNDRED_PERCENT) int duration) {
+    public String getSliderDurationText(@IntRange(from = GestureConsumer.Companion.getZERO_PERCENT(),
+            to = GestureConsumer.Companion.getHUNDRED_PERCENT()) int duration) {
         int millis = durationPercentageToMillis(duration);
         float seconds = millis / 1000F;
         return Companion.transformApp(app -> app.getString(R.string.duration_value, seconds), Companion.getEMPTY());
