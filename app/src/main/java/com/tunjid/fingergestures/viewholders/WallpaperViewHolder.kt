@@ -104,7 +104,7 @@ class WallpaperViewHolder(
         val file = backgroundManager.getWallpaperFile(selection, context)
         if (!file.exists()) return
 
-        Picasso.with(context).load(file)
+        Picasso.get().load(file)
                 .memoryPolicy(MemoryPolicy.NO_CACHE)
                 .fit()
                 .noFade()
