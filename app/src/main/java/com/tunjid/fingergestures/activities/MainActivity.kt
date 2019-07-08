@@ -153,8 +153,7 @@ class MainActivity : FingerGestureActivity() {
         val startIntent = intent
         val isPickIntent = startIntent != null && ACTION_SEND == startIntent.action
 
-        if (savedInstanceState == null && isPickIntent)
-            handleIntent(startIntent)
+        if (savedInstanceState == null && isPickIntent) handleIntent(startIntent)
         else if (savedInstanceState == null) showAppFragment(viewModel.gestureItems)
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks() {
@@ -162,8 +161,7 @@ class MainActivity : FingerGestureActivity() {
                                                f: Fragment,
                                                v: View,
                                                savedInstanceState: Bundle?) {
-                if (f is AppFragment)
-                    updateBottomNav(f, bottomNavigationView)
+                if (f is AppFragment) updateBottomNav(f, bottomNavigationView)
             }
         }, false)
 
@@ -173,10 +171,8 @@ class MainActivity : FingerGestureActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (PurchasesManager.instance.hasAds())
-            shill()
-        else
-            hideAds()
+        if (PurchasesManager.instance.hasAds()) shill()
+        else hideAds()
 
         if (!accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE)
 
@@ -210,7 +206,7 @@ class MainActivity : FingerGestureActivity() {
                     snackbar.duration = if (isTrialRunning) LENGTH_SHORT else LENGTH_INDEFINITE
 
                     if (!isTrialRunning)
-                        snackbar.setAction(android.R.string.yes) { purchasesManager.startTrial();recreate() }
+                        snackbar.setAction(android.R.string.yes) { purchasesManager.startTrial(); recreate() }
 
                     snackbar.show()
                 }
@@ -377,9 +373,7 @@ class MainActivity : FingerGestureActivity() {
 
         val hideTransition = transition
         hideTransition.addListener(object : TransitionListenerAdapter() {
-            override fun onTransitionEnd(transition: Transition) {
-                showSnackbar(R.string.billing_thanks)
-            }
+            override fun onTransitionEnd(transition: Transition) = showSnackbar(R.string.billing_thanks)
         })
         TransitionManager.beginDelayedTransition(constraintLayout, hideTransition)
         shillSwitcher.visibility = View.GONE
