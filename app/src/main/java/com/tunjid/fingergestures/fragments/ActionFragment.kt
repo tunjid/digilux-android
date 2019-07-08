@@ -30,6 +30,7 @@ import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.ActionAdapter
+import com.tunjid.fingergestures.adapters.withPaddedAdapter
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
@@ -66,7 +67,7 @@ class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener
         val listManager = ListManagerBuilder<ActionViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
                 .withLinearLayoutManager()
-                .withAdapter(ActionAdapter(isHorizontal = false, showsText = true, list = viewModel.state.availableActions, listener = this))
+                .withPaddedAdapter(ActionAdapter(isHorizontal = false, showsText = true, list = viewModel.state.availableActions, listener = this))
                 .addDecoration(divider())
                 .build()
 

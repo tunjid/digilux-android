@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2017, 2018, 2019 Adetunji Dahunsi.
   ~
   ~     This program is free software: you can redistribute it and/or modify
@@ -37,7 +36,7 @@
         android:id="@+id/main_fragment_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/upgrade_prompt"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_inset"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/top_inset" />
@@ -66,7 +65,7 @@
         android:id="@+id/bottom_navigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
+        android:background="@drawable/bottom_nav_background"
         app:elevation="@dimen/half_margin"
         app:itemIconTint="@color/toggle_text"
         app:itemTextColor="@color/toggle_text"
@@ -79,7 +78,7 @@
         android:id="@+id/container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_inset"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/top_inset">
@@ -89,7 +88,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:layout_margin="@dimen/single_margin"
+            android:layout_marginEnd="@dimen/single_margin"
+            android:layout_marginBottom="@dimen/quadruple_margin"
             android:text="@string/enable_accessibility"
             app:layout_behavior="@string/bottom_transient_bar_behavior"
             app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"

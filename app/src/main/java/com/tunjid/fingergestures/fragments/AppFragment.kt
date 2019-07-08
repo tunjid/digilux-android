@@ -39,6 +39,7 @@ import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_
 import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.adapters.withPaddedAdapter
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.viewholders.AppViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
@@ -64,7 +65,7 @@ class AppFragment : MainActivityFragment(), AppAdapter.AppAdapterListener {
 
         listManager = ListManagerBuilder<AppViewHolder, Void>()
                 .withRecyclerView(root.findViewById(R.id.options_list))
-                .withAdapter(AppAdapter(items, ViewModelProviders.of(requireActivity()).get(AppViewModel::class.java).state, this))
+                .withPaddedAdapter(AppAdapter(items, ViewModelProviders.of(requireActivity()).get(AppViewModel::class.java).state, this))
                 .withLinearLayoutManager()
                 .addDecoration(divider())
                 .addScrollListener { _, dy -> if (abs(dy) > 3) toggleToolbar(dy < 0) }

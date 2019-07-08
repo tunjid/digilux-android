@@ -16,19 +16,11 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<resources>
-    <color name="colorPrimary">#334750</color>
-    <color name="colorPrimaryDark">#233239</color>
-    <color name="colorPrimary50">#80334750</color>
-    <color name="colorAccent">#bdbdbd</color>
-    <color name="colorBackground">#212121</color>
-    <color name="toggle_text">#bdbdbd</color>
-    <color name="transparent">#00000000</color>
-
-    <!-- card colors -->
-    <color name="card_background">#ffffff</color>
-    <color name="card_shadow_1">#d4d4d4</color>
-    <color name="card_shadow_2">#dddddd</color>
-    <color name="card_detailing">#eee</color>
-
-</resources>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="90"
+        android:startColor="@color/colorPrimary"
+        android:endColor="@color/colorPrimary50"
+        android:type="linear"/>
+</shape>

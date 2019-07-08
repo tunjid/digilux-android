@@ -32,6 +32,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.PackageAdapter
+import com.tunjid.fingergestures.adapters.withPaddedAdapter
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
@@ -56,7 +57,7 @@ class PackageFragment : MainActivityFragment() {
         val toolbar = root.findViewById<Toolbar>(R.id.title_bar)
         val progressBar = root.findViewById<ProgressBar>(R.id.progress_bar)
         val listManager = ListManagerBuilder<PackageViewHolder, Void>()
-                .withAdapter(PackageAdapter(false, viewModel.state.installedApps, object : PackageAdapter.PackageClickListener {
+                .withPaddedAdapter(PackageAdapter(false, viewModel.state.installedApps, object : PackageAdapter.PackageClickListener {
                     override fun onPackageClicked(packageName: String) = this@PackageFragment.onPackageClicked(packageName)
                 }))
                 .withRecyclerView(root.findViewById(R.id.options_list))
