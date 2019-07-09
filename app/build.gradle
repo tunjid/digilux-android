@@ -16,14 +16,14 @@ if (hasKeyInfo) {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.tunjid.fingergestures"
         minSdkVersion 26
-        targetSdkVersion 28
-        versionCode 46
-        versionName "8.0.0"
+        targetSdkVersion 29
+        versionCode 47
+        versionName "8.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -95,7 +95,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$parent.ext.kotlin_version"
 
-    implementation('com.theartofdev.edmodo:android-image-cropper:2.7.0') {
+    implementation('com.theartofdev.edmodo:android-image-cropper:2.8.0') {
         exclude module: 'support-annotations'
         exclude module: 'recyclerview-v7'
         exclude module: 'exifinterface'
@@ -115,6 +115,6 @@ dependencies {
     }
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
