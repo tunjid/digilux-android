@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 def keystoreProps = new Properties()
 def propertiesFile = file("keystore.properties")
@@ -15,14 +16,14 @@ if (hasKeyInfo) {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.tunjid.fingergestures"
         minSdkVersion 26
-        targetSdkVersion 28
-        versionCode 46
-        versionName "8.0.0"
+        targetSdkVersion 29
+        versionCode 47
+        versionName "8.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -63,6 +64,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {
@@ -74,6 +78,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.palette:palette:1.0.0'
+    implementation 'androidx.core:core-ktx:1.0.2'
 
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.google.android:flexbox:1.1.0'
@@ -83,12 +88,14 @@ dependencies {
     implementation 'com.tunjid.android-bootstrap:material:5.0.0'
     implementation 'com.tunjid.android-bootstrap:recyclerview:5.0.0'
 
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.6'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 
-    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.squareup.picasso:picasso:2.71828'
 
-    implementation('com.theartofdev.edmodo:android-image-cropper:2.7.0') {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$parent.ext.kotlin_version"
+
+    implementation('com.theartofdev.edmodo:android-image-cropper:2.8.0') {
         exclude module: 'support-annotations'
         exclude module: 'recyclerview-v7'
         exclude module: 'exifinterface'
@@ -108,6 +115,6 @@ dependencies {
     }
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
