@@ -19,11 +19,12 @@ package com.tunjid.fingergestures
 
 
 import java.util.*
+import kotlin.collections.HashSet
 
-class SetManager<T: Any>(private val sorter: Comparator<T>,
-                    private val addFilter: (String) -> Boolean,
-                    private val stringMapper: (String) -> T?,
-                    private val objectMapper: (T) -> String) {
+class SetManager<T : Any>(private val sorter: Comparator<T>,
+                          private val addFilter: (String) -> Boolean,
+                          private val stringMapper: (String) -> T?,
+                          private val objectMapper: (T) -> String) {
 
     fun addToSet(value: String, preferencesName: String): Boolean {
         if (!addFilter.invoke(preferencesName)) return false
@@ -50,9 +51,9 @@ class SetManager<T: Any>(private val sorter: Comparator<T>,
             .sortedWith(sorter)
             .map(objectMapper)
 
-    fun getSet(preferencesName: String): MutableSet<String> {
-        val defaultValue = HashSet<String>()
-        return App.transformApp({ app -> HashSet(app.preferences.getStringSet(preferencesName, defaultValue)) }, defaultValue)
+    fun getSet(preferencesName: String): MutableSet<String> = HashSet<String>().apply {
+        val saved = App.transformApp { app -> app.preferences.getStringSet(preferencesName, emptySet())?.filterNotNull() }
+        if (saved != null) addAll(saved)
     }
 
     private fun saveSet(set: Set<String>, preferencesName: String) =

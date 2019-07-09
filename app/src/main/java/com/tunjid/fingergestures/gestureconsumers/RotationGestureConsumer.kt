@@ -71,9 +71,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         isAutoRotateOn = !isAutoRotateOn
     }
 
-    override fun accepts(gesture: Int): Boolean {
-        return gesture == GestureConsumer.TOGGLE_AUTO_ROTATE
-    }
+    override fun accepts(gesture: Int): Boolean = gesture == GestureConsumer.TOGGLE_AUTO_ROTATE
 
     fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
@@ -92,43 +90,34 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         isAutoRotateOn = rotationApps.contains(packageName)
     }
 
-    fun getAddText(@PersistedSet preferencesName: String): String {
-        return App.transformApp({ app ->
-            app.getString(R.string.auto_rotate_add, if (ROTATION_APPS == preferencesName)
-                app.getString(R.string.auto_rotate_apps)
-            else
-                app.getString(R.string.auto_rotate_apps_excluded))
-        }, EMPTY_STRING)
-    }
+    fun getAddText(@PersistedSet preferencesName: String): String = App.transformApp({ app ->
+        app.getString(R.string.auto_rotate_add, if (ROTATION_APPS == preferencesName)
+            app.getString(R.string.auto_rotate_apps)
+        else
+            app.getString(R.string.auto_rotate_apps_excluded))
+    }, EMPTY_STRING)
 
-    fun getRemoveText(@PersistedSet preferencesName: String): String {
-        return App.transformApp({ app ->
-            app.getString(R.string.auto_rotate_remove, if (ROTATION_APPS == preferencesName)
-                app.getString(R.string.auto_rotate_apps)
-            else
-                app.getString(R.string.auto_rotate_apps_excluded))
-        }, EMPTY_STRING)
-    }
+    fun getRemoveText(@PersistedSet preferencesName: String): String = App.transformApp({ app ->
+        app.getString(R.string.auto_rotate_remove, if (ROTATION_APPS == preferencesName)
+            app.getString(R.string.auto_rotate_apps)
+        else
+            app.getString(R.string.auto_rotate_apps_excluded))
+    }, EMPTY_STRING)
 
-    fun isRemovable(packageName: String): Boolean {
-        return App.transformApp({ app -> ANDROID_SYSTEM_UI_PACKAGE != packageName && app.packageName != packageName }, false)
-    }
+    fun isRemovable(packageName: String): Boolean =
+            App.transformApp({ app -> ANDROID_SYSTEM_UI_PACKAGE != packageName && app.packageName != packageName }, false)
 
-    fun addToSet(packageName: String, @PersistedSet preferencesName: String): Boolean {
-        return setManager.addToSet(packageName, preferencesName)
-    }
+    fun addToSet(packageName: String, @PersistedSet preferencesName: String): Boolean =
+            setManager.addToSet(packageName, preferencesName)
 
-    fun removeFromSet(packageName: String, @PersistedSet preferencesName: String) {
-        setManager.removeFromSet(packageName, preferencesName)
-    }
+    fun removeFromSet(packageName: String, @PersistedSet preferencesName: String) =
+            setManager.removeFromSet(packageName, preferencesName)
 
-    fun getList(@PersistedSet preferenceName: String): List<ApplicationInfo> {
-        return setManager.getItems(preferenceName)
-    }
+    fun getList(@PersistedSet preferenceName: String): List<ApplicationInfo> =
+            setManager.getItems(preferenceName)
 
-    fun canAutoRotate(): Boolean {
-        return App.transformApp({ app -> app.preferences.getBoolean(WATCHES_WINDOW_CONTENT, false) }, false)
-    }
+    fun canAutoRotate(): Boolean =
+            App.transformApp({ app -> app.preferences.getBoolean(WATCHES_WINDOW_CONTENT, false) }, false)
 
     fun enableWindowContentWatching(enabled: Boolean) {
         App.withApp { app ->
@@ -154,18 +143,14 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         }, 0)
     }
 
-    private fun fromApplicationInfo(info: ApplicationInfo): String {
-        return info.packageName
-    }
+    private fun fromApplicationInfo(info: ApplicationInfo): String = info.packageName
 
-    private fun fromPackageName(packageName: String): ApplicationInfo? {
-        return App.transformApp { app ->
-            try {
-                app.packageManager.getApplicationInfo(packageName, 0)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
+    private fun fromPackageName(packageName: String): ApplicationInfo? = App.transformApp { app ->
+        try {
+            app.packageManager.getApplicationInfo(packageName, 0)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
