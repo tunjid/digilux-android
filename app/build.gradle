@@ -22,8 +22,8 @@ android {
         applicationId "com.tunjid.fingergestures"
         minSdkVersion 26
         targetSdkVersion 29
-        versionCode 48
-        versionName "8.0.2"
+        versionCode 50
+        versionName "8.0.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -88,7 +88,7 @@ dependencies {
     implementation 'com.tunjid.android-bootstrap:material:5.0.0'
     implementation 'com.tunjid.android-bootstrap:recyclerview:5.0.0'
 
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.10'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 
     implementation 'com.squareup.picasso:picasso:2.71828'
