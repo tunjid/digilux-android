@@ -88,23 +88,21 @@ class FingerGestureService : AccessibilityService() {
         get() = findNode(rootInActiveWindow, getSystemUiString(RESOURCE_EDIT_QUICK_SETTINGS, DEFAULT_EDIT_QUICK_SETTINGS)) != null
 
     private val systemUiResources: Resources?
-        get() {
-            val packageManager = packageManager
-
-            return try {
-                packageManager.getResourcesForApplication(ANDROID_SYSTEM_UI_PACKAGE)
-            } catch (e: Exception) {
-                null
-            }
+        get() = try {
+            packageManager.getResourcesForApplication(ANDROID_SYSTEM_UI_PACKAGE)
+        } catch (e: Exception) {
+            null
         }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
 
         if (gestureThread != null) gestureThread?.quitSafely()
-        gestureThread = HandlerThread("GestureThread").apply { start() }
 
-        fingerprintGestureController.registerFingerprintGestureCallback(GestureMapper.instance, Handler(gestureThread?.looper))
+        gestureThread = HandlerThread("GestureThread").apply {
+            start()
+            fingerprintGestureController.registerFingerprintGestureCallback(GestureMapper.instance, Handler(looper))
+        }
 
         BackgroundManager.instance.restoreWallpaperChange()
 
