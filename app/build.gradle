@@ -28,6 +28,16 @@ android {
     }
 
     signingConfigs {
+        debug {
+            if (file('debugKeystore.properties').exists()) {
+                Properties props = new Properties()
+                props.load(new FileInputStream(file('debugKeystore.properties')))
+                storeFile file(props['keystore'])
+                storePassword props['keystore.password']
+                keyAlias props['keyAlias']
+                keyPassword props['keyPassword']
+            }
+        }
         if (hasKeyInfo) {
             release {
                 storeFile storeFileProp
