@@ -29,24 +29,24 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent
-import com.tunjid.androidbootstrap.recyclerview.ListManager
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import com.tunjid.androidx.recyclerview.adapterOf
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapter
-import com.tunjid.fingergestures.adapters.DiscreteBrightnessAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_DELTA
 
 class DiscreteBrightnessViewHolder(
         itemView: View,
-        items: List<String>,
-        listener: AppAdapter.AppAdapterListener
+        items: MutableList<String>,
+        listener: AppAdapterListener
 ) : DiffViewHolder<String>(itemView, items, listener) {
 
     override val sizeCacheKey: String
@@ -77,24 +77,27 @@ class DiscreteBrightnessViewHolder(
         super.bind()
 
         diff()
-        if (!App.canWriteToSettings()) adapterListener.requestPermission(MainActivity.SETTINGS_CODE)
+        if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
     }
 
-    override fun createListManager(itemView: View): ListManager<*, Void> = ListManagerBuilder<DiscreteItemViewHolder, Void>()
-            .withAdapter(DiscreteBrightnessAdapter(items, object : DiscreteBrightnessAdapter.BrightnessValueClickListener {
-                override fun onDiscreteBrightnessClicked(discreteValue: String) {
-                    BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(discreteValue)
-                    adapterListener.notifyItemChanged(SLIDER_DELTA)
-                    bind()
-                }
-            }))
-            .withRecyclerView(itemView.findViewById(R.id.item_list))
-            .withCustomLayoutManager(FlexboxLayoutManager(itemView.context).apply {
-                justifyContent = JustifyContent.FLEX_START
-                flexDirection = FlexDirection.ROW
-                alignItems = AlignItems.CENTER
-            })
-            .build()
+    override fun setupRecyclerView(recyclerView: RecyclerView) = recyclerView.run {
+        layoutManager = FlexboxLayoutManager(recyclerView.context).apply {
+            justifyContent = JustifyContent.FLEX_START
+            flexDirection = FlexDirection.ROW
+            alignItems = AlignItems.CENTER
+        }
+        adapter = adapterOf(
+                itemsSource = ::items,
+                viewHolderCreator = { viewGroup, _ ->
+                    DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
+                        BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(it)
+                        listener.notifyItemChanged(SLIDER_DELTA)
+                        bind()
+                    }
+                },
+                viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+        )
+    }
 
     private fun onDiscreteValueEntered(dialogInterface: DialogInterface, editText: EditText) {
         val discreteValue = editText.text.toString()
@@ -108,7 +111,7 @@ class DiscreteBrightnessViewHolder(
 
         if (isValidValue(value)) {
             BrightnessGestureConsumer.instance.addDiscreteBrightnessValue(discreteValue)
-            adapterListener.notifyItemChanged(SLIDER_DELTA)
+            listener.notifyItemChanged(SLIDER_DELTA)
             bind()
         }
 
@@ -147,7 +150,7 @@ class DiscreteBrightnessViewHolder(
 
     private fun isValidValue(value: Int): Boolean {
         val invalid = value < 1 || value > 99
-        if (invalid) adapterListener.showSnackbar(R.string.discrete_brightness_error)
+        if (invalid) listener.showSnackbar(R.string.discrete_brightness_error)
         return !invalid
     }
 }

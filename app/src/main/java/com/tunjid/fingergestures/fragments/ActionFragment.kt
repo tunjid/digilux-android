@@ -18,19 +18,21 @@
 package com.tunjid.fingergestures.fragments
 
 
-import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModelProviders
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.RecyclerView
+import com.tunjid.androidx.navigation.Navigator
+import com.tunjid.androidx.navigation.activityNavigatorController
+import com.tunjid.androidx.recyclerview.acceptDiff
+import com.tunjid.androidx.recyclerview.adapterOf
+import com.tunjid.androidx.recyclerview.verticalLayoutManager
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.ActionAdapter
-import com.tunjid.fingergestures.adapters.withPaddedAdapter
+import com.tunjid.fingergestures.adapters.padded
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
@@ -51,32 +53,35 @@ import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_RIGHT_ICO
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_UP_ICON
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.POPUP_ACTION
 
-class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener {
+class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
 
-    private lateinit var viewModel: AppViewModel
+    private val viewModel by activityViewModels<AppViewModel>()
+    private val navigator by activityNavigatorController<Navigator>()
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        viewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel::class.java)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        view.findViewById<Toolbar>(R.id.title_bar).setTitle(R.string.pick_action)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.options_list).apply {
+            layoutManager = verticalLayoutManager()
+            adapter = adapterOf(
+                    itemsSource = { viewModel.state.availableActions },
+                    viewHolderCreator = { viewGroup, _ ->
+                        ActionViewHolder(
+                                showsText = true,
+                                itemView = viewGroup.inflate(R.layout.viewholder_action_vertical),
+                                clickListener = ::onActionClicked
+                        )
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            ).padded()
+            addItemDecoration(divider())
+        }
+
+        disposables.add(viewModel.updatedActions().subscribe(recyclerView::acceptDiff, Throwable::printStackTrace))
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_actions, container, false) as ViewGroup
-
-        root.findViewById<Toolbar>(R.id.title_bar).setTitle(R.string.pick_action)
-        val listManager = ListManagerBuilder<ActionViewHolder, Void>()
-                .withRecyclerView(root.findViewById(R.id.options_list))
-                .withLinearLayoutManager()
-                .withPaddedAdapter(ActionAdapter(isHorizontal = false, showsText = true, list = viewModel.state.availableActions, listener = this))
-                .addDecoration(divider())
-                .build()
-
-        disposables.add(viewModel.updatedActions().subscribe(listManager::onDiff, Throwable::printStackTrace))
-
-        return root
-    }
-
-    override fun onActionClicked(@GestureConsumer.GestureAction actionRes: Int) {
+    private fun onActionClicked(@GestureConsumer.GestureAction actionRes: Int) {
         val args = arguments ?: return showSnackbar(R.string.generic_error)
 
         @GestureMapper.GestureDirection
@@ -84,7 +89,7 @@ class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener
 
         toggleBottomSheet(false)
 
-        val fragment = currentAppFragment ?: return
+        val fragment = navigator.current as? AppFragment ?: return
 
         val mapper = GestureMapper.instance
 
@@ -101,11 +106,15 @@ class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener
             }
         } else {
             mapper.mapGestureToAction(direction, actionRes)
-            fragment.notifyItemChanged(when {
-                LEFT_GESTURE == direction || DOUBLE_LEFT_GESTURE == direction -> MAP_LEFT_ICON
-                UP_GESTURE == direction || DOUBLE_UP_GESTURE == direction -> MAP_UP_ICON
-                RIGHT_GESTURE == direction || DOUBLE_RIGHT_GESTURE == direction -> MAP_RIGHT_ICON
-                DOWN_GESTURE == direction || DOUBLE_DOWN_GESTURE == direction -> MAP_DOWN_ICON
+            fragment.notifyItemChanged(when (direction) {
+                LEFT_GESTURE,
+                DOUBLE_LEFT_GESTURE -> MAP_LEFT_ICON
+                UP_GESTURE,
+                DOUBLE_UP_GESTURE -> MAP_UP_ICON
+                RIGHT_GESTURE,
+                DOUBLE_RIGHT_GESTURE -> MAP_RIGHT_ICON
+                DOWN_GESTURE,
+                DOUBLE_DOWN_GESTURE -> MAP_DOWN_ICON
                 else -> MAP_DOWN_ICON
             })
         }

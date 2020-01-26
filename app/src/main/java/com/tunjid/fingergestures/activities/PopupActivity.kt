@@ -26,15 +26,16 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import com.tunjid.androidx.recyclerview.acceptDiff
+import com.tunjid.androidx.recyclerview.adapterOf
+import com.tunjid.androidx.recyclerview.gridLayoutManager
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.ActionAdapter
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
@@ -65,18 +66,20 @@ class PopupActivity : AppCompatActivity() {
         val spanSizer = AtomicInteger(0)
         val backgroundManager = BackgroundManager.instance
 
-        val listManager = ListManagerBuilder<ActionViewHolder, Void>()
-                .withRecyclerView(findViewById(R.id.item_list))
-                .withGridLayoutManager(6)
-                .withAdapter(ActionAdapter(isHorizontal = true, showsText = true, list = items, listener = object : ActionAdapter.ActionClickListener {
-                    override fun onActionClicked(actionRes: Int) = this@PopupActivity.onActionClicked(actionRes)
-                }))
-                .onLayoutManager { manager ->
-                    (manager as? GridLayoutManager)?.spanSizeLookup = object : SpanSizeLookup() {
-                        override fun getSpanSize(position: Int): Int = spanSizer.get()
-                    }
-                }
-                .build()
+        val recyclerView = findViewById<RecyclerView>(R.id.item_list).apply {
+            layoutManager = gridLayoutManager(6) { spanSizer.get() }
+            adapter = adapterOf(
+                    itemsSource = { items },
+                    viewHolderCreator = { viewGroup, _ ->
+                        ActionViewHolder(
+                                showsText = true,
+                                itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
+                                clickListener = ::onActionClicked
+                        )
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            )
+        }
 
         val text = findViewById<TextView>(R.id.text)
         text.setTextColor(backgroundManager.sliderColor)
@@ -84,7 +87,7 @@ class PopupActivity : AppCompatActivity() {
 
         disposables.add(App.diff(items) { PopUpGestureConsumer.instance.list }.subscribe({ result ->
             val size = items.size
-            listManager.onDiff(result)
+            recyclerView.acceptDiff(result)
             spanSizer.set(if (size == 1) 6 else if (size == 2) 3 else 2)
             text.visibility = if (size == 0) VISIBLE else GONE
         }, { it.printStackTrace() }))

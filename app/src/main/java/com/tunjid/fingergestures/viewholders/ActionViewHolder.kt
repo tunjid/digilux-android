@@ -20,10 +20,9 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder
+import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.ActionAdapter
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.DO_NOTHING
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_BACK
@@ -51,15 +50,16 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 
 class ActionViewHolder(
         private val showsText: Boolean,
-        itemView: View, clickListener: ActionAdapter.ActionClickListener
-) : InteractiveViewHolder<ActionAdapter.ActionClickListener>(itemView, clickListener) {
+        itemView: View,
+        private val clickListener: (Int) -> Unit
+) : RecyclerView.ViewHolder(itemView) {
 
     private var action: Int = 0
     private val textView: TextView = itemView.findViewById(R.id.text)
     private val imageView: ImageView = itemView.findViewById(R.id.icon)
 
     init {
-        itemView.setOnClickListener { adapterListener.onActionClicked(action) }
+        itemView.setOnClickListener { clickListener(action) }
     }
 
     fun bind(@GestureConsumer.GestureAction action: Int) {

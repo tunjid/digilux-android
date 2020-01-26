@@ -54,17 +54,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
             DOUBLE_SWIPE_SETTINGS
     )
-    val audioItems = intArrayOf(
-            PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW
-    )
     val popupItems = intArrayOf(PADDING, ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK,
             ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
             POPUP_ACTION
+    )
+    val audioItems = intArrayOf(
+            PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW
     )
     val appearanceItems = intArrayOf(
             PADDING, SLIDER_POSITION, SLIDER_DURATION, NAV_BAR_COLOR,
             SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER
     )
+
+    val navItems = listOf(gestureItems, brightnessItems, popupItems, audioItems, appearanceItems)
 
     @Retention(AnnotationRetention.SOURCE)
     @IntDef(SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
@@ -160,11 +162,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun updateBottomNav(hash: Int): Int? {
         state.permissionsQueue.clear()
         return when (hash) {
-            Arrays.hashCode(gestureItems) -> R.id.action_directions
-            Arrays.hashCode(brightnessItems) -> R.id.action_slider
-            Arrays.hashCode(audioItems) -> R.id.action_audio
-            Arrays.hashCode(popupItems) -> R.id.action_accessibility_popup
-            Arrays.hashCode(appearanceItems) -> R.id.action_wallpaper
+            gestureItems.contentHashCode() -> R.id.action_directions
+            brightnessItems.contentHashCode() -> R.id.action_slider
+            audioItems.contentHashCode() -> R.id.action_audio
+            popupItems.contentHashCode() -> R.id.action_accessibility_popup
+            appearanceItems.contentHashCode() -> R.id.action_wallpaper
             else -> null
         }
     }

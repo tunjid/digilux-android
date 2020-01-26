@@ -22,24 +22,26 @@ import android.transition.TransitionManager.beginDelayedTransition
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import com.tunjid.androidbootstrap.recyclerview.ListManager
+import androidx.recyclerview.widget.RecyclerView
+import com.tunjid.androidx.recyclerview.acceptDiff
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import java.util.*
 
 abstract class DiffViewHolder<T> internal constructor(
         itemView: View,
-        protected val items: List<T>,
-        listener: AppAdapter.AppAdapterListener)
+        protected val items: MutableList<T>,
+        listener: AppAdapterListener)
     : AppViewHolder(itemView, listener) {
 
-    private val listManager: ListManager<*, Void>
+    private val recyclerView: RecyclerView = itemView.findViewById(R.id.item_list)
 
     internal abstract val sizeCacheKey: String
     internal abstract val listSupplier: () -> List<T>
 
     init {
-        listManager = createListManager(itemView)
+        setupRecyclerView(recyclerView)
     }
 
     internal fun diff() {
@@ -48,7 +50,7 @@ abstract class DiffViewHolder<T> internal constructor(
 
     protected open fun diffHash(item: T): String = item.toString()
 
-    internal abstract fun createListManager(itemView: View): ListManager<*, Void>
+    internal abstract fun setupRecyclerView(recyclerView: RecyclerView)
 
     private fun onDiff(diffResult: DiffUtil.DiffResult) {
         val key = sizeCacheKey
@@ -58,7 +60,7 @@ abstract class DiffViewHolder<T> internal constructor(
         if (oldSize != newSize) beginDelayedTransition(itemView as ViewGroup, AutoTransition())
         sizeMap[key] = newSize
 
-        listManager.onDiff(diffResult)
+        recyclerView.acceptDiff(diffResult)
     }
 
     companion object {

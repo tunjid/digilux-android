@@ -20,19 +20,18 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
-import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder
+import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.billing.PurchasesManager
 import io.reactivex.disposables.CompositeDisposable
 
-open class AppViewHolder : InteractiveViewHolder<AppAdapter.AppAdapterListener> {
+open class AppViewHolder(
+        itemView: View,
+        internal val listener: AppAdapterListener = AppAdapterListener.noOpInstance
+) : RecyclerView.ViewHolder(itemView) {
 
     protected val disposables = CompositeDisposable()
-
-    constructor(itemView: View) : super(itemView)
-
-    internal constructor(itemView: View, listener: AppAdapter.AppAdapterListener) : super(itemView, listener)
 
     open fun bind() {}
 
@@ -43,7 +42,7 @@ open class AppViewHolder : InteractiveViewHolder<AppAdapter.AppAdapterListener> 
         AlertDialog.Builder(context)
                 .setTitle(R.string.go_premium_title)
                 .setMessage(context.getString(R.string.go_premium_body, context.getString(description)))
-                .setPositiveButton(R.string.continue_text) { _, _ -> adapterListener.purchase(PurchasesManager.PREMIUM_SKU) }
+                .setPositiveButton(R.string.continue_text) { _, _ -> listener?.purchase(PurchasesManager.PREMIUM_SKU) }
                 .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                 .show()
     }

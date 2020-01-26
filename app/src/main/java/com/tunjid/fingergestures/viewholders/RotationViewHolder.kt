@@ -21,21 +21,22 @@ import android.content.pm.ApplicationInfo
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import com.tunjid.androidbootstrap.recyclerview.ListManager
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import androidx.recyclerview.widget.RecyclerView
+import com.tunjid.androidx.recyclerview.adapterOf
+import com.tunjid.androidx.recyclerview.gridLayoutManager
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapter
-import com.tunjid.fingergestures.adapters.PackageAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.fragments.PackageFragment
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
 
 class RotationViewHolder(itemView: View,
                          @param:RotationGestureConsumer.PersistedSet override val sizeCacheKey: String,
-                         items: List<ApplicationInfo>,
-                         listener: AppAdapter.AppAdapterListener
+                         items: MutableList<ApplicationInfo>,
+                         listener: AppAdapterListener
 ) : DiffViewHolder<ApplicationInfo>(itemView, items, listener) {
 
     override val listSupplier: () -> List<ApplicationInfo>
@@ -46,7 +47,7 @@ class RotationViewHolder(itemView: View,
             when {
                 !App.canWriteToSettings() -> AlertDialog.Builder(itemView.context).setMessage(R.string.permission_required).show()
                 !RotationGestureConsumer.instance.canAutoRotate() -> AlertDialog.Builder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
-                else -> adapterListener.showBottomSheetFragment(PackageFragment.newInstance(sizeCacheKey))
+                else -> listener.showBottomSheetFragment(PackageFragment.newInstance(sizeCacheKey))
             }
         }
 
@@ -68,34 +69,38 @@ class RotationViewHolder(itemView: View,
         super.bind()
 
         diff()
-        if (!App.canWriteToSettings()) adapterListener.requestPermission(MainActivity.SETTINGS_CODE)
+        if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
     }
 
     override fun diffHash(item: ApplicationInfo): String = item.packageName
 
-    override fun createListManager(itemView: View): ListManager<*, Void> =
-            ListManagerBuilder<PackageViewHolder, Void>()
-                    .withAdapter(PackageAdapter(true, items, object : PackageAdapter.PackageClickListener {
-                        override fun onPackageClicked(packageName: String) {
-                            val gestureConsumer = RotationGestureConsumer.instance
-                            val builder = AlertDialog.Builder(itemView.context)
+    override fun setupRecyclerView(recyclerView: RecyclerView) = recyclerView.run {
+        layoutManager = gridLayoutManager(3)
+        adapter = adapterOf(
+                itemsSource = { items },
+                viewHolderCreator = { viewGroup, _ ->
+                    PackageViewHolder(
+                            itemView = viewGroup.inflate(R.layout.viewholder_package_horizontal)
+                    ) { packageName ->
+                        val gestureConsumer = RotationGestureConsumer.instance
+                        val builder = AlertDialog.Builder(recyclerView.context)
 
-                            when {
-                                !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
-                                !gestureConsumer.canAutoRotate() -> builder.setMessage(R.string.auto_rotate_prompt)
-                                !gestureConsumer.isRemovable(packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
-                                else -> builder.setTitle(gestureConsumer.getRemoveText(sizeCacheKey))
-                                        .setPositiveButton(R.string.yes) { _, _ ->
-                                            gestureConsumer.removeFromSet(packageName, sizeCacheKey)
-                                            bind()
-                                        }
-                                        .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
-                            }
-
-                            builder.show()
+                        when {
+                            !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
+                            !gestureConsumer.canAutoRotate() -> builder.setMessage(R.string.auto_rotate_prompt)
+                            !gestureConsumer.isRemovable(packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
+                            else -> builder.setTitle(gestureConsumer.getRemoveText(sizeCacheKey))
+                                    .setPositiveButton(R.string.yes) { _, _ ->
+                                        gestureConsumer.removeFromSet(packageName, sizeCacheKey)
+                                        bind()
+                                    }
+                                    .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
                         }
-                    }))
-                    .withRecyclerView(itemView.findViewById(R.id.item_list))
-                    .withGridLayoutManager(3)
-                    .build()
+
+                        builder.show()
+                    }
+                },
+                viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+        )
+    }
 }

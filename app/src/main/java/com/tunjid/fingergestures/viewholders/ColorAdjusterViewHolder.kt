@@ -29,12 +29,12 @@ import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.billing.PurchasesManager
 
 class ColorAdjusterViewHolder(
         itemView: View,
-        listener: AppAdapter.AppAdapterListener
+        listener: AppAdapterListener
 ) : AppViewHolder(itemView, listener) {
 
     private val backgroundIndicator: View
@@ -82,7 +82,7 @@ class ColorAdjusterViewHolder(
 
     override fun bind() {
         super.bind()
-        if (!App.hasStoragePermission) adapterListener.requestPermission(MainActivity.STORAGE_CODE)
+        if (!App.hasStoragePermission) listener.requestPermission(MainActivity.STORAGE_CODE)
         else backgroundManager.extractPalette().subscribe(this::onPaletteExtracted, Throwable::printStackTrace)
     }
 

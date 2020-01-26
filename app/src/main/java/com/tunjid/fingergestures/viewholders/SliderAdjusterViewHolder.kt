@@ -30,7 +30,8 @@ class SliderAdjusterViewHolder(itemView: View,
                                private val consumer: (Int) -> Unit,
                                private val valueSupplier: () -> Int,
                                private val enabledSupplier: () -> Boolean,
-                               private val function: (Int) -> String) : AppViewHolder(itemView), SeekBar.OnSeekBarChangeListener {
+                               private val function: (Int) -> String
+) : AppViewHolder(itemView), SeekBar.OnSeekBarChangeListener {
 
     private val value: TextView = itemView.findViewById(R.id.value)
     private val seekBar: SeekBar

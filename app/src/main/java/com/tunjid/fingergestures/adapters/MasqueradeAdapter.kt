@@ -24,8 +24,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.view.forEach
 import androidx.recyclerview.widget.RecyclerView
-import com.tunjid.androidbootstrap.recyclerview.AbstractListManagerBuilder
-import com.tunjid.androidbootstrap.recyclerview.ListManager
 import com.tunjid.fingergestures.R
 
 /**
@@ -100,10 +98,5 @@ class MasqueradeAdapter<T : RecyclerView.ViewHolder>(
 
 }
 
-fun <
-        B : AbstractListManagerBuilder<B, S, VH, T>,
-        S : ListManager<VH, T>,
-        VH : RecyclerView.ViewHolder, T>
-        AbstractListManagerBuilder<B, S, VH, T>.withPaddedAdapter(
-        adapter: RecyclerView.Adapter<VH>,
-        extras: Int = 1): B = withAdapter(MasqueradeAdapter(adapter, extras))
+fun <VH : RecyclerView.ViewHolder> RecyclerView.Adapter<VH>.padded(extras: Int = 1) =
+        MasqueradeAdapter(this, extras)

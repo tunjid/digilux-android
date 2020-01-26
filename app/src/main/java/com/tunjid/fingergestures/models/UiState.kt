@@ -21,8 +21,8 @@ import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat.getDrawable
-import com.tunjid.androidbootstrap.material.animator.FabExtensionAnimator.GlyphState
-import com.tunjid.androidbootstrap.material.animator.FabExtensionAnimator.newState
+import com.tunjid.androidx.material.animator.FabExtensionAnimator
+import com.tunjid.androidx.material.animator.FabExtensionAnimator.GlyphState
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import java.util.*
@@ -34,7 +34,7 @@ class UiState {
 
     constructor(context: Context) {
         this.fabVisible = false
-        this.glyphState = newState(context.getText(R.string.enable_accessibility), getDrawable(context, R.drawable.ic_human_24dp))
+        this.glyphState = FabExtensionAnimator.SimpleGlyphState(context.getText(R.string.enable_accessibility), getDrawable(context, R.drawable.ic_human_24dp))
     }
 
     private constructor(fabVisible: Boolean, glyphState: GlyphState) {
@@ -47,7 +47,12 @@ class UiState {
     }
 
     fun glyph(@StringRes text: Int, @DrawableRes icon: Int): UiState {
-        val glyphState = App.transformApp({ app -> newState(app.getText(text), getDrawable(app, icon)) }, this.glyphState)
+        val glyphState = App.transformApp({ app ->
+            FabExtensionAnimator.SimpleGlyphState(
+                    app.getText(text),
+                    getDrawable(app, icon)
+            )
+        }, this.glyphState)
         return UiState(fabVisible, glyphState)
     }
 

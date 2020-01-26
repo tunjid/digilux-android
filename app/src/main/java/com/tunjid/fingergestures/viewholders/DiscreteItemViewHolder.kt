@@ -19,19 +19,18 @@ package com.tunjid.fingergestures.viewholders
 
 import android.view.View
 import android.widget.TextView
-import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder
+import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.DiscreteBrightnessAdapter
 
 
 class DiscreteItemViewHolder(
         itemView: View,
-        clickListener: DiscreteBrightnessAdapter.BrightnessValueClickListener
-) : InteractiveViewHolder<DiscreteBrightnessAdapter.BrightnessValueClickListener>(itemView, clickListener) {
+        listener: (String) -> Unit
+) : RecyclerView.ViewHolder(itemView) {
 
     private lateinit var discreteValue: String
     private val textView: TextView = (itemView as TextView).apply {
-        setOnClickListener { adapterListener.onDiscreteBrightnessClicked(discreteValue) }
+        setOnClickListener { listener(discreteValue) }
     }
 
     fun bind(discreteValue: String) {

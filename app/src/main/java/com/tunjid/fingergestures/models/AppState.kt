@@ -29,12 +29,12 @@ import java.util.Queue
 class AppState(application: Application) {
 
     val links: Array<TextLink>
-    val brightnessValues: List<String>
-    val popUpActions: List<Int>
-    val availableActions: List<Int>
-    val installedApps: List<ApplicationInfo>
-    val rotationApps: List<ApplicationInfo>
-    val excludedRotationApps: List<ApplicationInfo>
+    val brightnessValues: MutableList<String>
+    val popUpActions: MutableList<Int>
+    val availableActions: MutableList<Int>
+    val installedApps: MutableList<ApplicationInfo>
+    val rotationApps: MutableList<ApplicationInfo>
+    val excludedRotationApps: MutableList<ApplicationInfo>
     val permissionsQueue: Queue<Int>
 
     init {

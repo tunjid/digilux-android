@@ -24,54 +24,53 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
-import androidx.lifecycle.ViewModelProviders
+import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.RecyclerView
 import com.theartofdev.edmodo.cropper.CropImage
-import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment
-import com.tunjid.androidbootstrap.recyclerview.ListManager
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import com.tunjid.androidx.core.components.args
+import com.tunjid.androidx.navigation.Navigator
+import com.tunjid.androidx.recyclerview.addScrollListener
+import com.tunjid.androidx.recyclerview.notifyDataSetChanged
+import com.tunjid.androidx.recyclerview.notifyItemChanged
+import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.AppAdapter
-import com.tunjid.fingergestures.adapters.withPaddedAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
+import com.tunjid.fingergestures.adapters.appAdapter
+import com.tunjid.fingergestures.adapters.padded
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
-import com.tunjid.fingergestures.viewholders.AppViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import java.util.*
 import kotlin.math.abs
 
-class AppFragment : MainActivityFragment(), AppAdapter.AppAdapterListener {
+class AppFragment : MainActivityFragment(R.layout.fragment_home),
+        Navigator.TagProvider,
+        Navigator.TransactionModifier,
+        AppAdapterListener {
 
-    lateinit var items: IntArray
+    var items by args<IntArray>()
         private set
 
-    private lateinit var listManager: ListManager<AppViewHolder, Void>
+    private var recyclerView: RecyclerView? = null
 
-    override fun getStableTag(): String = Arrays.toString(arguments!!.getIntArray(ARGS_ITEM))
+    private val viewModel by activityViewModels<AppViewModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        items = arguments!!.getIntArray(ARGS_ITEM)!!
-    }
+    override val stableTag: String get() = items.contentToString()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_home, container, false) as ViewGroup
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        listManager = ListManagerBuilder<AppViewHolder, Void>()
-                .withRecyclerView(root.findViewById(R.id.options_list))
-                .withPaddedAdapter(AppAdapter(items, ViewModelProviders.of(requireActivity()).get(AppViewModel::class.java).state, this))
-                .withLinearLayoutManager()
-                .addDecoration(divider())
-                .addScrollListener { _, dy -> if (abs(dy) > 3) toggleToolbar(dy < 0) }
-                .build()
-
-        return root
+        view.findViewById<RecyclerView>(R.id.options_list).apply {
+            layoutManager = verticalLayoutManager()
+            adapter = appAdapter(items, viewModel.state, this@AppFragment).padded()
+            addItemDecoration(divider())
+            addScrollListener { _, dy -> if (abs(dy) > 3) toggleToolbar(dy < 0) }
+        }
     }
 
     override fun onResume() {
@@ -96,7 +95,7 @@ class AppFragment : MainActivityFragment(), AppAdapter.AppAdapterListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        listManager.clear()
+        recyclerView = null
     }
 
     override fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int) {
@@ -110,18 +109,21 @@ class AppFragment : MainActivityFragment(), AppAdapter.AppAdapterListener {
 
     override fun notifyItemChanged(@AppViewModel.AdapterIndex index: Int) {
         val listIndex = items.indexOf(index)
-        if (listIndex != -1) listManager.notifyItemChanged(listIndex)
+        if (listIndex != -1) recyclerView?.notifyItemChanged(listIndex)
     }
 
     fun notifyDataSetChanged() {
-        listManager.notifyDataSetChanged()
+        recyclerView?.notifyDataSetChanged()
     }
 
     @SuppressLint("CommitTransaction")
-    override fun provideFragmentTransaction(fragmentTo: BaseFragment?): FragmentTransaction? {
-        return fragmentManager!!.beginTransaction()
-                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
-                        android.R.anim.fade_in, android.R.anim.fade_out)
+    override fun augmentTransaction(transaction: FragmentTransaction, incomingFragment: Fragment) {
+        transaction.setCustomAnimations(
+                android.R.anim.fade_in,
+                android.R.anim.fade_out,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
+        )
     }
 
     fun cropImage(source: Uri?, @BackgroundManager.WallpaperSelection selection: Int) {
@@ -144,11 +146,10 @@ class AppFragment : MainActivityFragment(), AppAdapter.AppAdapterListener {
 
     companion object {
 
-        private const val ARGS_ITEM = "items"
         private const val IMAGE_SELECTION = "image/*"
 
         fun newInstance(items: IntArray): AppFragment = AppFragment().apply {
-            arguments = Bundle().apply { putIntArray(ARGS_ITEM, items) }
+            this.items = items
         }
     }
 }

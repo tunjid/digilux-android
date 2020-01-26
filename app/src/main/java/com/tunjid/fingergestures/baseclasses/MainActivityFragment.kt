@@ -18,28 +18,21 @@
 package com.tunjid.fingergestures.baseclasses
 
 
+import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
-import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.fragments.AppFragment
 import io.reactivex.disposables.CompositeDisposable
 
-abstract class MainActivityFragment : BaseFragment() {
+abstract class MainActivityFragment(@LayoutRes layoutRes: Int) : Fragment(layoutRes) {
 
     protected var disposables = CompositeDisposable()
-
-    protected val currentAppFragment: AppFragment?
-        get() {
-            val activity = activity as MainActivity? ?: return null
-
-            return activity.currentFragment
-        }
 
     override fun onDestroyView() {
         disposables.clear()
@@ -67,7 +60,7 @@ abstract class MainActivityFragment : BaseFragment() {
     }
 
     fun showBottomSheetFragment(fragment: MainActivityFragment) {
-        val fragmentManager = fragmentManager ?: return
+        val fragmentManager = activity?.supportFragmentManager ?: return
 
         fragmentManager.beginTransaction().replace(R.id.bottom_sheet, fragment).commit()
         toggleBottomSheet(true)

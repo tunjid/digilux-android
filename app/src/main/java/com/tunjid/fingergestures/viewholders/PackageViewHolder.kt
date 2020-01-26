@@ -21,15 +21,13 @@ import android.content.pm.ApplicationInfo
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder
+import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.PackageAdapter
-
 
 class PackageViewHolder(
         itemView: View,
-        clickListener: PackageAdapter.PackageClickListener
-) : InteractiveViewHolder<PackageAdapter.PackageClickListener>(itemView, clickListener) {
+        private val listener: (String) -> Unit
+) : RecyclerView.ViewHolder(itemView) {
 
     private var packageName: String? = null
 
@@ -37,7 +35,7 @@ class PackageViewHolder(
     private val textView: TextView? = itemView.findViewById(R.id.text)
 
     init {
-        itemView.setOnClickListener { adapterListener.onPackageClicked(packageName!!) }
+        itemView.setOnClickListener { packageName?.let(listener) }
     }
 
     fun bind(info: ApplicationInfo?) {

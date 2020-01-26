@@ -18,21 +18,24 @@
 package com.tunjid.fingergestures.fragments
 
 
-import android.content.Context
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModelProviders
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.RecyclerView
+import com.tunjid.androidx.navigation.Navigator
+import com.tunjid.androidx.navigation.activityNavigatorController
+import com.tunjid.androidx.recyclerview.acceptDiff
+import com.tunjid.androidx.recyclerview.adapterOf
+import com.tunjid.androidx.recyclerview.verticalLayoutManager
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.PackageAdapter
-import com.tunjid.fingergestures.adapters.withPaddedAdapter
+import com.tunjid.fingergestures.adapters.padded
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
@@ -42,39 +45,39 @@ import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.EXCLUDED_ROTATION_LOCK
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ROTATION_LOCK
 
-class PackageFragment : MainActivityFragment() {
+class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
 
-    private lateinit var viewModel: AppViewModel
+    private val viewModel by activityViewModels<AppViewModel>()
+    private val navigator by activityNavigatorController<Navigator>()
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        viewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel::class.java)
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_packages, container, false) as ViewGroup
-
-        val toolbar = root.findViewById<Toolbar>(R.id.title_bar)
-        val progressBar = root.findViewById<ProgressBar>(R.id.progress_bar)
-        val listManager = ListManagerBuilder<PackageViewHolder, Void>()
-                .withPaddedAdapter(PackageAdapter(false, viewModel.state.installedApps, object : PackageAdapter.PackageClickListener {
-                    override fun onPackageClicked(packageName: String) = this@PackageFragment.onPackageClicked(packageName)
-                }))
-                .withRecyclerView(root.findViewById(R.id.options_list))
-                .withLinearLayoutManager()
-                .addDecoration(divider())
-                .build()
+        val toolbar = view.findViewById<Toolbar>(R.id.title_bar)
+        val progressBar = view.findViewById<ProgressBar>(R.id.progress_bar)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.options_list).apply {
+            layoutManager = verticalLayoutManager()
+            adapter = adapterOf(
+                    itemsSource = { viewModel.state.installedApps },
+                    viewHolderCreator = { viewGroup, _ ->
+                        PackageViewHolder(
+                                itemView = viewGroup.inflate(R.layout.viewholder_package_vertical),
+                                listener = ::onPackageClicked
+                        )
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            ).padded()
+            addItemDecoration(divider())
+        }
 
         val persistedSet = arguments!!.getString(ARG_PERSISTED_SET)!!
         toolbar.title = RotationGestureConsumer.instance.getAddText(persistedSet)
 
         disposables.add(viewModel.updatedApps().subscribe({ result ->
-            TransitionManager.beginDelayedTransition(root, AutoTransition())
+            TransitionManager.beginDelayedTransition(view as ViewGroup, AutoTransition())
             progressBar.visibility = View.GONE
-            listManager.onDiff(result)
+            recyclerView.acceptDiff(result)
         }, Throwable::printStackTrace))
-
-        return root
     }
 
     private fun onPackageClicked(packageName: String) {
@@ -98,7 +101,7 @@ class PackageFragment : MainActivityFragment() {
         }
 
         toggleBottomSheet(false)
-        currentAppFragment?.notifyItemChanged(if (ROTATION_APPS == persistedSet) ROTATION_LOCK else EXCLUDED_ROTATION_LOCK)
+        (navigator.current as? AppFragment)?.notifyItemChanged(if (ROTATION_APPS == persistedSet) ROTATION_LOCK else EXCLUDED_ROTATION_LOCK)
     }
 
     companion object {
