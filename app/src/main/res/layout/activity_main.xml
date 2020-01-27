@@ -21,6 +21,7 @@
     android:id="@+id/constraint_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorBackground"
     tools:context="com.tunjid.fingergestures.activities.MainActivity">
 
     <androidx.fragment.app.FragmentContainerView
@@ -28,6 +29,15 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?android:attr/actionBarSize"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -46,8 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginEnd="@dimen/single_margin"
-            android:layout_marginBottom="@dimen/quadruple_margin"
+            android:layout_margin="@dimen/single_margin"
             android:insetLeft="0dp"
             android:insetTop="0dp"
             android:insetRight="0dp"
@@ -56,9 +65,7 @@
             app:elevation="@dimen/half_margin"
             app:itemIconTint="@color/toggle_text"
             app:itemTextColor="@color/toggle_text"
-            app:layout_behavior="@string/bottom_transient_bar_behavior"
-            app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
-            app:layout_constraintRight_toRightOf="parent" />
+            app:layout_behavior="@string/bottom_transient_bar_behavior" />
 
         <FrameLayout
             android:id="@+id/bottom_sheet"
@@ -69,15 +76,6 @@
             app:behavior_peekHeight="500dp"
             app:layout_behavior="@string/bottom_sheet_behavior" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-    <include
-        android:id="@+id/toolbar"
-        layout="@layout/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="?android:attr/actionBarSize"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <TextSwitcher
         android:id="@+id/upgrade_prompt"
@@ -95,6 +93,7 @@
         android:id="@+id/bottom_navigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/bottom_nav_background"
         app:elevation="@dimen/half_margin"
         app:itemIconTint="@color/toggle_text"
         app:itemTextColor="@color/toggle_text"

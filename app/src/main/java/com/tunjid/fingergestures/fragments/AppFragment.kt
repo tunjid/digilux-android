@@ -50,7 +50,6 @@ import kotlin.math.abs
 
 class AppFragment : MainActivityFragment(R.layout.fragment_home),
         Navigator.TagProvider,
-        Navigator.TransactionModifier,
         AppAdapterListener {
 
     var items by args<IntArray>()
@@ -114,16 +113,6 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
 
     fun notifyDataSetChanged() {
         recyclerView?.notifyDataSetChanged()
-    }
-
-    @SuppressLint("CommitTransaction")
-    override fun augmentTransaction(transaction: FragmentTransaction, incomingFragment: Fragment) {
-        transaction.setCustomAnimations(
-                android.R.anim.fade_in,
-                android.R.anim.fade_out,
-                android.R.anim.fade_in,
-                android.R.anim.fade_out
-        )
     }
 
     fun cropImage(source: Uri?, @BackgroundManager.WallpaperSelection selection: Int) {

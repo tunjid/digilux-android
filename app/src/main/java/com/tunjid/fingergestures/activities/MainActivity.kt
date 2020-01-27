@@ -130,19 +130,27 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         bottomNavigationView.setOnApplyWindowInsetsListener { _: View?, windowInsets: WindowInsets? -> windowInsets }
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(InsetLifecycleCallbacks(
-                this@MainActivity,
-                this@MainActivity.findViewById(R.id.constraint_layout),
-                this@MainActivity.findViewById(R.id.main_fragment_container),
-                this@MainActivity.findViewById(R.id.coordinator_layout),
-                this@MainActivity.findViewById(R.id.toolbar),
-                bottomNavigationView,
-                this@MainActivity.navigator::activeNavigator
+                globalUiController = this@MainActivity,
+                parentContainer = this@MainActivity.findViewById(R.id.constraint_layout),
+                fragmentContainer = this@MainActivity.findViewById(R.id.main_fragment_container),
+                coordinatorLayout = this@MainActivity.findViewById(R.id.coordinator_layout),
+                toolbar = this@MainActivity.findViewById(R.id.toolbar),
+                bottomNavView = bottomNavigationView,
+                stackNavigatorSource = this@MainActivity.navigator::activeNavigator
         ), true)
 
         navigator.stackSelectedListener = {
             viewModel.checkPermissions()
             val current = navigator.current
             if (current is AppFragment) updateBottomNav(current, bottomNavigationView)
+        }
+        navigator.stackTransactionModifier = {
+            setCustomAnimations(
+                    android.R.anim.fade_in,
+                    android.R.anim.fade_out,
+                    android.R.anim.fade_in,
+                    android.R.anim.fade_out
+            )
         }
         onBackPressedDispatcher.addCallback(this) { if (!navigator.pop()) finish() }
 
