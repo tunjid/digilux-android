@@ -16,7 +16,7 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<View android:id="@+id/container"
+<View android:id="@+id/coordinator_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:minHeight="?android:attr/actionBarSize"

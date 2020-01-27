@@ -18,6 +18,7 @@
 package com.tunjid.fingergestures.baseclasses
 
 
+import android.view.Menu
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
@@ -25,14 +26,38 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
+import com.tunjid.androidx.view.util.InsetFlags
+import com.tunjid.fingergestures.GlobalUiController
+import com.tunjid.fingergestures.InsetProvider
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.TrialView
 import com.tunjid.fingergestures.activities.MainActivity
+import com.tunjid.fingergestures.activityGlobalUiController
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.models.UiState
 import io.reactivex.disposables.CompositeDisposable
 
-abstract class MainActivityFragment(@LayoutRes layoutRes: Int) : Fragment(layoutRes) {
+abstract class MainActivityFragment(
+        @LayoutRes layoutRes: Int
+) : Fragment(layoutRes),
+        InsetProvider,
+        GlobalUiController {
 
     protected var disposables = CompositeDisposable()
+
+    override val insetFlags: InsetFlags = InsetFlags.NO_BOTTOM
+
+    override var uiState: UiState by activityGlobalUiController()
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val item = menu.findItem(R.id.action_start_trial)
+        val isTrialVisible = !PurchasesManager.instance.isPremiumNotTrial
+
+        if (item != null) item.isVisible = isTrialVisible
+        if (isTrialVisible && item != null) item.actionView = TrialView(requireContext(), item)
+
+        return super.onPrepareOptionsMenu(menu)
+    }
 
     override fun onDestroyView() {
         disposables.clear()
@@ -40,13 +65,11 @@ abstract class MainActivityFragment(@LayoutRes layoutRes: Int) : Fragment(layout
     }
 
     protected fun toggleToolbar(visible: Boolean) {
-        val activity = activity as MainActivity?
-        activity?.toggleToolbar(visible)
+        uiState = uiState.copy(toolbarShows = visible)
     }
 
     fun showSnackbar(@StringRes resource: Int) {
-        val activity = activity as MainActivity?
-        activity?.showSnackbar(resource)
+        uiState = uiState.copy(snackbarText = getString(resource))
     }
 
     fun purchase(@PurchasesManager.SKU sku: String) {

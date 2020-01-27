@@ -21,7 +21,6 @@ import android.Manifest
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.transition.AutoTransition
@@ -29,15 +28,9 @@ import android.transition.Transition
 import android.transition.TransitionListenerAdapter
 import android.transition.TransitionManager
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-import android.view.ViewGroup
 import android.view.WindowInsets
-import android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
 import android.view.animation.AnimationUtils.loadAnimation
 import android.widget.TextSwitcher
 import androidx.activity.addCallback
@@ -46,9 +39,7 @@ import androidx.annotation.IntDef
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.android.billingclient.api.BillingClient
@@ -56,17 +47,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
 import com.google.android.material.snackbar.Snackbar
-import com.tunjid.androidx.material.animator.FabExtensionAnimator
+import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.navigation.MultiStackNavigator
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.doOnLifecycleEvent
 import com.tunjid.androidx.navigation.multiStackNavigationController
-import com.tunjid.androidx.view.animator.ViewHider
-import com.tunjid.androidx.view.util.marginLayoutParams
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
@@ -74,44 +62,38 @@ import com.tunjid.fingergestures.App.Companion.withApp
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_EDIT_WALLPAPER
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_NAV_BAR_CHANGED
+import com.tunjid.fingergestures.GlobalUiController
+import com.tunjid.fingergestures.InsetLifecycleCallbacks
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.TrialView
 import com.tunjid.fingergestures.billing.BillingManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
 import com.tunjid.fingergestures.fragments.AppFragment
+import com.tunjid.fingergestures.globalUiDriver
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.models.UiState
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.viewholders.DiffViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.viewmodels.UiUpdate
 import io.reactivex.disposables.CompositeDisposable
 
-class MainActivity : AppCompatActivity(), Navigator.Controller {
+class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiController, Navigator.Controller {
 
-    private var insetsApplied: Boolean = false
-
-    private val topInsetView by lazy { findViewById<View>(R.id.top_inset) }
-    private val bottomInsetView by lazy { findViewById<View>(R.id.bottom_inset) }
-    private val toolbar by lazy { findViewById<Toolbar>(R.id.toolbar) }
     private val constraintLayout by lazy { findViewById<ConstraintLayout>(R.id.constraint_layout) }
     private val shillSwitcher by lazy { findViewById<TextSwitcher>(R.id.upgrade_prompt) }
-    private val permissionText by lazy { findViewById<MaterialButton>(R.id.permission_view) }
     private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(findViewById<View>(R.id.bottom_sheet)) }
 
-    private val barHider by lazy { ViewHider.of(toolbar).setDirection(ViewHider.TOP).build() }
-    private val fabHider by lazy { ViewHider.of(permissionText).setDirection(ViewHider.BOTTOM).build() }
-
-    private val coordinator by lazy { findViewById<ViewGroup>(R.id.container) }
+    private val coordinator by lazy { findViewById<View>(R.id.coordinator_layout) }
 
     private var billingManager: BillingManager? = null
-
-    private val fabExtensionAnimator by lazy { FabExtensionAnimator(permissionText) }
 
     private val disposables = CompositeDisposable()
 
     private val viewModel by viewModels<AppViewModel>()
+
+    override var uiState: UiState by globalUiDriver { navigator.activeNavigator }
 
     override val navigator: MultiStackNavigator by multiStackNavigationController(
             5,
@@ -121,13 +103,10 @@ class MainActivity : AppCompatActivity(), Navigator.Controller {
     }
 
     private val navBarColor: Int
-        get() = ContextCompat.getColor(this, if (BackgroundManager.instance.usesColoredNav())
-            R.color.colorPrimary
-        else
-            R.color.black)
-
-    private val fabTint: ColorStateList
-        get() = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorPrimary))
+        get() = colorAt(
+                if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
+                else R.color.black
+        )
 
     private val transition: Transition
         get() = AutoTransition().excludeTarget(RecyclerView::class.java, true)
@@ -138,22 +117,27 @@ class MainActivity : AppCompatActivity(), Navigator.Controller {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        uiState = uiState.copy(
+                navBarColor = navBarColor,
+                toolBarMenu = R.menu.activity_main,
+                toolbarTitle = getString(R.string.app_name),
+                fabClickListener = View.OnClickListener { viewModel.onPermissionClicked(this::onPermissionClicked) }
+        )
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-
-        fabHider.hide()
-
-        permissionText.backgroundTintList = fabTint
-        permissionText.setOnClickListener { viewModel.onPermissionClicked(this::onPermissionClicked) }
-
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected)
-        constraintLayout.setOnApplyWindowInsetsListener { _, insets -> consumeSystemInsets(insets) }
+        bottomNavigationView.setOnApplyWindowInsetsListener { _: View?, windowInsets: WindowInsets? -> windowInsets }
 
-        val window = window
-        window.decorView.systemUiVisibility = DEFAULT_SYSTEM_UI_FLAGS
-        window.statusBarColor = ContextCompat.getColor(this, R.color.colorBackground)
-        window.navigationBarColor = navBarColor
+        supportFragmentManager.registerFragmentLifecycleCallbacks(InsetLifecycleCallbacks(
+                this@MainActivity,
+                this@MainActivity.findViewById(R.id.constraint_layout),
+                this@MainActivity.findViewById(R.id.main_fragment_container),
+                this@MainActivity.findViewById(R.id.coordinator_layout),
+                this@MainActivity.findViewById(R.id.toolbar),
+                bottomNavigationView,
+                this@MainActivity.navigator::activeNavigator
+        ), true)
 
         navigator.stackSelectedListener = {
             viewModel.checkPermissions()
@@ -162,7 +146,6 @@ class MainActivity : AppCompatActivity(), Navigator.Controller {
         }
         onBackPressedDispatcher.addCallback(this) { if (!navigator.pop()) finish() }
 
-        setSupportActionBar(toolbar)
         toggleBottomSheet(false)
 
         val startIntent = intent
@@ -183,23 +166,10 @@ class MainActivity : AppCompatActivity(), Navigator.Controller {
 
         if (!accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE)
 
-        invalidateOptionsMenu()
+        uiState = uiState.copy(toolbarInvalidated = true)
+
         subscribeToBroadcasts()
         disposables.add(viewModel.uiState().subscribe(this::onStateChanged, Throwable::printStackTrace))
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.activity_main, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        val item = menu.findItem(R.id.action_start_trial)
-        val isTrialVisible = !PurchasesManager.instance.isPremiumNotTrial
-
-        if (item != null) item.isVisible = isTrialVisible
-        if (isTrialVisible && item != null) item.actionView = TrialView(this, item)
-        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -393,9 +363,12 @@ class MainActivity : AppCompatActivity(), Navigator.Controller {
         shillSwitcher.outAnimation = loadAnimation(this, android.R.anim.slide_out_right)
     }
 
-    private fun onStateChanged(uiState: UiState) {
-        permissionText.post { fabExtensionAnimator.updateGlyphs(uiState.glyphState) }
-        permissionText.post(if (uiState.fabVisible) Runnable { fabHider.show() } else Runnable { fabHider.hide() })
+    private fun onStateChanged(uiUpdate: UiUpdate) {
+        uiState = uiState.copy(
+                fabIcon = uiUpdate.iconRes,
+                fabText = getString(uiUpdate.titleRes),
+                fabShows = uiUpdate.fabVisible
+        )
     }
 
     private fun subscribeToBroadcasts() {
@@ -426,30 +399,9 @@ class MainActivity : AppCompatActivity(), Navigator.Controller {
                 || ACTION_LOCKED_CONTENT_CHANGED == action)
     }
 
-    private fun consumeSystemInsets(insets: WindowInsets): WindowInsets {
-        if (insetsApplied) return insets
-
-        topInset = insets.systemWindowInsetTop
-        val leftInset = insets.systemWindowInsetLeft
-        val rightInset = insets.systemWindowInsetRight
-        bottomInset = insets.systemWindowInsetBottom
-
-        toolbar.marginLayoutParams.topMargin = topInset
-        topInsetView.marginLayoutParams.height = topInset
-        bottomInsetView.marginLayoutParams.height = bottomInset
-
-        constraintLayout.setPadding(leftInset, 0, rightInset, 0)
-
-        insetsApplied = true
-        return insets
-    }
-
     fun showSnackbar(@StringRes resource: Int) =
             withSnackbar { snackbar -> snackbar.setText(resource);snackbar.show() }
 
-    fun toggleToolbar(visible: Boolean) =
-            if (visible) barHider.show()
-            else barHider.hide()
 
     fun purchase(@PurchasesManager.SKU sku: String) = when (val billingManager = billingManager) {
         null -> showSnackbar(R.string.generic_error)
@@ -472,18 +424,10 @@ class MainActivity : AppCompatActivity(), Navigator.Controller {
 
     companion object {
 
-        var topInset: Int = 0
-        var bottomInset: Int = 0
-
         const val STORAGE_CODE = 100
         const val SETTINGS_CODE = 200
         const val ACCESSIBILITY_CODE = 300
         const val DO_NOT_DISTURB_CODE = 400
-
-        private const val DEFAULT_SYSTEM_UI_FLAGS = (SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
         private val STORAGE_PERMISSIONS = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
     }

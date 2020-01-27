@@ -19,9 +19,7 @@ package com.tunjid.fingergestures
 
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -29,6 +27,7 @@ import android.view.Window.FEATURE_OPTIONS_PANEL
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import com.tunjid.androidx.core.content.unwrapActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import io.reactivex.disposables.Disposable
@@ -47,8 +46,7 @@ class TrialView(context: Context, menuItem: MenuItem) : FrameLayout(context) {
         imageView = root.findViewById(R.id.icon)
 
         val clickListener = { _: View ->
-            val activity = getActivity(getContext())
-            activity?.onMenuItemSelected(FEATURE_OPTIONS_PANEL, menuItem)
+            context.unwrapActivity?.onMenuItemSelected(FEATURE_OPTIONS_PANEL, menuItem)
             Unit
         }
 
@@ -61,7 +59,7 @@ class TrialView(context: Context, menuItem: MenuItem) : FrameLayout(context) {
         else disposable = flowable.map(Long::toString)
                 .doOnSubscribe { changeState(true) }
                 .doOnComplete {
-                    val activity = getActivity(getContext()) ?: return@doOnComplete
+                    val activity = context.unwrapActivity ?: return@doOnComplete
                     activity.runOnUiThread {
                         changeState(false)
                         activity.recreate()
@@ -81,11 +79,5 @@ class TrialView(context: Context, menuItem: MenuItem) : FrameLayout(context) {
     private fun changeState(isOnTrial: Boolean) {
         imageView.visibility = if (isOnTrial) View.GONE else View.VISIBLE
         textView.visibility = if (isOnTrial) View.VISIBLE else View.GONE
-    }
-
-    private fun getActivity(context: Context): Activity? {
-        var nested = context
-        while (nested !is Activity && nested is ContextWrapper) nested = nested.baseContext
-        return if (nested is Activity) nested else null
     }
 }

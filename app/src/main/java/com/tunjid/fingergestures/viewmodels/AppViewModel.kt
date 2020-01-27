@@ -32,13 +32,11 @@ import com.tunjid.fingergestures.activities.MainActivity.Companion.STORAGE_CODE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.AppState
-import com.tunjid.fingergestures.models.UiState
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
-import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -81,13 +79,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     annotation class AdapterIndex
 
     val state: AppState = AppState(application)
-    private var uiState = UiState(application)
+    private var uiUpdate = UiUpdate()
 
     private val quips = application.resources.getStringArray(R.array.upsell_text)
     private val quipCounter = AtomicInteger(-1)
 
     private val disposable: CompositeDisposable = CompositeDisposable()
-    private val stateProcessor: PublishProcessor<UiState> = PublishProcessor.create()
+    private val stateProcessor: PublishProcessor<UiUpdate> = PublishProcessor.create()
     private val shillProcessor: PublishProcessor<String> = PublishProcessor.create()
 
     override fun onCleared() {
@@ -96,8 +94,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         state.permissionsQueue.clear()
     }
 
-    fun uiState(): Flowable<UiState> = stateProcessor.distinct()
-
+    fun uiState(): Flowable<UiUpdate> = stateProcessor.distinct()
 
     fun shill(): Flowable<String> {
         disposable.clear()
@@ -121,7 +118,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun calmIt() = disposable.clear()
 
     fun checkPermissions() =
-            if (state.permissionsQueue.isEmpty()) stateProcessor.onNext(uiState.visibility(false))
+            if (state.permissionsQueue.isEmpty()) stateProcessor.onNext(uiUpdate.copy(fabVisible = false))
             else onPermissionAdded()
 
     fun requestPermission(@MainActivity.PermissionRequest permission: Int) {
@@ -174,16 +171,28 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun onPermissionAdded() {
         if (state.permissionsQueue.isEmpty()) return
 
-        uiState = when (state.permissionsQueue.peek()) {
-            DO_NOT_DISTURB_CODE -> uiState.glyph(R.string.enable_do_not_disturb, R.drawable.ic_volume_loud_24dp)
-            ACCESSIBILITY_CODE -> uiState.glyph(R.string.enable_accessibility, R.drawable.ic_human_24dp)
-            SETTINGS_CODE -> uiState.glyph(R.string.enable_write_settings, R.drawable.ic_settings_white_24dp)
-            STORAGE_CODE -> uiState.glyph(R.string.enable_storage_settings, R.drawable.ic_storage_24dp)
+        uiUpdate = when (state.permissionsQueue.peek()) {
+            DO_NOT_DISTURB_CODE -> uiUpdate.copy(
+                    titleRes = R.string.enable_do_not_disturb,
+                    iconRes = R.drawable.ic_volume_loud_24dp
+            )
+            ACCESSIBILITY_CODE -> uiUpdate.copy(
+                    titleRes = R.string.enable_accessibility,
+                    iconRes = R.drawable.ic_human_24dp
+            )
+            SETTINGS_CODE -> uiUpdate.copy(
+                    titleRes = R.string.enable_write_settings,
+                    iconRes = R.drawable.ic_settings_white_24dp
+            )
+            STORAGE_CODE -> uiUpdate.copy(
+                    titleRes = R.string.enable_storage_settings,
+                    iconRes = R.drawable.ic_storage_24dp
+            )
             else -> return
         }
 
-        uiState = uiState.visibility(true)
-        stateProcessor.onNext(uiState)
+        uiUpdate = uiUpdate.copy(fabVisible = true)
+        stateProcessor.onNext(uiUpdate)
     }
 
     private fun startShilling() {
@@ -238,3 +247,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         const val SUPPORT = LOCKED_CONTENT + 1
     }
 }
+
+data class UiUpdate(
+        val titleRes: Int = R.string.blank_emoji,
+        val iconRes: Int = R.drawable.ic_add_24dp,
+        val fabVisible: Boolean = false
+)
