@@ -23,7 +23,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 
 data class AppState(
         val links: List<TextLink> = listOf(),
-        val brightnessValues: List<String> = listOf(),
+        val brightnessValues: List<Brightness> = listOf(),
         val popUpActions: List<Action> = listOf(),
         val availableActions: List<Action> = listOf(),
         val installedApps: List<Package> = listOf(),
@@ -33,17 +33,20 @@ data class AppState(
 )
 
 data class Package(val app: ApplicationInfo) : Differentiable {
-    override val diffId: String
-        get() = app.packageName
+    override val diffId: String get() = app.packageName
 
-    override fun areContentsTheSame(other: Differentiable): Boolean {
-        return (other as? Package)?.let { it.diffId == diffId } ?: super.areContentsTheSame(other)
-    }
+    override fun areContentsTheSame(other: Differentiable): Boolean =
+            (other as? Package)?.let { it.diffId == diffId } ?: super.areContentsTheSame(other)
 }
 
-inline class Action(@GestureConsumer.GestureAction val value: Int) : Differentiable {
+data class Action(@GestureConsumer.GestureAction val value: Int) : Differentiable {
     override val diffId: String get() = value.toString()
     override fun areContentsTheSame(other: Differentiable): Boolean =
             (other as? Action)?.let { it.value == value } ?: super.areContentsTheSame(other)
+}
 
+data class Brightness(val value: String) : Differentiable {
+    override val diffId: String get() = value
+    override fun areContentsTheSame(other: Differentiable): Boolean =
+            (other as? Brightness)?.let { it.value == value } ?: super.areContentsTheSame(other)
 }

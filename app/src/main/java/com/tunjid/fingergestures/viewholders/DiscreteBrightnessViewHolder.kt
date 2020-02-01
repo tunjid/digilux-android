@@ -42,13 +42,14 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
+import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_DELTA
 
 class DiscreteBrightnessViewHolder(
         itemView: View,
-        items: LiveData<List<String>>,
+        items: LiveData<List<Brightness>>,
         listener: AppAdapterListener
-) : DiffViewHolder<String>(itemView, items, listener) {
+) : DiffViewHolder<Brightness>(itemView, items, listener) {
 
     override val sizeCacheKey: String
         get() = javaClass.simpleName
@@ -86,7 +87,7 @@ class DiscreteBrightnessViewHolder(
                 initialItems = items.value ?: listOf(),
                 viewHolderCreator = { viewGroup, _ ->
                     DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
-                        BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(it)
+                        BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(it.value)
                         listener.notifyItemChanged(SLIDER_DELTA)
                         bind()
                     }

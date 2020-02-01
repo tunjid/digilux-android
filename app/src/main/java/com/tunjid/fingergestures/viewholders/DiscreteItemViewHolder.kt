@@ -21,21 +21,22 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.models.Brightness
 
 
 class DiscreteItemViewHolder(
         itemView: View,
-        listener: (String) -> Unit
+        listener: (Brightness) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
-    private lateinit var discreteValue: String
+    private var discreteValue: Brightness? = null
     private val textView: TextView = (itemView as TextView).apply {
-        setOnClickListener { listener(discreteValue) }
+        setOnClickListener { discreteValue?.let(listener) }
     }
 
-    fun bind(discreteValue: String) {
-        this.discreteValue = discreteValue
+    fun bind(brightness: Brightness) {
+        this.discreteValue = brightness
         val context = itemView.context
-        textView.text = context.getString(R.string.discrete_brightness_text, discreteValue)
+        textView.text = context.getString(R.string.discrete_brightness_text, brightness.value)
     }
 }

@@ -29,7 +29,6 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.SetManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ANDROID_SYSTEM_UI_PACKAGE
-import io.reactivex.rxkotlin.Flowables
 import java.util.*
 
 class RotationGestureConsumer private constructor() : GestureConsumer {
@@ -45,6 +44,10 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
     val applicationInfoComparator: Comparator<ApplicationInfo>
         get() = Comparator { infoA, infoB -> this.compareApplicationInfo(infoA, infoB) }
 
+    val rotatingApps = setManager.itemsFlowable(ROTATION_APPS)
+
+    val excludedRotatingApps = setManager.itemsFlowable(EXCLUDED_APPS)
+
     private var isAutoRotateOn: Boolean
         get() = App.transformApp({ app ->
             Settings.System.getInt(
@@ -58,12 +61,6 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
                 Settings.System.putInt(app.contentResolver, Settings.System.ACCELEROMETER_ROTATION, enabled)
             }
         }
-
-    val rotationApps = Flowables.combineLatest(
-            setManager.itemsFlowable(ROTATION_APPS),
-            setManager.itemsFlowable(EXCLUDED_APPS),
-            ::RotationApps
-    )
 
     @Retention(AnnotationRetention.SOURCE)
     @StringDef(ROTATION_APPS, EXCLUDED_APPS)
@@ -174,8 +171,3 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
 
     }
 }
-
-data class RotationApps(
-        val rotationApps: List<ApplicationInfo> = listOf(),
-        val excludedRotationApps: List<ApplicationInfo> = listOf()
-)

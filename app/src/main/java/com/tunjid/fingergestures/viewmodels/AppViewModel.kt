@@ -36,6 +36,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.toLiveData
@@ -88,7 +89,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             NAV_BAR_COLOR, LOCKED_CONTENT, SUPPORT)
     annotation class AdapterIndex
 
-    val liveState: LiveData<AppState> by lazy { m() }
+    val liveState: LiveData<AppState> by lazy { createLiveState() }
     private var uiUpdate = UiUpdate()
 
     private val quips = application.resources.getStringArray(R.array.upsell_text)
@@ -230,32 +231,23 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         permissionsProcessor.onNext(permissionsQueue - permission)
     }
 
-    private fun m(): LiveData<AppState> {
+    private fun createLiveState(): LiveData<AppState> {
         val brightnessGestureConsumer = BrightnessGestureConsumer.instance
         val rotationGestureConsumer = RotationGestureConsumer.instance
         val popUpGestureConsumer = PopUpGestureConsumer.instance
         val gestureMapper = GestureMapper.instance
 
         return Flowables.combineLatest(
-                installedAppsProcessor.startWith(listOf<ApplicationInfo>()),
+                Flowable.just(getApplication<Application>().links),
+                brightnessGestureConsumer.discreteBrightnesses.map(::Brightness),
+                popUpGestureConsumer.popUpActions.map(::Action),
+                Flowable.just(gestureMapper.actions.asList()).map(::Action),
+                installedAppsProcessor.startWith(listOf<ApplicationInfo>()).map(::Package),
+                rotationGestureConsumer.rotatingApps.map(::Package),
+                rotationGestureConsumer.excludedRotatingApps.map(::Package),
                 permissionsProcessor.startWith(listOf<Int>()),
-                rotationGestureConsumer.rotationApps,
-                popUpGestureConsumer.popUpActions,
-                brightnessGestureConsumer.discreteBrightnesses,
-                Flowable.just(gestureMapper.actions.asList()),
-                Flowable.just(getApplication<Application>().links)
-        ) { installedApps, permissions, rotationApps, popUpActions, discreteBrightnessValues, availableActions, links ->
-            AppState(
-                    links = links,
-                    brightnessValues = discreteBrightnessValues,
-                    popUpActions = popUpActions.map(::Action),
-                    availableActions = availableActions.map(::Action),
-                    installedApps = installedApps.map(::Package),
-                    rotationApps = rotationApps.rotationApps.map(::Package),
-                    excludedRotationApps = rotationApps.excludedRotationApps.map(::Package),
-                    permissionsQueue = permissions
-            )
-        }.toLiveData()
+                ::AppState
+        ).toLiveData()
     }
 
     companion object {
@@ -318,3 +310,5 @@ data class UiUpdate(
         val iconRes: Int = R.drawable.ic_add_24dp,
         val fabVisible: Boolean = false
 )
+
+fun <T, R> Flowable<List<T>>.map(mapper: (T) -> R): Flowable<List<R>> = map { it.map(mapper) }

@@ -23,7 +23,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.DO_NOTHING
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_BACK
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_HOME
@@ -47,7 +46,6 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGG
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_FLASHLIGHT
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.models.Action
-
 
 class ActionViewHolder(
         private val showsText: Boolean,
