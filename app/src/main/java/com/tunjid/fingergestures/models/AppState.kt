@@ -19,12 +19,13 @@ package com.tunjid.fingergestures.models
 
 import android.content.pm.ApplicationInfo
 import com.tunjid.androidx.recyclerview.diff.Differentiable
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 
 data class AppState(
         val links: List<TextLink> = listOf(),
         val brightnessValues: List<String> = listOf(),
-        val popUpActions: List<Int> = listOf(),
-        val availableActions: List<Int> = listOf(),
+        val popUpActions: List<Action> = listOf(),
+        val availableActions: List<Action> = listOf(),
         val installedApps: List<Package> = listOf(),
         val rotationApps: List<Package> = listOf(),
         val excludedRotationApps: List<Package> = listOf(),
@@ -38,4 +39,11 @@ data class Package(val app: ApplicationInfo) : Differentiable {
     override fun areContentsTheSame(other: Differentiable): Boolean {
         return (other as? Package)?.let { it.diffId == diffId } ?: super.areContentsTheSame(other)
     }
+}
+
+inline class Action(@GestureConsumer.GestureAction val value: Int) : Differentiable {
+    override val diffId: String get() = value.toString()
+    override fun areContentsTheSame(other: Differentiable): Boolean =
+            (other as? Action)?.let { it.value == value } ?: super.areContentsTheSame(other)
+
 }

@@ -46,29 +46,30 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGG
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_DOCK
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_FLASHLIGHT
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
+import com.tunjid.fingergestures.models.Action
 
 
 class ActionViewHolder(
         private val showsText: Boolean,
         itemView: View,
-        private val clickListener: (Int) -> Unit
+        private val clickListener: (Action) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
-    private var action: Int = 0
+    private var action: Action? = null
     private val textView: TextView = itemView.findViewById(R.id.text)
     private val imageView: ImageView = itemView.findViewById(R.id.icon)
 
     init {
-        itemView.setOnClickListener { clickListener(action) }
+        itemView.setOnClickListener { action?.let(clickListener) }
     }
 
-    fun bind(@GestureConsumer.GestureAction action: Int) {
+    fun bind(action: Action) {
         this.action = action
 
         val backgroundManager = BackgroundManager.instance
 
         textView.visibility = if (showsText) View.VISIBLE else View.GONE
-        textView.setText(GestureMapper.instance.resourceForAction(action))
+        textView.setText(GestureMapper.instance.resourceForAction(action.value))
 
         val iconRes = actionToIcon(action)
         val iconColor = backgroundManager.sliderColor
@@ -77,7 +78,7 @@ class ActionViewHolder(
         else imageView.setImageDrawable(backgroundManager.tint(iconRes, iconColor))
     }
 
-    private fun actionToIcon(@GestureConsumer.GestureAction action: Int): Int = when (action) {
+    private fun actionToIcon(action: Action): Int = when (action.value) {
         DO_NOTHING -> R.drawable.ic_do_nothing_24dp
 
         INCREASE_BRIGHTNESS -> R.drawable.ic_brightness_medium_24dp

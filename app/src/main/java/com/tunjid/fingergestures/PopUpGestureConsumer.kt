@@ -37,10 +37,10 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
         get() = App.transformApp({ app -> app.preferences.getBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, false) }, false)
         set(isSingleClick) = App.withApp { app -> app.preferences.edit().putBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, isSingleClick).apply() }
 
-    val list: List<Int>
-        get() = setManager.getItems(SAVED_ACTIONS)
-
     val popUpActions = setManager.itemsFlowable(SAVED_ACTIONS)
+
+    private val list: List<Int>
+        get() = setManager.getItems(SAVED_ACTIONS)
 
     override fun onGestureActionTriggered(gestureAction: Int) {
         App.withApp { app -> app.broadcast(Intent(ACTION_SHOW_POPUP)) }

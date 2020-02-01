@@ -35,7 +35,6 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.distinctUntilChanged
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_DOWN_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_LEFT_GESTURE
@@ -46,6 +45,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_G
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
 import com.tunjid.fingergestures.map
+import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
@@ -87,7 +87,7 @@ class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
         }
     }
 
-    private fun onActionClicked(@GestureConsumer.GestureAction actionRes: Int) {
+    private fun onActionClicked(action: Action) {
         val args = arguments ?: return showSnackbar(R.string.generic_error)
 
         @GestureMapper.GestureDirection
@@ -102,7 +102,7 @@ class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
         if (direction == null) { // Pop up instance
             val context = requireContext()
             when {
-                PopUpGestureConsumer.instance.addToSet(actionRes) -> fragment.notifyItemChanged(POPUP_ACTION)
+                PopUpGestureConsumer.instance.addToSet(action.value) -> fragment.notifyItemChanged(POPUP_ACTION)
                 else -> AlertDialog.Builder(context)
                         .setTitle(R.string.go_premium_title)
                         .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
@@ -111,7 +111,7 @@ class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
                         .show()
             }
         } else {
-            mapper.mapGestureToAction(direction, actionRes)
+            mapper.mapGestureToAction(direction, action.value)
             fragment.notifyItemChanged(when (direction) {
                 LEFT_GESTURE,
                 DOUBLE_LEFT_GESTURE -> MAP_LEFT_ICON

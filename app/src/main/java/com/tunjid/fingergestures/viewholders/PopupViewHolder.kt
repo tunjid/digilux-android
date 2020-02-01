@@ -31,13 +31,13 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.fragments.ActionFragment
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
+import com.tunjid.fingergestures.models.Action
 
 class PopupViewHolder(
         itemView: View,
-        items: LiveData<List<Int>>,
+        items: LiveData<List<Action>>,
         listener: AppAdapterListener
-) : DiffViewHolder<Int>(itemView, items, listener) {
+) : DiffViewHolder<Action>(itemView, items, listener) {
 
     override val sizeCacheKey: String
         get() = javaClass.simpleName
@@ -82,7 +82,7 @@ class PopupViewHolder(
         ).apply { adapter = this }
     }
 
-    private fun onActionClicked(@GestureConsumer.GestureAction action: Int) {
+    private fun onActionClicked(action: Action) {
         val buttonManager = PopUpGestureConsumer.instance
 
         val builder = AlertDialog.Builder(itemView.context)
@@ -92,7 +92,7 @@ class PopupViewHolder(
             !buttonManager.hasAccessibilityButton() -> builder.setMessage(R.string.popup_prompt)
             else -> builder.setTitle(R.string.popup_remove)
                     .setPositiveButton(R.string.yes) { _, _ ->
-                        buttonManager.removeFromSet(action)
+                        buttonManager.removeFromSet(action.value)
                         bind()
                     }
                     .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }

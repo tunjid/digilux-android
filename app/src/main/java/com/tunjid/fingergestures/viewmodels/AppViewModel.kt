@@ -34,6 +34,7 @@ import com.tunjid.fingergestures.activities.MainActivity.Companion.STORAGE_CODE
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
+import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.models.TextLink
@@ -247,8 +248,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             AppState(
                     links = links,
                     brightnessValues = discreteBrightnessValues,
-                    popUpActions = popUpActions,
-                    availableActions = availableActions,
+                    popUpActions = popUpActions.map(::Action),
+                    availableActions = availableActions.map(::Action),
                     installedApps = installedApps.map(::Package),
                     rotationApps = rotationApps.rotationApps.map(::Package),
                     excludedRotationApps = rotationApps.excludedRotationApps.map(::Package),
