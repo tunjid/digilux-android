@@ -90,7 +90,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     annotation class AdapterIndex
 
     val liveState: LiveData<AppState> by lazy { createLiveState() }
-    private var uiUpdate = UiUpdate()
 
     private val quips = application.resources.getStringArray(R.array.upsell_text)
     private val quipCounter = AtomicInteger(-1)
@@ -98,7 +97,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val permissionsQueue get() = liveState.value?.permissionsQueue ?: listOf()
 
     private val disposable: CompositeDisposable = CompositeDisposable()
-    private val stateProcessor: PublishProcessor<UiUpdate> = PublishProcessor.create()
     private val shillProcessor: PublishProcessor<String> = PublishProcessor.create()
     private val permissionsProcessor: PublishProcessor<List<Int>> = PublishProcessor.create()
     private val installedAppsProcessor: PublishProcessor<List<ApplicationInfo>> = PublishProcessor.create()
@@ -106,10 +104,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     override fun onCleared() {
         super.onCleared()
         disposable.clear()
-//        state.permissionsQueue.clear()
     }
-
-    fun uiState(): Flowable<UiUpdate> = stateProcessor.distinct()
 
     fun shill(): Flowable<String> {
         disposable.clear()
@@ -132,17 +127,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun calmIt() = disposable.clear()
 
-    fun checkPermissions() =
-            if (permissionsQueue.isEmpty()) stateProcessor.onNext(uiUpdate.copy(fabVisible = false))
-            else onPermissionAdded()
-
     fun requestPermission(@MainActivity.PermissionRequest permission: Int) {
         if (!permissionsQueue.contains(permission)) enqueuePermission(permission)
-        onPermissionAdded()
     }
 
-    fun onPermissionClicked(consumer: (Int) -> Unit) =
-            permissionsQueue.lastOrNull()?.let(consumer) ?: checkPermissions()
+    fun onPermissionClicked(consumer: (Int) -> Unit) {
+        permissionsQueue.lastOrNull()?.let(consumer)
+    }
 
     fun onPermissionChange(requestCode: Int): Int? {
         var shouldRemove = false
@@ -165,7 +156,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         if (shouldRemove) removePermission(requestCode)
-        checkPermissions()
         return result
     }
 
@@ -179,33 +169,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             appearanceItems.contentHashCode() -> R.id.action_wallpaper
             else -> null
         }
-    }
-
-    private fun onPermissionAdded() {
-        if (permissionsQueue.isEmpty()) return
-
-        uiUpdate = when (permissionsQueue.lastOrNull()) {
-            DO_NOT_DISTURB_CODE -> uiUpdate.copy(
-                    titleRes = R.string.enable_do_not_disturb,
-                    iconRes = R.drawable.ic_volume_loud_24dp
-            )
-            ACCESSIBILITY_CODE -> uiUpdate.copy(
-                    titleRes = R.string.enable_accessibility,
-                    iconRes = R.drawable.ic_human_24dp
-            )
-            SETTINGS_CODE -> uiUpdate.copy(
-                    titleRes = R.string.enable_write_settings,
-                    iconRes = R.drawable.ic_settings_white_24dp
-            )
-            STORAGE_CODE -> uiUpdate.copy(
-                    titleRes = R.string.enable_storage_settings,
-                    iconRes = R.drawable.ic_storage_24dp
-            )
-            else -> return
-        }
-
-        uiUpdate = uiUpdate.copy(fabVisible = true)
-        stateProcessor.onNext(uiUpdate)
     }
 
     private fun startShilling() {
@@ -310,5 +273,26 @@ data class UiUpdate(
         val iconRes: Int = R.drawable.ic_add_24dp,
         val fabVisible: Boolean = false
 )
+
+val AppState.uiUpdate
+    get() = when (permissionsQueue.lastOrNull()) {
+        DO_NOT_DISTURB_CODE -> UiUpdate(
+                titleRes = R.string.enable_do_not_disturb,
+                iconRes = R.drawable.ic_volume_loud_24dp
+        )
+        ACCESSIBILITY_CODE -> UiUpdate(
+                titleRes = R.string.enable_accessibility,
+                iconRes = R.drawable.ic_human_24dp
+        )
+        SETTINGS_CODE -> UiUpdate(
+                titleRes = R.string.enable_write_settings,
+                iconRes = R.drawable.ic_settings_white_24dp
+        )
+        STORAGE_CODE -> UiUpdate(
+                titleRes = R.string.enable_storage_settings,
+                iconRes = R.drawable.ic_storage_24dp
+        )
+        else -> UiUpdate()
+    }.copy(fabVisible = permissionsQueue.isNotEmpty())
 
 fun <T, R> Flowable<List<T>>.map(mapper: (T) -> R): Flowable<List<R>> = map { it.map(mapper) }

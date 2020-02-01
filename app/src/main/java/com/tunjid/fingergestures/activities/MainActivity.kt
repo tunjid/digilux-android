@@ -41,6 +41,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.android.billingclient.api.BillingClient
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -70,6 +72,8 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.globalUiDriver
+import com.tunjid.fingergestures.map
+import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.models.UiState
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
@@ -77,6 +81,7 @@ import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_S
 import com.tunjid.fingergestures.viewholders.DiffViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.UiUpdate
+import com.tunjid.fingergestures.viewmodels.uiUpdate
 import io.reactivex.disposables.CompositeDisposable
 
 class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiController, Navigator.Controller {
@@ -174,7 +179,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         uiState = uiState.copy(toolbarInvalidated = true)
 
         subscribeToBroadcasts()
-        disposables.add(viewModel.uiState().subscribe(this::onStateChanged, Throwable::printStackTrace))
+        viewModel.liveState
+                .map(AppState::uiUpdate)
+                .distinctUntilChanged()
+                .observe(this, this::onStateChanged)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
