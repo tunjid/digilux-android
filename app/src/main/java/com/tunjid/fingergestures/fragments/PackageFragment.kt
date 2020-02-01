@@ -27,19 +27,21 @@ import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.activityNavigatorController
-import com.tunjid.androidx.recyclerview.acceptDiff
-import com.tunjid.androidx.recyclerview.adapterOf
+import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.padded
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.distinctUntilChanged
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
+import com.tunjid.fingergestures.map
+import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.EXCLUDED_ROTATION_LOCK
@@ -56,9 +58,8 @@ class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
         val toolbar = view.findViewById<Toolbar>(R.id.title_bar)
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_bar)
         val recyclerView = view.findViewById<RecyclerView>(R.id.options_list).apply {
-            layoutManager = verticalLayoutManager()
-            adapter = adapterOf(
-                    itemsSource = { viewModel.state.installedApps },
+            val listAdapter = listAdapterOf(
+                    initialItems = viewModel.liveState.value?.installedApps ?: listOf(),
                     viewHolderCreator = { viewGroup, _ ->
                         PackageViewHolder(
                                 itemView = viewGroup.inflate(R.layout.viewholder_package_vertical),
@@ -66,18 +67,26 @@ class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
                         )
                     },
                     viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-            ).padded()
+            )
+
+            adapter = listAdapter
+            layoutManager = verticalLayoutManager()
             addItemDecoration(divider())
+
+            viewModel.liveState
+                    .map(AppState::installedApps)
+                    .distinctUntilChanged()
+                    .observe(viewLifecycleOwner) {
+                        TransitionManager.beginDelayedTransition(view as ViewGroup, AutoTransition())
+                        progressBar.visibility = View.GONE
+                        listAdapter.submitList(it)
+                    }
         }
 
         val persistedSet = arguments!!.getString(ARG_PERSISTED_SET)!!
         toolbar.title = RotationGestureConsumer.instance.getAddText(persistedSet)
 
-        disposables.add(viewModel.updatedApps().subscribe({ result ->
-            TransitionManager.beginDelayedTransition(view as ViewGroup, AutoTransition())
-            progressBar.visibility = View.GONE
-            recyclerView.acceptDiff(result)
-        }, Throwable::printStackTrace))
+        viewModel.updateApps()
     }
 
     private fun onPackageClicked(packageName: String) {

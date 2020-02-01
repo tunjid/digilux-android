@@ -63,7 +63,7 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
 
         view.findViewById<RecyclerView>(R.id.options_list).apply {
             layoutManager = verticalLayoutManager()
-            adapter = appAdapter(items, viewModel.state, this@AppFragment).padded()
+            adapter = appAdapter(items, viewModel.liveState, this@AppFragment).padded()
             addItemDecoration(divider())
             addScrollListener { _, dy -> if (abs(dy) > 3) toggleToolbar(dy < 0) }
         }

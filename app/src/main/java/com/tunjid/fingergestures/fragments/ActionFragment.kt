@@ -23,18 +23,18 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.activityNavigatorController
-import com.tunjid.androidx.recyclerview.acceptDiff
-import com.tunjid.androidx.recyclerview.adapterOf
+import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.padded
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.distinctUntilChanged
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_DOWN_GESTURE
@@ -45,6 +45,8 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_G
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
+import com.tunjid.fingergestures.map
+import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_DOWN_ICON
@@ -62,10 +64,9 @@ class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
         super.onViewCreated(view, savedInstanceState)
 
         view.findViewById<Toolbar>(R.id.title_bar).setTitle(R.string.pick_action)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.options_list).apply {
-            layoutManager = verticalLayoutManager()
-            adapter = adapterOf(
-                    itemsSource = { viewModel.state.availableActions },
+        view.findViewById<RecyclerView>(R.id.options_list).apply {
+            val listAdapter = listAdapterOf(
+                    initialItems = viewModel.liveState.value?.availableActions ?: listOf(),
                     viewHolderCreator = { viewGroup, _ ->
                         ActionViewHolder(
                                 showsText = true,
@@ -74,11 +75,16 @@ class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
                         )
                     },
                     viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-            ).padded()
-            addItemDecoration(divider())
-        }
+            )
+            layoutManager = verticalLayoutManager()
+            adapter = listAdapter
 
-        disposables.add(viewModel.updatedActions().subscribe(recyclerView::acceptDiff, Throwable::printStackTrace))
+            addItemDecoration(divider())
+
+            viewModel.liveState
+                    .map(AppState::availableActions)
+                    .distinctUntilChanged().observe(viewLifecycleOwner, listAdapter::submitList)
+        }
     }
 
     private fun onActionClicked(@GestureConsumer.GestureAction actionRes: Int) {

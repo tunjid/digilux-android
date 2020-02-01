@@ -20,9 +20,10 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
-import com.tunjid.androidx.recyclerview.adapterOf
 import com.tunjid.androidx.recyclerview.gridLayoutManager
+import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.PopUpGestureConsumer
@@ -32,7 +33,11 @@ import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 
-class PopupViewHolder(itemView: View, items: MutableList<Int>, listener: AppAdapterListener) : DiffViewHolder<Int>(itemView, items, listener) {
+class PopupViewHolder(
+        itemView: View,
+        items: LiveData<List<Int>>,
+        listener: AppAdapterListener
+) : DiffViewHolder<Int>(itemView, items, listener) {
 
     override val sizeCacheKey: String
         get() = javaClass.simpleName
@@ -62,15 +67,13 @@ class PopupViewHolder(itemView: View, items: MutableList<Int>, listener: AppAdap
 
     override fun bind() {
         super.bind()
-
-        diff()
         if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
     }
 
     override fun setupRecyclerView(recyclerView: RecyclerView) = recyclerView.run {
         layoutManager = gridLayoutManager(3)
-        adapter = adapterOf(
-                itemsSource = ::items,
+        listAdapterOf(
+                initialItems = items.value ?: listOf(),
                 viewHolderCreator = { viewGroup, _ ->
                     ActionViewHolder(
                             showsText = true,
@@ -79,7 +82,7 @@ class PopupViewHolder(itemView: View, items: MutableList<Int>, listener: AppAdap
                     )
                 },
                 viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-        )
+        ).apply { adapter = this }
     }
 
     private fun onActionClicked(@GestureConsumer.GestureAction action: Int) {

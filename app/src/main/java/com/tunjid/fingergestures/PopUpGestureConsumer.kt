@@ -19,7 +19,6 @@ package com.tunjid.fingergestures
 
 
 import android.content.Intent
-
 import com.tunjid.fingergestures.activities.PopupActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
@@ -40,6 +39,8 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
 
     val list: List<Int>
         get() = setManager.getItems(SAVED_ACTIONS)
+
+    val popUpActions = setManager.itemsFlowable(SAVED_ACTIONS)
 
     override fun onGestureActionTriggered(gestureAction: Int) {
         App.withApp { app -> app.broadcast(Intent(ACTION_SHOW_POPUP)) }

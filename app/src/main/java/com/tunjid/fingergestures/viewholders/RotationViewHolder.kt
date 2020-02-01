@@ -21,9 +21,10 @@ import android.content.pm.ApplicationInfo
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
-import com.tunjid.androidx.recyclerview.adapterOf
 import com.tunjid.androidx.recyclerview.gridLayoutManager
+import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
@@ -35,7 +36,7 @@ import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Compan
 
 class RotationViewHolder(itemView: View,
                          @param:RotationGestureConsumer.PersistedSet override val sizeCacheKey: String,
-                         items: MutableList<ApplicationInfo>,
+                         items: LiveData<List<ApplicationInfo>>,
                          listener: AppAdapterListener
 ) : DiffViewHolder<ApplicationInfo>(itemView, items, listener) {
 
@@ -67,17 +68,13 @@ class RotationViewHolder(itemView: View,
 
     override fun bind() {
         super.bind()
-
-        diff()
         if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
     }
 
-    override fun diffHash(item: ApplicationInfo): String = item.packageName
-
     override fun setupRecyclerView(recyclerView: RecyclerView) = recyclerView.run {
         layoutManager = gridLayoutManager(3)
-        adapter = adapterOf(
-                itemsSource = { items },
+        listAdapterOf(
+                initialItems = items.value ?: listOf(),
                 viewHolderCreator = { viewGroup, _ ->
                     PackageViewHolder(
                             itemView = viewGroup.inflate(R.layout.viewholder_package_horizontal)
@@ -101,6 +98,6 @@ class RotationViewHolder(itemView: View,
                     }
                 },
                 viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-        )
+        ).apply { adapter = this }
     }
 }

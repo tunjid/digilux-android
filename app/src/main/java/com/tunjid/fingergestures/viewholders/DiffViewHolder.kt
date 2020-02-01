@@ -21,47 +21,41 @@ import android.transition.AutoTransition
 import android.transition.TransitionManager.beginDelayedTransition
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.observe
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.tunjid.androidx.recyclerview.acceptDiff
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.AppAdapterListener
+import com.tunjid.fingergestures.lifecycleOwner
 import java.util.*
 
 abstract class DiffViewHolder<T> internal constructor(
         itemView: View,
-        protected val items: MutableList<T>,
+        protected val items: LiveData<List<T>>,
         listener: AppAdapterListener)
     : AppViewHolder(itemView, listener) {
 
-    private val recyclerView: RecyclerView = itemView.findViewById(R.id.item_list)
+    private val listAdapter: ListAdapter<T, *>
 
     internal abstract val sizeCacheKey: String
     internal abstract val listSupplier: () -> List<T>
 
     init {
-        setupRecyclerView(recyclerView)
+        listAdapter = setupRecyclerView(itemView.findViewById(R.id.item_list))
+        items.observe(lifecycleOwner) {
+            val key = sizeCacheKey
+            val oldSize = sizeMap.getOrPut(key, { 0 })
+            val newSize = it.size
+
+            if (oldSize != newSize) beginDelayedTransition(itemView as ViewGroup, AutoTransition())
+            sizeMap[key] = newSize
+
+            listAdapter.submitList(it)
+        }
     }
 
-    internal fun diff() {
-        disposables.add(App.diff(items, listSupplier, { item: T -> this.diffHash(item) }).subscribe(this::onDiff, Throwable::printStackTrace))
-    }
-
-    protected open fun diffHash(item: T): String = item.toString()
-
-    internal abstract fun setupRecyclerView(recyclerView: RecyclerView)
-
-    private fun onDiff(diffResult: DiffUtil.DiffResult) {
-        val key = sizeCacheKey
-        val oldSize = sizeMap.getOrPut(key, { 0 })
-        val newSize = items.size
-
-        if (oldSize != newSize) beginDelayedTransition(itemView as ViewGroup, AutoTransition())
-        sizeMap[key] = newSize
-
-        recyclerView.acceptDiff(diffResult)
-    }
+    internal abstract fun setupRecyclerView(recyclerView: RecyclerView): ListAdapter<T, *>
 
     companion object {
 

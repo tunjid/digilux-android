@@ -18,6 +18,7 @@
 package com.tunjid.fingergestures.adapters
 
 import androidx.annotation.StringRes
+import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.androidx.recyclerview.adapterOf
 import com.tunjid.androidx.view.util.inflate
@@ -37,6 +38,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GES
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.EXCLUDED_APPS
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
+import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewholders.*
 import com.tunjid.fingergestures.viewholders.LinkViewHolder.Companion.REVIEW_LINK_ITEM
@@ -80,7 +82,7 @@ import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.WALLPAPER_TRI
 
 fun appAdapter(
         items: IntArray,
-        state: AppState,
+        state: LiveData<AppState>,
         listener: AppAdapterListener
 ): RecyclerView.Adapter<AppViewHolder> = adapterOf(
         itemsSource = { items.toList() },
@@ -120,11 +122,21 @@ fun appAdapter(
                         { true },
                         backgroundManager::getSliderDurationText)
 
-                DISCRETE_BRIGHTNESS -> DiscreteBrightnessViewHolder(viewGroup.inflate(R.layout.viewholder_horizontal_list), state.brightnessValues, listener)
+                DISCRETE_BRIGHTNESS -> DiscreteBrightnessViewHolder(
+                        viewGroup.inflate(R.layout.viewholder_horizontal_list),
+                        state.map(AppState::brightnessValues),
+                        listener
+                )
 
-                SLIDER_COLOR -> ColorAdjusterViewHolder(viewGroup.inflate(R.layout.viewholder_slider_color), listener)
+                SLIDER_COLOR -> ColorAdjusterViewHolder(
+                        viewGroup.inflate(R.layout.viewholder_slider_color),
+                        listener
+                )
 
-                SCREEN_DIMMER -> ScreenDimmerViewHolder(viewGroup.inflate(R.layout.viewholder_screen_dimmer), listener)
+                SCREEN_DIMMER -> ScreenDimmerViewHolder(
+                        viewGroup.inflate(R.layout.viewholder_screen_dimmer),
+                        listener
+                )
 
                 ADAPTIVE_BRIGHTNESS -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
                         R.string.adaptive_brightness,
@@ -230,13 +242,30 @@ fun appAdapter(
 
                 WALLPAPER_PICKER -> WallpaperViewHolder(viewGroup.inflate(R.layout.viewholder_wallpaper_pick), listener)
 
-                WALLPAPER_TRIGGER -> WallpaperTriggerViewHolder(viewGroup.inflate(R.layout.viewholder_wallpaper_trigger), listener)
+                WALLPAPER_TRIGGER -> WallpaperTriggerViewHolder(
+                        viewGroup.inflate(R.layout.viewholder_wallpaper_trigger),
+                        listener
+                )
 
-                ROTATION_LOCK -> RotationViewHolder(viewGroup.inflate(R.layout.viewholder_horizontal_list), ROTATION_APPS, state.rotationApps, listener)
+                ROTATION_LOCK -> RotationViewHolder(
+                        viewGroup.inflate(R.layout.viewholder_horizontal_list),
+                        ROTATION_APPS,
+                        state.map(AppState::rotationApps),
+                        listener
+                )
 
-                EXCLUDED_ROTATION_LOCK -> RotationViewHolder(viewGroup.inflate(R.layout.viewholder_horizontal_list), EXCLUDED_APPS, state.excludedRotationApps, listener)
+                EXCLUDED_ROTATION_LOCK -> RotationViewHolder(
+                        viewGroup.inflate(R.layout.viewholder_horizontal_list),
+                        EXCLUDED_APPS,
+                        state.map(AppState::excludedRotationApps),
+                        listener
+                )
 
-                POPUP_ACTION -> PopupViewHolder(viewGroup.inflate(R.layout.viewholder_horizontal_list), state.popUpActions, listener)
+                POPUP_ACTION -> PopupViewHolder(
+                        viewGroup.inflate(R.layout.viewholder_horizontal_list),
+                        state.map(AppState::popUpActions),
+                        listener
+                )
 
                 else -> AppViewHolder(viewGroup.inflate(R.layout.viewholder_slider_delta))
             }

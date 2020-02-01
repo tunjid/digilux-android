@@ -29,12 +29,13 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent
-import com.tunjid.androidx.recyclerview.adapterOf
+import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
@@ -45,7 +46,7 @@ import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_DELTA
 
 class DiscreteBrightnessViewHolder(
         itemView: View,
-        items: MutableList<String>,
+        items: LiveData<List<String>>,
         listener: AppAdapterListener
 ) : DiffViewHolder<String>(itemView, items, listener) {
 
@@ -75,8 +76,6 @@ class DiscreteBrightnessViewHolder(
 
     override fun bind() {
         super.bind()
-
-        diff()
         if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
     }
 
@@ -86,8 +85,8 @@ class DiscreteBrightnessViewHolder(
             flexDirection = FlexDirection.ROW
             alignItems = AlignItems.CENTER
         }
-        adapter = adapterOf(
-                itemsSource = ::items,
+        listAdapterOf(
+                initialItems = items.value ?: listOf(),
                 viewHolderCreator = { viewGroup, _ ->
                     DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
                         BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(it)
@@ -96,7 +95,7 @@ class DiscreteBrightnessViewHolder(
                     }
                 },
                 viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-        )
+        ).apply { adapter = this }
     }
 
     private fun onDiscreteValueEntered(dialogInterface: DialogInterface, editText: EditText) {

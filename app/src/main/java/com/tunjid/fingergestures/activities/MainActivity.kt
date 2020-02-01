@@ -93,6 +93,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
 
     private val viewModel by viewModels<AppViewModel>()
 
+    private val links get() = (viewModel.liveState.value?.links ?: listOf()).toTypedArray()
+
     override var uiState: UiState by globalUiDriver { navigator.activeNavigator }
 
     override val navigator: MultiStackNavigator by multiStackNavigationController(
@@ -214,7 +216,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
             R.id.info -> {
                 AlertDialog.Builder(this)
                         .setTitle(R.string.open_source_libraries)
-                        .setItems(viewModel.state.links) { _, index -> showLink(viewModel.state.links[index]) }
+                        .setItems(links) { _, index -> showLink(links[index]) }
                         .show()
                 return true
             }

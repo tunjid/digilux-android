@@ -18,25 +18,33 @@
 package com.tunjid.fingergestures.viewmodels
 
 import android.app.Application
+import android.content.Context
 import android.content.pm.ApplicationInfo
 import androidx.annotation.IntDef
 import androidx.lifecycle.AndroidViewModel
-import androidx.recyclerview.widget.DiffUtil
+import androidx.lifecycle.LiveData
 import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.activities.MainActivity.Companion.ACCESSIBILITY_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.DO_NOT_DISTURB_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.SETTINGS_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.STORAGE_CODE
+import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.models.TextLink
+import com.tunjid.fingergestures.toLiveData
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
+import io.reactivex.rxkotlin.Flowables
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -78,20 +86,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             NAV_BAR_COLOR, LOCKED_CONTENT, SUPPORT)
     annotation class AdapterIndex
 
-    val state: AppState = AppState(application)
+    val liveState: LiveData<AppState> by lazy { m() }
     private var uiUpdate = UiUpdate()
 
     private val quips = application.resources.getStringArray(R.array.upsell_text)
     private val quipCounter = AtomicInteger(-1)
 
+    private val permissionsQueue get() = liveState.value?.permissionsQueue ?: listOf()
+
     private val disposable: CompositeDisposable = CompositeDisposable()
     private val stateProcessor: PublishProcessor<UiUpdate> = PublishProcessor.create()
     private val shillProcessor: PublishProcessor<String> = PublishProcessor.create()
+    private val permissionsProcessor: PublishProcessor<List<Int>> = PublishProcessor.create()
+    private val installedAppsProcessor: PublishProcessor<List<ApplicationInfo>> = PublishProcessor.create()
 
     override fun onCleared() {
         super.onCleared()
         disposable.clear()
-        state.permissionsQueue.clear()
+//        state.permissionsQueue.clear()
     }
 
     fun uiState(): Flowable<UiUpdate> = stateProcessor.distinct()
@@ -102,34 +114,32 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return shillProcessor
     }
 
-    fun updatedApps(): Single<DiffUtil.DiffResult> = App.diff(state.installedApps,
-            {
-                getApplication<Application>().packageManager.getInstalledApplications(0)
-                        .filter(this::isUserInstalledApp)
-                        .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
-            },
-            { info -> info.packageName })
-
-    fun updatedActions(): Single<DiffUtil.DiffResult> =
-            App.diff(state.availableActions) { GestureMapper.instance.actions.asList() }
+    fun updateApps() {
+        Single.fromCallable {
+            getApplication<Application>().packageManager.getInstalledApplications(0)
+                    .filter(this::isUserInstalledApp)
+                    .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
+        }
+                .subscribeOn(Schedulers.io())
+                .subscribe(installedAppsProcessor::onNext, Throwable::printStackTrace)
+                .addTo(disposable)
+    }
 
     fun shillMoar() = shillProcessor.onNext(getNextQuip())
 
     fun calmIt() = disposable.clear()
 
     fun checkPermissions() =
-            if (state.permissionsQueue.isEmpty()) stateProcessor.onNext(uiUpdate.copy(fabVisible = false))
+            if (permissionsQueue.isEmpty()) stateProcessor.onNext(uiUpdate.copy(fabVisible = false))
             else onPermissionAdded()
 
     fun requestPermission(@MainActivity.PermissionRequest permission: Int) {
-        if (!state.permissionsQueue.contains(permission)) state.permissionsQueue.add(permission)
+        if (!permissionsQueue.contains(permission)) enqueuePermission(permission)
         onPermissionAdded()
     }
 
-    fun onPermissionClicked(consumer: (Int) -> Unit) {
-        if (state.permissionsQueue.isEmpty()) checkPermissions()
-        else consumer.invoke(state.permissionsQueue.peek())
-    }
+    fun onPermissionClicked(consumer: (Int) -> Unit) =
+            permissionsQueue.lastOrNull()?.let(consumer) ?: checkPermissions()
 
     fun onPermissionChange(requestCode: Int): Int? {
         var shouldRemove = false
@@ -151,13 +161,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             else -> return null
         }
 
-        if (shouldRemove) state.permissionsQueue.remove(requestCode)
+        if (shouldRemove) removePermission(requestCode)
         checkPermissions()
         return result
     }
 
     fun updateBottomNav(hash: Int): Int? {
-        state.permissionsQueue.clear()
+        permissionsProcessor.onNext(listOf())
         return when (hash) {
             gestureItems.contentHashCode() -> R.id.action_directions
             brightnessItems.contentHashCode() -> R.id.action_slider
@@ -169,9 +179,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun onPermissionAdded() {
-        if (state.permissionsQueue.isEmpty()) return
+        if (permissionsQueue.isEmpty()) return
 
-        uiUpdate = when (state.permissionsQueue.peek()) {
+        uiUpdate = when (permissionsQueue.lastOrNull()) {
             DO_NOT_DISTURB_CODE -> uiUpdate.copy(
                     titleRes = R.string.enable_do_not_disturb,
                     iconRes = R.drawable.ic_volume_loud_24dp
@@ -210,6 +220,42 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun isUserInstalledApp(info: ApplicationInfo): Boolean =
             info.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0 || info.flags and ApplicationInfo.FLAG_SYSTEM == 0
 
+    private fun enqueuePermission(permission: Int) {
+        permissionsProcessor.onNext(permissionsQueue + permission)
+    }
+
+    private fun removePermission(permission: Int) {
+        permissionsProcessor.onNext(permissionsQueue - permission)
+    }
+
+    private fun m(): LiveData<AppState> {
+        val brightnessGestureConsumer = BrightnessGestureConsumer.instance
+        val rotationGestureConsumer = RotationGestureConsumer.instance
+        val popUpGestureConsumer = PopUpGestureConsumer.instance
+        val gestureMapper = GestureMapper.instance
+
+        return Flowables.combineLatest(
+                installedAppsProcessor.startWith(listOf<ApplicationInfo>()),
+                permissionsProcessor.startWith(listOf<Int>()),
+                rotationGestureConsumer.rotationApps,
+                popUpGestureConsumer.popUpActions,
+                brightnessGestureConsumer.discreteBrightnesses,
+                Flowable.just(gestureMapper.actions.asList()),
+                Flowable.just(getApplication<Application>().links)
+        ) { installedApps, permissions, rotationApps, popUpActions, discreteBrightnessValues, availableActions, links ->
+            AppState(
+                    links = links,
+                    brightnessValues = discreteBrightnessValues,
+                    popUpActions = popUpActions,
+                    availableActions = availableActions,
+                    installedApps = installedApps,
+                    rotationApps = rotationApps.rotationApps,
+                    excludedRotationApps = rotationApps.excludedRotationApps,
+                    permissionsQueue = permissions
+            )
+        }.toLiveData()
+    }
+
     companion object {
         const val PADDING = -1
         const val SLIDER_DELTA = PADDING + 1
@@ -245,8 +291,25 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         const val NAV_BAR_COLOR = AUDIO_SLIDER_SHOW + 1
         const val LOCKED_CONTENT = NAV_BAR_COLOR + 1
         const val SUPPORT = LOCKED_CONTENT + 1
+
+        internal const val RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava"
+        internal const val COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker"
+        internal const val ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap"
+        internal const val GET_SET_ICON_LINK = "http://www.myiconfinder.com/getseticons"
+        internal const val IMAGE_CROPPER_LINK = "https://github.com/ArthurHub/Android-Image-Cropper"
+        internal const val MATERIAL_DESIGN_ICONS_LINK = "https://materialdesignicons.com/"
     }
 }
+
+val Context.links
+    get() = listOf(
+            TextLink(getString(R.string.get_set_icon), AppViewModel.GET_SET_ICON_LINK),
+            TextLink(getString(R.string.rxjava), AppViewModel.RX_JAVA_LINK),
+            TextLink(getString(R.string.color_picker), AppViewModel.COLOR_PICKER_LINK),
+            TextLink(getString(R.string.image_cropper), AppViewModel.IMAGE_CROPPER_LINK),
+            TextLink(getString(R.string.material_design_icons), AppViewModel.MATERIAL_DESIGN_ICONS_LINK),
+            TextLink(getString(R.string.android_bootstrap), AppViewModel.ANDROID_BOOTSTRAP_LINK)
+    )
 
 data class UiUpdate(
         val titleRes: Int = R.string.blank_emoji,

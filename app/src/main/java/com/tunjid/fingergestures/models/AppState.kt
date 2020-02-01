@@ -17,55 +17,15 @@
 
 package com.tunjid.fingergestures.models
 
-import android.app.Application
 import android.content.pm.ApplicationInfo
 
-import com.tunjid.fingergestures.R
-
-import java.util.ArrayDeque
-import java.util.ArrayList
-import java.util.Queue
-
-class AppState(application: Application) {
-
-    val links: Array<TextLink>
-    val brightnessValues: MutableList<String>
-    val popUpActions: MutableList<Int>
-    val availableActions: MutableList<Int>
-    val installedApps: MutableList<ApplicationInfo>
-    val rotationApps: MutableList<ApplicationInfo>
-    val excludedRotationApps: MutableList<ApplicationInfo>
-    val permissionsQueue: Queue<Int>
-
-    init {
-        brightnessValues = ArrayList()
-
-        popUpActions = ArrayList()
-        availableActions = ArrayList()
-
-        installedApps = ArrayList()
-        rotationApps = ArrayList()
-        excludedRotationApps = ArrayList()
-
-        permissionsQueue = ArrayDeque()
-
-        links = arrayOf(
-                TextLink(application.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
-                TextLink(application.getString(R.string.rxjava), RX_JAVA_LINK),
-                TextLink(application.getString(R.string.color_picker), COLOR_PICKER_LINK),
-                TextLink(application.getString(R.string.image_cropper), IMAGE_CROPPER_LINK),
-                TextLink(application.getString(R.string.material_design_icons), MATERIAL_DESIGN_ICONS_LINK),
-                TextLink(application.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)
-        )
-    }
-
-    companion object {
-
-        private const val RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava"
-        private const val COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker"
-        private const val ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap"
-        private const val GET_SET_ICON_LINK = "http://www.myiconfinder.com/getseticons"
-        private const val IMAGE_CROPPER_LINK = "https://github.com/ArthurHub/Android-Image-Cropper"
-        private const val MATERIAL_DESIGN_ICONS_LINK = "https://materialdesignicons.com/"
-    }
-}
+data class AppState(
+        val links: List<TextLink> = listOf(),
+        val brightnessValues: List<String> = listOf(),
+        val popUpActions: List<Int> = listOf(),
+        val availableActions: List<Int> = listOf(),
+        val installedApps: List<ApplicationInfo> = listOf(),
+        val rotationApps: List<ApplicationInfo> = listOf(),
+        val excludedRotationApps: List<ApplicationInfo> = listOf(),
+        val permissionsQueue: List<Int> = listOf()
+)
