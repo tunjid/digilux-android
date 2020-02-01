@@ -23,6 +23,7 @@ import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
@@ -35,6 +36,7 @@ import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.activityGlobalUiController
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.models.UiState
+import com.tunjid.fingergestures.viewmodels.AppViewModel
 import io.reactivex.disposables.CompositeDisposable
 
 abstract class MainActivityFragment(
@@ -48,6 +50,8 @@ abstract class MainActivityFragment(
     override val insetFlags: InsetFlags = InsetFlags.NO_BOTTOM
 
     override var uiState: UiState by activityGlobalUiController()
+
+    private val viewModel by activityViewModels<AppViewModel>()
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_start_trial)
@@ -77,10 +81,8 @@ abstract class MainActivityFragment(
         activity?.purchase(sku)
     }
 
-    fun requestPermission(@MainActivity.PermissionRequest permission: Int) {
-        val activity = activity as MainActivity?
-        activity?.requestPermission(permission)
-    }
+    fun requestPermission(@MainActivity.PermissionRequest permission: Int) =
+            viewModel.requestPermission(permission)
 
     fun showBottomSheetFragment(fragment: MainActivityFragment) {
         val fragmentManager = activity?.supportFragmentManager ?: return

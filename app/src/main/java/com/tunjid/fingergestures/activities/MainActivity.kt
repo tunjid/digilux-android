@@ -139,11 +139,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
                 stackNavigatorSource = this@MainActivity.navigator::activeNavigator
         ), true)
 
-        navigator.stackSelectedListener = {
-            viewModel.checkPermissions()
-            val current = navigator.current
-            if (current is AppFragment) updateBottomNav(current, bottomNavigationView)
-        }
         navigator.stackTransactionModifier = {
             setCustomAnimations(
                     android.R.anim.fade_in,
@@ -172,7 +167,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         if (PurchasesManager.instance.hasAds()) shill()
         else hideAds()
 
-        if (!accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE)
+        if (!accessibilityServiceEnabled()) viewModel.requestPermission(ACCESSIBILITY_CODE)
 
         uiState = uiState.copy(toolbarInvalidated = true)
 
@@ -262,15 +257,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         handleIntent(intent)
     }
 
-    fun requestPermission(@PermissionRequest permission: Int) {
-        viewModel.requestPermission(permission)
-    }
-
     fun toggleBottomSheet(show: Boolean) {
         bottomSheetBehavior.state = if (show) STATE_COLLAPSED else STATE_HIDDEN
     }
 
     private fun showAppFragment(items: IntArray) {
+        viewModel.updateBottomNav(items.contentHashCode())
         val index = viewModel.navItems.indexOf(items)
         if (index >= 0) navigator.show(index)
     }
