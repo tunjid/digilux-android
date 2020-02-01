@@ -57,7 +57,7 @@ class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
 
         val toolbar = view.findViewById<Toolbar>(R.id.title_bar)
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_bar)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.options_list).apply {
+        view.findViewById<RecyclerView>(R.id.options_list).apply {
             val listAdapter = listAdapterOf(
                     initialItems = viewModel.liveState.value?.installedApps ?: listOf(),
                     viewHolderCreator = { viewGroup, _ ->

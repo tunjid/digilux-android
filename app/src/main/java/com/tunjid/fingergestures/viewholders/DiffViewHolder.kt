@@ -39,7 +39,6 @@ abstract class DiffViewHolder<T> internal constructor(
     private val listAdapter: ListAdapter<T, *>
 
     internal abstract val sizeCacheKey: String
-    internal abstract val listSupplier: () -> List<T>
 
     init {
         listAdapter = setupRecyclerView(itemView.findViewById(R.id.item_list))

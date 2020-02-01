@@ -53,9 +53,6 @@ class DiscreteBrightnessViewHolder(
     override val sizeCacheKey: String
         get() = javaClass.simpleName
 
-    override val listSupplier: () -> List<String>
-        get() = { BrightnessGestureConsumer.instance.discreteBrightnessValues }
-
     init {
 
         val title = itemView.findViewById<TextView>(R.id.title)

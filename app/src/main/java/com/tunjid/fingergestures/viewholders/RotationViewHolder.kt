@@ -17,7 +17,6 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import android.content.pm.ApplicationInfo
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -33,15 +32,13 @@ import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.fragments.PackageFragment
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
+import com.tunjid.fingergestures.models.Package
 
 class RotationViewHolder(itemView: View,
                          @param:RotationGestureConsumer.PersistedSet override val sizeCacheKey: String,
-                         items: LiveData<List<ApplicationInfo>>,
+                         items: LiveData<List<Package>>,
                          listener: AppAdapterListener
-) : DiffViewHolder<ApplicationInfo>(itemView, items, listener) {
-
-    override val listSupplier: () -> List<ApplicationInfo>
-        get() = { RotationGestureConsumer.instance.getList(sizeCacheKey) }
+) : DiffViewHolder<Package>(itemView, items, listener) {
 
     init {
         itemView.findViewById<View>(R.id.add).setOnClickListener {

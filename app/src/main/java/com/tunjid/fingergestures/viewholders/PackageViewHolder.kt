@@ -17,12 +17,12 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import android.content.pm.ApplicationInfo
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.models.Package
 
 class PackageViewHolder(
         itemView: View,
@@ -38,12 +38,12 @@ class PackageViewHolder(
         itemView.setOnClickListener { packageName?.let(listener) }
     }
 
-    fun bind(info: ApplicationInfo?) {
-        if (info == null) return
+    fun bind(item: Package?) {
+        if (item == null) return
         val packageManager = itemView.context.packageManager
 
-        packageName = info.packageName
-        imageView.setImageDrawable(packageManager.getApplicationIcon(info))
-        if (textView != null) textView.text = packageManager.getApplicationLabel(info)
+        packageName = item.app.packageName
+        imageView.setImageDrawable(packageManager.getApplicationIcon(item.app))
+        if (textView != null) textView.text = packageManager.getApplicationLabel(item.app)
     }
 }

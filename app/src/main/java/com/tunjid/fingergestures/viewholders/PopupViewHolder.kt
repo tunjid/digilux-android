@@ -42,9 +42,6 @@ class PopupViewHolder(
     override val sizeCacheKey: String
         get() = javaClass.simpleName
 
-    override val listSupplier: () -> List<Int>
-        get() = { PopUpGestureConsumer.instance.list }
-
     init {
 
         itemView.findViewById<View>(R.id.add).setOnClickListener {

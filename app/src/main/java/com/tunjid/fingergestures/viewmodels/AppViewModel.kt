@@ -35,6 +35,7 @@ import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.toLiveData
 import io.reactivex.Flowable
@@ -248,9 +249,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     brightnessValues = discreteBrightnessValues,
                     popUpActions = popUpActions,
                     availableActions = availableActions,
-                    installedApps = installedApps,
-                    rotationApps = rotationApps.rotationApps,
-                    excludedRotationApps = rotationApps.excludedRotationApps,
+                    installedApps = installedApps.map(::Package),
+                    rotationApps = rotationApps.rotationApps.map(::Package),
+                    excludedRotationApps = rotationApps.excludedRotationApps.map(::Package),
                     permissionsQueue = permissions
             )
         }.toLiveData()
