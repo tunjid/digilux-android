@@ -17,13 +17,9 @@
 
 package com.tunjid.fingergestures
 
-import android.view.View
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.Transformations
-import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -34,9 +30,6 @@ fun <T> Flowable<T>.toLiveData(errorHandler: ((Throwable) -> Unit)? = null): Liv
 
 fun <T, R> LiveData<T>.map(mapper: (T) -> R): LiveData<R> =
         Transformations.map(this, mapper)
-
-fun <T, R> LiveData<T>.switchMap(mapper: (T) -> LiveData<R>): LiveData<R> =
-        Transformations.switchMap(this, mapper)
 
 fun <T> LiveData<T>.distinctUntilChanged(): LiveData<T> =
         Transformations.distinctUntilChanged(this)
@@ -68,26 +61,3 @@ private class MainThreadLiveData<T>(
 
     override fun onInactive() = disposeBag.clear()
 }
-
-private class ViewHolderLifecycleOwner : LifecycleOwner {
-    internal val registry = LifecycleRegistry(this)
-    override fun getLifecycle(): Lifecycle = registry
-}
-
-val RecyclerView.ViewHolder.lifecycleOwner: LifecycleOwner
-    get() = run {
-        itemView.getTag(R.id.main_fragment_container) as? ViewHolderLifecycleOwner
-                ?: ViewHolderLifecycleOwner().apply {
-                    itemView.setTag(R.id.main_fragment_container, this)
-                    itemView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                        override fun onViewDetachedFromWindow(v: View?) =
-                                registry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-
-                        override fun onViewAttachedToWindow(v: View?) =
-                                registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-                    })
-
-                    if (itemView.isAttachedToWindow) registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-                }
-    }
-
