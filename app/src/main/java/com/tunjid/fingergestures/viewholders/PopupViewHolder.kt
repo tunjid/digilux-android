@@ -32,15 +32,13 @@ import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.watch
 
 class PopupViewHolder(
         itemView: View,
         items: LiveData<List<Action>>,
         listener: AppAdapterListener
-) : DiffViewHolder<Action>(itemView, items, listener) {
-
-    override val sizeCacheKey: String
-        get() = javaClass.simpleName
+) : AppViewHolder(itemView, listener) {
 
     init {
 
@@ -50,6 +48,21 @@ class PopupViewHolder(
                 !PopUpGestureConsumer.instance.hasAccessibilityButton() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
                 else -> listener.showBottomSheetFragment(ActionFragment.popUpInstance())
             }
+        }
+
+        itemView.findViewById<RecyclerView>(R.id.item_list).run {
+            layoutManager = gridLayoutManager(3)
+            adapter = listAdapterOf(
+                    initialItems = items.value ?: listOf(),
+                    viewHolderCreator = { viewGroup, _ ->
+                        ActionViewHolder(
+                                showsText = true,
+                                itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
+                                clickListener = ::onActionClicked
+                        )
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            ).also { watch(items, it) }
         }
 
         val title = itemView.findViewById<TextView>(R.id.title)
@@ -65,21 +78,6 @@ class PopupViewHolder(
     override fun bind() {
         super.bind()
         if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
-    }
-
-    override fun setupRecyclerView(recyclerView: RecyclerView) = recyclerView.run {
-        layoutManager = gridLayoutManager(3)
-        listAdapterOf(
-                initialItems = items.value ?: listOf(),
-                viewHolderCreator = { viewGroup, _ ->
-                    ActionViewHolder(
-                            showsText = true,
-                            itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
-                            clickListener = ::onActionClicked
-                    )
-                },
-                viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-        ).apply { adapter = this }
     }
 
     private fun onActionClicked(action: Action) {

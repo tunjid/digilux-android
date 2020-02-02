@@ -21,6 +21,9 @@ import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.observe
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
 private class ViewHolderLifecycleOwner : LifecycleOwner {
@@ -44,3 +47,7 @@ val RecyclerView.ViewHolder.lifecycleOwner: LifecycleOwner
                     if (itemView.isAttachedToWindow) registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
                 }
     }
+
+fun <T>RecyclerView.ViewHolder.watch(liveItems: LiveData<List<T>>, listAdapter: ListAdapter<T, *>){
+    liveItems.observe(lifecycleOwner, listAdapter::submitList)
+}

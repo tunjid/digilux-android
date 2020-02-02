@@ -44,15 +44,13 @@ import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_DELTA
+import com.tunjid.fingergestures.watch
 
 class DiscreteBrightnessViewHolder(
         itemView: View,
         items: LiveData<List<Brightness>>,
         listener: AppAdapterListener
-) : DiffViewHolder<Brightness>(itemView, items, listener) {
-
-    override val sizeCacheKey: String
-        get() = javaClass.simpleName
+) : AppViewHolder(itemView, listener) {
 
     init {
 
@@ -62,6 +60,25 @@ class DiscreteBrightnessViewHolder(
             MaterialAlertDialogBuilder(itemView.context)
                     .setMessage(R.string.discrete_brightness_description)
                     .show()
+        }
+
+        itemView.findViewById<RecyclerView>(R.id.item_list).run {
+            layoutManager = FlexboxLayoutManager(context).apply {
+                justifyContent = JustifyContent.FLEX_START
+                flexDirection = FlexDirection.ROW
+                alignItems = AlignItems.CENTER
+            }
+            adapter = listAdapterOf(
+                    initialItems = items.value ?: listOf(),
+                    viewHolderCreator = { viewGroup, _ ->
+                        DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
+                            BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(it.value)
+                            listener.notifyItemChanged(SLIDER_DELTA)
+                            bind()
+                        }
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            ).also { watch(items, it) }
         }
 
         itemView.findViewById<View>(R.id.add).setOnClickListener {
@@ -75,25 +92,6 @@ class DiscreteBrightnessViewHolder(
     override fun bind() {
         super.bind()
         if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
-    }
-
-    override fun setupRecyclerView(recyclerView: RecyclerView) = recyclerView.run {
-        layoutManager = FlexboxLayoutManager(recyclerView.context).apply {
-            justifyContent = JustifyContent.FLEX_START
-            flexDirection = FlexDirection.ROW
-            alignItems = AlignItems.CENTER
-        }
-        listAdapterOf(
-                initialItems = items.value ?: listOf(),
-                viewHolderCreator = { viewGroup, _ ->
-                    DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
-                        BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(it.value)
-                        listener.notifyItemChanged(SLIDER_DELTA)
-                        bind()
-                    }
-                },
-                viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-        ).apply { adapter = this }
     }
 
     private fun onDiscreteValueEntered(dialogInterface: DialogInterface, editText: EditText) {

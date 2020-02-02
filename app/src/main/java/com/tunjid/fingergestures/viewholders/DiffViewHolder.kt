@@ -17,10 +17,7 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import android.transition.AutoTransition
-import android.transition.TransitionManager.beginDelayedTransition
 import android.view.View
-import android.view.ViewGroup
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.ListAdapter
@@ -28,38 +25,21 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.lifecycleOwner
-import java.util.*
 
 abstract class DiffViewHolder<T> internal constructor(
         itemView: View,
         protected val items: LiveData<List<T>>,
-        listener: AppAdapterListener)
-    : AppViewHolder(itemView, listener) {
+        listener: AppAdapterListener
+) : AppViewHolder(itemView, listener) {
 
     private val listAdapter: ListAdapter<T, *>
 
-    internal abstract val sizeCacheKey: String
-
     init {
         listAdapter = setupRecyclerView(itemView.findViewById(R.id.item_list))
-        items.observe(lifecycleOwner) {
-            val key = sizeCacheKey
-            val oldSize = sizeMap.getOrPut(key, { 0 })
-            val newSize = it.size
-
-            if (oldSize != newSize) beginDelayedTransition(itemView as ViewGroup, AutoTransition())
-            sizeMap[key] = newSize
-
-            listAdapter.submitList(it)
-        }
+        items.observe(lifecycleOwner, listAdapter::submitList)
     }
 
     internal abstract fun setupRecyclerView(recyclerView: RecyclerView): ListAdapter<T, *>
 
-    companion object {
-
-        private val sizeMap = HashMap<String, Int>()
-
-        fun onActivityDestroyed() = sizeMap.clear()
-    }
 }
+

@@ -43,7 +43,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
-import androidx.recyclerview.widget.RecyclerView
 import com.android.billingclient.api.BillingClient
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -115,9 +114,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
                 if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
                 else R.color.black
         )
-
-    private val transition: Transition
-        get() = AutoTransition().excludeTarget(RecyclerView::class.java, true)
 
     @Retention(AnnotationRetention.SOURCE)
     @IntDef(STORAGE_CODE, SETTINGS_CODE, ACCESSIBILITY_CODE, DO_NOT_DISTURB_CODE)
@@ -234,11 +230,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         super.onPause()
     }
 
-    override fun onDestroy() {
-        DiffViewHolder.onActivityDestroyed()
-        super.onDestroy()
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         viewModel.onPermissionChange(requestCode)?.apply { showSnackbar(this) }
@@ -335,11 +326,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         viewModel.calmIt()
         if (shillSwitcher.visibility == View.GONE) return
 
-        val hideTransition = transition
-        hideTransition.addListener(object : TransitionListenerAdapter() {
-            override fun onTransitionEnd(transition: Transition) = showSnackbar(R.string.billing_thanks)
+        TransitionManager.beginDelayedTransition(constraintLayout, AutoTransition().apply {
+            addTarget(shillSwitcher)
+            addListener(object : TransitionListenerAdapter() {
+                override fun onTransitionEnd(transition: Transition) = showSnackbar(R.string.billing_thanks)
+            })
         })
-        TransitionManager.beginDelayedTransition(constraintLayout, hideTransition)
         shillSwitcher.visibility = View.GONE
     }
 
