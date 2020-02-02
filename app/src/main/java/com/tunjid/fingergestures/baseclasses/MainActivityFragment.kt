@@ -37,7 +37,6 @@ import com.tunjid.fingergestures.activityGlobalUiController
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.models.UiState
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import io.reactivex.disposables.CompositeDisposable
 
 abstract class MainActivityFragment(
         @LayoutRes layoutRes: Int
@@ -45,13 +44,9 @@ abstract class MainActivityFragment(
         InsetProvider,
         GlobalUiController {
 
-    protected var disposables = CompositeDisposable()
-
     override val insetFlags: InsetFlags = InsetFlags.NO_BOTTOM
 
     override var uiState: UiState by activityGlobalUiController()
-
-    private val viewModel by activityViewModels<AppViewModel>()
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_start_trial)
@@ -63,32 +58,9 @@ abstract class MainActivityFragment(
         return super.onPrepareOptionsMenu(menu)
     }
 
-    override fun onDestroyView() {
-        disposables.clear()
-        super.onDestroyView()
-    }
-
-    protected fun toggleToolbar(visible: Boolean) {
-        uiState = uiState.copy(toolbarShows = visible)
-    }
-
-    fun showSnackbar(@StringRes resource: Int) {
-        uiState = uiState.copy(snackbarText = getString(resource))
-    }
-
     fun purchase(@PurchasesManager.SKU sku: String) {
         val activity = activity as MainActivity?
         activity?.purchase(sku)
-    }
-
-    fun requestPermission(@MainActivity.PermissionRequest permission: Int) =
-            viewModel.requestPermission(permission)
-
-    fun showBottomSheetFragment(fragment: MainActivityFragment) {
-        val fragmentManager = activity?.supportFragmentManager ?: return
-
-        fragmentManager.beginTransaction().replace(R.id.bottom_sheet, fragment).commit()
-        toggleBottomSheet(true)
     }
 
     protected fun toggleBottomSheet(show: Boolean) {

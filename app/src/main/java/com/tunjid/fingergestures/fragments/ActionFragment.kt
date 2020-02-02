@@ -47,6 +47,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GES
 import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.mutateGlobalUi
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_DOWN_ICON
@@ -88,7 +89,8 @@ class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
     }
 
     private fun onActionClicked(action: Action) {
-        val args = arguments ?: return showSnackbar(R.string.generic_error)
+        val args = arguments
+                ?: return mutateGlobalUi { copy(snackbarText = getString(R.string.generic_error)) }
 
         @GestureMapper.GestureDirection
         val direction = args.getString(ARG_DIRECTION)

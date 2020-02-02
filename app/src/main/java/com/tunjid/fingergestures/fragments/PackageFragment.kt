@@ -42,6 +42,7 @@ import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
 import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.mutateGlobalUi
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.EXCLUDED_ROTATION_LOCK
@@ -90,11 +91,12 @@ class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
     }
 
     private fun onPackageClicked(packageName: String) {
-        val args = arguments ?: return showSnackbar(R.string.generic_error)
+        val args = arguments
+                ?: return mutateGlobalUi { copy(snackbarText = getString(R.string.generic_error)) }
 
         @RotationGestureConsumer.PersistedSet
         val persistedSet = args.getString(ARG_PERSISTED_SET)
-                ?: return showSnackbar(R.string.generic_error)
+                ?: return mutateGlobalUi { copy(snackbarText = getString(R.string.generic_error)) }
 
         val added = RotationGestureConsumer.instance.addToSet(packageName, persistedSet)
 

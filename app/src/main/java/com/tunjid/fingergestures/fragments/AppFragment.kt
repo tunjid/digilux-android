@@ -24,6 +24,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.StringRes
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.theartofdev.edmodo.cropper.CropImage
@@ -38,10 +39,12 @@ import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.adapters.appAdapter
 import com.tunjid.fingergestures.adapters.padded
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
+import com.tunjid.fingergestures.mutateGlobalUi
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import kotlin.math.abs
 
@@ -67,7 +70,7 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
             layoutManager = verticalLayoutManager()
             adapter = appAdapter(items, viewModel.liveState, this@AppFragment).padded()
             addItemDecoration(divider())
-            addScrollListener { _, dy -> if (abs(dy) > 3) toggleToolbar(dy < 0) }
+            addScrollListener { _, dy -> if (abs(dy) > 3) mutateGlobalUi { copy(toolbarShows = dy < 0) } }
         }
     }
 
@@ -78,7 +81,7 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        toggleToolbar(true)
+        mutateGlobalUi { copy(toolbarShows = true) }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -86,7 +89,7 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
         activity ?: return
 
         when {
-            resultCode != Activity.RESULT_OK -> showSnackbar(R.string.cancel_wallpaper)
+            resultCode != Activity.RESULT_OK -> mutateGlobalUi { copy(snackbarText = getString(R.string.cancel_wallpaper)) }
             requestCode == DAY_WALLPAPER_PICK_CODE || requestCode == NIGHT_WALLPAPER_PICK_CODE -> cropImage(data!!.data, requestCode)
         }
     }
@@ -96,13 +99,25 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
         recyclerView = null
     }
 
-    override fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int) {
-        if (!App.hasStoragePermission)
-            showSnackbar(R.string.enable_storage_settings)
-        else
-            startActivityForResult(Intent.createChooser(Intent()
-                    .setType(IMAGE_SELECTION)
-                    .setAction(Intent.ACTION_GET_CONTENT), ""), selection)
+   override fun requestPermission(@MainActivity.PermissionRequest permission: Int) =
+            viewModel.requestPermission(permission)
+
+    override fun showSnackbar(@StringRes message: Int) {
+        mutateGlobalUi { copy(snackbarText = getString(message)) }
+    }
+
+   override fun showBottomSheetFragment(fragment: MainActivityFragment) {
+        val fragmentManager = activity?.supportFragmentManager ?: return
+
+        fragmentManager.beginTransaction().replace(R.id.bottom_sheet, fragment).commit()
+        toggleBottomSheet(true)
+    }
+
+    override fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int) = when {
+        App.hasStoragePermission -> startActivityForResult(Intent.createChooser(Intent()
+                .setType(IMAGE_SELECTION)
+                .setAction(Intent.ACTION_GET_CONTENT), ""), selection)
+        else -> mutateGlobalUi { copy(snackbarText = getString(R.string.enable_storage_settings)) }
     }
 
     override fun notifyItemChanged(@AppViewModel.AdapterIndex index: Int) {

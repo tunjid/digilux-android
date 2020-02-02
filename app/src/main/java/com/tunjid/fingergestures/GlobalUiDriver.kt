@@ -63,6 +63,10 @@ interface GlobalUiController {
     var uiState: UiState
 }
 
+fun GlobalUiController.mutateGlobalUi(mutation: UiState.() -> UiState) {
+    uiState = mutation(uiState)
+}
+
 /**
  * Convenience method for [FragmentActivity] delegation to a [GlobalUiDriver] when implementing
  * [GlobalUiController]
