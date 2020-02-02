@@ -21,6 +21,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.transition.AutoTransition
@@ -39,6 +40,10 @@ import androidx.annotation.IntDef
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.component1
+import androidx.core.graphics.component2
+import androidx.core.graphics.component3
+import androidx.core.view.doOnLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
@@ -57,22 +62,18 @@ import com.tunjid.androidx.navigation.MultiStackNavigator
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.doOnLifecycleEvent
 import com.tunjid.androidx.navigation.multiStackNavigationController
-import com.tunjid.fingergestures.App
+import com.tunjid.androidx.view.util.marginLayoutParams
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
 import com.tunjid.fingergestures.App.Companion.withApp
-import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_EDIT_WALLPAPER
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_NAV_BAR_CHANGED
-import com.tunjid.fingergestures.GlobalUiController
-import com.tunjid.fingergestures.InsetLifecycleCallbacks
-import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.InsetLifecycleCallbacks.Companion.topInset
 import com.tunjid.fingergestures.billing.BillingManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
 import com.tunjid.fingergestures.fragments.AppFragment
-import com.tunjid.fingergestures.globalUiDriver
-import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.models.UiState
@@ -153,6 +154,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         }
         onBackPressedDispatcher.addCallback(this) { if (!navigator.pop()) finish() }
 
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            private val primaryColor = Color.valueOf(colorAt(R.color.colorPrimary))
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                val a = (slideOffset + 1) / 2 // callback range is [-1, 1]
+                val (r, g, b) = primaryColor
+                mutateGlobalUi { copy(statusBarColor = Color.argb(a, r, g, b)) }
+            }
+
+            override fun onStateChanged(bottomSheet: View, newState: Int) = Unit
+        })
+
+        findViewById<View>(R.id.bottom_sheet).doOnLayout { it.marginLayoutParams.topMargin = topInset }
         toggleBottomSheet(false)
 
         val startIntent = intent

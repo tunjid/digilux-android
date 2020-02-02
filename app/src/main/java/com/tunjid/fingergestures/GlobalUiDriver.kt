@@ -174,7 +174,7 @@ class GlobalUiDriver(
                     fabHider::set,
                     toolbarHider::set,
                     this::setNavBarColor,
-                    this::setLightStatusBar,
+                    this::setStatusBarColor,
                     this::setFabIcon,
                     fabExtensionAnimator::isExtended::set,
                     this::showSnackBar,
@@ -204,9 +204,8 @@ class GlobalUiDriver(
                 intArrayOf(color, Color.TRANSPARENT))
     }
 
-    private fun setLightStatusBar(lightStatusBar: Boolean) = uiFlagTweak { flags ->
-        if (lightStatusBar) flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        else flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+    private fun setStatusBarColor(color: Int) {
+        host.window.statusBarColor = color
     }
 
     private fun uiFlagTweak(tweaker: (Int) -> Int) = host.window.decorView.run {
