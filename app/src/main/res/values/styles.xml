@@ -23,9 +23,27 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorOnPrimary">@color/toggle_text</item>
+        <item name="materialAlertDialogTheme">
+            @style/DigiluxAlertDialogTheme
+        </item>
     </style>
 
-    <style name="SwitchTintTheme" >
+    <style name="DigiluxAlertDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
+    </style>
+
+    <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/toggle_text</item>
+        <item name="rippleColor">@color/colorPrimary</item>
+    </style>
+
+    <style name="NegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/toggle_text</item>
+        <item name="rippleColor">@color/colorPrimary</item>
+    </style>
+
+    <style name="SwitchTintTheme">
         <item name="colorControlActivated">@color/colorPrimary</item>
     </style>
 
