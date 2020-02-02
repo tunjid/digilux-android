@@ -20,7 +20,7 @@ package com.tunjid.fingergestures
 
 import android.content.SharedPreferences
 import io.reactivex.Flowable
-import io.reactivex.processors.PublishProcessor
+import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.schedulers.Schedulers
 import java.util.*
 import kotlin.collections.HashSet
@@ -65,7 +65,7 @@ class SetManager<T : Any>(private val sorter: Comparator<T>,
             App.withApp { app -> app.preferences.edit().putStringSet(preferencesName, set).apply() }
 
     fun itemsFlowable(preferencesName: String): Flowable<List<T>> {
-        val processor = PublishProcessor.create<List<T>>()
+        val processor = BehaviorProcessor.create<List<T>>()
         val prefs = App.transformApp(App::preferences)!!
 
         SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
