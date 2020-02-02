@@ -18,16 +18,14 @@
 package com.tunjid.fingergestures.viewholders
 
 import android.content.Intent
+import android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION
 import android.view.View
 import android.widget.Button
 import android.widget.Switch
-
-import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.AppAdapterListener
+import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
-
-import android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION
 
 class ScreenDimmerViewHolder(itemView: View, listener: AppAdapterListener) : AppViewHolder(itemView, listener) {
 

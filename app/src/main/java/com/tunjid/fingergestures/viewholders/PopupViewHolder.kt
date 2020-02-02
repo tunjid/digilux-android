@@ -19,9 +19,9 @@ package com.tunjid.fingergestures.viewholders
 
 import android.view.View
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
@@ -46,8 +46,8 @@ class PopupViewHolder(
 
         itemView.findViewById<View>(R.id.add).setOnClickListener {
             when {
-                !App.canWriteToSettings() -> AlertDialog.Builder(itemView.context).setMessage(R.string.permission_required).show()
-                !PopUpGestureConsumer.instance.hasAccessibilityButton() -> AlertDialog.Builder(itemView.context).setMessage(R.string.popup_prompt).show()
+                !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+                !PopUpGestureConsumer.instance.hasAccessibilityButton() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
                 else -> listener.showBottomSheetFragment(ActionFragment.popUpInstance())
             }
         }
@@ -56,7 +56,7 @@ class PopupViewHolder(
 
         title.setText(R.string.popup_title)
         title.setOnClickListener {
-            AlertDialog.Builder(itemView.context)
+            MaterialAlertDialogBuilder(itemView.context)
                     .setMessage(R.string.popup_description)
                     .show()
         }
@@ -85,7 +85,7 @@ class PopupViewHolder(
     private fun onActionClicked(action: Action) {
         val buttonManager = PopUpGestureConsumer.instance
 
-        val builder = AlertDialog.Builder(itemView.context)
+        val builder = MaterialAlertDialogBuilder(itemView.context)
 
         when {
             !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)

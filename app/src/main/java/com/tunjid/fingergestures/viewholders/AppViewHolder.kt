@@ -19,8 +19,8 @@ package com.tunjid.fingergestures.viewholders
 
 import android.view.View
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.billing.PurchasesManager
@@ -39,7 +39,7 @@ open class AppViewHolder(
 
     internal fun goPremium(@StringRes description: Int) {
         val context = itemView.context
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.go_premium_title)
                 .setMessage(context.getString(R.string.go_premium_body, context.getString(description)))
                 .setPositiveButton(R.string.continue_text) { _, _ -> listener?.purchase(PurchasesManager.PREMIUM_SKU) }

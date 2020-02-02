@@ -20,8 +20,8 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.TextViewCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.billing.PurchasesManager
@@ -64,7 +64,7 @@ class AdFreeViewHolder(
 
     private fun showPurchaseOptions() {
         val context = itemView.context
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.purchase_options)
                 .setItems(R.array.purchase_options
                 ) { _, index ->
@@ -91,7 +91,7 @@ class AdFreeViewHolder(
                 else R.string.premium_generosity_confirmation
 
         val context = itemView.context
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
                 .setTitle(title)
                 .setMessage(description)
                 .setPositiveButton(R.string.continue_text) { _, _ -> action.invoke() }

@@ -21,10 +21,10 @@ import android.content.DialogInterface
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.palette.graphics.Palette
 import com.flask.colorpicker.ColorPickerView.WHEEL_TYPE.FLOWER
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
@@ -138,7 +138,7 @@ class ColorAdjusterViewHolder(
     private fun getColorFromWallpaper(indicator: View) {
         if (PurchasesManager.instance.isNotPremium) return goPremium(R.string.premium_prompt_slider)
 
-        AlertDialog.Builder(indicator.context)
+        MaterialAlertDialogBuilder(indicator.context)
                 .setTitle(R.string.choose_target)
                 .setItems(targetOptions) { _, position ->
                     val tag = indicator.tag

@@ -20,11 +20,11 @@ package com.tunjid.fingergestures.fragments
 
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.activityNavigatorController
 import com.tunjid.androidx.recyclerview.listAdapterOf
@@ -103,7 +103,7 @@ class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
             val context = requireContext()
             when {
                 PopUpGestureConsumer.instance.addToSet(action.value) -> fragment.notifyItemChanged(POPUP_ACTION)
-                else -> AlertDialog.Builder(context)
+                else -> MaterialAlertDialogBuilder(context)
                         .setTitle(R.string.go_premium_title)
                         .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
                         .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.PREMIUM_SKU) }

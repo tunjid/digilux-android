@@ -37,7 +37,6 @@ import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.annotation.IntDef
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Lifecycle
@@ -50,6 +49,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
 import com.google.android.material.snackbar.Snackbar
@@ -213,7 +213,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
                 return true
             }
             R.id.info -> {
-                AlertDialog.Builder(this)
+                MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.open_source_libraries)
                         .setItems(links) { _, index -> showLink(links[index]) }
                         .show()
@@ -305,7 +305,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
     }
 
     private fun showPermissionDialog(@StringRes stringRes: Int, yesAction: () -> Unit) {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.permission_required)
                 .setMessage(stringRes)
                 .setPositiveButton(R.string.yes) { _, _ -> yesAction.invoke() }

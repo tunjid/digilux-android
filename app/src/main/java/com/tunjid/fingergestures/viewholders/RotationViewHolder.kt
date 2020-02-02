@@ -19,9 +19,9 @@ package com.tunjid.fingergestures.viewholders
 
 import android.view.View
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
@@ -43,8 +43,8 @@ class RotationViewHolder(itemView: View,
     init {
         itemView.findViewById<View>(R.id.add).setOnClickListener {
             when {
-                !App.canWriteToSettings() -> AlertDialog.Builder(itemView.context).setMessage(R.string.permission_required).show()
-                !RotationGestureConsumer.instance.canAutoRotate() -> AlertDialog.Builder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
+                !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+                !RotationGestureConsumer.instance.canAutoRotate() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
                 else -> listener.showBottomSheetFragment(PackageFragment.newInstance(sizeCacheKey))
             }
         }
@@ -54,7 +54,7 @@ class RotationViewHolder(itemView: View,
 
         title.setText(if (isRotationList) R.string.auto_rotate_apps else R.string.auto_rotate_apps_excluded)
         title.setOnClickListener {
-            AlertDialog.Builder(itemView.context)
+            MaterialAlertDialogBuilder(itemView.context)
                     .setMessage(
                             if (isRotationList) R.string.auto_rotate_description
                             else R.string.auto_rotate_ignored_description
@@ -77,7 +77,7 @@ class RotationViewHolder(itemView: View,
                             itemView = viewGroup.inflate(R.layout.viewholder_package_horizontal)
                     ) { packageName ->
                         val gestureConsumer = RotationGestureConsumer.instance
-                        val builder = AlertDialog.Builder(recyclerView.context)
+                        val builder = MaterialAlertDialogBuilder(recyclerView.context)
 
                         when {
                             !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)

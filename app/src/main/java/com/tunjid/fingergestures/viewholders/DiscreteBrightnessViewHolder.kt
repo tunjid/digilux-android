@@ -28,13 +28,13 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
@@ -59,13 +59,13 @@ class DiscreteBrightnessViewHolder(
         val title = itemView.findViewById<TextView>(R.id.title)
         title.setText(R.string.discrete_brightness_title)
         title.setOnClickListener {
-            AlertDialog.Builder(itemView.context)
+            MaterialAlertDialogBuilder(itemView.context)
                     .setMessage(R.string.discrete_brightness_description)
                     .show()
         }
 
         itemView.findViewById<View>(R.id.add).setOnClickListener {
-            val builder = AlertDialog.Builder(itemView.context)
+            val builder = MaterialAlertDialogBuilder(itemView.context)
 
             if (App.canWriteToSettings()) requestDiscreteValue(builder)
             else builder.setMessage(R.string.permission_required).show()
@@ -115,7 +115,7 @@ class DiscreteBrightnessViewHolder(
         dialogInterface.dismiss()
     }
 
-    private fun requestDiscreteValue(builder: AlertDialog.Builder) {
+    private fun requestDiscreteValue(builder: MaterialAlertDialogBuilder) {
         val context = itemView.context
 
         val container = FrameLayout(context)
