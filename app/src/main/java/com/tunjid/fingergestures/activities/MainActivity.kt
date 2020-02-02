@@ -78,7 +78,6 @@ import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.models.UiState
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
-import com.tunjid.fingergestures.viewholders.DiffViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.UiUpdate
 import com.tunjid.fingergestures.viewmodels.uiUpdate

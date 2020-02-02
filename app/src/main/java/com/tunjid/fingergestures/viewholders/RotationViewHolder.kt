@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.TextView
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.recyclerview.gridLayoutManager
@@ -32,8 +33,8 @@ import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.fragments.PackageFragment
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
+import com.tunjid.fingergestures.lifecycleOwner
 import com.tunjid.fingergestures.models.Package
-import com.tunjid.fingergestures.watch
 
 class RotationViewHolder(itemView: View,
                          @param:RotationGestureConsumer.PersistedSet val sizeCacheKey: String,
@@ -77,7 +78,7 @@ class RotationViewHolder(itemView: View,
                         }
                     },
                     viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-            ).also { watch(items, it) }
+            ).also { items.observe(lifecycleOwner, it::submitList) }
         }
 
         val title = itemView.findViewById<TextView>(R.id.title)

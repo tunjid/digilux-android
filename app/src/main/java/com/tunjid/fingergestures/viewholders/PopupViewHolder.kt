@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.TextView
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.recyclerview.gridLayoutManager
@@ -31,8 +32,8 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.fragments.ActionFragment
+import com.tunjid.fingergestures.lifecycleOwner
 import com.tunjid.fingergestures.models.Action
-import com.tunjid.fingergestures.watch
 
 class PopupViewHolder(
         itemView: View,
@@ -62,7 +63,7 @@ class PopupViewHolder(
                         )
                     },
                     viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-            ).also { watch(items, it) }
+            ).also { items.observe(lifecycleOwner, it::submitList) }
         }
 
         val title = itemView.findViewById<TextView>(R.id.title)

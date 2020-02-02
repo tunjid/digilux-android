@@ -42,7 +42,7 @@ open class AppViewHolder(
         MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.go_premium_title)
                 .setMessage(context.getString(R.string.go_premium_body, context.getString(description)))
-                .setPositiveButton(R.string.continue_text) { _, _ -> listener?.purchase(PurchasesManager.PREMIUM_SKU) }
+                .setPositiveButton(R.string.continue_text) { _, _ -> listener.purchase(PurchasesManager.PREMIUM_SKU) }
                 .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                 .show()
     }

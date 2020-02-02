@@ -29,6 +29,7 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexDirection
@@ -42,9 +43,9 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
+import com.tunjid.fingergestures.lifecycleOwner
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_DELTA
-import com.tunjid.fingergestures.watch
 
 class DiscreteBrightnessViewHolder(
         itemView: View,
@@ -53,7 +54,6 @@ class DiscreteBrightnessViewHolder(
 ) : AppViewHolder(itemView, listener) {
 
     init {
-
         val title = itemView.findViewById<TextView>(R.id.title)
         title.setText(R.string.discrete_brightness_title)
         title.setOnClickListener {
@@ -78,7 +78,7 @@ class DiscreteBrightnessViewHolder(
                         }
                     },
                     viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-            ).also { watch(items, it) }
+            ).also { items.observe(lifecycleOwner, it::submitList) }
         }
 
         itemView.findViewById<View>(R.id.add).setOnClickListener {

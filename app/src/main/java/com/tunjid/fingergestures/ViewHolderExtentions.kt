@@ -21,33 +21,46 @@ import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.observe
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
-private class ViewHolderLifecycleOwner : LifecycleOwner {
-    internal val registry = LifecycleRegistry(this)
+private class ViewHolderLifecycleOwner(viewHolder: RecyclerView.ViewHolder) : LifecycleOwner {
+    private var attachedToParent = false
+    private val registry = LifecycleRegistry(this)
+
     override fun getLifecycle(): Lifecycle = registry
+
+    init {
+        // When the ViewHolder itself is attached or recycled
+        viewHolder.itemView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewDetachedFromWindow(v: View?) =
+                    registry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+
+            override fun onViewAttachedToWindow(v: View?) {
+                registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+
+                if (!attachedToParent) {
+                    // When the parent RecyclerView is detached
+                    (viewHolder.itemView.parent as? View)?.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                        override fun onViewDetachedFromWindow(v: View?) {
+                            v?.removeOnAttachStateChangeListener(this)
+                            registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                        }
+
+                        override fun onViewAttachedToWindow(v: View?) = Unit
+                    })
+                    attachedToParent = true
+                }
+            }
+        })
+
+        if (viewHolder.itemView.isAttachedToWindow) registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    }
 }
 
 val RecyclerView.ViewHolder.lifecycleOwner: LifecycleOwner
     get() = run {
         itemView.getTag(R.id.main_fragment_container) as? ViewHolderLifecycleOwner
-                ?: ViewHolderLifecycleOwner().apply {
+                ?: ViewHolderLifecycleOwner(this).apply {
                     itemView.setTag(R.id.main_fragment_container, this)
-                    itemView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                        override fun onViewDetachedFromWindow(v: View?) =
-                                registry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-
-                        override fun onViewAttachedToWindow(v: View?) =
-                                registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-                    })
-
-                    if (itemView.isAttachedToWindow) registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
                 }
     }
-
-fun <T>RecyclerView.ViewHolder.watch(liveItems: LiveData<List<T>>, listAdapter: ListAdapter<T, *>){
-    liveItems.observe(lifecycleOwner, listAdapter::submitList)
-}
