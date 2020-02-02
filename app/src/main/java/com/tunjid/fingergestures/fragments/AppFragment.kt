@@ -63,7 +63,7 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<RecyclerView>(R.id.options_list).apply {
+        recyclerView = view.findViewById<RecyclerView>(R.id.options_list).apply {
             layoutManager = verticalLayoutManager()
             adapter = appAdapter(items, viewModel.liveState, this@AppFragment).padded()
             addItemDecoration(divider())
