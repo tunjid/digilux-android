@@ -49,14 +49,16 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
         Navigator.TagProvider,
         AppAdapterListener {
 
-    var items by args<IntArray>()
+    var resource by args<Int>()
         private set
+
+    private val items get() = viewModel.run { itemsAt(resourceIndex(resource)) }
 
     private var recyclerView: RecyclerView? = null
 
     private val viewModel by activityViewModels<AppViewModel>()
 
-    override val stableTag: String get() = items.contentToString()
+    override val stableTag: String get() = resource.toString()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -134,8 +136,8 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
 
         private const val IMAGE_SELECTION = "image/*"
 
-        fun newInstance(items: IntArray): AppFragment = AppFragment().apply {
-            this.items = items
+        fun newInstance(resource: Int): AppFragment = AppFragment().apply {
+            this.resource = resource
         }
     }
 }

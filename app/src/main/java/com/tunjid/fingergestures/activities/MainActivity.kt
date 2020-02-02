@@ -42,6 +42,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.android.billingclient.api.BillingClient
@@ -106,7 +107,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
             5,
             R.id.main_fragment_container
     ) {
-        AppFragment.newInstance(viewModel.navItems[it])
+        AppFragment.newInstance(viewModel.resourceAt(it))
     }
 
     private val navBarColor: Int
@@ -146,6 +147,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
                 stackNavigatorSource = this@MainActivity.navigator::activeNavigator
         ), true)
 
+        navigator.stackSelectedListener = { bottomNavigationView.menu.findItem(viewModel.resourceAt(it))?.isChecked = true }
         navigator.stackTransactionModifier = {
             setCustomAnimations(
                     android.R.anim.fade_in,
@@ -186,7 +188,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        when (val id = item.itemId) {
             R.id.action_start_trial -> {
                 val purchasesManager = PurchasesManager.instance
                 val isTrialRunning = purchasesManager.isTrialRunning
@@ -201,24 +203,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
                     snackbar.show()
                 }
             }
-            R.id.action_directions -> {
-                showAppFragment(viewModel.gestureItems)
-                return true
-            }
-            R.id.action_slider -> {
-                showAppFragment(viewModel.brightnessItems)
-                return true
-            }
-            R.id.action_audio -> {
-                showAppFragment(viewModel.audioItems)
-                return true
-            }
-            R.id.action_accessibility_popup -> {
-                showAppFragment(viewModel.popupItems)
-                return true
-            }
+            R.id.action_directions,
+            R.id.action_slider,
+            R.id.action_audio,
+            R.id.action_accessibility_popup,
             R.id.action_wallpaper -> {
-                showAppFragment(viewModel.appearanceItems)
+                viewModel.onStartChangeDestination()
+                viewModel.resourceIndex(id).let(navigator::show)
                 return true
             }
             R.id.info -> {
@@ -271,12 +262,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         bottomSheetBehavior.state = if (show) STATE_COLLAPSED else STATE_HIDDEN
     }
 
-    private fun showAppFragment(items: IntArray) {
-        viewModel.updateBottomNav(items.contentHashCode())
-        val index = viewModel.navItems.indexOf(items)
-        if (index >= 0) navigator.show(index)
-    }
-
     private fun handleIntent(intent: Intent) {
         val action = intent.action
         val type = intent.type
@@ -285,22 +270,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
 
         if (!hasStoragePermission) {
             showSnackbar(R.string.enable_storage_settings)
-            showAppFragment(viewModel.gestureItems)
+            viewModel.resourceIndex(R.id.action_directions).let(navigator::show)
             return
         }
 
         val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM) ?: return
 
-        val toShow = AppFragment.newInstance(viewModel.appearanceItems)
-        val tag = toShow.stableTag
+        navigator.performConsecutively(lifecycleScope) {
+            show(viewModel.resourceIndex(R.id.action_wallpaper))
 
-        navigator.show(viewModel.navItems.indexOf(viewModel.appearanceItems))
+            BackgroundManager.instance.requestWallPaperConstant(R.string.choose_target, this@MainActivity) { selection ->
+                val shown = navigator.current as AppFragment?
 
-        BackgroundManager.instance.requestWallPaperConstant(R.string.choose_target, this) { selection ->
-            val shown = navigator.find(tag) as AppFragment?
-
-            if (shown != null && shown.isVisible) shown.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) { shown.cropImage(imageUri, selection) }
-            else showSnackbar(R.string.error_wallpaper)
+                if (shown != null && shown.isVisible) shown.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) { shown.cropImage(imageUri, selection) }
+                else showSnackbar(R.string.error_wallpaper)
+            }
         }
     }
 
@@ -337,9 +321,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
             STORAGE_CODE -> askForStorage()
         }
     }
-
-    private fun updateBottomNav(fragment: AppFragment, bottomNavigationView: BottomNavigationView) =
-            viewModel.updateBottomNav(fragment.items.contentHashCode())?.apply { bottomNavigationView.selectedItemId = this }
 
     private fun showLink(textLink: TextLink) {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(textLink.link))

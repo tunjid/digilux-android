@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.viewmodels
 import android.app.Application
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import androidx.annotation.IdRes
 import androidx.annotation.IntDef
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -54,41 +55,6 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
 
-    val gestureItems = intArrayOf(
-            PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
-            AD_FREE, SUPPORT, REVIEW, LOCKED_CONTENT
-    )
-    val brightnessItems = intArrayOf(
-            PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS, SCREEN_DIMMER, USE_LOGARITHMIC_SCALE,
-            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
-            DOUBLE_SWIPE_SETTINGS
-    )
-    val popupItems = intArrayOf(PADDING, ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK,
-            ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
-            POPUP_ACTION
-    )
-    val audioItems = intArrayOf(
-            PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW
-    )
-    val appearanceItems = intArrayOf(
-            PADDING, SLIDER_POSITION, SLIDER_DURATION, NAV_BAR_COLOR,
-            SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER
-    )
-
-    val navItems = listOf(gestureItems, brightnessItems, popupItems, audioItems, appearanceItems)
-
-    @Retention(AnnotationRetention.SOURCE)
-    @IntDef(SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
-            SHOW_SLIDER, USE_LOGARITHMIC_SCALE, ADAPTIVE_BRIGHTNESS,
-            ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON,
-            MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW, WALLPAPER_PICKER,
-            WALLPAPER_TRIGGER, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
-            ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
-            ACCESSIBILITY_SINGLE_CLICK, ANIMATES_SLIDER, ANIMATES_POPUP,
-            DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW,
-            NAV_BAR_COLOR, LOCKED_CONTENT, SUPPORT)
-    annotation class AdapterIndex
-
     val liveState: LiveData<AppState> by lazy { createLiveState() }
 
     private val quips = application.resources.getStringArray(R.array.upsell_text)
@@ -101,10 +67,45 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val permissionsProcessor: PublishProcessor<List<Int>> = PublishProcessor.create()
     private val installedAppsProcessor: PublishProcessor<List<ApplicationInfo>> = PublishProcessor.create()
 
+    private val gestureItems = intArrayOf(
+            PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
+            AD_FREE, SUPPORT, REVIEW, LOCKED_CONTENT
+    )
+    private val brightnessItems = intArrayOf(
+            PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS, SCREEN_DIMMER, USE_LOGARITHMIC_SCALE,
+            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+            DOUBLE_SWIPE_SETTINGS
+    )
+    private val audioItems = intArrayOf(
+            PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW
+    )
+    private val popupItems = intArrayOf(PADDING, ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK,
+            ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
+            POPUP_ACTION
+    )
+    private val appearanceItems = intArrayOf(
+            PADDING, SLIDER_POSITION, SLIDER_DURATION, NAV_BAR_COLOR,
+            SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER
+    )
+
+    private val tabItems = listOf(
+            R.id.action_directions to gestureItems,
+            R.id.action_slider to brightnessItems,
+            R.id.action_audio to audioItems,
+            R.id.action_accessibility_popup to popupItems,
+            R.id.action_wallpaper to appearanceItems
+    ).toMap()
+
     override fun onCleared() {
         super.onCleared()
         disposable.clear()
     }
+
+    fun itemsAt(position: Int): IntArray = tabItems.toList()[position].second
+
+    fun resourceIndex(@IdRes resource: Int): Int = tabItems.keys.indexOf(resource)
+
+    fun resourceAt(position: Int): Int = tabItems.toList()[position].first
 
     fun shill(): Flowable<String> {
         disposable.clear()
@@ -159,17 +160,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return result
     }
 
-    fun updateBottomNav(hash: Int): Int? {
-        permissionsProcessor.onNext(listOf())
-        return when (hash) {
-            gestureItems.contentHashCode() -> R.id.action_directions
-            brightnessItems.contentHashCode() -> R.id.action_slider
-            audioItems.contentHashCode() -> R.id.action_audio
-            popupItems.contentHashCode() -> R.id.action_accessibility_popup
-            appearanceItems.contentHashCode() -> R.id.action_wallpaper
-            else -> null
-        }
-    }
+    fun onStartChangeDestination() = permissionsProcessor.onNext(listOf())
 
     private fun startShilling() {
         disposable.add(Flowable.interval(10, TimeUnit.SECONDS)
@@ -212,6 +203,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 ::AppState
         ).toLiveData()
     }
+
+    @Retention(AnnotationRetention.SOURCE)
+    @IntDef(SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
+            SHOW_SLIDER, USE_LOGARITHMIC_SCALE, ADAPTIVE_BRIGHTNESS,
+            ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON,
+            MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW, WALLPAPER_PICKER,
+            WALLPAPER_TRIGGER, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
+            ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
+            ACCESSIBILITY_SINGLE_CLICK, ANIMATES_SLIDER, ANIMATES_POPUP,
+            DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW,
+            NAV_BAR_COLOR, LOCKED_CONTENT, SUPPORT)
+    annotation class AdapterIndex
 
     companion object {
         const val PADDING = -1
