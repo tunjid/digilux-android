@@ -55,51 +55,59 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
 
-    val liveState: LiveData<AppState> by lazy { createLiveState() }
+    val liveState: LiveData<AppState> by lazy {
+        val brightnessGestureConsumer = BrightnessGestureConsumer.instance
+        val rotationGestureConsumer = RotationGestureConsumer.instance
+        val popUpGestureConsumer = PopUpGestureConsumer.instance
+        val gestureMapper = GestureMapper.instance
+
+        Flowables.combineLatest(
+                Flowable.just(getApplication<Application>().links),
+                brightnessGestureConsumer.discreteBrightnesses.listMap(::Brightness),
+                popUpGestureConsumer.popUpActions.listMap(::Action),
+                Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
+                installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
+                rotationGestureConsumer.rotatingApps.listMap(::Package),
+                rotationGestureConsumer.excludedRotatingApps.listMap(::Package),
+                RotationGestureConsumer.instance.lastSeenApps.listMap(::Package),
+                permissionsProcessor.startWith(listOf<Int>()),
+                ::AppState
+        ).toLiveData() }
+
+    private val tabItems = listOf(
+            R.id.action_directions to intArrayOf(
+                    PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
+                    AD_FREE, SUPPORT, REVIEW, LOCKED_CONTENT
+            ),
+            R.id.action_slider to intArrayOf(
+                    PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS, SCREEN_DIMMER, USE_LOGARITHMIC_SCALE,
+                    SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+                    DOUBLE_SWIPE_SETTINGS
+            ),
+            R.id.action_audio to intArrayOf(
+                    PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW
+            ),
+            R.id.action_accessibility_popup to intArrayOf(PADDING, ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK,
+                    ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, POPUP_ACTION,
+                    ROTATION_LOCK, EXCLUDED_ROTATION_LOCK, ROTATION_HISTORY
+            ),
+            R.id.action_wallpaper to intArrayOf(
+                    PADDING, SLIDER_POSITION, SLIDER_DURATION, NAV_BAR_COLOR,
+                    SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER
+            )
+    ).toMap()
 
     private val quips = application.resources.getStringArray(R.array.upsell_text)
     private val quipCounter = AtomicInteger(-1)
 
-    private val permissionsQueue get() = liveState.value?.permissionsQueue ?: listOf()
-
-    private val disposable: CompositeDisposable = CompositeDisposable()
     private val shillProcessor: PublishProcessor<String> = PublishProcessor.create()
     private val permissionsProcessor: PublishProcessor<List<Int>> = PublishProcessor.create()
     private val installedAppsProcessor: PublishProcessor<List<ApplicationInfo>> = PublishProcessor.create()
 
-    private val gestureItems = intArrayOf(
-            PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
-            AD_FREE, SUPPORT, REVIEW, LOCKED_CONTENT
-    )
-    private val brightnessItems = intArrayOf(
-            PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS, SCREEN_DIMMER, USE_LOGARITHMIC_SCALE,
-            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
-            DOUBLE_SWIPE_SETTINGS
-    )
-    private val audioItems = intArrayOf(
-            PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW
-    )
-    private val popupItems = intArrayOf(PADDING, ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK,
-            ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
-            POPUP_ACTION
-    )
-    private val appearanceItems = intArrayOf(
-            PADDING, SLIDER_POSITION, SLIDER_DURATION, NAV_BAR_COLOR,
-            SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER
-    )
+    private val permissionsQueue get() = liveState.value?.permissionsQueue ?: listOf()
+    private val disposable: CompositeDisposable = CompositeDisposable()
 
-    private val tabItems = listOf(
-            R.id.action_directions to gestureItems,
-            R.id.action_slider to brightnessItems,
-            R.id.action_audio to audioItems,
-            R.id.action_accessibility_popup to popupItems,
-            R.id.action_wallpaper to appearanceItems
-    ).toMap()
-
-    override fun onCleared() {
-        super.onCleared()
-        disposable.clear()
-    }
+    override fun onCleared() = disposable.clear()
 
     fun itemsAt(position: Int): IntArray = tabItems.toList()[position].second
 
@@ -185,25 +193,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         permissionsProcessor.onNext(permissionsQueue - permission)
     }
 
-    private fun createLiveState(): LiveData<AppState> {
-        val brightnessGestureConsumer = BrightnessGestureConsumer.instance
-        val rotationGestureConsumer = RotationGestureConsumer.instance
-        val popUpGestureConsumer = PopUpGestureConsumer.instance
-        val gestureMapper = GestureMapper.instance
-
-        return Flowables.combineLatest(
-                Flowable.just(getApplication<Application>().links),
-                brightnessGestureConsumer.discreteBrightnesses.map(::Brightness),
-                popUpGestureConsumer.popUpActions.map(::Action),
-                Flowable.just(gestureMapper.actions.asList()).map(::Action),
-                installedAppsProcessor.startWith(listOf<ApplicationInfo>()).map(::Package),
-                rotationGestureConsumer.rotatingApps.map(::Package),
-                rotationGestureConsumer.excludedRotatingApps.map(::Package),
-                permissionsProcessor.startWith(listOf<Int>()),
-                ::AppState
-        ).toLiveData()
-    }
-
     @Retention(AnnotationRetention.SOURCE)
     @IntDef(SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
             SHOW_SLIDER, USE_LOGARITHMIC_SCALE, ADAPTIVE_BRIGHTNESS,
@@ -213,7 +202,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
             ACCESSIBILITY_SINGLE_CLICK, ANIMATES_SLIDER, ANIMATES_POPUP,
             DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW,
-            NAV_BAR_COLOR, LOCKED_CONTENT, SUPPORT)
+            NAV_BAR_COLOR, LOCKED_CONTENT, SUPPORT, ROTATION_HISTORY)
     annotation class AdapterIndex
 
     companion object {
@@ -251,6 +240,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         const val NAV_BAR_COLOR = AUDIO_SLIDER_SHOW + 1
         const val LOCKED_CONTENT = NAV_BAR_COLOR + 1
         const val SUPPORT = LOCKED_CONTENT + 1
+        const val ROTATION_HISTORY = SUPPORT + 1
 
         internal const val RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava"
         internal const val COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker"
@@ -271,31 +261,4 @@ val Context.links
             TextLink(getString(R.string.android_bootstrap), AppViewModel.ANDROID_BOOTSTRAP_LINK)
     )
 
-data class UiUpdate(
-        val titleRes: Int = R.string.blank_emoji,
-        val iconRes: Int = R.drawable.ic_add_24dp,
-        val fabVisible: Boolean = false
-)
-
-val AppState.uiUpdate
-    get() = when (permissionsQueue.lastOrNull()) {
-        DO_NOT_DISTURB_CODE -> UiUpdate(
-                titleRes = R.string.enable_do_not_disturb,
-                iconRes = R.drawable.ic_volume_loud_24dp
-        )
-        ACCESSIBILITY_CODE -> UiUpdate(
-                titleRes = R.string.enable_accessibility,
-                iconRes = R.drawable.ic_human_24dp
-        )
-        SETTINGS_CODE -> UiUpdate(
-                titleRes = R.string.enable_write_settings,
-                iconRes = R.drawable.ic_settings_white_24dp
-        )
-        STORAGE_CODE -> UiUpdate(
-                titleRes = R.string.enable_storage_settings,
-                iconRes = R.drawable.ic_storage_24dp
-        )
-        else -> UiUpdate()
-    }.copy(fabVisible = permissionsQueue.isNotEmpty())
-
-fun <T, R> Flowable<List<T>>.map(mapper: (T) -> R): Flowable<List<R>> = map { it.map(mapper) }
+fun <T, R> Flowable<List<T>>.listMap(mapper: (T) -> R): Flowable<List<R>> = map { it.map(mapper) }

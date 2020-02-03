@@ -19,6 +19,8 @@ package com.tunjid.fingergestures.models
 
 import android.content.pm.ApplicationInfo
 import com.tunjid.androidx.recyclerview.diff.Differentiable
+import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 
 data class AppState(
@@ -29,6 +31,7 @@ data class AppState(
         val installedApps: List<Package> = listOf(),
         val rotationApps: List<Package> = listOf(),
         val excludedRotationApps: List<Package> = listOf(),
+        val rotationScreenedApps: List<Package> = listOf(),
         val permissionsQueue: List<Int> = listOf()
 )
 
@@ -50,3 +53,30 @@ data class Brightness(val value: String) : Differentiable {
     override fun areContentsTheSame(other: Differentiable): Boolean =
             (other as? Brightness)?.let { it.value == value } ?: super.areContentsTheSame(other)
 }
+
+data class UiUpdate(
+        val titleRes: Int = R.string.blank_emoji,
+        val iconRes: Int = R.drawable.ic_add_24dp,
+        val fabVisible: Boolean = false
+)
+
+val AppState.uiUpdate
+    get() = when (permissionsQueue.lastOrNull()) {
+        MainActivity.DO_NOT_DISTURB_CODE -> UiUpdate(
+                titleRes = R.string.enable_do_not_disturb,
+                iconRes = R.drawable.ic_volume_loud_24dp
+        )
+        MainActivity.ACCESSIBILITY_CODE -> UiUpdate(
+                titleRes = R.string.enable_accessibility,
+                iconRes = R.drawable.ic_human_24dp
+        )
+        MainActivity.SETTINGS_CODE -> UiUpdate(
+                titleRes = R.string.enable_write_settings,
+                iconRes = R.drawable.ic_settings_white_24dp
+        )
+        MainActivity.STORAGE_CODE -> UiUpdate(
+                titleRes = R.string.enable_storage_settings,
+                iconRes = R.drawable.ic_storage_24dp
+        )
+        else -> UiUpdate()
+    }.copy(fabVisible = permissionsQueue.isNotEmpty())

@@ -67,6 +67,7 @@ import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.NAV_BAR_COLOR
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.PADDING
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.POPUP_ACTION
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.REVIEW
+import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ROTATION_HISTORY
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ROTATION_LOCK
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SCREEN_DIMMER
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SHOW_SLIDER
@@ -248,17 +249,30 @@ fun appAdapter(
                 )
 
                 ROTATION_LOCK -> RotationViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_horizontal_list),
-                        ROTATION_APPS,
-                        state.map(AppState::rotationApps),
-                        listener
+                        itemView = viewGroup.inflate(R.layout.viewholder_horizontal_list),
+                        persistedSet = ROTATION_APPS,
+                        titleRes = R.string.auto_rotate_apps,
+                        infoRes = R.string.auto_rotate_description,
+                        items = state.map(AppState::rotationApps),
+                        listener = listener
                 )
 
                 EXCLUDED_ROTATION_LOCK -> RotationViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_horizontal_list),
-                        EXCLUDED_APPS,
-                        state.map(AppState::excludedRotationApps),
-                        listener
+                        itemView = viewGroup.inflate(R.layout.viewholder_horizontal_list),
+                        persistedSet = EXCLUDED_APPS,
+                        titleRes = R.string.auto_rotate_apps_excluded,
+                        infoRes = R.string.auto_rotate_ignored_description,
+                        items = state.map(AppState::excludedRotationApps),
+                        listener = listener
+                )
+
+                ROTATION_HISTORY ->  RotationViewHolder(
+                        itemView = viewGroup.inflate(R.layout.viewholder_horizontal_list),
+                        persistedSet = null,
+                        titleRes = R.string.app_rotation_history_title,
+                        infoRes = R.string.app_rotation_history_info,
+                        items = state.map(AppState::rotationScreenedApps),
+                        listener = listener
                 )
 
                 POPUP_ACTION -> PopupViewHolder(

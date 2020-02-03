@@ -80,8 +80,8 @@ import com.tunjid.fingergestures.models.UiState
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.UiUpdate
-import com.tunjid.fingergestures.viewmodels.uiUpdate
+import com.tunjid.fingergestures.models.UiUpdate
+import com.tunjid.fingergestures.models.uiUpdate
 import io.reactivex.disposables.CompositeDisposable
 
 class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiController, Navigator.Controller {

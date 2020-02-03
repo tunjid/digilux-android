@@ -181,6 +181,9 @@
     <string name="auto_rotate_add">Add to %1$s</string>
     <string name="auto_rotate_remove">Remove from %1$s?</string>
     <string name="auto_rotate_prompt">Please enable the auto rotate option.</string>
+    <string name="app_rotation_history_title">Recent apps screened for auto rotation</string>
+    <string name="app_rotation_history_info">Apps recently visited that are screened for auto rotation.</string>
+    <string name="app_rotation_exclude_title">Add to ignored auto rotation apps?</string>
     <string name="auto_rotate_cannot_remove">This app may not be removed from ignored apps as it draws over other apps.</string>
     <string name="auto_rotate_description">Whitelists certain apps to allow auto rotation in landscape.</string>
     <string name="auto_rotate_ignored_description">Ignores certain apps for being considered for auto rotation.
