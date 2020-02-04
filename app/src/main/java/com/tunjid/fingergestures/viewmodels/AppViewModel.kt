@@ -76,7 +76,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 rotationGestureConsumer.rotatingApps.listMap(::Package),
                 rotationGestureConsumer.excludedRotatingApps.listMap(::Package),
                 RotationGestureConsumer.instance.lastSeenApps.listMap(::Package),
-                permissionsProcessor.startWith(listOf<Int>()),
+                permissionsProcessor.debounce(160, TimeUnit.MILLISECONDS).startWith(listOf<Int>()),
                 ::AppState
         ).toLiveData()
     }
@@ -128,7 +128,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val permissionsProcessor: PublishProcessor<List<Int>> = PublishProcessor.create()
     private val installedAppsProcessor: PublishProcessor<List<ApplicationInfo>> = PublishProcessor.create()
 
-    private val permissionsQueue get() = liveState.value?.permissionsQueue ?: listOf()
+    private val permissionsQueue: List<Int> get() = liveState.value?.permissionsQueue ?: listOf()
+
     private val disposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCleared() = disposable.clear()
@@ -153,7 +154,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun shillMoar() = shillProcessor.onNext(getNextQuip())
 
     fun requestPermission(@MainActivity.PermissionRequest permission: Int) {
-        if (!permissionsQueue.contains(permission)) enqueuePermission(permission)
+        val queue = if (permissionsQueue.contains(permission)) permissionsQueue - permission else permissionsQueue
+        permissionsProcessor.onNext(queue + permission)
     }
 
     fun onPermissionClicked(consumer: (Int) -> Unit) {
@@ -193,10 +195,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun isUserInstalledApp(info: ApplicationInfo): Boolean =
             info.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0 || info.flags and ApplicationInfo.FLAG_SYSTEM == 0
-
-    private fun enqueuePermission(permission: Int) {
-        permissionsProcessor.onNext(permissionsQueue + permission)
-    }
 
     private fun removePermission(permission: Int) {
         permissionsProcessor.onNext(permissionsQueue - permission)

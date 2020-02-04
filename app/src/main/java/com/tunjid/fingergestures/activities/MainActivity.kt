@@ -44,6 +44,8 @@ import androidx.core.graphics.component2
 import androidx.core.graphics.component3
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
@@ -143,6 +145,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
                 stackNavigatorSource = this@MainActivity.navigator::activeNavigator
         ), true)
 
+        supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
+                if (f is AppFragment) viewModel.onStartChangeDestination()
+            }
+        }, true)
+
         navigator.stackSelectedListener = { bottomNavigationView.menu.findItem(viewModel.resourceAt(it))?.isChecked = true }
         navigator.stackTransactionModifier = {
             setCustomAnimations(
@@ -227,7 +235,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
             R.id.action_audio,
             R.id.action_accessibility_popup,
             R.id.action_wallpaper -> {
-                viewModel.onStartChangeDestination()
                 viewModel.resourceIndex(id).let(navigator::show)
                 return true
             }
