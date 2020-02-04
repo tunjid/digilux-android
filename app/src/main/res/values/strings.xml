@@ -177,7 +177,7 @@
     <!-- Rotation ViewHolder-->
     <string name="auto_rotate_apps">Apps Allowed to Auto Rotate</string>
     <string name="selective_app_rotation">Enable selective app auto rotation (turn off if scrolling performance degrades)</string>
-    <string name="auto_rotate_apps_excluded">Ignored Pop Up Overlay Apps</string>
+    <string name="auto_rotate_apps_excluded">Ignored Transient/Overlay Apps</string>
     <string name="auto_rotate_add">Add to %1$s</string>
     <string name="auto_rotate_remove">Remove from %1$s?</string>
     <string name="auto_rotate_prompt">Please enable the auto rotate option.</string>
