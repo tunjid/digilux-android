@@ -60,6 +60,11 @@ data class UiUpdate(
         val fabVisible: Boolean = false
 )
 
+sealed class Shilling {
+    object Calm : Shilling()
+    data class Quip(val message: String) : Shilling()
+}
+
 val AppState.uiUpdate
     get() = when (permissionsQueue.lastOrNull()) {
         MainActivity.DO_NOT_DISTURB_CODE -> UiUpdate(

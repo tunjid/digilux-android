@@ -28,7 +28,6 @@ import android.transition.AutoTransition
 import android.transition.Transition
 import android.transition.TransitionListenerAdapter
 import android.transition.TransitionManager
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowInsets
@@ -44,6 +43,7 @@ import androidx.core.graphics.component1
 import androidx.core.graphics.component2
 import androidx.core.graphics.component3
 import androidx.core.view.doOnLayout
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
@@ -66,7 +66,6 @@ import com.tunjid.androidx.view.util.marginLayoutParams
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
-import com.tunjid.fingergestures.App.Companion.withApp
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_EDIT_WALLPAPER
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_NAV_BAR_CHANGED
 import com.tunjid.fingergestures.InsetLifecycleCallbacks.Companion.topInset
@@ -75,13 +74,14 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.models.Shilling
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.models.UiState
+import com.tunjid.fingergestures.models.UiUpdate
+import com.tunjid.fingergestures.models.uiUpdate
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.models.UiUpdate
-import com.tunjid.fingergestures.models.uiUpdate
 import io.reactivex.disposables.CompositeDisposable
 
 class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiController, Navigator.Controller {
@@ -174,7 +174,26 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
 
         if (savedInstanceState == null && isPickIntent) handleIntent(startIntent)
 
-        setUpSwitcher()
+        shillSwitcher.setFactory {
+            val view = layoutInflater.inflate(R.layout.text_switch, shillSwitcher, false)
+            view.setOnClickListener { viewModel.shillMoar() }
+            view
+        }
+
+        shillSwitcher.inAnimation = loadAnimation(this, android.R.anim.slide_in_left)
+        shillSwitcher.outAnimation = loadAnimation(this, android.R.anim.slide_out_right)
+
+        viewModel.liveState
+                .map(AppState::uiUpdate)
+                .distinctUntilChanged()
+                .observe(this, this::onStateChanged)
+
+        viewModel.shill.observe(this) {
+            if (it is Shilling.Quip) shillSwitcher.apply { setText(it.message); isVisible = true }
+            else hideAds()
+        }
+
+        viewModel.broadcasts.observe(this, EventObserver(this::onBroadcastReceived))
     }
 
     override fun onResume() {
@@ -182,18 +201,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
 
         billingManager = BillingManager(applicationContext)
 
-        if (PurchasesManager.instance.hasAds()) shill()
-        else hideAds()
-
         if (!accessibilityServiceEnabled()) viewModel.requestPermission(ACCESSIBILITY_CODE)
 
         uiState = uiState.copy(toolbarInvalidated = true)
-
-        subscribeToBroadcasts()
-        viewModel.liveState
-                .map(AppState::uiUpdate)
-                .distinctUntilChanged()
-                .observe(this, this::onStateChanged)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -331,12 +341,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         startActivity(browserIntent)
     }
 
-    private fun shill() {
-        disposables.add(viewModel.shill().subscribe(shillSwitcher::setText, Throwable::printStackTrace))
-    }
-
     private fun hideAds() {
-        viewModel.calmIt()
         if (shillSwitcher.visibility == View.GONE) return
 
         TransitionManager.beginDelayedTransition(constraintLayout, AutoTransition().apply {
@@ -348,34 +353,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         shillSwitcher.visibility = View.GONE
     }
 
-    private fun setUpSwitcher() {
-        shillSwitcher.setFactory {
-            val view = LayoutInflater.from(this).inflate(R.layout.text_switch, shillSwitcher, false)
-            view.setOnClickListener { viewModel.shillMoar() }
-            view
-        }
-
-        shillSwitcher.inAnimation = loadAnimation(this, android.R.anim.slide_in_left)
-        shillSwitcher.outAnimation = loadAnimation(this, android.R.anim.slide_out_right)
-    }
-
     private fun onStateChanged(uiUpdate: UiUpdate) {
         uiState = uiState.copy(
                 fabIcon = uiUpdate.iconRes,
                 fabText = getString(uiUpdate.titleRes),
                 fabShows = uiUpdate.fabVisible
         )
-    }
-
-    private fun subscribeToBroadcasts() {
-        withApp { app ->
-            disposables.add(app.broadcasts()
-                    .filter { this.intentMatches(it) }
-                    .subscribe({ this.onBroadcastReceived(it) }, { error ->
-                        error.printStackTrace()
-                        subscribeToBroadcasts() // Resubscribe on error
-                    }))
-        }
     }
 
     private fun onBroadcastReceived(intent: Intent) {
@@ -385,14 +368,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
             ACTION_NAV_BAR_CHANGED -> window.navigationBarColor = navBarColor
             ACTION_LOCKED_CONTENT_CHANGED -> recreate()
         }
-    }
-
-    private fun intentMatches(intent: Intent): Boolean {
-        val action = intent.action
-        return (ACTION_EDIT_WALLPAPER == action
-                || ACTION_SHOW_SNACK_BAR == action
-                || ACTION_NAV_BAR_CHANGED == action
-                || ACTION_LOCKED_CONTENT_CHANGED == action)
     }
 
     fun showSnackbar(@StringRes resource: Int) =

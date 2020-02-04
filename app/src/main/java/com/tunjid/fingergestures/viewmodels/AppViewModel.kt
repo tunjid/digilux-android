@@ -19,12 +19,15 @@ package com.tunjid.fingergestures.viewmodels
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import androidx.annotation.IdRes
 import androidx.annotation.IntDef
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.BackgroundManager
+import com.tunjid.fingergestures.Event
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
@@ -32,6 +35,7 @@ import com.tunjid.fingergestures.activities.MainActivity.Companion.ACCESSIBILITY
 import com.tunjid.fingergestures.activities.MainActivity.Companion.DO_NOT_DISTURB_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.SETTINGS_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.STORAGE_CODE
+import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
@@ -39,11 +43,13 @@ import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Package
+import com.tunjid.fingergestures.models.Shilling
+import com.tunjid.fingergestures.models.Shilling.Quip
 import com.tunjid.fingergestures.models.TextLink
+import com.tunjid.fingergestures.services.FingerGestureService
 import com.tunjid.fingergestures.toLiveData
 import io.reactivex.Flowable
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
@@ -72,7 +78,25 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 RotationGestureConsumer.instance.lastSeenApps.listMap(::Package),
                 permissionsProcessor.startWith(listOf<Int>()),
                 ::AppState
-        ).toLiveData() }
+        ).toLiveData()
+    }
+
+    val shill: LiveData<Shilling> by lazy {
+        Flowable.defer {
+            if (PurchasesManager.instance.hasAds()) Flowable.merge(
+                    shillProcessor.map(::Quip),
+                    Flowable.interval(10, TimeUnit.SECONDS).map { Quip(getNextQuip()) }
+            )
+            else Flowable.just(Shilling.Calm)
+        }.toLiveData()
+    }
+
+    val broadcasts by lazy {
+        getApplication<App>().broadcasts()
+                .filter(this::intentMatches)
+                .map { Event(it) }
+                .toLiveData()
+    }
 
     private val tabItems = listOf(
             R.id.action_directions to intArrayOf(
@@ -115,12 +139,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resourceAt(position: Int): Int = tabItems.toList()[position].first
 
-    fun shill(): Flowable<String> {
-        disposable.clear()
-        startShilling()
-        return shillProcessor
-    }
-
     fun updateApps() {
         Single.fromCallable {
             getApplication<Application>().packageManager.getInstalledApplications(0)
@@ -133,8 +151,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun shillMoar() = shillProcessor.onNext(getNextQuip())
-
-    fun calmIt() = disposable.clear()
 
     fun requestPermission(@MainActivity.PermissionRequest permission: Int) {
         if (!permissionsQueue.contains(permission)) enqueuePermission(permission)
@@ -170,13 +186,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onStartChangeDestination() = permissionsProcessor.onNext(listOf())
 
-    private fun startShilling() {
-        disposable.add(Flowable.interval(10, TimeUnit.SECONDS)
-                .map { getNextQuip() }
-                .observeOn(mainThread())
-                .subscribe(shillProcessor::onNext, Throwable::printStackTrace))
-    }
-
     private fun getNextQuip(): String {
         if (quipCounter.incrementAndGet() >= quips.size) quipCounter.set(0)
         return quips[quipCounter.get()]
@@ -191,6 +200,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun removePermission(permission: Int) {
         permissionsProcessor.onNext(permissionsQueue - permission)
+    }
+
+    private fun intentMatches(intent: Intent): Boolean {
+        val action = intent.action
+        return (BackgroundManager.ACTION_EDIT_WALLPAPER == action
+                || FingerGestureService.ACTION_SHOW_SNACK_BAR == action
+                || BackgroundManager.ACTION_NAV_BAR_CHANGED == action
+                || PurchasesManager.ACTION_LOCKED_CONTENT_CHANGED == action)
     }
 
     @Retention(AnnotationRetention.SOURCE)
