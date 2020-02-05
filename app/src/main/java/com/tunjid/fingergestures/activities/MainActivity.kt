@@ -22,6 +22,7 @@ import android.content.Intent
 import android.content.Intent.ACTION_SEND
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.transition.AutoTransition
@@ -162,12 +163,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         }
         onBackPressedDispatcher.addCallback(this) { if (!navigator.pop()) finish() }
 
-        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            private val primaryColor = Color.valueOf(colorAt(R.color.colorPrimary))
+        val primary = colorAt(R.color.colorPrimary)
+        val (r, g, b) = Color.valueOf(primary)
 
+        val bottomNavBackground = GradientDrawable(
+                GradientDrawable.Orientation.BOTTOM_TOP,
+                intArrayOf(primary, Color.argb(0.5f, r, g, b)))
+
+        bottomNavigationView.background = bottomNavBackground
+
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 val a = (slideOffset + 1) / 2 // callback range is [-1, 1]
-                val (r, g, b) = primaryColor
+                bottomNavBackground.colors = intArrayOf(primary, Color.argb((0.5f * a + 0.5f), r, g, b))
                 mutateGlobalUi { copy(statusBarColor = Color.argb(a, r, g, b)) }
             }
 
