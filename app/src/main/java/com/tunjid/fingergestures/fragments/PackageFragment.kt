@@ -29,6 +29,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.core.components.args
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.activityNavigatorController
 import com.tunjid.androidx.recyclerview.listAdapterOf
@@ -42,7 +43,6 @@ import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
 import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.AppState
-import com.tunjid.fingergestures.mutateGlobalUi
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.EXCLUDED_ROTATION_LOCK
@@ -52,6 +52,7 @@ class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
 
     private val viewModel by activityViewModels<AppViewModel>()
     private val navigator by activityNavigatorController<Navigator>()
+    private var preferenceName by args<String>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -86,21 +87,12 @@ class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
                     }
         }
 
-        val persistedSet = arguments!!.getString(ARG_PERSISTED_SET)!!
-        toolbar.title = RotationGestureConsumer.instance.getAddText(persistedSet)
-
+        toolbar.title = RotationGestureConsumer.instance.getAddText(preferenceName)
         viewModel.updateApps()
     }
 
     private fun onPackageClicked(packageName: String) {
-        val args = arguments
-                ?: return mutateGlobalUi { copy(snackbarText = getString(R.string.generic_error)) }
-
-        @RotationGestureConsumer.PersistedSet
-        val persistedSet = args.getString(ARG_PERSISTED_SET)
-                ?: return mutateGlobalUi { copy(snackbarText = getString(R.string.generic_error)) }
-
-        val added = RotationGestureConsumer.instance.addToSet(packageName, persistedSet)
+        val added = RotationGestureConsumer.instance.addToSet(packageName, preferenceName)
 
         if (!added) {
             val context = requireContext()
@@ -114,15 +106,13 @@ class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
         }
 
         toggleBottomSheet(false)
-        (navigator.current as? AppFragment)?.notifyItemChanged(if (ROTATION_APPS == persistedSet) ROTATION_LOCK else EXCLUDED_ROTATION_LOCK)
+        (navigator.current as? AppFragment)?.notifyItemChanged(if (ROTATION_APPS == preferenceName) ROTATION_LOCK else EXCLUDED_ROTATION_LOCK)
     }
 
     companion object {
 
-        private const val ARG_PERSISTED_SET = "PERSISTED_SET"
-
         fun newInstance(@RotationGestureConsumer.PersistedSet preferenceName: String) =
-                PackageFragment().apply { arguments = Bundle().apply { putString(ARG_PERSISTED_SET, preferenceName) } }
+                PackageFragment().apply { this.preferenceName = preferenceName }
     }
 }
 
