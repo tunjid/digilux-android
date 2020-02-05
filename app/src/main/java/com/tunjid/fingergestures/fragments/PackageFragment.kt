@@ -78,9 +78,11 @@ class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
                     .map(AppState::installedApps)
                     .distinctUntilChanged()
                     .observe(viewLifecycleOwner) {
-                        TransitionManager.beginDelayedTransition(view as ViewGroup, AutoTransition())
-                        progressBar.visibility = View.GONE
-                        listAdapter.submitList(it)
+                        if (it.isEmpty()) listAdapter.submitList(it)
+                        else listAdapter.submitList(it) {
+                            progressBar.visibility = View.GONE
+                            TransitionManager.beginDelayedTransition(view as ViewGroup, AutoTransition().addTarget(progressBar))
+                        }
                     }
         }
 
