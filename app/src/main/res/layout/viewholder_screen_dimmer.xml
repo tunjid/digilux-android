@@ -55,6 +55,7 @@
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:text="@string/screen_overlay_grant_permission"
+        android:textAllCaps="false"
         android:textColor="@color/toggle_text"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title"
