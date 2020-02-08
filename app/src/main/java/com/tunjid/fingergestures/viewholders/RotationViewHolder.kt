@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
+import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
@@ -53,11 +54,14 @@ class RotationViewHolder(itemView: View,
             }
         }
 
-        itemView.findViewById<View>(R.id.add).setOnClickListener {
-            when {
-                !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
-                !RotationGestureConsumer.instance.canAutoRotate() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
-                persistedSet != null -> listener.showBottomSheetFragment(PackageFragment.newInstance(persistedSet))
+        itemView.findViewById<View>(R.id.add).apply {
+            isVisible = persistedSet != null
+            setOnClickListener {
+                when {
+                    !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+                    !RotationGestureConsumer.instance.canAutoRotate() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
+                    persistedSet != null -> listener.showBottomSheetFragment(PackageFragment.newInstance(persistedSet))
+                }
             }
         }
 

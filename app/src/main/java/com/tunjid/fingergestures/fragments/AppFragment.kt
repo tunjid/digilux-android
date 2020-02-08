@@ -42,7 +42,6 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.adapters.appAdapter
-import com.tunjid.fingergestures.adapters.padded
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.mutateGlobalUi
 import com.tunjid.fingergestures.viewmodels.AppViewModel
@@ -68,7 +67,7 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
 
         recyclerView = view.findViewById<RecyclerView>(R.id.options_list).apply {
             layoutManager = verticalLayoutManager()
-            adapter = appAdapter(items, viewModel.liveState, this@AppFragment).padded()
+            adapter = appAdapter(items, viewModel.liveState, this@AppFragment)
             addItemDecoration(divider())
             addScrollListener { _, dy -> if (abs(dy) > 3) mutateGlobalUi { copy(toolbarShows = dy < 0) } }
         }
@@ -99,14 +98,14 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
         recyclerView = null
     }
 
-   override fun requestPermission(@MainActivity.PermissionRequest permission: Int) =
+    override fun requestPermission(@MainActivity.PermissionRequest permission: Int) =
             viewModel.requestPermission(permission)
 
     override fun showSnackbar(@StringRes message: Int) {
         mutateGlobalUi { copy(snackbarText = getString(message)) }
     }
 
-   override fun showBottomSheetFragment(fragment: MainActivityFragment) {
+    override fun showBottomSheetFragment(fragment: MainActivityFragment) {
         val fragmentManager = activity?.supportFragmentManager ?: return
 
         fragmentManager.beginTransaction().replace(R.id.bottom_sheet, fragment).commit()
