@@ -32,11 +32,10 @@ import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_
 import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapter
-
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 class WallpaperViewHolder(
         itemView: View,
-        appAdapterListener: AppAdapter.AppAdapterListener
+        appAdapterListener: AppAdapterListener
 ) : AppViewHolder(itemView, appAdapterListener) {
 
     private val backgroundManager: BackgroundManager = BackgroundManager.instance
@@ -46,8 +45,8 @@ class WallpaperViewHolder(
 
     init {
 
-        day.setOnClickListener { adapterListener.pickWallpaper(DAY_WALLPAPER_PICK_CODE) }
-        night.setOnClickListener { adapterListener.pickWallpaper(NIGHT_WALLPAPER_PICK_CODE) }
+        day.setOnClickListener { listener.pickWallpaper(DAY_WALLPAPER_PICK_CODE) }
+        night.setOnClickListener { listener.pickWallpaper(NIGHT_WALLPAPER_PICK_CODE) }
         itemView.findViewById<View>(R.id.share_day_wallpaper).setOnClickListener { requestEdit(DAY_WALLPAPER_PICK_CODE) }
         itemView.findViewById<View>(R.id.share_night_wallpaper).setOnClickListener { requestEdit(NIGHT_WALLPAPER_PICK_CODE) }
 
@@ -68,7 +67,7 @@ class WallpaperViewHolder(
             wallpaperManager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)
             wallpaperManager.wallpaperInfo
         } else {
-            adapterListener.requestPermission(MainActivity.STORAGE_CODE)
+            listener.requestPermission(MainActivity.STORAGE_CODE)
         }
         loadImage(DAY_WALLPAPER_PICK_CODE, day)
         loadImage(NIGHT_WALLPAPER_PICK_CODE, night)
@@ -84,7 +83,7 @@ class WallpaperViewHolder(
         val file = backgroundManager.getWallpaperFile(selection, context)
 
         if (!file.exists()) {
-            adapterListener.showSnackbar(R.string.error_wallpaper_not_created)
+            listener.showSnackbar(R.string.error_wallpaper_not_created)
             return
         }
 

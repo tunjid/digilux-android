@@ -18,22 +18,23 @@
 package com.tunjid.fingergestures.fragments
 
 
-import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModelProviders
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.observe
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.navigation.Navigator
+import com.tunjid.androidx.navigation.activityNavigatorController
+import com.tunjid.androidx.recyclerview.listAdapterOf
+import com.tunjid.androidx.recyclerview.verticalLayoutManager
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.ActionAdapter
-import com.tunjid.fingergestures.adapters.withPaddedAdapter
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
+import com.tunjid.fingergestures.distinctUntilChanged
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_DOWN_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_LEFT_GESTURE
@@ -43,6 +44,10 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_G
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
+import com.tunjid.fingergestures.map
+import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.mutateGlobalUi
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_DOWN_ICON
@@ -51,48 +56,56 @@ import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_RIGHT_ICO
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_UP_ICON
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.POPUP_ACTION
 
-class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener {
+class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
 
-    private lateinit var viewModel: AppViewModel
+    private val viewModel by activityViewModels<AppViewModel>()
+    private val navigator by activityNavigatorController<Navigator>()
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        viewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel::class.java)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        view.findViewById<Toolbar>(R.id.title_bar).setTitle(R.string.pick_action)
+        view.findViewById<RecyclerView>(R.id.options_list).apply {
+            val listAdapter = listAdapterOf(
+                    initialItems = viewModel.liveState.value?.availableActions ?: listOf(),
+                    viewHolderCreator = { viewGroup, _ ->
+                        ActionViewHolder(
+                                showsText = true,
+                                itemView = viewGroup.inflate(R.layout.viewholder_action_vertical),
+                                clickListener = ::onActionClicked
+                        )
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            )
+            layoutManager = verticalLayoutManager()
+            adapter = listAdapter
+
+            addItemDecoration(divider())
+
+            viewModel.liveState
+                    .map(AppState::availableActions)
+                    .distinctUntilChanged().observe(viewLifecycleOwner, listAdapter::submitList)
+        }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_actions, container, false) as ViewGroup
-
-        root.findViewById<Toolbar>(R.id.title_bar).setTitle(R.string.pick_action)
-        val listManager = ListManagerBuilder<ActionViewHolder, Void>()
-                .withRecyclerView(root.findViewById(R.id.options_list))
-                .withLinearLayoutManager()
-                .withPaddedAdapter(ActionAdapter(isHorizontal = false, showsText = true, list = viewModel.state.availableActions, listener = this))
-                .addDecoration(divider())
-                .build()
-
-        disposables.add(viewModel.updatedActions().subscribe(listManager::onDiff, Throwable::printStackTrace))
-
-        return root
-    }
-
-    override fun onActionClicked(@GestureConsumer.GestureAction actionRes: Int) {
-        val args = arguments ?: return showSnackbar(R.string.generic_error)
+    private fun onActionClicked(action: Action) {
+        val args = arguments
+                ?: return mutateGlobalUi { copy(snackbarText = getString(R.string.generic_error)) }
 
         @GestureMapper.GestureDirection
         val direction = args.getString(ARG_DIRECTION)
 
         toggleBottomSheet(false)
 
-        val fragment = currentAppFragment ?: return
+        val fragment = navigator.current as? AppFragment ?: return
 
         val mapper = GestureMapper.instance
 
         if (direction == null) { // Pop up instance
             val context = requireContext()
             when {
-                PopUpGestureConsumer.instance.addToSet(actionRes) -> fragment.notifyItemChanged(POPUP_ACTION)
-                else -> AlertDialog.Builder(context)
+                PopUpGestureConsumer.instance.addToSet(action.value) -> fragment.notifyItemChanged(POPUP_ACTION)
+                else -> MaterialAlertDialogBuilder(context)
                         .setTitle(R.string.go_premium_title)
                         .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
                         .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.PREMIUM_SKU) }
@@ -100,12 +113,16 @@ class ActionFragment : MainActivityFragment(), ActionAdapter.ActionClickListener
                         .show()
             }
         } else {
-            mapper.mapGestureToAction(direction, actionRes)
-            fragment.notifyItemChanged(when {
-                LEFT_GESTURE == direction || DOUBLE_LEFT_GESTURE == direction -> MAP_LEFT_ICON
-                UP_GESTURE == direction || DOUBLE_UP_GESTURE == direction -> MAP_UP_ICON
-                RIGHT_GESTURE == direction || DOUBLE_RIGHT_GESTURE == direction -> MAP_RIGHT_ICON
-                DOWN_GESTURE == direction || DOUBLE_DOWN_GESTURE == direction -> MAP_DOWN_ICON
+            mapper.mapGestureToAction(direction, action.value)
+            fragment.notifyItemChanged(when (direction) {
+                LEFT_GESTURE,
+                DOUBLE_LEFT_GESTURE -> MAP_LEFT_ICON
+                UP_GESTURE,
+                DOUBLE_UP_GESTURE -> MAP_UP_ICON
+                RIGHT_GESTURE,
+                DOUBLE_RIGHT_GESTURE -> MAP_RIGHT_ICON
+                DOWN_GESTURE,
+                DOUBLE_DOWN_GESTURE -> MAP_DOWN_ICON
                 else -> MAP_DOWN_ICON
             })
         }

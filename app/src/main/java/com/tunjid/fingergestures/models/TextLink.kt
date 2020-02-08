@@ -17,10 +17,17 @@
 
 package com.tunjid.fingergestures.models
 
-class TextLink(
+import com.tunjid.androidx.recyclerview.diff.Differentiable
+
+data class TextLink(
         private val text: CharSequence,
         val link: String
-) : CharSequence {
+) : CharSequence, Differentiable {
+
+    override val diffId: String get() = link
+
+    override fun areContentsTheSame(other: Differentiable): Boolean =
+            (other as? TextLink)?.let{it == this} ?: super.areContentsTheSame(other)
 
     override fun toString(): String = text.toString()
 

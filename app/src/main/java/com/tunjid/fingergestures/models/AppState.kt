@@ -17,55 +17,71 @@
 
 package com.tunjid.fingergestures.models
 
-import android.app.Application
 import android.content.pm.ApplicationInfo
-
+import com.tunjid.androidx.recyclerview.diff.Differentiable
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.activities.MainActivity
+import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 
-import java.util.ArrayDeque
-import java.util.ArrayList
-import java.util.Queue
+data class AppState(
+        val links: List<TextLink> = listOf(),
+        val brightnessValues: List<Brightness> = listOf(),
+        val popUpActions: List<Action> = listOf(),
+        val availableActions: List<Action> = listOf(),
+        val installedApps: List<Package> = listOf(),
+        val rotationApps: List<Package> = listOf(),
+        val excludedRotationApps: List<Package> = listOf(),
+        val rotationScreenedApps: List<Package> = listOf(),
+        val permissionsQueue: List<Int> = listOf()
+)
 
-class AppState(application: Application) {
+data class Package(val app: ApplicationInfo) : Differentiable {
+    override val diffId: String get() = app.packageName
 
-    val links: Array<TextLink>
-    val brightnessValues: List<String>
-    val popUpActions: List<Int>
-    val availableActions: List<Int>
-    val installedApps: List<ApplicationInfo>
-    val rotationApps: List<ApplicationInfo>
-    val excludedRotationApps: List<ApplicationInfo>
-    val permissionsQueue: Queue<Int>
-
-    init {
-        brightnessValues = ArrayList()
-
-        popUpActions = ArrayList()
-        availableActions = ArrayList()
-
-        installedApps = ArrayList()
-        rotationApps = ArrayList()
-        excludedRotationApps = ArrayList()
-
-        permissionsQueue = ArrayDeque()
-
-        links = arrayOf(
-                TextLink(application.getString(R.string.get_set_icon), GET_SET_ICON_LINK),
-                TextLink(application.getString(R.string.rxjava), RX_JAVA_LINK),
-                TextLink(application.getString(R.string.color_picker), COLOR_PICKER_LINK),
-                TextLink(application.getString(R.string.image_cropper), IMAGE_CROPPER_LINK),
-                TextLink(application.getString(R.string.material_design_icons), MATERIAL_DESIGN_ICONS_LINK),
-                TextLink(application.getString(R.string.android_bootstrap), ANDROID_BOOTSTRAP_LINK)
-        )
-    }
-
-    companion object {
-
-        private const val RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava"
-        private const val COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker"
-        private const val ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap"
-        private const val GET_SET_ICON_LINK = "http://www.myiconfinder.com/getseticons"
-        private const val IMAGE_CROPPER_LINK = "https://github.com/ArthurHub/Android-Image-Cropper"
-        private const val MATERIAL_DESIGN_ICONS_LINK = "https://materialdesignicons.com/"
-    }
+    override fun areContentsTheSame(other: Differentiable): Boolean =
+            (other as? Package)?.let { it.diffId == diffId } ?: super.areContentsTheSame(other)
 }
+
+data class Action(@GestureConsumer.GestureAction val value: Int) : Differentiable {
+    override val diffId: String get() = value.toString()
+    override fun areContentsTheSame(other: Differentiable): Boolean =
+            (other as? Action)?.let { it.value == value } ?: super.areContentsTheSame(other)
+}
+
+data class Brightness(val value: String) : Differentiable {
+    override val diffId: String get() = value
+    override fun areContentsTheSame(other: Differentiable): Boolean =
+            (other as? Brightness)?.let { it.value == value } ?: super.areContentsTheSame(other)
+}
+
+data class UiUpdate(
+        val titleRes: Int = R.string.blank_string,
+        val iconRes: Int = R.drawable.ic_add_24dp,
+        val fabVisible: Boolean = false
+)
+
+sealed class Shilling {
+    object Calm : Shilling()
+    data class Quip(val message: String) : Shilling()
+}
+
+val AppState.uiUpdate
+    get() = when (permissionsQueue.lastOrNull()) {
+        MainActivity.DO_NOT_DISTURB_CODE -> UiUpdate(
+                titleRes = R.string.enable_do_not_disturb,
+                iconRes = R.drawable.ic_volume_loud_24dp
+        )
+        MainActivity.ACCESSIBILITY_CODE -> UiUpdate(
+                titleRes = R.string.enable_accessibility,
+                iconRes = R.drawable.ic_human_24dp
+        )
+        MainActivity.SETTINGS_CODE -> UiUpdate(
+                titleRes = R.string.enable_write_settings,
+                iconRes = R.drawable.ic_settings_white_24dp
+        )
+        MainActivity.STORAGE_CODE -> UiUpdate(
+                titleRes = R.string.enable_storage_settings,
+                iconRes = R.drawable.ic_storage_24dp
+        )
+        else -> UiUpdate()
+    }.copy(fabVisible = permissionsQueue.isNotEmpty())

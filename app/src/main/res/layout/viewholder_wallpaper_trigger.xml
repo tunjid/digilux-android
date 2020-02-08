@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2017, 2018, 2019 Adetunji Dahunsi.
   ~
   ~     This program is free software: you can redistribute it and/or modify
@@ -50,26 +49,23 @@
         app:layout_constraintRight_toLeftOf="@+id/cancel_auto_wallpaper"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/cancel_auto_wallpaper"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/single_margin"
-        android:layout_marginBottom="@dimen/single_margin"
-        android:background="@drawable/circle_background"
         android:gravity="center"
-        android:paddingLeft="@dimen/single_margin"
-        android:paddingTop="@dimen/half_margin"
-        android:paddingRight="@dimen/single_margin"
-        android:paddingBottom="@dimen/half_margin"
         android:text="@string/reset"
+        android:textAllCaps="false"
         android:textColor="@color/toggle_text"
+        app:cornerRadius="@dimen/triple_and_half_margin"
         app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/start"
         app:layout_constraintLeft_toRightOf="@+id/start"
         app:layout_constraintRight_toLeftOf="@+id/end"
-
-        app:layout_constraintTop_toTopOf="@+id/start" />
+        app:layout_constraintTop_toTopOf="@+id/start"
+        app:rippleColor="@color/toggle_text"
+        app:strokeColor="@color/toggle_text" />
 
     <TextView
         android:id="@+id/end"

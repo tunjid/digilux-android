@@ -18,59 +18,46 @@
 package com.tunjid.fingergestures.baseclasses
 
 
-import androidx.annotation.StringRes
+import android.view.Menu
+import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
-import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment
+import com.tunjid.androidx.view.util.InsetFlags
+import com.tunjid.fingergestures.GlobalUiController
+import com.tunjid.fingergestures.InsetProvider
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.TrialView
 import com.tunjid.fingergestures.activities.MainActivity
+import com.tunjid.fingergestures.activityGlobalUiController
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.fragments.AppFragment
-import io.reactivex.disposables.CompositeDisposable
+import com.tunjid.fingergestures.models.UiState
 
-abstract class MainActivityFragment : BaseFragment() {
+abstract class MainActivityFragment(
+        @LayoutRes layoutRes: Int
+) : Fragment(layoutRes),
+        InsetProvider,
+        GlobalUiController {
 
-    protected var disposables = CompositeDisposable()
+    override val insetFlags: InsetFlags = InsetFlags.NO_BOTTOM
 
-    protected val currentAppFragment: AppFragment?
-        get() {
-            val activity = activity as MainActivity? ?: return null
+    override var uiState: UiState by activityGlobalUiController()
 
-            return activity.currentFragment
-        }
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val item = menu.findItem(R.id.action_start_trial)
+        val isTrialVisible = !PurchasesManager.instance.isPremiumNotTrial
 
-    override fun onDestroyView() {
-        disposables.clear()
-        super.onDestroyView()
-    }
+        if (item != null) item.isVisible = isTrialVisible
+        if (isTrialVisible && item != null) item.actionView = TrialView(requireContext(), item)
 
-    protected fun toggleToolbar(visible: Boolean) {
-        val activity = activity as MainActivity?
-        activity?.toggleToolbar(visible)
-    }
-
-    fun showSnackbar(@StringRes resource: Int) {
-        val activity = activity as MainActivity?
-        activity?.showSnackbar(resource)
+        return super.onPrepareOptionsMenu(menu)
     }
 
     fun purchase(@PurchasesManager.SKU sku: String) {
         val activity = activity as MainActivity?
         activity?.purchase(sku)
-    }
-
-    fun requestPermission(@MainActivity.PermissionRequest permission: Int) {
-        val activity = activity as MainActivity?
-        activity?.requestPermission(permission)
-    }
-
-    fun showBottomSheetFragment(fragment: MainActivityFragment) {
-        val fragmentManager = fragmentManager ?: return
-
-        fragmentManager.beginTransaction().replace(R.id.bottom_sheet, fragment).commit()
-        toggleBottomSheet(true)
     }
 
     protected fun toggleBottomSheet(show: Boolean) {

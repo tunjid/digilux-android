@@ -20,13 +20,16 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.TextViewCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.billing.PurchasesManager
 
-class AdFreeViewHolder(itemView: View, listener: AppAdapter.AppAdapterListener) : AppViewHolder(itemView, listener) {
+class AdFreeViewHolder(
+        itemView: View,
+        listener: AppAdapterListener
+) : AppViewHolder(itemView, listener) {
 
     private val purchasesManager: PurchasesManager = PurchasesManager.instance
     private val title: TextView = itemView.findViewById(R.id.title)
@@ -61,11 +64,11 @@ class AdFreeViewHolder(itemView: View, listener: AppAdapter.AppAdapterListener) 
 
     private fun showPurchaseOptions() {
         val context = itemView.context
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.purchase_options)
                 .setItems(R.array.purchase_options
                 ) { _, index ->
-                    adapterListener.purchase(
+                    listener?.purchase(
                             if (index == 0) PurchasesManager.AD_FREE_SKU
                             else PurchasesManager.PREMIUM_SKU)
                 }
@@ -75,8 +78,8 @@ class AdFreeViewHolder(itemView: View, listener: AppAdapter.AppAdapterListener) 
     private fun showRemainingPurchaseOption() {
         val notPremium = purchasesManager.isNotPremium
         val action = {
-            if (notPremium) adapterListener.purchase(PurchasesManager.PREMIUM_SKU)
-            else adapterListener.purchase(PurchasesManager.AD_FREE_SKU)
+            if (notPremium) listener.purchase(PurchasesManager.PREMIUM_SKU)
+            else listener.purchase(PurchasesManager.AD_FREE_SKU)
         }
 
         @StringRes val title =
@@ -88,7 +91,7 @@ class AdFreeViewHolder(itemView: View, listener: AppAdapter.AppAdapterListener) 
                 else R.string.premium_generosity_confirmation
 
         val context = itemView.context
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
                 .setTitle(title)
                 .setMessage(description)
                 .setPositiveButton(R.string.continue_text) { _, _ -> action.invoke() }

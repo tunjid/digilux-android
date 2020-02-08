@@ -23,22 +23,22 @@ import android.widget.RadioGroup
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity.Companion.DO_NOT_DISTURB_CODE
-import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.AUDIO_DELTA
 
 
 class AudioStreamViewHolder(
         itemView: View,
-        adapterListener: AppAdapter.AppAdapterListener
-) : AppViewHolder(itemView, adapterListener) {
+        listener: AppAdapterListener
+) : AppViewHolder(itemView, listener) {
 
     private val radioGroup: RadioGroup = itemView.findViewById(R.id.radio_group)
 
     override fun bind() {
         super.bind()
         val hasDoNotDisturbAccess = App.hasDoNotDisturbAccess()
-        if (!hasDoNotDisturbAccess) adapterListener.requestPermission(DO_NOT_DISTURB_CODE)
+        if (!hasDoNotDisturbAccess) listener.requestPermission(DO_NOT_DISTURB_CODE)
 
         val gestureConsumer = AudioGestureConsumer.instance
 
@@ -57,6 +57,6 @@ class AudioStreamViewHolder(
 
     private fun onStreamPicked(checkedId: Int) {
         AudioGestureConsumer.instance.streamType = checkedId
-        adapterListener.notifyItemChanged(AUDIO_DELTA)
+        listener.notifyItemChanged(AUDIO_DELTA)
     }
 }

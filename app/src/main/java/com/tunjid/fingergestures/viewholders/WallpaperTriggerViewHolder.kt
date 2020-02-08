@@ -28,7 +28,7 @@ import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Calendar.HOUR_OF_DAY
@@ -36,7 +36,7 @@ import java.util.Calendar.MINUTE
 
 class WallpaperTriggerViewHolder(
         itemView: View,
-        appAdapterListener: AppAdapter.AppAdapterListener
+        appAdapterListener: AppAdapterListener
 ) : AppViewHolder(itemView, appAdapterListener) {
 
     private val backgroundManager: BackgroundManager = BackgroundManager.instance
@@ -77,11 +77,11 @@ class WallpaperTriggerViewHolder(
         end.setTextColor(getTextColor(NIGHT_WALLPAPER_PICK_CODE))
     }
 
-    private fun showTimePicker(calendar: Calendar, listener: TimePickerDialog.OnTimeSetListener) {
+    private fun showTimePicker(calendar: Calendar, onTimeSetListener: TimePickerDialog.OnTimeSetListener) {
         if (App.hasStoragePermission)
-            TimePickerDialog(itemView.context, listener, calendar.get(HOUR_OF_DAY), calendar.get(MINUTE), false).show()
+            TimePickerDialog(itemView.context, onTimeSetListener, calendar.get(HOUR_OF_DAY), calendar.get(MINUTE), false).show()
         else
-            adapterListener.showSnackbar(R.string.enable_storage_settings)
+            listener.showSnackbar(R.string.enable_storage_settings)
     }
 
     private fun getCalendarString(calendar: Calendar): String = dateFormat.format(calendar.time)

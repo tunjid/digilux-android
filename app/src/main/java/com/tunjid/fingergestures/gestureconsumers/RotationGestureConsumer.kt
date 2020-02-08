@@ -29,6 +29,9 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.SetManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ANDROID_SYSTEM_UI_PACKAGE
+import io.reactivex.Flowable
+import io.reactivex.processors.BehaviorProcessor
+import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 class RotationGestureConsumer private constructor() : GestureConsumer {
@@ -39,10 +42,19 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
             this::fromPackageName,
             this::fromApplicationInfo)
 
-    private var lastPackageName: String? = null
-
     val applicationInfoComparator: Comparator<ApplicationInfo>
         get() = Comparator { infoA, infoB -> this.compareApplicationInfo(infoA, infoB) }
+
+    val rotatingApps = setManager.itemsFlowable(ROTATION_APPS)
+
+    val excludedRotatingApps = setManager.itemsFlowable(EXCLUDED_APPS)
+
+    val lastSeenApps
+        get() = shifter.flowable.map { it.mapNotNull(this::fromPackageName) }
+                .subscribeOn(Schedulers.io())
+
+    private var lastPackageName: String? = null
+    private val shifter = Shifter(9)
 
     private var isAutoRotateOn: Boolean
         get() = App.transformApp({ app ->
@@ -87,6 +99,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
             return
 
         lastPackageName = packageName
+        shifter + packageName
         isAutoRotateOn = rotationApps.contains(packageName)
     }
 
@@ -112,9 +125,6 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
 
     fun removeFromSet(packageName: String, @PersistedSet preferencesName: String) =
             setManager.removeFromSet(packageName, preferencesName)
-
-    fun getList(@PersistedSet preferenceName: String): List<ApplicationInfo> =
-            setManager.getItems(preferenceName)
 
     fun canAutoRotate(): Boolean =
             App.transformApp({ app -> app.preferences.getBoolean(WATCHES_WINDOW_CONTENT, false) }, false)
@@ -155,7 +165,6 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
     }
 
     companion object {
-
         private const val ENABLE_AUTO_ROTATION = 1
         private const val DISABLE_AUTO_ROTATION = 0
 
@@ -167,6 +176,20 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         private const val EMPTY_STRING = ""
 
         val instance: RotationGestureConsumer by lazy { RotationGestureConsumer() }
-
     }
+}
+
+private class Shifter(private val size: Int) {
+    private val backing = arrayOfNulls<String>(size)
+    private val watcher = BehaviorProcessor.create<List<String>>()
+
+    val flowable: Flowable<List<String>> = watcher.doOnSubscribe { push() }
+
+    operator fun plus(value: String) {
+        System.arraycopy(backing, 0, backing, 1, size - 1)
+        backing[0] = value
+        if (watcher.hasSubscribers()) push()
+    }
+
+    private fun push() = watcher.onNext(backing.filterNotNull())
 }

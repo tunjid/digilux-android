@@ -25,21 +25,24 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
+import androidx.lifecycle.observe
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
-import com.tunjid.fingergestures.App
+import com.tunjid.androidx.recyclerview.gridLayoutManager
+import com.tunjid.androidx.recyclerview.listAdapterOf
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.ActionAdapter
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
+import com.tunjid.fingergestures.map
+import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
+import com.tunjid.fingergestures.viewmodels.AppViewModel
 import io.reactivex.disposables.CompositeDisposable
-import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 class PopupActivity : AppCompatActivity() {
@@ -61,33 +64,35 @@ class PopupActivity : AppCompatActivity() {
         val window = window
         window.setLayout(MATCH_PARENT, MATCH_PARENT)
 
-        val items = ArrayList<Int>()
         val spanSizer = AtomicInteger(0)
         val backgroundManager = BackgroundManager.instance
-
-        val listManager = ListManagerBuilder<ActionViewHolder, Void>()
-                .withRecyclerView(findViewById(R.id.item_list))
-                .withGridLayoutManager(6)
-                .withAdapter(ActionAdapter(isHorizontal = true, showsText = true, list = items, listener = object : ActionAdapter.ActionClickListener {
-                    override fun onActionClicked(actionRes: Int) = this@PopupActivity.onActionClicked(actionRes)
-                }))
-                .onLayoutManager { manager ->
-                    (manager as? GridLayoutManager)?.spanSizeLookup = object : SpanSizeLookup() {
-                        override fun getSpanSize(position: Int): Int = spanSizer.get()
-                    }
-                }
-                .build()
 
         val text = findViewById<TextView>(R.id.text)
         text.setTextColor(backgroundManager.sliderColor)
         this.findViewById<MaterialCardView>(R.id.card).setCardBackgroundColor(backgroundManager.backgroundColor)
 
-        disposables.add(App.diff(items) { PopUpGestureConsumer.instance.list }.subscribe({ result ->
-            val size = items.size
-            listManager.onDiff(result)
-            spanSizer.set(if (size == 1) 6 else if (size == 2) 3 else 2)
-            text.visibility = if (size == 0) VISIBLE else GONE
-        }, { it.printStackTrace() }))
+        findViewById<RecyclerView>(R.id.item_list).apply {
+            layoutManager = gridLayoutManager(6) { spanSizer.get() }
+            adapter = listAdapterOf(
+                    initialItems = listOf<Action>(),
+                    viewHolderCreator = { viewGroup, _ ->
+                        ActionViewHolder(
+                                showsText = true,
+                                itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
+                                clickListener = ::onActionClicked
+                        )
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            ).apply {
+                val viewModel by viewModels<AppViewModel>()
+                viewModel.liveState.map(AppState::popUpActions).observe(this@PopupActivity) { items ->
+                    val size = items.size
+                    spanSizer.set(if (size == 1) 6 else if (size == 2) 3 else 2)
+                    text.visibility = if (size == 0) VISIBLE else GONE
+                    submitList(items)
+                }
+            }
+        }
 
         findViewById<View>(R.id.constraint_layout).setOnTouchListener { _, _ ->
             finish()
@@ -117,9 +122,9 @@ class PopupActivity : AppCompatActivity() {
         disposables.clear()
     }
 
-    private fun onActionClicked(@GestureConsumer.GestureAction action: Int) {
+    private fun onActionClicked(action: Action) {
         finish()
-        GestureMapper.instance.performAction(action)
+        GestureMapper.instance.performAction(action.value)
     }
 }
 
