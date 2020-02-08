@@ -22,8 +22,8 @@ android {
         applicationId "com.tunjid.fingergestures"
         minSdkVersion 26
         targetSdkVersion 29
-        versionCode 51
-        versionName "9.0.0"
+        versionCode 52
+        versionName "9.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
