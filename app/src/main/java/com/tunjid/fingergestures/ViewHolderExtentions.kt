@@ -18,10 +18,13 @@
 package com.tunjid.fingergestures
 
 import android.view.View
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.recyclerview.widget.RecyclerView
+import com.tunjid.androidx.core.content.unwrapActivity
 
 private class ViewHolderLifecycleOwner(viewHolder: RecyclerView.ViewHolder) : LifecycleOwner {
     private var attachedToParent = false
@@ -38,22 +41,29 @@ private class ViewHolderLifecycleOwner(viewHolder: RecyclerView.ViewHolder) : Li
             override fun onViewAttachedToWindow(v: View?) {
                 registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
-                if (!attachedToParent) {
-                    // When the parent RecyclerView is detached
-                    (viewHolder.itemView.parent as? View)?.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                        override fun onViewDetachedFromWindow(v: View?) {
-                            v?.removeOnAttachStateChangeListener(this)
-                            registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-                        }
+                if (attachedToParent) return
+                val parentView = (viewHolder.itemView.parent as? View) ?: return
 
-                        override fun onViewAttachedToWindow(v: View?) = Unit
-                    })
-                    attachedToParent = true
-                }
+                // When the parent RecyclerView is detached
+                parentView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                    override fun onViewDetachedFromWindow(v: View?) {
+                        v?.removeOnAttachStateChangeListener(this)
+                        registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                    }
+
+                    override fun onViewAttachedToWindow(v: View?) = Unit
+                })
+                attachedToParent = true
             }
         })
 
         if (viewHolder.itemView.isAttachedToWindow) registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+
+        val activityLifecycle = (viewHolder.itemView.context.unwrapActivity as? FragmentActivity)?.lifecycle
+        val activityLifecycleObserver = LifecycleEventObserver { _, event -> registry.handleLifecycleEvent(event) }
+
+        activityLifecycle?.addObserver(activityLifecycleObserver)
+        registry.addObserver(LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_DESTROY) activityLifecycle?.removeObserver(activityLifecycleObserver) })
     }
 }
 
