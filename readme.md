@@ -1,7 +1,11 @@
 ## DigiLux Android App
 
-[![Play Badge](https://play.google.com/intl/en/badges/images/badge_new.png)](https://play.google.com/store/apps/details?id=com.tunjid.fingergestures)
-
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/com.tunjid.fingergestures/)
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
+     alt="Get it on Google Play"
+     height="80">](https://play.google.com/store/apps/details?id=com.tunjid.fingergestures)
 
 Please note: Devices with large circular fingerprint sensors are most likely to be supported, others cannot because of hardware limitations. You're more than welcome to try, but there are no guarantees you device will be supported; no Samsung support.
 
@@ -41,8 +45,6 @@ Cooler features:
 * Restore Adaptive brightness depending on an ambient brightness threshold when the screen turns on.
 
 * Apply a dark screen filter over the the Application Window to further dim the screen. Android OS limitations however prevent the filter from drawing over the Notification Drawer.
-
-[Play Store Link](https://play.google.com/store/apps/details?id=com.tunjid.fingergestures)
 
 Supported Devices:
 
