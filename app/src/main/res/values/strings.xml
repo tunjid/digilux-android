@@ -285,6 +285,8 @@
     <!-- Generic text-->
     <string name="ok">Okay</string>
     <string name="cancel">Cancel</string>
+    <!--suppress CheckTagEmptyBody -->
+    <string name="blank_string" translatable="false"></string>
     <string name="blank_emoji" translatable="false">😶</string>
     <string name="generic_error">Sorry, there was an error completing your request.</string>
 

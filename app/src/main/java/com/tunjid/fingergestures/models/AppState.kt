@@ -55,7 +55,7 @@ data class Brightness(val value: String) : Differentiable {
 }
 
 data class UiUpdate(
-        val titleRes: Int = R.string.blank_emoji,
+        val titleRes: Int = R.string.blank_string,
         val iconRes: Int = R.drawable.ic_add_24dp,
         val fabVisible: Boolean = false
 )
