@@ -20,11 +20,13 @@ package com.tunjid.fingergestures.services
 import android.accessibilityservice.AccessibilityButtonController
 import android.accessibilityservice.AccessibilityButtonController.AccessibilityButtonCallback
 import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_ACCESSIBILITY_BUTTON
 import android.accessibilityservice.GestureDescription
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.ACTION_SCREEN_ON
 import android.content.IntentFilter
 import android.content.res.Resources
 import android.graphics.Path
@@ -36,36 +38,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK
 import android.view.accessibility.AccessibilityWindowInfo
-
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.PopUpGestureConsumer
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-
-import io.reactivex.disposables.Disposable
-
-import android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_ACCESSIBILITY_BUTTON
-import android.content.Intent.ACTION_SCREEN_ON
-import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK
 import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.ACTION_ACCESSIBILITY_BUTTON
 import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.ACTION_SHOW_POPUP
 import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.EXTRA_SHOWS_ACCESSIBILITY_BUTTON
+import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer.Companion.ACTION_EXPAND_VOLUME_CONTROLS
+import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.ACTION_SCREEN_DIMMER_CHANGED
 import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.Companion.ACTION_TOGGLE_DOCK
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.Companion.ACTION_GLOBAL_ACTION
 import com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.Companion.EXTRA_GLOBAL_ACTION
 import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_DOWN
 import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_TOGGLE
 import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_UP
+import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ACTION_WATCH_WINDOW_CHANGES
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.EXTRA_WATCHES_WINDOWS
+import io.reactivex.disposables.Disposable
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class FingerGestureService : AccessibilityService() {

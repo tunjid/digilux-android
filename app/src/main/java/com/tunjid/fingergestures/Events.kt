@@ -15,18 +15,25 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.adapters
+package com.tunjid.fingergestures
 
-import com.tunjid.androidbootstrap.recyclerview.InteractiveAdapter
-import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder
+import androidx.lifecycle.Observer
 
-abstract class DiffAdapter<V : InteractiveViewHolder<T>, T : InteractiveAdapter.AdapterListener, S> internal constructor(internal val list: List<S>, listener: T) : InteractiveAdapter<V, T>(listener) {
-
-    init {
-        setHasStableIds(true)
+class EventObserver<T>(private val onEventUnhandledContent: (T) -> Unit) : Observer<Event<T>> {
+    override fun onChanged(event: Event<T>?) {
+        event?.getContentIfNotHandled()?.let(onEventUnhandledContent)
     }
+}
 
-    override fun getItemCount(): Int = list.size
+open class Event<out T>(private val content: T) {
 
-    override fun getItemId(position: Int): Long = list[position].hashCode().toLong()
+    private var hasBeenHandled = false
+
+    /**
+     * Returns the content and prevents its use again.
+     */
+    fun getContentIfNotHandled(): T? = if (hasBeenHandled) null else {
+        hasBeenHandled = true
+        content
+    }
 }

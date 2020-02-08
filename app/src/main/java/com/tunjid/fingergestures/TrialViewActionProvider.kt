@@ -18,9 +18,9 @@
 package com.tunjid.fingergestures
 
 import android.content.Context
-import androidx.core.view.ActionProvider
 import android.view.MenuItem
 import android.view.View
+import androidx.core.view.ActionProvider
 
 // Created via XML
 @Suppress("unused")

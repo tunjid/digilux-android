@@ -92,6 +92,10 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     val discreteBrightnessValues: List<String>
         get() = discreteBrightnessManager.getList(DISCRETE_BRIGHTNESS_SET)
 
+    val discreteBrightnesses = discreteBrightnessManager
+            .itemsFlowable(DISCRETE_BRIGHTNESS_SET)
+            .map { it.map(Int::toString) }
+
     override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
         var byteValue: Int
         val originalValue: Int

@@ -21,95 +21,102 @@ import android.Manifest
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.Transition
 import android.transition.TransitionListenerAdapter
 import android.transition.TransitionManager
-import android.view.LayoutInflater
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-import android.view.ViewGroup
 import android.view.WindowInsets
-import android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
 import android.view.animation.AnimationUtils.loadAnimation
 import android.widget.TextSwitcher
+import androidx.activity.addCallback
+import androidx.activity.viewModels
 import androidx.annotation.IntDef
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.component1
+import androidx.core.graphics.component2
+import androidx.core.graphics.component3
+import androidx.core.view.doOnLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.RecyclerView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.observe
+import com.android.billingclient.api.BillingClient
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
-import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
-import com.tunjid.androidbootstrap.core.abstractclasses.BaseFragment
-import com.tunjid.androidbootstrap.material.animator.FabExtensionAnimator
-import com.tunjid.androidbootstrap.view.animator.ViewHider
-import com.tunjid.androidbootstrap.view.util.ViewUtil.getLayoutParams
-import com.tunjid.fingergestures.App
+import com.google.android.material.snackbar.Snackbar
+import com.tunjid.androidx.core.content.colorAt
+import com.tunjid.androidx.navigation.MultiStackNavigator
+import com.tunjid.androidx.navigation.Navigator
+import com.tunjid.androidx.navigation.doOnLifecycleEvent
+import com.tunjid.androidx.navigation.multiStackNavigationController
+import com.tunjid.androidx.view.util.marginLayoutParams
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
-import com.tunjid.fingergestures.App.Companion.withApp
-import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_EDIT_WALLPAPER
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_NAV_BAR_CHANGED
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.TrialView
-import com.tunjid.fingergestures.baseclasses.FingerGestureActivity
+import com.tunjid.fingergestures.InsetLifecycleCallbacks.Companion.topInset
+import com.tunjid.fingergestures.billing.BillingManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
 import com.tunjid.fingergestures.fragments.AppFragment
+import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.models.Shilling
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.models.UiState
+import com.tunjid.fingergestures.models.UiUpdate
+import com.tunjid.fingergestures.models.uiUpdate
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
-import com.tunjid.fingergestures.viewholders.DiffViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import io.reactivex.disposables.CompositeDisposable
-import java.util.*
 
-class MainActivity : FingerGestureActivity() {
+class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiController, Navigator.Controller {
 
-    private var insetsApplied: Boolean = false
+    private val constraintLayout by lazy { findViewById<ConstraintLayout>(R.id.constraint_layout) }
+    private val shillSwitcher by lazy { findViewById<TextSwitcher>(R.id.upgrade_prompt) }
+    private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(findViewById<View>(R.id.bottom_sheet)) }
 
-    private lateinit var topInsetView: View
-    private lateinit var bottomInsetView: View
-    private lateinit var toolbar: Toolbar
-    private lateinit var constraintLayout: ViewGroup
-    private lateinit var shillSwitcher: TextSwitcher
-    private lateinit var permissionText: MaterialButton
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<*>
+    private val coordinator by lazy { findViewById<View>(R.id.coordinator_layout) }
 
-    private lateinit var fabExtensionAnimator: FabExtensionAnimator
-    private lateinit var disposables: CompositeDisposable
+    private var billingManager: BillingManager? = null
 
-    private lateinit var viewModel: AppViewModel
+    private val disposables = CompositeDisposable()
+
+    private val viewModel by viewModels<AppViewModel>()
+
+    private val links get() = (viewModel.liveState.value?.links ?: listOf()).toTypedArray()
+
+    override var uiState: UiState by globalUiDriver { navigator.activeNavigator }
+
+    override val navigator: MultiStackNavigator by multiStackNavigationController(
+            5,
+            R.id.main_fragment_container
+    ) {
+        AppFragment.newInstance(viewModel.resourceAt(it))
+    }
 
     private val navBarColor: Int
-        get() = ContextCompat.getColor(this, if (BackgroundManager.instance.usesColoredNav())
-            R.color.colorPrimary
-        else
-            R.color.black)
-
-    private val fabTint: ColorStateList
-        get() = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorPrimary))
-
-    private val transition: Transition
-        get() = AutoTransition().excludeTarget(RecyclerView::class.java, true)
+        get() = colorAt(
+                if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
+                else R.color.black
+        )
 
     @Retention(AnnotationRetention.SOURCE)
     @IntDef(STORAGE_CODE, SETTINGS_CODE, ACCESSIBILITY_CODE, DO_NOT_DISTURB_CODE)
@@ -117,86 +124,106 @@ class MainActivity : FingerGestureActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        viewModel = ViewModelProviders.of(this).get(AppViewModel::class.java)
-        disposables = CompositeDisposable()
+        uiState = uiState.copy(
+                navBarColor = navBarColor,
+                toolBarMenu = R.menu.activity_main,
+                toolbarTitle = getString(R.string.app_name),
+                fabClickListener = View.OnClickListener { viewModel.onPermissionClicked(this::onPermissionClicked) }
+        )
 
-        toolbar = findViewById(R.id.toolbar)
-        topInsetView = findViewById(R.id.top_inset)
-        bottomInsetView = findViewById(R.id.bottom_inset)
-        shillSwitcher = findViewById(R.id.upgrade_prompt)
-        permissionText = findViewById(R.id.permission_view)
-        constraintLayout = findViewById(R.id.constraint_layout)
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-
-        fabHider = ViewHider.of(permissionText).setDirection(ViewHider.BOTTOM).build()
-        barHider = ViewHider.of(toolbar).setDirection(ViewHider.TOP).build()
-        fabExtensionAnimator = FabExtensionAnimator(permissionText)
-
-        fabHider.hide()
-
-        permissionText.backgroundTintList = fabTint
-        permissionText.setOnClickListener { viewModel.onPermissionClicked(this::onPermissionClicked) }
-        bottomSheetBehavior = BottomSheetBehavior.from(findViewById<View>(R.id.bottom_sheet))
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected)
-        constraintLayout.setOnApplyWindowInsetsListener { _, insets -> consumeSystemInsets(insets) }
+        bottomNavigationView.setOnApplyWindowInsetsListener { _: View?, windowInsets: WindowInsets? -> windowInsets }
 
-        val window = window
-        window.decorView.systemUiVisibility = DEFAULT_SYSTEM_UI_FLAGS
-        window.statusBarColor = ContextCompat.getColor(this, R.color.colorBackground)
-        window.navigationBarColor = navBarColor
+        supportFragmentManager.registerFragmentLifecycleCallbacks(InsetLifecycleCallbacks(
+                globalUiController = this@MainActivity,
+                parentContainer = this@MainActivity.findViewById(R.id.constraint_layout),
+                fragmentContainer = this@MainActivity.findViewById(R.id.main_fragment_container),
+                coordinatorLayout = this@MainActivity.findViewById(R.id.coordinator_layout),
+                toolbar = this@MainActivity.findViewById(R.id.toolbar),
+                bottomNavView = bottomNavigationView,
+                stackNavigatorSource = this@MainActivity.navigator::activeNavigator
+        ), true)
 
-        setSupportActionBar(toolbar)
+        supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
+                if (f is AppFragment) viewModel.onStartChangeDestination()
+            }
+        }, true)
+
+        navigator.stackSelectedListener = { bottomNavigationView.menu.findItem(viewModel.resourceAt(it))?.isChecked = true }
+        navigator.stackTransactionModifier = {
+            setCustomAnimations(
+                    android.R.anim.fade_in,
+                    android.R.anim.fade_out,
+                    android.R.anim.fade_in,
+                    android.R.anim.fade_out
+            )
+        }
+        onBackPressedDispatcher.addCallback(this) { if (!navigator.pop()) finish() }
+
+        val primary = colorAt(R.color.colorPrimary)
+        val (r, g, b) = Color.valueOf(primary)
+
+        val bottomNavBackground = GradientDrawable(
+                GradientDrawable.Orientation.BOTTOM_TOP,
+                intArrayOf(primary, Color.argb(0.5f, r, g, b)))
+
+        bottomNavigationView.background = bottomNavBackground
+
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                val a = (slideOffset + 1) / 2 // callback range is [-1, 1]
+                bottomNavBackground.colors = intArrayOf(primary, Color.argb((0.5f * a + 0.5f), r, g, b))
+                mutateGlobalUi { copy(statusBarColor = Color.argb(a, r, g, b)) }
+            }
+
+            override fun onStateChanged(bottomSheet: View, newState: Int) = Unit
+        })
+
+        findViewById<View>(R.id.bottom_sheet).doOnLayout { it.marginLayoutParams.topMargin = topInset }
         toggleBottomSheet(false)
 
         val startIntent = intent
         val isPickIntent = startIntent != null && ACTION_SEND == startIntent.action
 
         if (savedInstanceState == null && isPickIntent) handleIntent(startIntent)
-        else if (savedInstanceState == null) showAppFragment(viewModel.gestureItems)
 
-        supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks() {
-            override fun onFragmentViewCreated(fm: FragmentManager,
-                                               f: Fragment,
-                                               v: View,
-                                               savedInstanceState: Bundle?) {
-                if (f is AppFragment) updateBottomNav(f, bottomNavigationView)
-            }
-        }, false)
+        shillSwitcher.setFactory {
+            val view = layoutInflater.inflate(R.layout.text_switch, shillSwitcher, false)
+            view.setOnClickListener { viewModel.shillMoar() }
+            view
+        }
 
-        setUpSwitcher()
+        shillSwitcher.inAnimation = loadAnimation(this, android.R.anim.slide_in_left)
+        shillSwitcher.outAnimation = loadAnimation(this, android.R.anim.slide_out_right)
+
+        viewModel.liveState
+                .map(AppState::uiUpdate)
+                .distinctUntilChanged()
+                .observe(this, this::onStateChanged)
+
+        viewModel.shill.observe(this) {
+            if (it is Shilling.Quip) shillSwitcher.apply { setText(it.message); isVisible = true }
+            else hideAds()
+        }
+
+        viewModel.broadcasts.observe(this, EventObserver(this::onBroadcastReceived))
     }
 
     override fun onResume() {
         super.onResume()
 
-        if (PurchasesManager.instance.hasAds()) shill()
-        else hideAds()
+        billingManager = BillingManager(applicationContext)
 
-        if (!accessibilityServiceEnabled()) requestPermission(ACCESSIBILITY_CODE)
+        if (!accessibilityServiceEnabled()) viewModel.requestPermission(ACCESSIBILITY_CODE)
 
-        invalidateOptionsMenu()
-        subscribeToBroadcasts()
-        disposables.add(viewModel.uiState().subscribe(this::onStateChanged, Throwable::printStackTrace))
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.activity_main, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        val item = menu.findItem(R.id.action_start_trial)
-        val isTrialVisible = !PurchasesManager.instance.isPremiumNotTrial
-
-        if (item != null) item.isVisible = isTrialVisible
-        if (isTrialVisible && item != null) item.actionView = TrialView(this, item)
-        return super.onPrepareOptionsMenu(menu)
+        uiState = uiState.copy(toolbarInvalidated = true)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        when (val id = item.itemId) {
             R.id.action_start_trial -> {
                 val purchasesManager = PurchasesManager.instance
                 val isTrialRunning = purchasesManager.isTrialRunning
@@ -211,30 +238,18 @@ class MainActivity : FingerGestureActivity() {
                     snackbar.show()
                 }
             }
-            R.id.action_directions -> {
-                showAppFragment(viewModel.gestureItems)
-                return true
-            }
-            R.id.action_slider -> {
-                showAppFragment(viewModel.brightnessItems)
-                return true
-            }
-            R.id.action_audio -> {
-                showAppFragment(viewModel.audioItems)
-                return true
-            }
-            R.id.action_accessibility_popup -> {
-                showAppFragment(viewModel.popupItems)
-                return true
-            }
+            R.id.action_directions,
+            R.id.action_slider,
+            R.id.action_audio,
+            R.id.action_accessibility_popup,
             R.id.action_wallpaper -> {
-                showAppFragment(viewModel.appearanceItems)
+                viewModel.resourceIndex(id).let(navigator::show)
                 return true
             }
             R.id.info -> {
-                AlertDialog.Builder(this)
+                MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.open_source_libraries)
-                        .setItems(viewModel.state.links) { _, index -> showLink(viewModel.state.links[index]) }
+                        .setItems(links) { _, index -> showLink(links[index]) }
                         .show()
                 return true
             }
@@ -247,13 +262,10 @@ class MainActivity : FingerGestureActivity() {
             else super.onBackPressed()
 
     override fun onPause() {
+        billingManager?.destroy()
+        billingManager = null
         disposables.clear()
         super.onPause()
-    }
-
-    override fun onDestroy() {
-        DiffViewHolder.onActivityDestroyed()
-        super.onDestroy()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -267,7 +279,7 @@ class MainActivity : FingerGestureActivity() {
             return
 
         viewModel.onPermissionChange(requestCode)?.apply { showSnackbar(this) }
-        currentFragment?.notifyDataSetChanged()
+        (navigator.current as? AppFragment)?.notifyDataSetChanged()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -275,23 +287,8 @@ class MainActivity : FingerGestureActivity() {
         handleIntent(intent)
     }
 
-    override fun getCurrentFragment(): AppFragment? = super.getCurrentFragment() as? AppFragment
-
-    override fun showFragment(fragment: BaseFragment): Boolean {
-        viewModel.checkPermissions()
-        return super.showFragment(fragment)
-    }
-
-    fun requestPermission(@PermissionRequest permission: Int) {
-        viewModel.requestPermission(permission)
-    }
-
     fun toggleBottomSheet(show: Boolean) {
         bottomSheetBehavior.state = if (show) STATE_COLLAPSED else STATE_HIDDEN
-    }
-
-    private fun showAppFragment(items: IntArray) {
-        showFragment(AppFragment.newInstance(items))
     }
 
     private fun handleIntent(intent: Intent) {
@@ -302,22 +299,21 @@ class MainActivity : FingerGestureActivity() {
 
         if (!hasStoragePermission) {
             showSnackbar(R.string.enable_storage_settings)
-            showAppFragment(viewModel.gestureItems)
+            viewModel.resourceIndex(R.id.action_directions).let(navigator::show)
             return
         }
 
         val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM) ?: return
 
-        val toShow = AppFragment.newInstance(viewModel.appearanceItems)
-        val tag = toShow.stableTag
+        navigator.performConsecutively(lifecycleScope) {
+            show(viewModel.resourceIndex(R.id.action_wallpaper))
 
-        showFragment(toShow)
+            BackgroundManager.instance.requestWallPaperConstant(R.string.choose_target, this@MainActivity) { selection ->
+                val shown = navigator.current as AppFragment?
 
-        BackgroundManager.instance.requestWallPaperConstant(R.string.choose_target, this) { selection ->
-            val shown = supportFragmentManager.findFragmentByTag(tag) as AppFragment?
-
-            if (shown != null && shown.isVisible) shown.cropImage(imageUri, selection)
-            else showSnackbar(R.string.error_wallpaper)
+                if (shown != null && shown.isVisible) shown.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) { shown.cropImage(imageUri, selection) }
+                else showSnackbar(R.string.error_wallpaper)
+            }
         }
     }
 
@@ -338,7 +334,7 @@ class MainActivity : FingerGestureActivity() {
     }
 
     private fun showPermissionDialog(@StringRes stringRes: Int, yesAction: () -> Unit) {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.permission_required)
                 .setMessage(stringRes)
                 .setPositiveButton(R.string.yes) { _, _ -> yesAction.invoke() }
@@ -355,55 +351,29 @@ class MainActivity : FingerGestureActivity() {
         }
     }
 
-    private fun updateBottomNav(fragment: AppFragment, bottomNavigationView: BottomNavigationView) =
-            viewModel.updateBottomNav(Arrays.hashCode(fragment.items))?.apply { bottomNavigationView.selectedItemId = this }
-
     private fun showLink(textLink: TextLink) {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(textLink.link))
         startActivity(browserIntent)
     }
 
-    private fun shill() {
-        disposables.add(viewModel.shill().subscribe(shillSwitcher::setText, Throwable::printStackTrace))
-    }
-
     private fun hideAds() {
-        viewModel.calmIt()
         if (shillSwitcher.visibility == View.GONE) return
 
-        val hideTransition = transition
-        hideTransition.addListener(object : TransitionListenerAdapter() {
-            override fun onTransitionEnd(transition: Transition) = showSnackbar(R.string.billing_thanks)
+        TransitionManager.beginDelayedTransition(constraintLayout, AutoTransition().apply {
+            addTarget(shillSwitcher)
+            addListener(object : TransitionListenerAdapter() {
+                override fun onTransitionEnd(transition: Transition) = showSnackbar(R.string.billing_thanks)
+            })
         })
-        TransitionManager.beginDelayedTransition(constraintLayout, hideTransition)
         shillSwitcher.visibility = View.GONE
     }
 
-    private fun setUpSwitcher() {
-        shillSwitcher.setFactory {
-            val view = LayoutInflater.from(this).inflate(R.layout.text_switch, shillSwitcher, false)
-            view.setOnClickListener { viewModel.shillMoar() }
-            view
-        }
-
-        shillSwitcher.inAnimation = loadAnimation(this, android.R.anim.slide_in_left)
-        shillSwitcher.outAnimation = loadAnimation(this, android.R.anim.slide_out_right)
-    }
-
-    private fun onStateChanged(uiState: UiState) {
-        permissionText.post { fabExtensionAnimator.updateGlyphs(uiState.glyphState) }
-        permissionText.post(if (uiState.fabVisible) Runnable { fabHider.show() } else Runnable { fabHider.hide() })
-    }
-
-    private fun subscribeToBroadcasts() {
-        withApp { app ->
-            disposables.add(app.broadcasts()
-                    .filter { this.intentMatches(it) }
-                    .subscribe({ this.onBroadcastReceived(it) }, { error ->
-                        error.printStackTrace()
-                        subscribeToBroadcasts() // Resubscribe on error
-                    }))
-        }
+    private fun onStateChanged(uiUpdate: UiUpdate) {
+        uiState = uiState.copy(
+                fabIcon = uiUpdate.iconRes,
+                fabText = getString(uiUpdate.titleRes),
+                fabShows = uiUpdate.fabVisible
+        )
     }
 
     private fun onBroadcastReceived(intent: Intent) {
@@ -415,45 +385,35 @@ class MainActivity : FingerGestureActivity() {
         }
     }
 
-    private fun intentMatches(intent: Intent): Boolean {
-        val action = intent.action
-        return (ACTION_EDIT_WALLPAPER == action
-                || ACTION_SHOW_SNACK_BAR == action
-                || ACTION_NAV_BAR_CHANGED == action
-                || ACTION_LOCKED_CONTENT_CHANGED == action)
+    fun showSnackbar(@StringRes resource: Int) =
+            withSnackbar { snackbar -> snackbar.setText(resource);snackbar.show() }
+
+
+    fun purchase(@PurchasesManager.SKU sku: String) = when (val billingManager = billingManager) {
+        null -> showSnackbar(R.string.generic_error)
+        else -> disposables.add(billingManager.initiatePurchaseFlow(this, sku)
+                .subscribe({ launchStatus ->
+                    when (launchStatus) {
+                        BillingClient.BillingResponse.OK -> Unit
+                        BillingClient.BillingResponse.SERVICE_UNAVAILABLE, BillingClient.BillingResponse.SERVICE_DISCONNECTED -> showSnackbar(R.string.billing_not_connected)
+                        BillingClient.BillingResponse.ITEM_ALREADY_OWNED -> showSnackbar(R.string.billing_you_own_this)
+                        else -> showSnackbar(R.string.generic_error)
+                    }
+                }, { showSnackbar(R.string.generic_error) })).let { }
     }
 
-    private fun consumeSystemInsets(insets: WindowInsets): WindowInsets {
-        if (insetsApplied) return insets
-
-        topInset = insets.systemWindowInsetTop
-        val leftInset = insets.systemWindowInsetLeft
-        val rightInset = insets.systemWindowInsetRight
-        bottomInset = insets.systemWindowInsetBottom
-
-        getLayoutParams(toolbar).topMargin = topInset
-        getLayoutParams(topInsetView).height = topInset
-        getLayoutParams(bottomInsetView).height = bottomInset
-        constraintLayout.setPadding(leftInset, 0, rightInset, 0)
-
-        insetsApplied = true
-        return insets
+    private fun withSnackbar(consumer: (Snackbar) -> Unit) {
+        val snackbar = Snackbar.make(coordinator, R.string.app_name, Snackbar.LENGTH_SHORT)
+        snackbar.view.setOnApplyWindowInsetsListener { _, insets -> insets }
+        consumer.invoke(snackbar)
     }
 
     companion object {
-
-        var topInset: Int = 0
-        var bottomInset: Int = 0
 
         const val STORAGE_CODE = 100
         const val SETTINGS_CODE = 200
         const val ACCESSIBILITY_CODE = 300
         const val DO_NOT_DISTURB_CODE = 400
-
-        private const val DEFAULT_SYSTEM_UI_FLAGS = (SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
         private val STORAGE_PERMISSIONS = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
     }

@@ -19,41 +19,58 @@ package com.tunjid.fingergestures.viewholders
 
 import android.view.View
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import com.tunjid.androidbootstrap.recyclerview.ListManager
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.observe
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.recyclerview.gridLayoutManager
+import com.tunjid.androidx.recyclerview.listAdapterOf
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.ActionAdapter
-import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.fragments.ActionFragment
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
+import com.tunjid.fingergestures.lifecycleOwner
+import com.tunjid.fingergestures.models.Action
 
-class PopupViewHolder(itemView: View, items: List<Int>, listener: AppAdapter.AppAdapterListener) : DiffViewHolder<Int>(itemView, items, listener) {
-
-    override val sizeCacheKey: String
-        get() = javaClass.simpleName
-
-    override val listSupplier: () -> List<Int>
-        get() = { PopUpGestureConsumer.instance.list }
+class PopupViewHolder(
+        itemView: View,
+        items: LiveData<List<Action>>,
+        listener: AppAdapterListener
+) : AppViewHolder(itemView, listener) {
 
     init {
 
         itemView.findViewById<View>(R.id.add).setOnClickListener {
             when {
-                !App.canWriteToSettings() -> AlertDialog.Builder(itemView.context).setMessage(R.string.permission_required).show()
-                !PopUpGestureConsumer.instance.hasAccessibilityButton() -> AlertDialog.Builder(itemView.context).setMessage(R.string.popup_prompt).show()
-                else -> adapterListener.showBottomSheetFragment(ActionFragment.popUpInstance())
+                !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+                !PopUpGestureConsumer.instance.hasAccessibilityButton() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
+                else -> listener.showBottomSheetFragment(ActionFragment.popUpInstance())
             }
+        }
+
+        itemView.findViewById<RecyclerView>(R.id.item_list).run {
+            layoutManager = gridLayoutManager(3)
+            adapter = listAdapterOf(
+                    initialItems = items.value ?: listOf(),
+                    viewHolderCreator = { viewGroup, _ ->
+                        ActionViewHolder(
+                                showsText = true,
+                                itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
+                                clickListener = ::onActionClicked
+                        )
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            ).also { items.observe(lifecycleOwner, it::submitList) }
         }
 
         val title = itemView.findViewById<TextView>(R.id.title)
 
         title.setText(R.string.popup_title)
         title.setOnClickListener {
-            AlertDialog.Builder(itemView.context)
+            MaterialAlertDialogBuilder(itemView.context)
                     .setMessage(R.string.popup_description)
                     .show()
         }
@@ -61,30 +78,20 @@ class PopupViewHolder(itemView: View, items: List<Int>, listener: AppAdapter.App
 
     override fun bind() {
         super.bind()
-
-        diff()
-        if (!App.canWriteToSettings()) adapterListener.requestPermission(MainActivity.SETTINGS_CODE)
+        if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
     }
 
-    override fun createListManager(itemView: View): ListManager<*, Void> = ListManagerBuilder<ActionViewHolder, Void>()
-            .withAdapter(ActionAdapter(isHorizontal = true, showsText = true, list = items, listener = object : ActionAdapter.ActionClickListener {
-                override fun onActionClicked(actionRes: Int) = this@PopupViewHolder.onActionClicked(actionRes)
-            }))
-            .withRecyclerView(itemView.findViewById(R.id.item_list))
-            .withGridLayoutManager(3)
-            .build()
-
-    private fun onActionClicked(@GestureConsumer.GestureAction action: Int) {
+    private fun onActionClicked(action: Action) {
         val buttonManager = PopUpGestureConsumer.instance
 
-        val builder = AlertDialog.Builder(itemView.context)
+        val builder = MaterialAlertDialogBuilder(itemView.context)
 
         when {
             !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
             !buttonManager.hasAccessibilityButton() -> builder.setMessage(R.string.popup_prompt)
             else -> builder.setTitle(R.string.popup_remove)
                     .setPositiveButton(R.string.yes) { _, _ ->
-                        buttonManager.removeFromSet(action)
+                        buttonManager.removeFromSet(action.value)
                         bind()
                     }
                     .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }

@@ -177,10 +177,14 @@
     <!-- Rotation ViewHolder-->
     <string name="auto_rotate_apps">Apps Allowed to Auto Rotate</string>
     <string name="selective_app_rotation">Enable selective app auto rotation (turn off if scrolling performance degrades)</string>
-    <string name="auto_rotate_apps_excluded">Ignored Pop Up Overlay Apps</string>
+    <string name="auto_rotate_apps_excluded">Ignored Transient/Overlay Apps</string>
     <string name="auto_rotate_add">Add to %1$s</string>
     <string name="auto_rotate_remove">Remove from %1$s?</string>
     <string name="auto_rotate_prompt">Please enable the auto rotate option.</string>
+    <string name="app_rotation_history_title">Recent apps screened for auto rotation</string>
+    <string name="app_rotation_history_info">Apps recently visited that are screened for auto rotation.
+        \n\nUse this to debug apps showing when they shouldn\'t, causing issues with auto rotation</string>
+    <string name="app_rotation_exclude_title">Add to ignored auto rotation apps?</string>
     <string name="auto_rotate_cannot_remove">This app may not be removed from ignored apps as it draws over other apps.</string>
     <string name="auto_rotate_description">Whitelists certain apps to allow auto rotation in landscape.</string>
     <string name="auto_rotate_ignored_description">Ignores certain apps for being considered for auto rotation.
@@ -281,6 +285,8 @@
     <!-- Generic text-->
     <string name="ok">Okay</string>
     <string name="cancel">Cancel</string>
+    <!--suppress CheckTagEmptyBody -->
+    <string name="blank_string" translatable="false"></string>
     <string name="blank_emoji" translatable="false">😶</string>
     <string name="generic_error">Sorry, there was an error completing your request.</string>
 

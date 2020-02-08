@@ -245,31 +245,29 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     }
 
     @GestureConsumer.GestureAction
-    private fun actionForResource(resource: Int): Int {
-        when (resource) {
-            R.string.do_nothing -> return DO_NOTHING
-            R.string.increase_brightness -> return INCREASE_BRIGHTNESS
-            R.string.reduce_brightness -> return REDUCE_BRIGHTNESS
-            R.string.maximize_brightness -> return MAXIMIZE_BRIGHTNESS
-            R.string.minimize_brightness -> return MINIMIZE_BRIGHTNESS
-            R.string.increase_audio -> return INCREASE_AUDIO
-            R.string.reduce_audio -> return REDUCE_AUDIO
-            R.string.notification_up -> return NOTIFICATION_UP
-            R.string.notification_down -> return NOTIFICATION_DOWN
-            R.string.toggle_notifications -> return NOTIFICATION_TOGGLE
-            R.string.toggle_flashlight -> return TOGGLE_FLASHLIGHT
-            R.string.toggle_dock -> return TOGGLE_DOCK
-            R.string.toggle_auto_rotate -> return TOGGLE_AUTO_ROTATE
-            R.string.global_home -> return GLOBAL_HOME
-            R.string.global_back -> return GLOBAL_BACK
-            R.string.global_recents -> return GLOBAL_RECENTS
-            R.string.global_split_screen -> return GLOBAL_SPLIT_SCREEN
-            R.string.global_power_dialog -> return GLOBAL_POWER_DIALOG
-            R.string.global_lock_screen -> return GLOBAL_LOCK_SCREEN
-            R.string.global_take_screenshot -> return GLOBAL_TAKE_SCREENSHOT
-            R.string.show_popup -> return SHOW_POPUP
-            else -> return DO_NOTHING
-        }
+    private fun actionForResource(resource: Int): Int = when (resource) {
+        R.string.do_nothing -> DO_NOTHING
+        R.string.increase_brightness -> INCREASE_BRIGHTNESS
+        R.string.reduce_brightness -> REDUCE_BRIGHTNESS
+        R.string.maximize_brightness -> MAXIMIZE_BRIGHTNESS
+        R.string.minimize_brightness -> MINIMIZE_BRIGHTNESS
+        R.string.increase_audio -> INCREASE_AUDIO
+        R.string.reduce_audio -> REDUCE_AUDIO
+        R.string.notification_up -> NOTIFICATION_UP
+        R.string.notification_down -> NOTIFICATION_DOWN
+        R.string.toggle_notifications -> NOTIFICATION_TOGGLE
+        R.string.toggle_flashlight -> TOGGLE_FLASHLIGHT
+        R.string.toggle_dock -> TOGGLE_DOCK
+        R.string.toggle_auto_rotate -> TOGGLE_AUTO_ROTATE
+        R.string.global_home -> GLOBAL_HOME
+        R.string.global_back -> GLOBAL_BACK
+        R.string.global_recents -> GLOBAL_RECENTS
+        R.string.global_split_screen -> GLOBAL_SPLIT_SCREEN
+        R.string.global_power_dialog -> GLOBAL_POWER_DIALOG
+        R.string.global_lock_screen -> GLOBAL_LOCK_SCREEN
+        R.string.global_take_screenshot -> GLOBAL_TAKE_SCREENSHOT
+        R.string.show_popup -> SHOW_POPUP
+        else -> DO_NOTHING
     }
 
     @StringRes

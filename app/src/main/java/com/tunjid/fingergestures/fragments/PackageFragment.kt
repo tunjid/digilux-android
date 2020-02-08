@@ -18,77 +18,85 @@
 package com.tunjid.fingergestures.fragments
 
 
-import android.content.Context
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModelProviders
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.observe
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.core.components.args
+import com.tunjid.androidx.navigation.Navigator
+import com.tunjid.androidx.navigation.activityNavigatorController
+import com.tunjid.androidx.recyclerview.listAdapterOf
+import com.tunjid.androidx.recyclerview.verticalLayoutManager
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.PackageAdapter
-import com.tunjid.fingergestures.adapters.withPaddedAdapter
 import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.distinctUntilChanged
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
+import com.tunjid.fingergestures.map
+import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.EXCLUDED_ROTATION_LOCK
 import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ROTATION_LOCK
 
-class PackageFragment : MainActivityFragment() {
+class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
 
-    private lateinit var viewModel: AppViewModel
+    private val viewModel by activityViewModels<AppViewModel>()
+    private val navigator by activityNavigatorController<Navigator>()
+    private var preferenceName by args<String>()
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        viewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel::class.java)
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_packages, container, false) as ViewGroup
+        val toolbar = view.findViewById<Toolbar>(R.id.title_bar)
+        val progressBar = view.findViewById<ProgressBar>(R.id.progress_bar)
+        view.findViewById<RecyclerView>(R.id.options_list).apply {
+            val listAdapter = listAdapterOf(
+                    initialItems = viewModel.liveState.value?.installedApps ?: listOf(),
+                    viewHolderCreator = { viewGroup, _ ->
+                        PackageViewHolder(
+                                itemView = viewGroup.inflate(R.layout.viewholder_package_vertical),
+                                listener = ::onPackageClicked
+                        )
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            )
 
-        val toolbar = root.findViewById<Toolbar>(R.id.title_bar)
-        val progressBar = root.findViewById<ProgressBar>(R.id.progress_bar)
-        val listManager = ListManagerBuilder<PackageViewHolder, Void>()
-                .withPaddedAdapter(PackageAdapter(false, viewModel.state.installedApps, object : PackageAdapter.PackageClickListener {
-                    override fun onPackageClicked(packageName: String) = this@PackageFragment.onPackageClicked(packageName)
-                }))
-                .withRecyclerView(root.findViewById(R.id.options_list))
-                .withLinearLayoutManager()
-                .addDecoration(divider())
-                .build()
+            adapter = listAdapter
+            layoutManager = verticalLayoutManager()
+            addItemDecoration(divider())
 
-        val persistedSet = arguments!!.getString(ARG_PERSISTED_SET)!!
-        toolbar.title = RotationGestureConsumer.instance.getAddText(persistedSet)
+            viewModel.liveState
+                    .map(AppState::installedApps)
+                    .distinctUntilChanged()
+                    .observe(viewLifecycleOwner) {
+                        if (it.isEmpty()) listAdapter.submitList(it)
+                        else listAdapter.submitList(it) {
+                            progressBar.visibility = View.GONE
+                            TransitionManager.beginDelayedTransition(view as ViewGroup, AutoTransition().addTarget(progressBar))
+                        }
+                    }
+        }
 
-        disposables.add(viewModel.updatedApps().subscribe({ result ->
-            TransitionManager.beginDelayedTransition(root, AutoTransition())
-            progressBar.visibility = View.GONE
-            listManager.onDiff(result)
-        }, Throwable::printStackTrace))
-
-        return root
+        toolbar.title = RotationGestureConsumer.instance.getAddText(preferenceName)
+        viewModel.updateApps()
     }
 
     private fun onPackageClicked(packageName: String) {
-        val args = arguments ?: return showSnackbar(R.string.generic_error)
-
-        @RotationGestureConsumer.PersistedSet
-        val persistedSet = args.getString(ARG_PERSISTED_SET)
-                ?: return showSnackbar(R.string.generic_error)
-
-        val added = RotationGestureConsumer.instance.addToSet(packageName, persistedSet)
+        val added = RotationGestureConsumer.instance.addToSet(packageName, preferenceName)
 
         if (!added) {
             val context = requireContext()
-            AlertDialog.Builder(context)
+            MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.auto_rotate_description)))
                     .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.PREMIUM_SKU) }
@@ -98,15 +106,13 @@ class PackageFragment : MainActivityFragment() {
         }
 
         toggleBottomSheet(false)
-        currentAppFragment?.notifyItemChanged(if (ROTATION_APPS == persistedSet) ROTATION_LOCK else EXCLUDED_ROTATION_LOCK)
+        (navigator.current as? AppFragment)?.notifyItemChanged(if (ROTATION_APPS == preferenceName) ROTATION_LOCK else EXCLUDED_ROTATION_LOCK)
     }
 
     companion object {
 
-        private const val ARG_PERSISTED_SET = "PERSISTED_SET"
-
         fun newInstance(@RotationGestureConsumer.PersistedSet preferenceName: String) =
-                PackageFragment().apply { arguments = Bundle().apply { putString(ARG_PERSISTED_SET, preferenceName) } }
+                PackageFragment().apply { this.preferenceName = preferenceName }
     }
 }
 

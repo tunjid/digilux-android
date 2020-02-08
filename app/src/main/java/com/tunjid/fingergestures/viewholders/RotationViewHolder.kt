@@ -17,85 +17,93 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import android.content.pm.ApplicationInfo
 import android.view.View
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import com.tunjid.androidbootstrap.recyclerview.ListManager
-import com.tunjid.androidbootstrap.recyclerview.ListManagerBuilder
+import androidx.annotation.StringRes
+import androidx.core.view.isVisible
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.observe
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.recyclerview.gridLayoutManager
+import com.tunjid.androidx.recyclerview.listAdapterOf
+import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapter
-import com.tunjid.fingergestures.adapters.PackageAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.fragments.PackageFragment
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
+import com.tunjid.fingergestures.lifecycleOwner
+import com.tunjid.fingergestures.models.Package
 
 class RotationViewHolder(itemView: View,
-                         @param:RotationGestureConsumer.PersistedSet override val sizeCacheKey: String,
-                         items: List<ApplicationInfo>,
-                         listener: AppAdapter.AppAdapterListener
-) : DiffViewHolder<ApplicationInfo>(itemView, items, listener) {
-
-    override val listSupplier: () -> List<ApplicationInfo>
-        get() = { RotationGestureConsumer.instance.getList(sizeCacheKey) }
+                         @param:RotationGestureConsumer.PersistedSet
+                         val persistedSet: String?,
+                         @StringRes titleRes: Int,
+                         @StringRes infoRes: Int,
+                         items: LiveData<List<Package>>,
+                         listener: AppAdapterListener
+) : AppViewHolder(itemView, listener) {
 
     init {
-        itemView.findViewById<View>(R.id.add).setOnClickListener {
-            when {
-                !App.canWriteToSettings() -> AlertDialog.Builder(itemView.context).setMessage(R.string.permission_required).show()
-                !RotationGestureConsumer.instance.canAutoRotate() -> AlertDialog.Builder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
-                else -> adapterListener.showBottomSheetFragment(PackageFragment.newInstance(sizeCacheKey))
+        itemView.findViewById<TextView>(R.id.title).apply {
+            setText(titleRes)
+            setOnClickListener {
+                MaterialAlertDialogBuilder(it.context).setMessage(infoRes).show()
             }
         }
 
-        val title = itemView.findViewById<TextView>(R.id.title)
-        val isRotationList = ROTATION_APPS == sizeCacheKey
-
-        title.setText(if (isRotationList) R.string.auto_rotate_apps else R.string.auto_rotate_apps_excluded)
-        title.setOnClickListener {
-            AlertDialog.Builder(itemView.context)
-                    .setMessage(
-                            if (isRotationList) R.string.auto_rotate_description
-                            else R.string.auto_rotate_ignored_description
-                    )
-                    .show()
+        itemView.findViewById<View>(R.id.add).apply {
+            isVisible = persistedSet != null
+            setOnClickListener {
+                when {
+                    !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+                    !RotationGestureConsumer.instance.canAutoRotate() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
+                    persistedSet != null -> listener.showBottomSheetFragment(PackageFragment.newInstance(persistedSet))
+                }
+            }
         }
+
+        itemView.findViewById<RecyclerView>(R.id.item_list).run {
+            layoutManager = gridLayoutManager(3)
+            adapter = listAdapterOf(
+                    initialItems = items.value ?: listOf(),
+                    viewHolderCreator = { viewGroup, _ ->
+                        PackageViewHolder(
+                                itemView = viewGroup.inflate(R.layout.viewholder_package_horizontal),
+                                listener = this@RotationViewHolder::onPackageClicked
+                        )
+                    },
+                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+            ).also { items.observe(lifecycleOwner, it::submitList) }
+        }
+    }
+
+    private fun onPackageClicked(packageName: String) {
+        val gestureConsumer = RotationGestureConsumer.instance
+        val builder = MaterialAlertDialogBuilder(itemView.context)
+
+        when {
+            !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
+            !gestureConsumer.canAutoRotate() -> builder.setMessage(R.string.auto_rotate_prompt)
+            !gestureConsumer.isRemovable(packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
+            persistedSet != null -> builder.setTitle(gestureConsumer.getRemoveText(persistedSet))
+                    .setPositiveButton(R.string.yes) { _, _ ->
+                        gestureConsumer.removeFromSet(packageName, persistedSet)
+                    }
+                    .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
+            else -> builder.setTitle(R.string.app_rotation_exclude_title)
+                    .setPositiveButton(R.string.yes) { _, _ ->
+                        gestureConsumer.addToSet(packageName, RotationGestureConsumer.EXCLUDED_APPS)
+                    }
+                    .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
+        }
+        builder.show()
     }
 
     override fun bind() {
         super.bind()
-
-        diff()
-        if (!App.canWriteToSettings()) adapterListener.requestPermission(MainActivity.SETTINGS_CODE)
+        if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
     }
-
-    override fun diffHash(item: ApplicationInfo): String = item.packageName
-
-    override fun createListManager(itemView: View): ListManager<*, Void> =
-            ListManagerBuilder<PackageViewHolder, Void>()
-                    .withAdapter(PackageAdapter(true, items, object : PackageAdapter.PackageClickListener {
-                        override fun onPackageClicked(packageName: String) {
-                            val gestureConsumer = RotationGestureConsumer.instance
-                            val builder = AlertDialog.Builder(itemView.context)
-
-                            when {
-                                !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
-                                !gestureConsumer.canAutoRotate() -> builder.setMessage(R.string.auto_rotate_prompt)
-                                !gestureConsumer.isRemovable(packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
-                                else -> builder.setTitle(gestureConsumer.getRemoveText(sizeCacheKey))
-                                        .setPositiveButton(R.string.yes) { _, _ ->
-                                            gestureConsumer.removeFromSet(packageName, sizeCacheKey)
-                                            bind()
-                                        }
-                                        .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
-                            }
-
-                            builder.show()
-                        }
-                    }))
-                    .withRecyclerView(itemView.findViewById(R.id.item_list))
-                    .withGridLayoutManager(3)
-                    .build()
 }

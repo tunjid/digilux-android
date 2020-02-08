@@ -31,9 +31,9 @@ import android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK
 import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
-import com.tunjid.androidbootstrap.functions.collections.Lists
-import com.tunjid.androidbootstrap.recyclerview.diff.Diff
-import com.tunjid.androidbootstrap.recyclerview.diff.Differentiable
+import com.tunjid.androidx.functions.collections.replace
+import com.tunjid.androidx.recyclerview.diff.Diff
+import com.tunjid.androidx.recyclerview.diff.Differentiable
 import io.reactivex.Flowable
 import io.reactivex.Flowable.timer
 import io.reactivex.Single
@@ -137,20 +137,20 @@ class App : android.app.Application() {
 
         fun <T> transformApp(appTFunction: (App) -> T?): T? = transformApp(appTFunction, null)
 
-        fun <T> diff(list: List<T>, supplier: () -> List<T>): Single<DiffUtil.DiffResult> =
+        fun <T> diff(list: MutableList<T>, supplier: () -> List<T>): Single<DiffUtil.DiffResult> =
                 diff(list, supplier, { it.toString() })
 
-        fun <T> diff(list: List<T>,
+        fun <T> diff(list: MutableList<T>,
                      supplier: () -> List<T>,
                      diffFunction: (T) -> String): Single<DiffUtil.DiffResult> =
-                backgroundToMain<Diff<T>> {
+                backgroundToMain {
                     Diff.calculate(
                             list,
                             supplier.invoke(),
                             { _, newList -> newList },
                             { item -> Differentiable.fromCharSequence { diffFunction.invoke(item) } })
                 }
-                        .doOnSuccess { diff -> Lists.replace(list, diff.items) }
+                        .doOnSuccess { diff -> list.replace(diff.items) }
                         .map { diff -> diff.result }
 
         fun <T> backgroundToMain(supplier: () -> T): Single<T> {

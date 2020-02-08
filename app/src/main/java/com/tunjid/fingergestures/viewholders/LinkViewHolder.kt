@@ -24,12 +24,11 @@ import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.AppAdapter
-
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 class LinkViewHolder(
         itemView: View,
         linkItem: LinkItem,
-        listener: AppAdapter.AppAdapterListener
+        listener: AppAdapterListener
 ) : AppViewHolder(itemView, listener) {
 
     init {

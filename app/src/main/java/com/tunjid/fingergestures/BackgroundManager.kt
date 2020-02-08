@@ -39,11 +39,11 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.IntDef
 import androidx.annotation.IntRange
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.palette.graphics.Palette
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import io.reactivex.Single
 import io.reactivex.Single.error
@@ -120,7 +120,7 @@ class BackgroundManager private constructor() {
     }
 
     fun requestWallPaperConstant(@StringRes titleRes: Int, context: Context, consumer: (Int) -> Unit) {
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
                 .setTitle(titleRes)
                 .setItems(wallpaperTargets) { _, index ->
                     consumer.invoke(

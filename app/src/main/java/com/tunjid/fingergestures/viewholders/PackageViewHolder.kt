@@ -17,19 +17,17 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import android.content.pm.ApplicationInfo
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import com.tunjid.androidbootstrap.recyclerview.InteractiveViewHolder
+import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.PackageAdapter
-
+import com.tunjid.fingergestures.models.Package
 
 class PackageViewHolder(
         itemView: View,
-        clickListener: PackageAdapter.PackageClickListener
-) : InteractiveViewHolder<PackageAdapter.PackageClickListener>(itemView, clickListener) {
+        private val listener: (String) -> Unit
+) : RecyclerView.ViewHolder(itemView) {
 
     private var packageName: String? = null
 
@@ -37,15 +35,15 @@ class PackageViewHolder(
     private val textView: TextView? = itemView.findViewById(R.id.text)
 
     init {
-        itemView.setOnClickListener { adapterListener.onPackageClicked(packageName!!) }
+        itemView.setOnClickListener { packageName?.let(listener) }
     }
 
-    fun bind(info: ApplicationInfo?) {
-        if (info == null) return
+    fun bind(item: Package?) {
+        if (item == null) return
         val packageManager = itemView.context.packageManager
 
-        packageName = info.packageName
-        imageView.setImageDrawable(packageManager.getApplicationIcon(info))
-        if (textView != null) textView.text = packageManager.getApplicationLabel(info)
+        packageName = item.app.packageName
+        imageView.setImageDrawable(packageManager.getApplicationIcon(item.app))
+        if (textView != null) textView.text = packageManager.getApplicationLabel(item.app)
     }
 }

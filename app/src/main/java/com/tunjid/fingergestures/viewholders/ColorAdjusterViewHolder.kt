@@ -21,20 +21,20 @@ import android.content.DialogInterface
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.palette.graphics.Palette
 import com.flask.colorpicker.ColorPickerView.WHEEL_TYPE.FLOWER
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.billing.PurchasesManager
 
 class ColorAdjusterViewHolder(
         itemView: View,
-        listener: AppAdapter.AppAdapterListener
+        listener: AppAdapterListener
 ) : AppViewHolder(itemView, listener) {
 
     private val backgroundIndicator: View
@@ -82,7 +82,7 @@ class ColorAdjusterViewHolder(
 
     override fun bind() {
         super.bind()
-        if (!App.hasStoragePermission) adapterListener.requestPermission(MainActivity.STORAGE_CODE)
+        if (!App.hasStoragePermission) listener.requestPermission(MainActivity.STORAGE_CODE)
         else backgroundManager.extractPalette().subscribe(this::onPaletteExtracted, Throwable::printStackTrace)
     }
 
@@ -138,7 +138,7 @@ class ColorAdjusterViewHolder(
     private fun getColorFromWallpaper(indicator: View) {
         if (PurchasesManager.instance.isNotPremium) return goPremium(R.string.premium_prompt_slider)
 
-        AlertDialog.Builder(indicator.context)
+        MaterialAlertDialogBuilder(indicator.context)
                 .setTitle(R.string.choose_target)
                 .setItems(targetOptions) { _, position ->
                     val tag = indicator.tag

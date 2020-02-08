@@ -20,12 +20,13 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import com.tunjid.androidbootstrap.core.text.SpanBuilder
+import com.tunjid.androidx.core.text.bold
+import com.tunjid.androidx.core.text.formatSpanned
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity.Companion.ACCESSIBILITY_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.SETTINGS_CODE
-import com.tunjid.fingergestures.adapters.AppAdapter
+import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
@@ -38,7 +39,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper.GestureDirection
 class MapperViewHolder(
         itemView: View,
         @param:GestureDirection @field:GestureDirection private val direction: String,
-        listener: AppAdapter.AppAdapterListener
+        listener: AppAdapterListener
 ) : AppViewHolder(itemView, listener) {
 
     private val title: TextView
@@ -62,8 +63,8 @@ class MapperViewHolder(
 
     override fun bind() {
         super.bind()
-        if (!App.accessibilityServiceEnabled()) adapterListener.requestPermission(ACCESSIBILITY_CODE)
-        if (!App.canWriteToSettings()) adapterListener.requestPermission(SETTINGS_CODE)
+        if (!App.accessibilityServiceEnabled()) listener.requestPermission(ACCESSIBILITY_CODE)
+        if (!App.canWriteToSettings()) listener.requestPermission(SETTINGS_CODE)
 
         title.text = getFormattedText(direction, mapper.getMappedAction(direction))
         subtitle.text = getFormattedText(doubleDirection, mapper.getMappedAction(doubleDirection))
@@ -77,14 +78,15 @@ class MapperViewHolder(
     }
 
     private fun onClick(@GestureDirection direction: String) =
-            adapterListener.showBottomSheetFragment(ActionFragment.directionInstance(direction))
+            listener.showBottomSheetFragment(ActionFragment.directionInstance(direction))
 
     private fun getFormattedText(@GestureDirection direction: String, text: String): CharSequence {
         val mapper = GestureMapper.instance
         val context = itemView.context
-        return SpanBuilder.format(context.getString(R.string.mapper_format),
-                SpanBuilder.of(mapper.getDirectionName(direction)).bold().build(),
-                text)
+        return context.getString(R.string.mapper_format).formatSpanned(
+                mapper.getDirectionName(direction).bold(),
+                text
+        )
     }
 
     private fun setIcon(icon: ImageView, @GestureDirection gesture: String) {

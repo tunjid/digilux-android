@@ -21,7 +21,7 @@ import android.view.View
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.fingergestures.R
 
 class SliderAdjusterViewHolder(itemView: View,
@@ -30,7 +30,8 @@ class SliderAdjusterViewHolder(itemView: View,
                                private val consumer: (Int) -> Unit,
                                private val valueSupplier: () -> Int,
                                private val enabledSupplier: () -> Boolean,
-                               private val function: (Int) -> String) : AppViewHolder(itemView), SeekBar.OnSeekBarChangeListener {
+                               private val function: (Int) -> String
+) : AppViewHolder(itemView), SeekBar.OnSeekBarChangeListener {
 
     private val value: TextView = itemView.findViewById(R.id.value)
     private val seekBar: SeekBar
@@ -44,7 +45,7 @@ class SliderAdjusterViewHolder(itemView: View,
 
         if (infoRes != 0) {
             title.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_info_outline_white_24dp, 0)
-            itemView.setOnClickListener { AlertDialog.Builder(itemView.context).setMessage(infoRes).show() }
+            itemView.setOnClickListener { MaterialAlertDialogBuilder(itemView.context).setMessage(infoRes).show() }
         }
     }
 
