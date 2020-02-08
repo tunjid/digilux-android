@@ -19,9 +19,8 @@ package com.tunjid.fingergestures
 
 
 import android.content.SharedPreferences
-import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.rxkotlin.Flowables
+import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.schedulers.Schedulers
 import java.util.*
 import kotlin.collections.HashSet
@@ -65,20 +64,24 @@ class SetManager<T : Any>(private val sorter: Comparator<T>,
     private fun saveSet(set: Set<String>, preferencesName: String) =
             App.withApp { app -> app.preferences.edit().putStringSet(preferencesName, set).apply() }
 
-    fun itemsFlowable(preferencesName: String): Flowable<List<T>> =
-            Flowables.create<List<T>>(BackpressureStrategy.BUFFER) { emitter ->
-                val prefs = App.transformApp(App::preferences)!!
-                SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-                    if (key == preferencesName) emitter.onNext(getItems(preferencesName))
+    fun itemsFlowable(preferencesName: String): Flowable<List<T>> {
+        val processor = BehaviorProcessor.create<List<T>>()
+        val prefs = App.transformApp(App::preferences)!!
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == preferencesName) processor.onNext(getItems(preferencesName))
+        }
+
+        return processor.subscribeOn(Schedulers.io())
+                .startWith(getItems(preferencesName))
+                .doOnSubscribe {
+                    listener.also(prefs::registerOnSharedPreferenceChangeListener)
+                            .let(listeners::add)
                 }
-                        .apply {
-                            emitter.setCancellable { listeners.remove(this) }
-                        }
-                        .also(prefs::registerOnSharedPreferenceChangeListener)
-                        .let(listeners::add)
-            }
-                    .subscribeOn(Schedulers.io())
-                    .startWith(getItems(preferencesName))
+                .doFinally {
+                    listener.also(prefs::unregisterOnSharedPreferenceChangeListener)
+                            .let(listeners::remove)
+                }
+    }
 
     private val listeners = mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
 }
