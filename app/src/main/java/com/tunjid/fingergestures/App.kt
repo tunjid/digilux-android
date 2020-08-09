@@ -31,7 +31,6 @@ import android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK
 import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
-import com.tunjid.androidx.functions.collections.replace
 import com.tunjid.androidx.recyclerview.diff.Diff
 import com.tunjid.androidx.recyclerview.diff.Differentiable
 import io.reactivex.Flowable
@@ -150,7 +149,7 @@ class App : android.app.Application() {
                             { _, newList -> newList },
                             { item -> Differentiable.fromCharSequence { diffFunction.invoke(item) } })
                 }
-                        .doOnSuccess { diff -> list.replace(diff.items) }
+                        .doOnSuccess { diff -> list.clear(); list.addAll(diff.items) }
                         .map { diff -> diff.result }
 
         fun <T> backgroundToMain(supplier: () -> T): Single<T> {
