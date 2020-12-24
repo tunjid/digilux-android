@@ -18,19 +18,53 @@
 package com.tunjid.fingergestures.viewholders
 
 import android.view.View
+import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.annotation.StringRes
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.databinding.ViewholderSliderDeltaBinding
+
+private var BindingViewHolder<ViewholderSliderDeltaBinding>.item by viewHolderDelegate<Item.Slider>()
+
+fun ViewGroup.sliderAdjuster() = viewHolderFrom(ViewholderSliderDeltaBinding::inflate).apply {
+    itemView.setOnClickListener { MaterialAlertDialogBuilder(itemView.context).setMessage(item.infoRes).show() }
+    binding.seekbar.addOnChangeListener { _, percentage, fromUser ->
+        if (fromUser) {
+            item.consumer.invoke(percentage.toInt())
+            binding.value.text = item.function.invoke(percentage.toInt())
+        }
+    }
+}
+
+fun BindingViewHolder<ViewholderSliderDeltaBinding>.bind(item: Item.Slider) = binding.run {
+    this@bind.item = item
+
+    title.setText(item.titleRes)
+
+    val enabled = item.enabledSupplier.invoke()
+
+    seekbar.isEnabled = enabled
+    seekbar.value = item.valueSupplier.invoke().toFloat()
+
+    value.isEnabled = enabled
+    value.text = item.function.invoke(item.valueSupplier.invoke())
+
+    if (item.infoRes != 0) title.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_info_outline_white_24dp, 0)
+}
 
 class SliderAdjusterViewHolder(itemView: View,
-                               @StringRes titleRes: Int,
-                               @StringRes infoRes: Int,
-                               private val consumer: (Int) -> Unit,
-                               private val valueSupplier: () -> Int,
-                               private val enabledSupplier: () -> Boolean,
-                               private val function: (Int) -> String
+    @StringRes titleRes: Int,
+    @StringRes infoRes: Int,
+    private val consumer: (Int) -> Unit,
+    private val valueSupplier: () -> Int,
+    private val enabledSupplier: () -> Boolean,
+    private val function: (Int) -> String
 ) : AppViewHolder(itemView), SeekBar.OnSeekBarChangeListener {
 
     private val value: TextView = itemView.findViewById(R.id.value)
@@ -50,11 +84,11 @@ class SliderAdjusterViewHolder(itemView: View,
     }
 
     constructor(itemView: View,
-                @StringRes titleRes: Int,
-                consumer: (Int) -> Unit,
-                valueSupplier: () -> Int,
-                enabledSupplier: () -> Boolean,
-                function: (Int) -> String) : this(itemView, titleRes, 0, consumer, valueSupplier, enabledSupplier, function)
+        @StringRes titleRes: Int,
+        consumer: (Int) -> Unit,
+        valueSupplier: () -> Int,
+        enabledSupplier: () -> Boolean,
+        function: (Int) -> String) : this(itemView, titleRes, 0, consumer, valueSupplier, enabledSupplier, function)
 
     override fun bind() {
         super.bind()
@@ -74,10 +108,8 @@ class SliderAdjusterViewHolder(itemView: View,
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar) {
-
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
-
     }
 }

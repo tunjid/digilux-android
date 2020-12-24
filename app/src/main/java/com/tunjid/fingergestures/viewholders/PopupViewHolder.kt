@@ -18,27 +18,94 @@
 package com.tunjid.fingergestures.viewholders
 
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.observe
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapterListener
+import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.lifecycleOwner
 import com.tunjid.fingergestures.models.Action
 
+private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.PopUp>()
+private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Action, ActionViewHolder> by viewHolderDelegate()
+
+fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate).apply {
+    binding.add.setOnClickListener {
+        when {
+            !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+            !PopUpGestureConsumer.instance.hasAccessibilityButton() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
+            else -> item.listener.showBottomSheetFragment(ActionFragment.popUpInstance())
+        }
+    }
+    listAdapter = listAdapterOf(
+        initialItems = listOf(),
+        viewHolderCreator = { viewGroup, _ ->
+            ActionViewHolder(
+                showsText = true,
+                itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
+                clickListener = ::onActionClicked
+            )
+        },
+        viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+    )
+
+    binding.title.setText(R.string.popup_title)
+    binding.title.setOnClickListener {
+        MaterialAlertDialogBuilder(itemView.context)
+            .setMessage(R.string.popup_description)
+            .show()
+    }
+
+    binding.itemList.apply {
+        adapter = listAdapter
+    }
+}
+
+fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.PopUp) = binding.run {
+    this@bind.item = item
+
+    if (!App.canWriteToSettings()) item.listener.requestPermission(MainActivity.SETTINGS_CODE)
+    listAdapter.submitList(item.items)
+}
+
+private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(action: Action) {
+    val buttonManager = PopUpGestureConsumer.instance
+
+    val builder = MaterialAlertDialogBuilder(itemView.context)
+
+    when {
+        !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
+        !buttonManager.hasAccessibilityButton() -> builder.setMessage(R.string.popup_prompt)
+        else -> builder.setTitle(R.string.popup_remove)
+            .setPositiveButton(R.string.yes) { _, _ ->
+                buttonManager.removeFromSet(action.value)
+                if (!App.canWriteToSettings()) item.listener.requestPermission(MainActivity.SETTINGS_CODE)
+            }
+            .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
+    }
+
+    builder.show()
+}
+
 class PopupViewHolder(
-        itemView: View,
-        items: LiveData<List<Action>>,
-        listener: AppAdapterListener
+    itemView: View,
+    items: LiveData<List<Action>>,
+    listener: AppAdapterListener
 ) : AppViewHolder(itemView, listener) {
 
     init {
@@ -54,15 +121,15 @@ class PopupViewHolder(
         itemView.findViewById<RecyclerView>(R.id.item_list).run {
             layoutManager = gridLayoutManager(3)
             adapter = listAdapterOf(
-                    initialItems = items.value ?: listOf(),
-                    viewHolderCreator = { viewGroup, _ ->
-                        ActionViewHolder(
-                                showsText = true,
-                                itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
-                                clickListener = ::onActionClicked
-                        )
-                    },
-                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+                initialItems = items.value ?: listOf(),
+                viewHolderCreator = { viewGroup, _ ->
+                    ActionViewHolder(
+                        showsText = true,
+                        itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
+                        clickListener = ::onActionClicked
+                    )
+                },
+                viewHolderBinder = { holder, item, _ -> holder.bind(item) }
             ).also { items.observe(lifecycleOwner, it::submitList) }
         }
 
@@ -71,8 +138,8 @@ class PopupViewHolder(
         title.setText(R.string.popup_title)
         title.setOnClickListener {
             MaterialAlertDialogBuilder(itemView.context)
-                    .setMessage(R.string.popup_description)
-                    .show()
+                .setMessage(R.string.popup_description)
+                .show()
         }
     }
 
@@ -90,11 +157,11 @@ class PopupViewHolder(
             !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
             !buttonManager.hasAccessibilityButton() -> builder.setMessage(R.string.popup_prompt)
             else -> builder.setTitle(R.string.popup_remove)
-                    .setPositiveButton(R.string.yes) { _, _ ->
-                        buttonManager.removeFromSet(action.value)
-                        bind()
-                    }
-                    .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    buttonManager.removeFromSet(action.value)
+                    bind()
+                }
+                .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
         }
 
         builder.show()
