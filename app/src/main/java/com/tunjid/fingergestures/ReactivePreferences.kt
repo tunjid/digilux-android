@@ -27,7 +27,8 @@ import kotlin.reflect.KProperty
 
 class ReactivePreference<T>(
         private val preferencesName: String,
-        private val default: T
+        private val default: T,
+        private val onSet: ((T) -> Unit)? = null
 ) {
     private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf()
 
@@ -56,10 +57,15 @@ class ReactivePreference<T>(
                 else -> throw IllegalArgumentException("Uhh what are you doing?")
             }
             apply()
+            onSet?.invoke(value)
         }
 
     val monitor: Flowable<T> = monitorPreferences().replayingShare()
 
+    /**
+     * A reference to the setter. Same as assigning to the value, but as a method reference for
+     * being stable for reference equality checks
+     */
     val setter = ::value::set
 
     val delegate: ReadWriteProperty<Any, T> = object : ReadWriteProperty<Any, T> {

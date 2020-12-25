@@ -29,7 +29,11 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
 
     val accessibilityButtonEnabledPreference: ReactivePreference<Boolean> = ReactivePreference(
         preferencesName = ACCESSIBILITY_BUTTON_ENABLED,
-        default = false
+        default = false,
+        onSet = { enabled ->
+            App.instance?.broadcast(Intent(ACTION_ACCESSIBILITY_BUTTON)
+                .putExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, enabled))
+        }
     )
     val accessibilityButtonSingleClickPreference: ReactivePreference<Boolean> = ReactivePreference(
         preferencesName = ACCESSIBILITY_BUTTON_SINGLE_CLICK,
@@ -45,8 +49,6 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
             this::canAddToSet,
             Integer::valueOf,
             Any::toString)
-
-    var isSingleClick: Boolean by accessibilityButtonSingleClickPreference.delegate
 
     val popUpActions = setManager.itemsFlowable(SAVED_ACTIONS)
 
@@ -69,23 +71,13 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
     fun removeFromSet(@GestureConsumer.GestureAction action: Int) =
             setManager.removeFromSet(action.toString(), SAVED_ACTIONS)
 
-    fun setAnimatesPopup(visible: Boolean) {
-        animatePopUpPreference.value = visible
-    }
-
-    fun showPopup() = if (isSingleClick) list.stream()
+    fun showPopup() = if (accessibilityButtonSingleClickPreference.value) list.stream()
             .findFirst()
             .ifPresent(GestureMapper.instance::performAction)
     else App.withApp { app ->
         val intent = Intent(app, PopupActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         app.startActivity(intent)
-    }
-
-    fun enableAccessibilityButton(enabled: Boolean) = App.withApp { app ->
-        accessibilityButtonEnabledPreference.value = enabled
-        app.broadcast(Intent(ACTION_ACCESSIBILITY_BUTTON)
-                .putExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, enabled))
     }
 
     private fun canAddToSet(preferenceName: String): Boolean =
