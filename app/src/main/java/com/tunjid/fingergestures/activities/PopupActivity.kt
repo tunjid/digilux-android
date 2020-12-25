@@ -69,7 +69,7 @@ class PopupActivity : AppCompatActivity() {
 
         val text = findViewById<TextView>(R.id.text)
         text.setTextColor(backgroundManager.sliderColorPreference.value)
-        this.findViewById<MaterialCardView>(R.id.card).setCardBackgroundColor(backgroundManager.backgroundColor)
+        this.findViewById<MaterialCardView>(R.id.card).setCardBackgroundColor(backgroundManager.backgroundColorPreference.value)
 
         findViewById<RecyclerView>(R.id.item_list).apply {
             layoutManager = gridLayoutManager(6) { spanSizer.get() }

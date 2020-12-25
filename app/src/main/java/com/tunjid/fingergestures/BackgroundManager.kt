@@ -74,10 +74,6 @@ class BackgroundManager private constructor() {
         default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P
     )
 
-    var sliderColor: Int by sliderColorPreference.delegate
-
-    var backgroundColor: Int by backgroundColorPreference.delegate
-
     val sliderDurationMillis: Int
         get() = durationPercentageToMillis(sliderDurationPreference.value)
 

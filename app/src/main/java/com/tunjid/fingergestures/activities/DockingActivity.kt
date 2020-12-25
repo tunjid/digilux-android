@@ -39,7 +39,7 @@ class DockingActivity : AppCompatActivity() {
         wasMultiWindowMode = savedInstanceState != null && savedInstanceState.getBoolean(CONFIGURATION_CHANGE_KEY)
         setContentView(R.layout.activity_docking)
         findViewById<View>(R.id.logo).visibility = if (isInMultiWindowMode) View.VISIBLE else View.GONE
-        findViewById<View>(R.id.constraint_layout).setBackgroundColor(BackgroundManager.instance.backgroundColor)
+        findViewById<View>(R.id.constraint_layout).setBackgroundColor(BackgroundManager.instance.backgroundColorPreference.value)
         handleIntent(false)
     }
 

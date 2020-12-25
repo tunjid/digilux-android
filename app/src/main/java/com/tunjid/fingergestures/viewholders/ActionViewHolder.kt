@@ -70,7 +70,7 @@ class ActionViewHolder(
         textView.setText(GestureMapper.instance.resourceForAction(action.value))
 
         val iconRes = actionToIcon(action)
-        val iconColor = backgroundManager.sliderColor
+        val iconColor = backgroundManager.sliderColorPreference.value
 
         if (showsText) imageView.setImageResource(iconRes)
         else imageView.setImageDrawable(backgroundManager.tint(iconRes, iconColor))

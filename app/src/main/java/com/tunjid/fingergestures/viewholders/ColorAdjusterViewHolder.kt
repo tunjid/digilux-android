@@ -67,11 +67,11 @@ class ColorAdjusterViewHolder(
         backgroundText.setText(R.string.change_slider_background_color)
         sliderText.setText(R.string.change_slider_color)
 
-        val backgroundPicker = { _: View -> pickColor(backgroundManager.backgroundColor, this::setBackgroundColor) }
-        val sliderPicker = { _: View -> pickColor(backgroundManager.sliderColor, this::setSliderColor) }
+        val backgroundPicker = { _: View -> pickColor(backgroundManager.backgroundColorPreference.value, this::setBackgroundColor) }
+        val sliderPicker = { _: View -> pickColor(backgroundManager.sliderColorPreference.value, this::setSliderColor) }
 
-        setBackgroundColor(backgroundManager.backgroundColor)
-        setSliderColor(backgroundManager.sliderColor)
+        setBackgroundColor(backgroundManager.backgroundColorPreference.value)
+        setSliderColor(backgroundManager.sliderColorPreference.value)
 
         backgroundIndicator.setOnClickListener(backgroundPicker)
         sliderIndicator.setOnClickListener(sliderPicker)
@@ -87,12 +87,12 @@ class ColorAdjusterViewHolder(
     }
 
     private fun setBackgroundColor(color: Int) {
-        backgroundManager.backgroundColor = color
+        backgroundManager.backgroundColorPreference.value = color
         backgroundIndicator.background = backgroundManager.tint(R.drawable.color_indicator, color)
     }
 
     private fun setSliderColor(color: Int) {
-        backgroundManager.sliderColor = color
+        backgroundManager.sliderColorPreference.value = color
         sliderIndicator.background = backgroundManager.tint(R.drawable.color_indicator, color)
     }
 
