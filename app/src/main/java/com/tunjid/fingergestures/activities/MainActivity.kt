@@ -33,13 +33,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowInsets
 import android.view.animation.AnimationUtils.loadAnimation
-import android.widget.TextSwitcher
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.annotation.IntDef
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.component1
 import androidx.core.graphics.component2
 import androidx.core.graphics.component3
@@ -50,7 +48,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.observe
 import com.android.billingclient.api.BillingClient
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -65,6 +62,8 @@ import com.tunjid.androidx.navigation.MultiStackNavigator
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.doOnLifecycleEvent
 import com.tunjid.androidx.navigation.multiStackNavigationController
+import com.tunjid.androidx.uidrivers.UiState
+import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.androidx.view.util.marginLayoutParams
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
@@ -73,36 +72,25 @@ import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_EDIT_WALLPAPER
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_NAV_BAR_CHANGED
 import com.tunjid.fingergestures.EventObserver
-import com.tunjid.fingergestures.GlobalUiController
-import com.tunjid.fingergestures.InsetLifecycleCallbacks
-import com.tunjid.fingergestures.InsetLifecycleCallbacks.Companion.topInset
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.billing.BillingManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
+import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.fragments.AppFragment
-import com.tunjid.fingergestures.globalUiDriver
 import com.tunjid.fingergestures.map
-import com.tunjid.fingergestures.models.AppState
-import com.tunjid.fingergestures.models.Shilling
-import com.tunjid.fingergestures.models.TextLink
-import com.tunjid.fingergestures.models.UiState
-import com.tunjid.fingergestures.models.UiUpdate
-import com.tunjid.fingergestures.models.uiUpdate
-import com.tunjid.fingergestures.mutateGlobalUi
+import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.Input
+import com.tunjid.fingergestures.viewmodels.Tab
 import io.reactivex.disposables.CompositeDisposable
 
-class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiController, Navigator.Controller {
+class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Navigator.Controller {
 
-    private val constraintLayout by lazy { findViewById<ConstraintLayout>(R.id.constraint_layout) }
-    private val shillSwitcher by lazy { findViewById<TextSwitcher>(R.id.upgrade_prompt) }
-    private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(findViewById<View>(R.id.bottom_sheet)) }
-
-    private val coordinator by lazy { findViewById<View>(R.id.coordinator_layout) }
+    private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
+    private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(binding.bottomSheet) }
 
     private var billingManager: BillingManager? = null
 
@@ -112,14 +100,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
 
     private val links get() = (viewModel.liveState.value?.links ?: listOf()).toTypedArray()
 
-    override var uiState: UiState by globalUiDriver { navigator.activeNavigator }
+    override val globalUiController: GlobalUiController by lazy { GlobalUiDriver(this, binding, navigator) }
 
     override val navigator: MultiStackNavigator by multiStackNavigationController(
-            5,
-            R.id.main_fragment_container
+            stackCount = 5,
+            containerId = R.id.content_container
     ) {
-        AppFragment.newInstance(viewModel.resourceAt(it))
+        AppFragment.newInstance(Tab.values()[it])
     }
+
+    private var uiState: UiState
+        get() = globalUiController.uiState
+        set(value) {
+            globalUiController.uiState = value
+        }
 
     private val navBarColor: Int
         get() = colorAt(
@@ -133,13 +127,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        uiState = uiState.copy(
-                navBarColor = navBarColor,
-                toolBarMenu = R.menu.activity_main,
-                toolbarTitle = getString(R.string.app_name),
-                fabClickListener = View.OnClickListener { viewModel.onPermissionClicked(this::onPermissionClicked) }
-        )
+        setContentView(binding.root)
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected)
@@ -151,7 +139,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
             }
         }, true)
 
-        navigator.stackSelectedListener = { bottomNavigationView.menu.findItem(viewModel.resourceAt(it))?.isChecked = true }
+        navigator.stackSelectedListener = { bottomNavigationView.menu.findItem(Tab.values()[it].resource)?.isChecked = true }
         navigator.stackTransactionModifier = {
             setCustomAnimations(
                     android.R.anim.fade_in,
@@ -175,13 +163,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 val a = (slideOffset + 1) / 2 // callback range is [-1, 1]
                 bottomNavBackground.colors = intArrayOf(primary, Color.argb((0.5f * a + 0.5f), r, g, b))
-                mutateGlobalUi { copy(statusBarColor = Color.argb(a, r, g, b)) }
+                ::uiState.updatePartial { copy(statusBarColor = Color.argb(a, r, g, b)) }
             }
 
             override fun onStateChanged(bottomSheet: View, newState: Int) = Unit
         })
 
-        findViewById<View>(R.id.bottom_sheet).doOnLayout { it.marginLayoutParams.topMargin = topInset }
+
+        binding.bottomSheet.doOnLayout { sheet ->
+            globalUiController.liveUiState
+                    .map { it.systemUI.static.statusBarSize }
+                    .distinctUntilChanged()
+                    .observe(this) { sheet.marginLayoutParams.topMargin = it }
+        }
         toggleBottomSheet(false)
 
         val startIntent = intent
@@ -189,14 +183,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
 
         if (savedInstanceState == null && isPickIntent) handleIntent(startIntent)
 
-        shillSwitcher.setFactory {
-            val view = layoutInflater.inflate(R.layout.text_switch, shillSwitcher, false)
-            view.setOnClickListener { viewModel.shillMoar() }
-            view
-        }
+        binding.upgradePrompt.apply {
+            setFactory {
+                val view = layoutInflater.inflate(R.layout.text_switch, this, false)
+                view.setOnClickListener { viewModel.shillMoar() }
+                view
+            }
 
-        shillSwitcher.inAnimation = loadAnimation(this, android.R.anim.slide_in_left)
-        shillSwitcher.outAnimation = loadAnimation(this, android.R.anim.slide_out_right)
+            inAnimation = loadAnimation(context, android.R.anim.slide_in_left)
+            outAnimation = loadAnimation(context, android.R.anim.slide_out_right)
+        }
 
         viewModel.liveState
                 .map(AppState::uiUpdate)
@@ -204,23 +200,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
                 .observe(this, this::onStateChanged)
 
         viewModel.shill.observe(this) {
-            if (it is Shilling.Quip) shillSwitcher.apply { setText(it.message); isVisible = true }
+            if (it is Shilling.Quip) binding.upgradePrompt.apply { setText(it.message); isVisible = true }
             else hideAds()
         }
 
         viewModel.broadcasts.observe(this, EventObserver(this::onBroadcastReceived))
-        viewModel.uiInteractions.observe(this){
-            when(it) {
+        viewModel.uiInteractions.observe(this) {
+            when (it) {
                 is Input.ShowSheet -> {
                     supportFragmentManager.beginTransaction().replace(R.id.bottom_sheet, it.fragment).commit()
                     toggleBottomSheet(true)
                 }
                 is Input.GoPremium -> MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.go_premium_title)
-                    .setMessage(getString(R.string.go_premium_body, getString(it.description)))
-                    .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.PREMIUM_SKU) }
-                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                    .show()
+                        .setTitle(R.string.go_premium_title)
+                        .setMessage(getString(R.string.go_premium_body, getString(it.description)))
+                        .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.PREMIUM_SKU) }
+                        .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                        .show()
             }
         }
     }
@@ -256,7 +252,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
             R.id.action_audio,
             R.id.action_accessibility_popup,
             R.id.action_wallpaper -> {
-                viewModel.resourceIndex(id).let(navigator::show)
+                Tab.at(id).ordinal.let(navigator::show)
                 return true
             }
             R.id.info -> {
@@ -292,7 +288,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
             return
 
         viewModel.onPermissionChange(requestCode)?.apply { showSnackbar(this) }
-        (navigator.current as? AppFragment)?.notifyDataSetChanged()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -312,14 +307,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
 
         if (!hasStoragePermission) {
             showSnackbar(R.string.enable_storage_settings)
-            viewModel.resourceIndex(R.id.action_directions).let(navigator::show)
+            navigator.show(Tab.at(R.id.action_directions).ordinal)
             return
         }
 
         val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM) ?: return
 
         navigator.performConsecutively(lifecycleScope) {
-            show(viewModel.resourceIndex(R.id.action_wallpaper))
+            show(Tab.at(R.id.action_wallpaper).ordinal)
 
             BackgroundManager.instance.requestWallPaperConstant(R.string.choose_target, this@MainActivity) { selection ->
                 val shown = navigator.current as AppFragment?
@@ -355,7 +350,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
                 .show()
     }
 
-    private fun onPermissionClicked(permissionRequest: Int) {
+    fun onPermissionClicked(permissionRequest: Int) {
         when (permissionRequest) {
             DO_NOT_DISTURB_CODE -> askForDoNotDisturb()
             ACCESSIBILITY_CODE -> askForAccessibility()
@@ -370,15 +365,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
     }
 
     private fun hideAds() {
-        if (shillSwitcher.visibility == View.GONE) return
+        if (binding.upgradePrompt.visibility == View.GONE) return
 
-        TransitionManager.beginDelayedTransition(constraintLayout, AutoTransition().apply {
-            addTarget(shillSwitcher)
+        TransitionManager.beginDelayedTransition(binding.root, AutoTransition().apply {
+            addTarget(binding.upgradePrompt)
             addListener(object : TransitionListenerAdapter() {
                 override fun onTransitionEnd(transition: Transition) = showSnackbar(R.string.billing_thanks)
             })
         })
-        shillSwitcher.visibility = View.GONE
+        binding.upgradePrompt.visibility = View.GONE
     }
 
     private fun onStateChanged(uiUpdate: UiUpdate) {
@@ -398,8 +393,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         }
     }
 
-    fun showSnackbar(@StringRes resource: Int) =
-            withSnackbar { snackbar -> snackbar.setText(resource);snackbar.show() }
+    fun showSnackbar(@StringRes resource: Int) = globalUiController::uiState.updatePartial {
+        copy(snackbarText = getText(resource))
+    }
 
 
     fun purchase(@PurchasesManager.SKU sku: String) = when (val billingManager = billingManager) {
@@ -416,7 +412,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
     }
 
     private fun withSnackbar(consumer: (Snackbar) -> Unit) {
-        val snackbar = Snackbar.make(coordinator, R.string.app_name, Snackbar.LENGTH_SHORT)
+        val snackbar = Snackbar.make(binding.root, R.string.app_name, Snackbar.LENGTH_SHORT)
         snackbar.view.setOnApplyWindowInsetsListener { _, insets -> insets }
         consumer.invoke(snackbar)
     }

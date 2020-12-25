@@ -18,278 +18,172 @@
 package com.tunjid.fingergestures.adapters
 
 import androidx.annotation.StringRes
-import androidx.lifecycle.LiveData
-import androidx.recyclerview.widget.RecyclerView
-import com.tunjid.androidx.recyclerview.adapterOf
-import com.tunjid.androidx.view.util.inflate
+import androidx.fragment.app.Fragment
+import com.tunjid.androidx.recyclerview.diff.Differentiable
+import com.tunjid.androidx.recyclerview.listAdapterOf
+import com.tunjid.androidx.recyclerview.viewbinding.typed
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.PopUpGestureConsumer
-import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.baseclasses.MainActivityFragment
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
+import com.tunjid.fingergestures.databinding.*
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.EXCLUDED_APPS
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
-import com.tunjid.fingergestures.map
-import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.viewholders.*
-import com.tunjid.fingergestures.viewholders.LinkViewHolder.Companion.REVIEW_LINK_ITEM
-import com.tunjid.fingergestures.viewholders.LinkViewHolder.Companion.SUPPORT_LINK_ITEM
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ACCESSIBILITY_SINGLE_CLICK
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ADAPTIVE_BRIGHTNESS
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.AD_FREE
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ANIMATES_POPUP
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ANIMATES_SLIDER
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.AUDIO_DELTA
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.AUDIO_SLIDER_SHOW
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.AUDIO_STREAM_TYPE
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.DISCRETE_BRIGHTNESS
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.DOUBLE_SWIPE_SETTINGS
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ENABLE_ACCESSIBILITY_BUTTON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ENABLE_WATCH_WINDOWS
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.EXCLUDED_ROTATION_LOCK
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.LOCKED_CONTENT
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_DOWN_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_LEFT_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_RIGHT_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_UP_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.NAV_BAR_COLOR
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.PADDING
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.POPUP_ACTION
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.REVIEW
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ROTATION_HISTORY
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ROTATION_LOCK
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SCREEN_DIMMER
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SHOW_SLIDER
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_COLOR
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_DELTA
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_DURATION
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_POSITION
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SUPPORT
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.USE_LOGARITHMIC_SCALE
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.WALLPAPER_PICKER
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.WALLPAPER_TRIGGER
+import com.tunjid.fingergestures.viewmodels.Inputs
+import com.tunjid.fingergestures.viewmodels.Tab
 
-
-fun appAdapter(
-        items: IntArray,
-        state: LiveData<AppState>,
-        listener: AppAdapterListener
-): RecyclerView.Adapter<AppViewHolder> = adapterOf(
-        itemsSource = { items.toList() },
-        viewHolderCreator = { viewGroup, viewType ->
-            val context = viewGroup.context
-            val brightnessGestureConsumer = BrightnessGestureConsumer.instance
-            val rotationGestureConsumer = RotationGestureConsumer.instance
-            val popUpGestureConsumer = PopUpGestureConsumer.instance
-            val audioGestureConsumer = AudioGestureConsumer.instance
-            val backgroundManager = BackgroundManager.instance
-            val purchasesManager = PurchasesManager.instance
-
-            when (viewType) {
-                PADDING -> AppViewHolder(viewGroup.inflate(R.layout.viewholder_padding), listener)
-
-                SLIDER_DELTA -> SliderAdjusterViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_slider_delta),
-                        R.string.adjust_slider_delta,
-                        { brightnessGestureConsumer.incrementPercentage = it },
-                        { brightnessGestureConsumer.incrementPercentage },
-                        brightnessGestureConsumer::canAdjustDelta,
-                        brightnessGestureConsumer::getAdjustDeltaText)
-
-                SLIDER_POSITION -> SliderAdjusterViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_slider_delta),
-                        R.string.adjust_slider_position,
-                        { brightnessGestureConsumer.positionPercentage = it },
-                        { brightnessGestureConsumer.positionPercentage },
-                        { true },
-                        { percentage -> context.getString(R.string.position_percent, percentage) })
-
-                SLIDER_DURATION -> SliderAdjusterViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_slider_delta),
-                        R.string.adjust_slider_duration,
-                        { backgroundManager.sliderDurationPercentage = it },
-                        { backgroundManager.sliderDurationPercentage },
-                        { true },
-                        backgroundManager::getSliderDurationText)
-
-                DISCRETE_BRIGHTNESS -> DiscreteBrightnessViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_horizontal_list),
-                        state.map(AppState::brightnessValues),
-                        listener
-                )
-
-                SLIDER_COLOR -> ColorAdjusterViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_slider_color),
-                        listener
-                )
-
-                SCREEN_DIMMER -> ScreenDimmerViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_screen_dimmer),
-                        listener
-                )
-
-                ADAPTIVE_BRIGHTNESS -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.adaptive_brightness,
-                        brightnessGestureConsumer::restoresAdaptiveBrightnessOnDisplaySleep
-                ) { flag ->
-                    brightnessGestureConsumer.shouldRestoreAdaptiveBrightnessOnDisplaySleep(flag)
-                    listener.notifyItemChanged(ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS)
-                }
-
-                USE_LOGARITHMIC_SCALE -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.use_logarithmic_scale,
-                        brightnessGestureConsumer::usesLogarithmicScale,
-                        brightnessGestureConsumer::shouldUseLogarithmicScale)
-
-                SHOW_SLIDER -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.show_slider,
-                        brightnessGestureConsumer::shouldShowSlider,
-                        brightnessGestureConsumer::setSliderVisible)
-
-                ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS -> SliderAdjusterViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_slider_delta),
-                        R.string.adjust_adaptive_threshold,
-                        R.string.adjust_adaptive_threshold_description,
-                        { brightnessGestureConsumer.adaptiveBrightnessThreshold = it },
-                        { brightnessGestureConsumer.adaptiveBrightnessThreshold },
-                        brightnessGestureConsumer::supportsAmbientThreshold,
-                        brightnessGestureConsumer::getAdaptiveBrightnessThresholdText)
-
-                ENABLE_WATCH_WINDOWS -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.selective_app_rotation,
-                        rotationGestureConsumer::canAutoRotate,
-                        rotationGestureConsumer::enableWindowContentWatching)
-
-                ENABLE_ACCESSIBILITY_BUTTON -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.popup_enable,
-                        popUpGestureConsumer::hasAccessibilityButton,
-                        popUpGestureConsumer::enableAccessibilityButton)
-
-                ACCESSIBILITY_SINGLE_CLICK -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.popup_single_click,
-                        { popUpGestureConsumer.isSingleClick },
-                        { popUpGestureConsumer.isSingleClick = it })
-
-                DOUBLE_SWIPE_SETTINGS -> {
-                    val mapper = GestureMapper.instance
-                    SliderAdjusterViewHolder(
-                            viewGroup.inflate(R.layout.viewholder_slider_delta),
-                            R.string.adjust_double_swipe_settings,
-                            { mapper.doubleSwipeDelay = it },
-                            { mapper.doubleSwipeDelay },
-                            { PurchasesManager.instance.isPremium },
-                            mapper::getSwipeDelayText)
-                }
-                ANIMATES_POPUP -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.popup_animate_in,
-                        popUpGestureConsumer::shouldAnimatePopup,
-                        popUpGestureConsumer::setAnimatesPopup)
-
-                ANIMATES_SLIDER -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.slider_animate,
-                        brightnessGestureConsumer::shouldAnimateSlider,
-                        brightnessGestureConsumer::setAnimatesSlider)
-
-                NAV_BAR_COLOR -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.use_colored_nav,
-                        backgroundManager::usesColoredNav,
-                        backgroundManager::setUsesColoredNav)
-
-                LOCKED_CONTENT -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.set_locked_content,
-                        purchasesManager::hasLockedContent,
-                        purchasesManager::setHasLockedContent)
-
-                AUDIO_DELTA -> SliderAdjusterViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_slider_delta),
-                        R.string.audio_stream_delta,
-                        0,
-                        { audioGestureConsumer.volumeDelta = it },
-                        { audioGestureConsumer.volumeDelta },
-                        audioGestureConsumer::canSetVolumeDelta,
-                        audioGestureConsumer::getChangeText)
-
-                AUDIO_SLIDER_SHOW -> ToggleViewHolder(viewGroup.inflate(R.layout.viewholder_toggle),
-                        R.string.audio_stream_slider_show,
-                        audioGestureConsumer::shouldShowSliders,
-                        audioGestureConsumer::setShowsSliders)
-
-                AUDIO_STREAM_TYPE -> AudioStreamViewHolder(viewGroup.inflate(R.layout.viewholder_audio_stream_type), listener)
-
-                MAP_UP_ICON -> MapperViewHolder(viewGroup.inflate(R.layout.viewholder_mapper), UP_GESTURE, listener)
-
-                MAP_DOWN_ICON -> MapperViewHolder(viewGroup.inflate(R.layout.viewholder_mapper), DOWN_GESTURE, listener)
-
-                MAP_LEFT_ICON -> MapperViewHolder(viewGroup.inflate(R.layout.viewholder_mapper), LEFT_GESTURE, listener)
-
-                MAP_RIGHT_ICON -> MapperViewHolder(viewGroup.inflate(R.layout.viewholder_mapper), RIGHT_GESTURE, listener)
-
-                AD_FREE -> AdFreeViewHolder(viewGroup.inflate(R.layout.viewholder_simple_text), listener)
-
-                SUPPORT -> LinkViewHolder(viewGroup.inflate(R.layout.viewholder_simple_text), SUPPORT_LINK_ITEM, listener)
-
-                REVIEW -> LinkViewHolder(viewGroup.inflate(R.layout.viewholder_simple_text), REVIEW_LINK_ITEM, listener)
-
-                WALLPAPER_PICKER -> WallpaperViewHolder(viewGroup.inflate(R.layout.viewholder_wallpaper_pick), listener)
-
-                WALLPAPER_TRIGGER -> WallpaperTriggerViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_wallpaper_trigger),
-                        listener
-                )
-
-                ROTATION_LOCK -> RotationViewHolder(
-                        itemView = viewGroup.inflate(R.layout.viewholder_horizontal_list),
-                        persistedSet = ROTATION_APPS,
-                        titleRes = R.string.auto_rotate_apps,
-                        infoRes = R.string.auto_rotate_description,
-                        items = state.map(AppState::rotationApps),
-                        listener = listener
-                )
-
-                EXCLUDED_ROTATION_LOCK -> RotationViewHolder(
-                        itemView = viewGroup.inflate(R.layout.viewholder_horizontal_list),
-                        persistedSet = EXCLUDED_APPS,
-                        titleRes = R.string.auto_rotate_apps_excluded,
-                        infoRes = R.string.auto_rotate_ignored_description,
-                        items = state.map(AppState::excludedRotationApps),
-                        listener = listener
-                )
-
-                ROTATION_HISTORY ->  RotationViewHolder(
-                        itemView = viewGroup.inflate(R.layout.viewholder_horizontal_list),
-                        persistedSet = null,
-                        titleRes = R.string.app_rotation_history_title,
-                        infoRes = R.string.app_rotation_history_info,
-                        items = state.map(AppState::rotationScreenedApps),
-                        listener = listener
-                )
-
-                POPUP_ACTION -> PopupViewHolder(
-                        viewGroup.inflate(R.layout.viewholder_horizontal_list),
-                        state.map(AppState::popUpActions),
-                        listener
-                )
-
-                else -> AppViewHolder(viewGroup.inflate(R.layout.viewholder_slider_delta))
-            }
-        },
-        viewHolderBinder = { holder, _, _ -> holder.bind() },
-        viewTypeFunction = { it },
-        itemIdFunction = { it.toLong() },
-        onViewHolderDetached = AppViewHolder::clear,
-        onViewHolderRecycleFailed = { holder -> holder.clear(); false }
+fun appAdapter(items: List<Item>?) = listAdapterOf(
+    initialItems = items ?: listOf(),
+    viewHolderCreator = { parent, viewType ->
+        when (viewType) {
+            Item.Toggle::class.hashCode() -> parent.toggle()
+            Item.Slider::class.hashCode() -> parent.sliderAdjuster()
+            Item.Mapper::class.hashCode() -> parent.mapper()
+            Item.Rotation::class.hashCode() -> parent.rotation()
+            Item.PopUp::class.hashCode() -> parent.popUp()
+            Item.Padding::class.hashCode() -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
+            else -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
+        }
+    },
+    viewHolderBinder = { holder, item, _ ->
+        when (item) {
+            is Item.Toggle -> holder.typed<ViewholderToggleBinding>().bind(item)
+            is Item.Slider -> holder.typed<ViewholderSliderDeltaBinding>().bind(item)
+            is Item.Mapper -> holder.typed<ViewholderMapperBinding>().bind(item)
+            is Item.Rotation -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
+            is Item.PopUp -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
+            is Item.Padding -> Unit
+            is Item.Link -> Unit
+            is Item.AudioStreamType -> Unit
+            is Item.AdFree -> Unit
+            is Item.WallpaperView -> Unit
+            is Item.WallpaperTrigger -> Unit
+            is Item.DiscreteBrightness -> Unit
+            is Item.ColorAdjuster -> Unit
+            is Item.ScreenDimmer -> Unit
+        }
+    },
+    viewTypeFunction = { it::class.hashCode() },
+    itemIdFunction = { it.diffId.hashCode().toLong() }
 )
+
+sealed class Item(
+    override val diffId: String
+) : Differentiable {
+
+    abstract val tab: Tab
+    abstract val index: Int
+
+    data class Padding(
+        override val tab: Tab,
+        override val index: Int,
+        override val diffId: String
+    ) : Item(diffId)
+
+    data class Toggle(
+        override val tab: Tab,
+        override val index: Int,
+        @StringRes val titleRes: Int,
+        val consumer: (Boolean) -> Unit,
+        val isChecked: Boolean,
+    ) : Item(titleRes.toString())
+
+    data class Slider(
+        override val tab: Tab,
+        override val index: Int,
+        @StringRes val titleRes: Int,
+        @StringRes val infoRes: Int,
+        val consumer: (Int) -> Unit,
+        val value: Int,
+        val isEnabled: Boolean,
+        val function: (Int) -> String
+    ) : Item(titleRes.toString())
+
+    data class Mapper(
+        override val tab: Tab,
+        override val index: Int,
+        @param:GestureMapper.GestureDirection
+        @field:GestureMapper.GestureDirection
+        val direction: String,
+        @param:GestureMapper.GestureDirection
+        @field:GestureMapper.GestureDirection
+        val doubleDirection: String,
+        val gesturePair: GestureMapper.GesturePair,
+        val input: Inputs
+    ) : Item(direction)
+
+    data class Rotation(
+        override val tab: Tab,
+        override val index: Int,
+        @param:RotationGestureConsumer.PersistedSet
+        val persistedSet: String?,
+        @StringRes val titleRes: Int,
+        @StringRes val infoRes: Int,
+        val items: List<Package>,
+        val input: Inputs
+    ) : Item(titleRes.toString())
+
+    data class Link(
+        override val tab: Tab,
+        override val index: Int,
+        val linkItem: LinkViewHolder.LinkItem,
+        val input: Inputs
+    ) : Item(linkItem.link)
+
+    data class AudioStreamType(
+        override val tab: Tab,
+        override val index: Int,
+        val input: Inputs
+    ) : Item("AudioStreamType")
+
+    data class AdFree(
+        override val tab: Tab,
+        override val index: Int,
+        val input: Inputs
+    ) : Item("AdFree")
+
+    data class WallpaperView(
+        override val tab: Tab,
+        override val index: Int,
+        val input: Inputs
+    ) : Item("WallpaperView")
+
+    data class WallpaperTrigger(
+        override val tab: Tab,
+        override val index: Int,
+        val input: Inputs
+    ) : Item("WallpaperTrigger")
+
+    data class PopUp(
+        override val tab: Tab,
+        override val index: Int,
+        val items: List<Action>,
+        val input: Inputs
+    ) : Item("PopUp")
+
+    data class DiscreteBrightness(
+        override val tab: Tab,
+        override val index: Int,
+        val input: Inputs
+    ) : Item("DiscreteBrightness")
+
+    data class ColorAdjuster(
+        override val tab: Tab,
+        override val index: Int,
+        val input: Inputs
+    ) : Item("ColorAdjuster")
+
+    data class ScreenDimmer(
+        override val tab: Tab,
+        override val index: Int,
+        val input: Inputs
+    ) : Item("ScreenDimmer")
+}
+
 
 interface AppAdapterListener {
     fun purchase(@PurchasesManager.SKU sku: String)
@@ -302,7 +196,7 @@ interface AppAdapterListener {
 
     fun notifyItemChanged(@AppViewModel.AdapterIndex index: Int)
 
-    fun showBottomSheetFragment(fragment: MainActivityFragment)
+    fun showBottomSheetFragment(fragment: Fragment)
 
     companion object {
         val noOpInstance
@@ -317,7 +211,7 @@ interface AppAdapterListener {
 
                 override fun notifyItemChanged(@AppViewModel.AdapterIndex index: Int) = Unit
 
-                override fun showBottomSheetFragment(fragment: MainActivityFragment) = Unit
+                override fun showBottomSheetFragment(fragment: Fragment) = Unit
             }
     }
 }

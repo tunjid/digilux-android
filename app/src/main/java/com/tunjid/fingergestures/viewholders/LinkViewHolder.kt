@@ -24,22 +24,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import com.tunjid.androidx.core.text.bold
-import com.tunjid.androidx.core.text.formatSpanned
 import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.adapters.goPremium
-import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.databinding.ViewholderMapperBinding
 import com.tunjid.fingergestures.databinding.ViewholderSimpleTextBinding
-import com.tunjid.fingergestures.fragments.ActionFragment
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 
 private var BindingViewHolder<ViewholderSimpleTextBinding>.item by viewHolderDelegate<Item.Link>()
 

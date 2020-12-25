@@ -25,34 +25,31 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.tunjid.androidx.core.components.args
+import com.tunjid.androidx.core.delegates.fragmentArgs
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.activityNavigatorController
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.baseclasses.MainActivityFragment
+import com.tunjid.fingergestures.baseclasses.divider
+import com.tunjid.fingergestures.baseclasses.mainActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.distinctUntilChanged
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ROTATION_APPS
 import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.EXCLUDED_ROTATION_LOCK
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.ROTATION_LOCK
 
-class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
+class PackageFragment : Fragment(R.layout.fragment_packages) {
 
     private val viewModel by activityViewModels<AppViewModel>()
-    private val navigator by activityNavigatorController<Navigator>()
-    private var preferenceName by args<String>()
+    private var preferenceName by fragmentArgs<String>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -99,14 +96,13 @@ class PackageFragment : MainActivityFragment(R.layout.fragment_packages) {
             MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.auto_rotate_description)))
-                    .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.PREMIUM_SKU) }
+                    .setPositiveButton(R.string.continue_text) { _, _ -> mainActivity.purchase(PurchasesManager.PREMIUM_SKU) }
                     .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                     .show()
             return
         }
 
-        toggleBottomSheet(false)
-        (navigator.current as? AppFragment)?.notifyItemChanged(if (ROTATION_APPS == preferenceName) ROTATION_LOCK else EXCLUDED_ROTATION_LOCK)
+        mainActivity.toggleBottomSheet(false)
     }
 
     companion object {

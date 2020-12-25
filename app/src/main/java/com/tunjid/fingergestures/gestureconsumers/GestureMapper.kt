@@ -50,6 +50,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.SHOW
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_AUTO_ROTATE
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_DOCK
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_FLASHLIGHT
+import io.reactivex.Flowable
 import io.reactivex.Flowable.timer
 import io.reactivex.disposables.Disposable
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -58,10 +59,82 @@ import java.util.concurrent.atomic.AtomicReference
 
 class GestureMapper private constructor() : FingerprintGestureController.FingerprintGestureCallback() {
 
-    val doubleSwipePreference: ReactivePreference<Int> = ReactivePreference(
-        preferencesName = DOUBLE_SWIPE_DELAY,
-        default = DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE
+    data class GesturePair(
+            val singleGestureName: String,
+            val doubleGestureName: String,
+            val singleActionName: String,
+            val doubleActionName: String,
     )
+
+    data class State(
+            val left: GesturePair,
+            val up: GesturePair,
+            val right: GesturePair,
+            val down: GesturePair,
+    )
+
+    val doubleSwipePreference: ReactivePreference<Int> = ReactivePreference(
+            preferencesName = DOUBLE_SWIPE_DELAY,
+            default = DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE
+    )
+
+    private val directionPreferencesMap = allGestures.map { gestureDirection ->
+        gestureDirection to ReactivePreference(
+                preferencesName = gestureDirection,
+                default = when (gestureDirection) {
+                    UP_GESTURE -> NOTIFICATION_UP
+                    DOWN_GESTURE -> NOTIFICATION_DOWN
+                    LEFT_GESTURE -> REDUCE_BRIGHTNESS
+                    RIGHT_GESTURE -> INCREASE_BRIGHTNESS
+                    else -> DO_NOTHING
+                }
+        )
+    }
+            .toMap()
+
+    val directionPreferencesFlowable: Flowable<State>
+        get() = Flowable.combineLatest(
+                directionPreferencesMap
+                        .entries
+                        .map { (gestureDirection, preference) ->
+                            preference.monitor.map {
+                                val resource = resourceForAction(
+                                        if (isDouble(gestureDirection) && PurchasesManager.instance.isNotPremium) DO_NOTHING
+                                        else it
+                                )
+
+                                gestureDirection to App.transformApp({ app -> app.getString(resource) }, "")
+                            }
+                        }) { items ->
+            val map = (items.toList() as List<Pair<String, String>>).toMap()
+            State(
+                    left = GesturePair(
+                            singleGestureName = getDirectionName(LEFT_GESTURE),
+                            doubleGestureName = getDirectionName(DOUBLE_LEFT_GESTURE),
+                            singleActionName = map.getValue(LEFT_GESTURE),
+                            doubleActionName = map.getValue(DOUBLE_LEFT_GESTURE)
+                    ),
+                    up = GesturePair(
+                            singleGestureName = getDirectionName(UP_GESTURE),
+                            doubleGestureName = getDirectionName(DOUBLE_UP_GESTURE),
+                            singleActionName = map.getValue(UP_GESTURE),
+                            doubleActionName = map.getValue(DOUBLE_UP_GESTURE)
+                    ),
+                    right = GesturePair(
+                            singleGestureName = getDirectionName(RIGHT_GESTURE),
+                            doubleGestureName = getDirectionName(DOUBLE_RIGHT_GESTURE),
+                            singleActionName = map.getValue(RIGHT_GESTURE),
+                            doubleActionName = map.getValue(DOUBLE_RIGHT_GESTURE)
+                    ),
+                    down = GesturePair(
+                            singleGestureName = getDirectionName(DOWN_GESTURE),
+                            doubleGestureName = getDirectionName(DOUBLE_DOWN_GESTURE),
+                            singleActionName = map.getValue(DOWN_GESTURE),
+                            doubleActionName = map.getValue(DOUBLE_DOWN_GESTURE)
+                    ),
+            )
+        }
+
 
     private val actionIds: IntArray
     private val consumers: Array<GestureConsumer> = arrayOf(
@@ -93,12 +166,11 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     annotation class GestureDirection
 
     init {
-
         actionIds = getActionIds()
     }
 
     fun mapGestureToAction(@GestureDirection direction: String, @GestureConsumer.GestureAction action: Int) {
-        App.withApp { app -> app.preferences.edit().putInt(direction, action).apply() }
+        directionPreferencesMap.getValue(direction).item = action
     }
 
     fun getMappedAction(@GestureDirection gestureDirection: String): String {
@@ -216,7 +288,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     private fun directionToAction(@GestureDirection direction: String): Int {
         if (isDouble(direction) && PurchasesManager.instance.isNotPremium) return DO_NOTHING
 
-        val gesture = App.transformApp({ app -> app.preferences.getInt(direction, UNASSIGNED_GESTURE) }, UNASSIGNED_GESTURE)
+        val gesture = directionPreferencesMap.getValue(direction).item
         if (gesture != UNASSIGNED_GESTURE) return gesture
 
         // Defaults
@@ -345,3 +417,14 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
 
     }
 }
+
+private val allGestures = listOf(
+        GestureMapper.UP_GESTURE,
+        GestureMapper.DOWN_GESTURE,
+        GestureMapper.LEFT_GESTURE,
+        GestureMapper.RIGHT_GESTURE,
+        GestureMapper.DOUBLE_UP_GESTURE,
+        GestureMapper.DOUBLE_DOWN_GESTURE,
+        GestureMapper.DOUBLE_LEFT_GESTURE,
+        GestureMapper.DOUBLE_RIGHT_GESTURE
+)

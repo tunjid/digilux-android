@@ -21,45 +21,31 @@ package com.tunjid.fingergestures.fragments
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.observe
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.tunjid.androidx.navigation.Navigator
-import com.tunjid.androidx.navigation.activityNavigatorController
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
+import com.tunjid.androidx.uidrivers.uiState
+import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.baseclasses.MainActivityFragment
+import com.tunjid.fingergestures.baseclasses.divider
+import com.tunjid.fingergestures.baseclasses.mainActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.distinctUntilChanged
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_DOWN_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_LEFT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_RIGHT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOUBLE_UP_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
 import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.AppState
-import com.tunjid.fingergestures.mutateGlobalUi
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_DOWN_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_LEFT_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_RIGHT_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.MAP_UP_ICON
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.POPUP_ACTION
 
-class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
+class ActionFragment : Fragment(R.layout.fragment_actions) {
 
     private val viewModel by activityViewModels<AppViewModel>()
-    private val navigator by activityNavigatorController<Navigator>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -90,42 +76,24 @@ class ActionFragment : MainActivityFragment(R.layout.fragment_actions) {
 
     private fun onActionClicked(action: Action) {
         val args = arguments
-                ?: return mutateGlobalUi { copy(snackbarText = getString(R.string.generic_error)) }
+                ?: return ::uiState.updatePartial { copy(snackbarText = getString(R.string.generic_error)) }
 
         @GestureMapper.GestureDirection
         val direction = args.getString(ARG_DIRECTION)
 
-        toggleBottomSheet(false)
-
-        val fragment = navigator.current as? AppFragment ?: return
+        mainActivity.toggleBottomSheet(false)
 
         val mapper = GestureMapper.instance
 
         if (direction == null) { // Pop up instance
             val context = requireContext()
-            when {
-                PopUpGestureConsumer.instance.addToSet(action.value) -> fragment.notifyItemChanged(POPUP_ACTION)
-                else -> MaterialAlertDialogBuilder(context)
-                        .setTitle(R.string.go_premium_title)
-                        .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
-                        .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.PREMIUM_SKU) }
-                        .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                        .show()
-            }
-        } else {
-            mapper.mapGestureToAction(direction, action.value)
-            fragment.notifyItemChanged(when (direction) {
-                LEFT_GESTURE,
-                DOUBLE_LEFT_GESTURE -> MAP_LEFT_ICON
-                UP_GESTURE,
-                DOUBLE_UP_GESTURE -> MAP_UP_ICON
-                RIGHT_GESTURE,
-                DOUBLE_RIGHT_GESTURE -> MAP_RIGHT_ICON
-                DOWN_GESTURE,
-                DOUBLE_DOWN_GESTURE -> MAP_DOWN_ICON
-                else -> MAP_DOWN_ICON
-            })
-        }
+            if (!PopUpGestureConsumer.instance.addToSet(action.value)) MaterialAlertDialogBuilder(context)
+                    .setTitle(R.string.go_premium_title)
+                    .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
+                    .setPositiveButton(R.string.continue_text) { _, _ -> mainActivity.purchase(PurchasesManager.PREMIUM_SKU) }
+                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                    .show()
+        } else mapper.mapGestureToAction(direction, action.value)
     }
 
     companion object {

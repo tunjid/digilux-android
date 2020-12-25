@@ -68,9 +68,4 @@ private class ViewHolderLifecycleOwner(viewHolder: RecyclerView.ViewHolder) : Li
 }
 
 val RecyclerView.ViewHolder.lifecycleOwner: LifecycleOwner
-    get() = run {
-        itemView.getTag(R.id.main_fragment_container) as? ViewHolderLifecycleOwner
-                ?: ViewHolderLifecycleOwner(this).apply {
-                    itemView.setTag(R.id.main_fragment_container, this)
-                }
-    }
+    get() = ViewHolderLifecycleOwner(this)

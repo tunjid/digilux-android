@@ -75,6 +75,7 @@ abstract class TimedActivity : AppCompatActivity() {
             if (LocalTime.now().isBefore(endTime)) return@subscribe
             reference.get().dispose()
             finish()
+
         }, Throwable::printStackTrace)
     }
 }

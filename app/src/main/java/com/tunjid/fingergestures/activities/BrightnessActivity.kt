@@ -22,6 +22,7 @@ import android.graphics.PorterDuff.Mode.SRC_IN
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -49,8 +50,8 @@ class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
 
         brightnessGestureConsumer = BrightnessGestureConsumer.instance
 
-        val sliderColor = backgroundManager.sliderColor
-        val sliderBackgroundColor = backgroundManager.backgroundColor
+        val sliderColor = backgroundManager.sliderColorPreference.item
+        val sliderBackgroundColor = backgroundManager.backgroundColorPreference.item
 
         val layout = findViewById<ConstraintLayout>(R.id.constraint_layout)
         seekBarBackground = findViewById(R.id.seekbar_background)

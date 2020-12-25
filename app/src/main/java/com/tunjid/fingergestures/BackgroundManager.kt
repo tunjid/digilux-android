@@ -34,13 +34,11 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.Pair
-import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntDef
 import androidx.annotation.IntRange
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getColor
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.palette.graphics.Palette
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -61,11 +59,11 @@ class BackgroundManager private constructor() {
 
     val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
         preferencesName = BACKGROUND_COLOR,
-        default = Color.LTGRAY
+        default = App.transformApp { it.colorAt(R.color.colorPrimary) } ?: Color.LTGRAY
     )
     val sliderColorPreference: ReactivePreference<Int> = ReactivePreference(
         preferencesName = SLIDER_COLOR,
-        default = Color.WHITE
+        default = App.transformApp { it.colorAt(R.color.colorAccent) } ?: Color.WHITE
     )
     val sliderDurationPreference: ReactivePreference<Int> = ReactivePreference(
         preferencesName = SLIDER_DURATION,
@@ -80,10 +78,8 @@ class BackgroundManager private constructor() {
 
     var backgroundColor: Int by backgroundColorPreference.delegate
 
-    var sliderDurationPercentage: Int by sliderColorPreference.delegate
-
     val sliderDurationMillis: Int
-        get() = durationPercentageToMillis(sliderDurationPercentage)
+        get() = durationPercentageToMillis(sliderDurationPreference.item)
 
     val screenAspectRatio: IntArray?
         get() {
@@ -103,10 +99,11 @@ class BackgroundManager private constructor() {
 
     init {
         wallpaperTargets = arrayOf(
-                App.transformApp({ app -> app.getString(R.string.day_wallpaper) }, App.EMPTY),
-                App.transformApp({ app -> app.getString(R.string.night_wallpaper) }, App.EMPTY))
+            App.transformApp({ app -> app.getString(R.string.day_wallpaper) }, App.EMPTY),
+            App.transformApp({ app -> app.getString(R.string.night_wallpaper) }, App.EMPTY))
     }
 
+    // TODO: Fix this
     fun setUsesColoredNav(usesColoredNav: Boolean) {
         App.withApp { app ->
             app.preferences.edit().putBoolean(USES_COLORED_NAV_BAR, usesColoredNav).apply()
@@ -123,13 +120,13 @@ class BackgroundManager private constructor() {
 
     fun requestWallPaperConstant(@StringRes titleRes: Int, context: Context, consumer: (Int) -> Unit) {
         MaterialAlertDialogBuilder(context)
-                .setTitle(titleRes)
-                .setItems(wallpaperTargets) { _, index ->
-                    consumer.invoke(
-                            if (index == 0) DAY_WALLPAPER_PICK_CODE
-                            else NIGHT_WALLPAPER_PICK_CODE)
-                }
-                .show()
+            .setTitle(titleRes)
+            .setItems(wallpaperTargets) { _, index ->
+                consumer.invoke(
+                    if (index == 0) DAY_WALLPAPER_PICK_CODE
+                    else NIGHT_WALLPAPER_PICK_CODE)
+            }
+            .show()
     }
 
     fun getWallpaperFile(@WallpaperSelection selection: Int, context: Context): File {
@@ -148,7 +145,7 @@ class BackgroundManager private constructor() {
 
     fun tint(@DrawableRes drawableRes: Int, color: Int): Drawable {
         val normalDrawable = App.transformApp { app -> ContextCompat.getDrawable(app, drawableRes) }
-                ?: return ColorDrawable(color)
+            ?: return ColorDrawable(color)
 
         val wrapDrawable = DrawableCompat.wrap(normalDrawable)
         DrawableCompat.setTint(wrapDrawable, color)
@@ -160,7 +157,7 @@ class BackgroundManager private constructor() {
         if (!App.hasStoragePermission) return error(Exception(ERROR_NEED_PERMISSION))
 
         val wallpaperManager = App.transformApp { app -> app.getSystemService(WallpaperManager::class.java) }
-                ?: return error(Exception(ERROR_NO_WALLPAPER_MANAGER))
+            ?: return error(Exception(ERROR_NO_WALLPAPER_MANAGER))
 
         if (isLiveWallpaper(wallpaperManager)) {
             val swatches = getLiveWallpaperWatches(wallpaperManager)
@@ -169,9 +166,9 @@ class BackgroundManager private constructor() {
         }
 
         val drawable = (wallpaperManager.drawable
-                ?: return error(Exception(ERROR_NO_DRAWABLE_FOUND)))
-                as? BitmapDrawable
-                ?: return error(Exception(ERROR_NOT_A_BITMAP))
+            ?: return error(Exception(ERROR_NO_DRAWABLE_FOUND)))
+            as? BitmapDrawable
+            ?: return error(Exception(ERROR_NOT_A_BITMAP))
 
         val bitmap = drawable.bitmap
         return fromCallable { Palette.from(bitmap).generate() }.subscribeOn(computation()).observeOn(mainThread())
@@ -188,7 +185,7 @@ class BackgroundManager private constructor() {
 
     fun cancelAutoWallpaper() {
         val alarmManager = App.transformApp { app -> app.getSystemService(AlarmManager::class.java) }
-                ?: return
+            ?: return
 
         val day = getWallpaperPendingIntent(DAY_WALLPAPER_PICK_CODE)
         val night = getWallpaperPendingIntent(NIGHT_WALLPAPER_PICK_CODE)
@@ -210,12 +207,12 @@ class BackgroundManager private constructor() {
         val preferences = App.transformApp { it.preferences } ?: return Calendar.getInstance()
 
         val hour = preferences.getInt(
-                if (selection == DAY_WALLPAPER_PICK_CODE) DAY_WALLPAPER_HOUR
-                else NIGHT_WALLPAPER_HOUR, timePair.first
+            if (selection == DAY_WALLPAPER_PICK_CODE) DAY_WALLPAPER_HOUR
+            else NIGHT_WALLPAPER_HOUR, timePair.first
         )
         val minute = preferences.getInt(
-                if (selection == DAY_WALLPAPER_PICK_CODE) DAY_WALLPAPER_MINUTE
-                else NIGHT_WALLPAPER_MINUTE, timePair.second
+            if (selection == DAY_WALLPAPER_PICK_CODE) DAY_WALLPAPER_MINUTE
+            else NIGHT_WALLPAPER_MINUTE, timePair.second
         )
 
         return calendarForTime(hour, minute)
@@ -242,7 +239,7 @@ class BackgroundManager private constructor() {
         if (selection == INVALID_WALLPAPER_PICK_CODE) return
 
         val wallpaperFile = App.transformApp { app -> getWallpaperFile(selection, app) }
-                ?: return
+            ?: return
 
         val wallpaperManager = App.transformApp { app -> app.getSystemService(WallpaperManager::class.java) }
         if (wallpaperManager == null || !wallpaperFile.exists()) return
@@ -286,16 +283,16 @@ class BackgroundManager private constructor() {
 
         App.withApp { app ->
             app.preferences.edit()
-                    .putInt(if (isDayWallpaper) DAY_WALLPAPER_HOUR else NIGHT_WALLPAPER_HOUR, hour)
-                    .putInt(if (isDayWallpaper) DAY_WALLPAPER_MINUTE else NIGHT_WALLPAPER_MINUTE, minute)
-                    .putBoolean(if (isDayWallpaper) DAY_WALLPAPER_SET else NIGHT_WALLPAPER_SET, adding)
-                    .apply()
+                .putInt(if (isDayWallpaper) DAY_WALLPAPER_HOUR else NIGHT_WALLPAPER_HOUR, hour)
+                .putInt(if (isDayWallpaper) DAY_WALLPAPER_MINUTE else NIGHT_WALLPAPER_MINUTE, minute)
+                .putBoolean(if (isDayWallpaper) DAY_WALLPAPER_SET else NIGHT_WALLPAPER_SET, adding)
+                .apply()
         }
 
         val calendar = calendarForTime(hourOfDay, minute)
 
         val alarmManager = App.transformApp { app -> app.getSystemService(AlarmManager::class.java) }
-                ?: return
+            ?: return
 
         val alarmIntent = getWallpaperPendingIntent(selection)
         alarmManager.setRepeating(RTC_WAKEUP, calendar.timeInMillis, INTERVAL_DAY, alarmIntent)
@@ -356,7 +353,7 @@ class BackgroundManager private constructor() {
         if (ACTION_EDIT_WALLPAPER != intent.action) return false
 
         val componentName = intent.getParcelableExtra<ComponentName>(EXTRA_CHOSEN_COMPONENT)
-                ?: return false
+            ?: return false
 
         val handled = componentName.packageName == "com.google.android.apps.photos"
         if (handled) App.withApp { app -> app.broadcast(intent) }

@@ -107,7 +107,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         .map { it.map(Int::toString) }
 
     private val supportsAmbientThreshold = Flowables.combineLatest(
-        PurchasesManager.instance.lockedContentPreference.monitor,
+        PurchasesManager.instance.premium,
         adaptiveBrightnessPreference.monitor
     ) { isPremium, restores -> isPremium && restores && hasBrightnessSensor() }
 
@@ -188,7 +188,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
 
         intent.putExtra(CURRENT_BRIGHTNESS_BYTE, byteValue)
 
-        if (shouldShowSlider()) app.startActivity(intent)
+        if (showSliderPreference.item) app.startActivity(intent)
     }
 
     @SuppressLint("SwitchIntDef")
@@ -294,21 +294,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     fun shouldRestoreAdaptiveBrightnessOnDisplaySleep(restore: Boolean) =
         App.withApp { app -> app.preferences.edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply() }
 
-    fun shouldShowSlider(): Boolean = showSliderPreference.item
-
     fun shouldAnimateSlider(): Boolean = animateSliderPreference.item
-
-    fun shouldUseLogarithmicScale(isLogarithmic: Boolean) {
-        logarithmicBrightnessPreference.item = isLogarithmic
-    }
-
-    fun setSliderVisible(visible: Boolean) {
-        showSliderPreference.item = visible
-    }
-
-    fun setAnimatesSlider(visible: Boolean) {
-        animateSliderPreference.item = visible
-    }
 
     fun restoresAdaptiveBrightnessOnDisplaySleep(): Boolean =
         App.transformApp({ app -> app.preferences.getBoolean(ADAPTIVE_BRIGHTNESS, false) }, false)

@@ -68,7 +68,7 @@ class PopupActivity : AppCompatActivity() {
         val backgroundManager = BackgroundManager.instance
 
         val text = findViewById<TextView>(R.id.text)
-        text.setTextColor(backgroundManager.sliderColor)
+        text.setTextColor(backgroundManager.sliderColorPreference.item)
         this.findViewById<MaterialCardView>(R.id.card).setCardBackgroundColor(backgroundManager.backgroundColor)
 
         findViewById<RecyclerView>(R.id.item_list).apply {

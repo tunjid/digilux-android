@@ -25,24 +25,6 @@ import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 
-val AppState.rotationApps: List<Package> get() = items
-    .filterIsInstance<Item.Rotation>()
-    .filter { it.index == AppViewModel.ROTATION_LOCK }
-    .map(Item.Rotation::items)
-    .flatten()
-
-val AppState.excludedRotationApps: List<Package> get() = items
-    .filterIsInstance<Item.Rotation>()
-    .filter { it.index == AppViewModel.EXCLUDED_ROTATION_LOCK }
-    .map(Item.Rotation::items)
-    .flatten()
-
-val AppState.rotationScreenedApps: List<Package> get() = items
-    .filterIsInstance<Item.Rotation>()
-    .filter { it.index == AppViewModel.ROTATION_HISTORY }
-    .map(Item.Rotation::items)
-    .flatten()
-
 data class AppState(
         val links: List<TextLink> = listOf(),
         val brightnessValues: List<Brightness> = listOf(),

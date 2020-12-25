@@ -26,26 +26,26 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 class ReactivePreference<T>(
-    private val preferencesName: String,
-    private val default: T
+        private val preferencesName: String,
+        private val default: T
 ) {
-    private val preferences: SharedPreferences = App.transformApp(App::preferences)!!
-    private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
+    private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf()
 
     @Suppress("UNCHECKED_CAST")
     var item: T
-        get() = with(preferences) {
+        get() = with(App.transformApp(App::preferences)!!) {
             when (default) {
                 is String -> getString(preferencesName, default)
                 is Int -> getInt(preferencesName, default)
                 is Long -> getLong(preferencesName, default)
                 is Float -> getFloat(preferencesName, default)
                 is Boolean -> getBoolean(preferencesName, default)
-                is Set<*> -> HashSet(getStringSet(preferencesName, emptySet())?.filterNotNull() ?: emptySet<String>())
+                is Set<*> -> HashSet(getStringSet(preferencesName, emptySet())?.filterNotNull()
+                        ?: emptySet<String>())
                 else -> throw IllegalArgumentException("Uhh what are you doing?")
             }
         } as T
-        set(value) = with(preferences.edit()) {
+        set(value) = with(App.transformApp(App::preferences)!!.edit()) {
             when (value) {
                 is String -> putString(preferencesName, value)
                 is Int -> putInt(preferencesName, value)
@@ -55,6 +55,7 @@ class ReactivePreference<T>(
                 is Set<*> -> putStringSet(preferencesName, value.map(Any?::toString).toSet())
                 else -> throw IllegalArgumentException("Uhh what are you doing?")
             }
+            apply()
         }
 
     val monitor: Flowable<T> = monitorPreferences().replayingShare()
@@ -77,16 +78,14 @@ class ReactivePreference<T>(
         }
 
         return processor.subscribeOn(Schedulers.io())
-            .startWith(item)
-            .doOnSubscribe {
-                listener.also(prefs::registerOnSharedPreferenceChangeListener)
-                    .let(listeners::add)
-            }
-            .doFinally {
-                listener.also(prefs::unregisterOnSharedPreferenceChangeListener)
-                    .let(listeners::remove)
-            }
+                .startWith(item)
+                .doOnSubscribe {
+                    listener.also(prefs::registerOnSharedPreferenceChangeListener)
+                            .let(listeners::add)
+                }
+                .doFinally {
+                    listener.also(prefs::unregisterOnSharedPreferenceChangeListener)
+                            .let(listeners::remove)
+                }
     }
 }
-
-private val listeners = mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()

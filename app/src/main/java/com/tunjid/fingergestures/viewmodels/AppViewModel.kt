@@ -21,11 +21,9 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
-import androidx.annotation.IdRes
 import androidx.annotation.IntDef
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.toLiveData
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.Event
@@ -94,8 +92,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
     }
 
     val uiInteractions = interactionRelay
-        .toLiveData()
-        .filterUnhandledEvents()
+            .toLiveData()
+            .filterUnhandledEvents()
 
     val broadcasts by lazy {
         getApplication<App>().broadcasts()
@@ -140,7 +138,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
 
     override fun onCleared() = disposable.clear()
 
-    override fun accept(input: Input): Unit = when(input) {
+    override fun accept(input: Input): Unit = when (input) {
         is Input.Permission.Storage -> requestPermission(input.code)
         is Input.Permission.Settings -> requestPermission(input.code)
         is Input.Permission.Accessibility -> requestPermission(input.code)
@@ -148,12 +146,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
         is Input.ShowSheet -> interactionRelay.onNext(input)
         is Input.GoPremium -> interactionRelay.onNext(input)
     }
-
-    fun itemsAt(position: Int): IntArray = tabItems.toList()[position].second
-
-    fun resourceIndex(@IdRes resource: Int): Int = tabItems.keys.indexOf(resource)
-
-    fun resourceAt(position: Int): Int = tabItems.toList()[position].first
 
     fun updateApps() {
         Single.fromCallable {

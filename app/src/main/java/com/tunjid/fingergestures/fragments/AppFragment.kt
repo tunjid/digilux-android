@@ -23,110 +23,99 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
-import androidx.annotation.StringRes
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.recyclerview.widget.RecyclerView
 import com.theartofdev.edmodo.cropper.CropImage
-import com.tunjid.androidx.core.components.args
-import com.tunjid.androidx.navigation.Navigator
+import com.tunjid.androidx.core.content.colorAt
+import com.tunjid.androidx.core.delegates.fragmentArgs
 import com.tunjid.androidx.recyclerview.addScrollListener
-import com.tunjid.androidx.recyclerview.notifyDataSetChanged
-import com.tunjid.androidx.recyclerview.notifyItemChanged
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.BackgroundManager
+import com.tunjid.androidx.uidrivers.uiState
+import com.tunjid.androidx.uidrivers.updatePartial
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapterListener
 import com.tunjid.fingergestures.adapters.appAdapter
-import com.tunjid.fingergestures.baseclasses.MainActivityFragment
-import com.tunjid.fingergestures.mutateGlobalUi
+import com.tunjid.fingergestures.baseclasses.divider
+import com.tunjid.fingergestures.baseclasses.mainActivity
+import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.databinding.FragmentHomeBinding
+import com.tunjid.fingergestures.models.InsetFlags
 import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.viewmodels.Tab
 import kotlin.math.abs
 
-class AppFragment : MainActivityFragment(R.layout.fragment_home),
-        Navigator.TagProvider,
-        AppAdapterListener {
+class AppFragment : Fragment(R.layout.fragment_home) {
 
-    var resource by args<Int>()
-        private set
-
-    private val items get() = viewModel.run { itemsAt(resourceIndex(resource)) }
-
-    private var recyclerView: RecyclerView? = null
+    private var tab by fragmentArgs<Tab>()
 
     private val viewModel by activityViewModels<AppViewModel>()
-
-    override val stableTag: String get() = resource.toString()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        recyclerView = view.findViewById<RecyclerView>(R.id.options_list).apply {
+        uiState = uiState.copy(
+            toolbarShows = true,
+            toolbarOverlaps = true,
+            toolbarMenuRes = R.menu.activity_main,
+            toolbarMenuRefresher = ::refreshToolbarMenu,
+            toolbarTitle = getString(R.string.app_name),
+            showsBottomNav = true,
+            insetFlags = InsetFlags.NO_BOTTOM,
+            fabClickListener = { viewModel.onPermissionClicked(mainActivity::onPermissionClicked) },
+            navBarColor = requireContext().colorAt(
+                if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
+                else R.color.black
+            ),
+        )
+
+        FragmentHomeBinding.bind(view).optionsList.apply {
+            val items = viewModel.liveState
+                .map { state -> state.items.filter { it.tab == tab } }
+                .distinctUntilChanged()
+            val listAdapter = appAdapter(items.value)
+
             layoutManager = verticalLayoutManager()
-            adapter = appAdapter(items, viewModel.liveState, this@AppFragment)
+            adapter = listAdapter
+            itemAnimator = null
+
+            items.observe(viewLifecycleOwner, listAdapter::submitList)
+
             addItemDecoration(divider())
-            addScrollListener { _, dy -> if (abs(dy) > 3) mutateGlobalUi { copy(toolbarShows = dy < 0) } }
+            addScrollListener { _, dy -> if (abs(dy) > 3) ::uiState.updatePartial { copy(toolbarShows = dy < 0) } }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        notifyDataSetChanged()
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        mutateGlobalUi { copy(toolbarShows = true) }
+        ::uiState.updatePartial { copy(toolbarShows = true) }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        activity ?: return
 
         when {
-            resultCode != Activity.RESULT_OK -> mutateGlobalUi { copy(snackbarText = getString(R.string.cancel_wallpaper)) }
+            resultCode != Activity.RESULT_OK -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.cancel_wallpaper)) }
             requestCode == DAY_WALLPAPER_PICK_CODE || requestCode == NIGHT_WALLPAPER_PICK_CODE -> cropImage(data!!.data, requestCode)
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        recyclerView = null
+    private fun refreshToolbarMenu(menu: Menu) {
+        val item = menu.findItem(R.id.action_start_trial)
+        val isTrialVisible = !PurchasesManager.instance.isPremiumNotTrial
+
+        if (item != null) item.isVisible = isTrialVisible
+        if (isTrialVisible && item != null) item.actionView = TrialView(requireContext(), item)
     }
 
-    override fun requestPermission(@MainActivity.PermissionRequest permission: Int) =
-            viewModel.requestPermission(permission)
-
-    override fun showSnackbar(@StringRes message: Int) {
-        mutateGlobalUi { copy(snackbarText = getString(message)) }
-    }
-
-    override fun showBottomSheetFragment(fragment: MainActivityFragment) {
-        val fragmentManager = activity?.supportFragmentManager ?: return
-
-        fragmentManager.beginTransaction().replace(R.id.bottom_sheet, fragment).commit()
-        toggleBottomSheet(true)
-    }
-
-    override fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int) = when {
-        App.hasStoragePermission -> startActivityForResult(Intent.createChooser(Intent()
-                .setType(IMAGE_SELECTION)
-                .setAction(Intent.ACTION_GET_CONTENT), ""), selection)
-        else -> mutateGlobalUi { copy(snackbarText = getString(R.string.enable_storage_settings)) }
-    }
-
-    override fun notifyItemChanged(@AppViewModel.AdapterIndex index: Int) {
-        val listIndex = items.indexOf(index)
-        if (listIndex != -1) recyclerView?.notifyItemChanged(listIndex)
-    }
-
-    fun notifyDataSetChanged() {
-        recyclerView?.notifyDataSetChanged()
-    }
+//    override fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int) = when {
+//        App.hasStoragePermission -> startActivityForResult(Intent.createChooser(Intent()
+//                .setType(IMAGE_SELECTION)
+//                .setAction(Intent.ACTION_GET_CONTENT), ""), selection)
+//        else -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.enable_storage_settings)) }
+//    }
 
     fun cropImage(source: Uri?, @BackgroundManager.WallpaperSelection selection: Int) {
         val backgroundManager = BackgroundManager.instance
@@ -138,20 +127,20 @@ class AppFragment : MainActivityFragment(R.layout.fragment_home),
         val destination = Uri.fromFile(file)
 
         CropImage.activity(source)
-                .setOutputUri(destination)
-                .setFixAspectRatio(true)
-                .setAspectRatio(aspectRatio[0], aspectRatio[1])
-                .setMinCropWindowSize(100, 100)
-                .setOutputCompressFormat(Bitmap.CompressFormat.PNG)
-                .start(activity, this)
+            .setOutputUri(destination)
+            .setFixAspectRatio(true)
+            .setAspectRatio(aspectRatio[0], aspectRatio[1])
+            .setMinCropWindowSize(100, 100)
+            .setOutputCompressFormat(Bitmap.CompressFormat.PNG)
+            .start(activity, this)
     }
 
     companion object {
 
         private const val IMAGE_SELECTION = "image/*"
 
-        fun newInstance(resource: Int): AppFragment = AppFragment().apply {
-            this.resource = resource
+        fun newInstance(tab: Tab): AppFragment = AppFragment().apply {
+            this.tab = tab
         }
     }
 }
