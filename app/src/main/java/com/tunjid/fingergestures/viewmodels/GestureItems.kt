@@ -30,7 +30,8 @@ import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Package
-import com.tunjid.fingergestures.viewholders.LinkViewHolder
+import com.tunjid.fingergestures.viewholders.ReviewLinkItem
+import com.tunjid.fingergestures.viewholders.SupportLinkItem
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
@@ -106,13 +107,13 @@ interface Inputs {
                 Item.Link(
                         index = AppViewModel.SUPPORT,
                         tab = Tab.Gestures,
-                        linkItem = LinkViewHolder.SUPPORT_LINK_ITEM,
+                        linkItem = SupportLinkItem,
                         input = this@Inputs
                 ),
                 Item.Link(
                         index = AppViewModel.REVIEW,
                         tab = Tab.Gestures,
-                        linkItem = LinkViewHolder.REVIEW_LINK_ITEM,
+                        linkItem = ReviewLinkItem,
                         input = this@Inputs
                 ),
         ))

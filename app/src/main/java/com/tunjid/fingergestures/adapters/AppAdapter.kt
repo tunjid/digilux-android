@@ -45,6 +45,7 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             Item.Mapper::class.hashCode() -> parent.mapper()
             Item.Rotation::class.hashCode() -> parent.rotation()
             Item.PopUp::class.hashCode() -> parent.popUp()
+            Item.Link::class.hashCode() -> parent.link()
             Item.Padding::class.hashCode() -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
             else -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
         }
@@ -56,8 +57,8 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             is Item.Mapper -> holder.typed<ViewholderMapperBinding>().bind(item)
             is Item.Rotation -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
             is Item.PopUp -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
+            is Item.Link -> holder.typed<ViewholderSimpleTextBinding>().bind(item)
             is Item.Padding -> Unit
-            is Item.Link -> Unit
             is Item.AudioStreamType -> Unit
             is Item.AdFree -> Unit
             is Item.WallpaperView -> Unit
@@ -130,7 +131,7 @@ sealed class Item(
     data class Link(
         override val tab: Tab,
         override val index: Int,
-        val linkItem: LinkViewHolder.LinkItem,
+        val linkItem: LinkItem,
         val input: Inputs
     ) : Item(linkItem.link)
 
