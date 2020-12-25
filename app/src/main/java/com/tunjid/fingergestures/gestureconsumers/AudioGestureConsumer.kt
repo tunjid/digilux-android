@@ -27,7 +27,6 @@ import android.media.AudioManager.ADJUST_LOWER
 import android.media.AudioManager.ADJUST_RAISE
 import androidx.annotation.IdRes
 import androidx.annotation.IntDef
-import androidx.annotation.IntRange
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference

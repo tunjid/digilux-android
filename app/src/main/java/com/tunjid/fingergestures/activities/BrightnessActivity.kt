@@ -22,7 +22,6 @@ import android.graphics.PorterDuff.Mode.SRC_IN
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -67,7 +66,7 @@ class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
 
         val set = ConstraintSet()
         set.clone(layout)
-        set.setVerticalBias(seekBarBackground.id, brightnessGestureConsumer.positionPercentage / 100f)
+        set.setVerticalBias(seekBarBackground.id, brightnessGestureConsumer.positionPreference.value / 100f)
         set.applyTo(layout)
 
         layout.setOnClickListener { finish() }
@@ -83,14 +82,14 @@ class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
 
     override fun onResume() {
         super.onResume()
-        if (brightnessGestureConsumer.shouldAnimateSlider())
+        if (brightnessGestureConsumer.animateSliderPreference.value)
             overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_up)
     }
 
     override fun finish() {
         super.finish()
 
-        val animateSlide = brightnessGestureConsumer.shouldAnimateSlider()
+        val animateSlide = brightnessGestureConsumer.animateSliderPreference.value
         if (animateSlide)
             overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_down)
         else
@@ -126,7 +125,7 @@ class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
         seekBarText.visibility = if (showDimmer) View.VISIBLE else View.GONE
 
         if (showDimmer) {
-            val dimmerPercent = brightnessGestureConsumer.screenDimmerDimPercent * 100f
+            val dimmerPercent = brightnessGestureConsumer.screenDimmerPercentPreference.value * 100f
             seekBarText.text = getString(R.string.screen_dimmer_value, dimmerPercent)
         }
 

@@ -19,7 +19,6 @@ package com.tunjid.fingergestures
 
 
 import android.content.Intent
-import android.graphics.Color
 import com.tunjid.fingergestures.activities.PopupActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer

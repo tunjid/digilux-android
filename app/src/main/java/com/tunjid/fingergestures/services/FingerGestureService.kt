@@ -172,7 +172,7 @@ class FingerGestureService : AccessibilityService() {
         val windowManager = getSystemService(WindowManager::class.java) ?: return
 
         val brightnessGestureConsumer = BrightnessGestureConsumer.instance
-        val dimAmount = brightnessGestureConsumer.screenDimmerDimPercent
+        val dimAmount = brightnessGestureConsumer.screenDimmerPercentPreference.value
 
         if (brightnessGestureConsumer.shouldShowDimmer()) {
             val params: WindowManager.LayoutParams =
