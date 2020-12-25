@@ -32,7 +32,7 @@ class ReactivePreference<T>(
     private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf()
 
     @Suppress("UNCHECKED_CAST")
-    var item: T
+    var value: T
         get() = with(App.transformApp(App::preferences)!!) {
             when (default) {
                 is String -> getString(preferencesName, default)
@@ -60,13 +60,13 @@ class ReactivePreference<T>(
 
     val monitor: Flowable<T> = monitorPreferences().replayingShare()
 
-    val setter = ::item::set
+    val setter = ::value::set
 
     val delegate: ReadWriteProperty<Any, T> = object : ReadWriteProperty<Any, T> {
-        override fun getValue(thisRef: Any, property: KProperty<*>): T = item
+        override fun getValue(thisRef: Any, property: KProperty<*>): T = value
 
         override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
-            item = value
+            this@ReactivePreference.value = value
         }
     }
 
@@ -74,11 +74,11 @@ class ReactivePreference<T>(
         val processor = BehaviorProcessor.create<T>()
         val prefs = App.transformApp(App::preferences)!!
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == preferencesName) processor.onNext(item)
+            if (key == preferencesName) processor.onNext(value)
         }
 
         return processor.subscribeOn(Schedulers.io())
-                .startWith(item)
+                .startWith(value)
                 .doOnSubscribe {
                     listener.also(prefs::registerOnSharedPreferenceChangeListener)
                             .let(listeners::add)

@@ -132,7 +132,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
     fun removeFromSet(packageName: String, @PersistedSet preferencesName: String) =
             setManager.removeFromSet(packageName, preferencesName)
 
-    fun canAutoRotate(): Boolean = autoRotatePreference.item
+    fun canAutoRotate(): Boolean = autoRotatePreference.value
 
     fun enableWindowContentWatching(enabled: Boolean) {
         App.withApp { app ->

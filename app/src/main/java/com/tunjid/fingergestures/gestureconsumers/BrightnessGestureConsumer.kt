@@ -188,7 +188,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
 
         intent.putExtra(CURRENT_BRIGHTNESS_BYTE, byteValue)
 
-        if (showSliderPreference.item) app.startActivity(intent)
+        if (showSliderPreference.value) app.startActivity(intent)
     }
 
     @SuppressLint("SwitchIntDef")
@@ -294,12 +294,12 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     fun shouldRestoreAdaptiveBrightnessOnDisplaySleep(restore: Boolean) =
         App.withApp { app -> app.preferences.edit().putBoolean(ADAPTIVE_BRIGHTNESS, restore).apply() }
 
-    fun shouldAnimateSlider(): Boolean = animateSliderPreference.item
+    fun shouldAnimateSlider(): Boolean = animateSliderPreference.value
 
     fun restoresAdaptiveBrightnessOnDisplaySleep(): Boolean =
         App.transformApp({ app -> app.preferences.getBoolean(ADAPTIVE_BRIGHTNESS, false) }, false)
 
-    fun usesLogarithmicScale(): Boolean = logarithmicBrightnessPreference.item
+    fun usesLogarithmicScale(): Boolean = logarithmicBrightnessPreference.value
 
     fun supportsAmbientThreshold(): Boolean = (PurchasesManager.instance.isPremium
         && restoresAdaptiveBrightnessOnDisplaySleep()

@@ -60,9 +60,9 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
 
     override fun accepts(gesture: Int): Boolean = gesture == SHOW_POPUP
 
-    fun hasAccessibilityButton(): Boolean = accessibilityButtonEnabledPreference.item
+    fun hasAccessibilityButton(): Boolean = accessibilityButtonEnabledPreference.value
 
-    fun shouldAnimatePopup(): Boolean = animatePopUpPreference.item
+    fun shouldAnimatePopup(): Boolean = animatePopUpPreference.value
 
     fun addToSet(@GestureConsumer.GestureAction action: Int): Boolean =
             setManager.addToSet(action.toString(), SAVED_ACTIONS)
@@ -71,7 +71,7 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
             setManager.removeFromSet(action.toString(), SAVED_ACTIONS)
 
     fun setAnimatesPopup(visible: Boolean) {
-        animatePopUpPreference.item = visible
+        animatePopUpPreference.value = visible
     }
 
     fun showPopup() = if (isSingleClick) list.stream()
@@ -84,7 +84,7 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
     }
 
     fun enableAccessibilityButton(enabled: Boolean) = App.withApp { app ->
-        accessibilityButtonEnabledPreference.item = enabled
+        accessibilityButtonEnabledPreference.value = enabled
         app.broadcast(Intent(ACTION_ACCESSIBILITY_BUTTON)
                 .putExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, enabled))
     }

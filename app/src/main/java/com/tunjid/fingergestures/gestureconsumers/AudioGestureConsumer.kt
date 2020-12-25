@@ -92,7 +92,7 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
     fun canSetVolumeDelta(): Boolean =
             App.hasDoNotDisturbAccess() && streamType != STREAM_TYPE_DEFAULT
 
-    fun shouldShowSliders(): Boolean = sliderPreference.item
+    fun shouldShowSliders(): Boolean = sliderPreference.value
 
     private fun setStreamVolume(increase: Boolean, audioManager: AudioManager, streamType: Int) {
         val currentVolume = audioManager.getStreamVolume(streamType)
@@ -116,7 +116,7 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
     }
 
     fun setShowsSliders(visible: Boolean) {
-        sliderPreference.item = visible
+        sliderPreference.value = visible
     }
 
     private fun reduce(currentValue: Int, stream: Int, audioManager: AudioManager): Int =

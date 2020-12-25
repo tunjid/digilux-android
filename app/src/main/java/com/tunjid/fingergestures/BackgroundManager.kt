@@ -79,7 +79,7 @@ class BackgroundManager private constructor() {
     var backgroundColor: Int by backgroundColorPreference.delegate
 
     val sliderDurationMillis: Int
-        get() = durationPercentageToMillis(sliderDurationPreference.item)
+        get() = durationPercentageToMillis(sliderDurationPreference.value)
 
     val screenAspectRatio: IntArray?
         get() {

@@ -170,7 +170,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     }
 
     fun mapGestureToAction(@GestureDirection direction: String, @GestureConsumer.GestureAction action: Int) {
-        directionPreferencesMap.getValue(direction).item = action
+        directionPreferencesMap.getValue(direction).value = action
     }
 
     fun getMappedAction(@GestureDirection gestureDirection: String): String {
@@ -288,7 +288,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     private fun directionToAction(@GestureDirection direction: String): Int {
         if (isDouble(direction) && PurchasesManager.instance.isNotPremium) return DO_NOTHING
 
-        val gesture = directionPreferencesMap.getValue(direction).item
+        val gesture = directionPreferencesMap.getValue(direction).value
         if (gesture != UNASSIGNED_GESTURE) return gesture
 
         // Defaults

@@ -50,8 +50,8 @@ class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
 
         brightnessGestureConsumer = BrightnessGestureConsumer.instance
 
-        val sliderColor = backgroundManager.sliderColorPreference.item
-        val sliderBackgroundColor = backgroundManager.backgroundColorPreference.item
+        val sliderColor = backgroundManager.sliderColorPreference.value
+        val sliderBackgroundColor = backgroundManager.backgroundColorPreference.value
 
         val layout = findViewById<ConstraintLayout>(R.id.constraint_layout)
         seekBarBackground = findViewById(R.id.seekbar_background)
