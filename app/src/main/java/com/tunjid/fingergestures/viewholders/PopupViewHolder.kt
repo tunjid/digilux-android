@@ -40,6 +40,7 @@ import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.lifecycleOwner
 import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.viewmodels.Input
 
 private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.PopUp>()
 private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Action, ActionViewHolder> by viewHolderDelegate()
@@ -49,7 +50,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
         when {
             !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
             !PopUpGestureConsumer.instance.hasAccessibilityButton() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
-            else -> item.listener.showBottomSheetFragment(ActionFragment.popUpInstance())
+            else -> item.input.accept(Input.ShowSheet(ActionFragment.popUpInstance()))
         }
     }
     listAdapter = listAdapterOf(
@@ -79,7 +80,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
 fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.PopUp) = binding.run {
     this@bind.item = item
 
-    if (!App.canWriteToSettings()) item.listener.requestPermission(MainActivity.SETTINGS_CODE)
+    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
     listAdapter.submitList(item.items)
 }
 
@@ -94,7 +95,7 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(a
         else -> builder.setTitle(R.string.popup_remove)
             .setPositiveButton(R.string.yes) { _, _ ->
                 buttonManager.removeFromSet(action.value)
-                if (!App.canWriteToSettings()) item.listener.requestPermission(MainActivity.SETTINGS_CODE)
+                if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
     }

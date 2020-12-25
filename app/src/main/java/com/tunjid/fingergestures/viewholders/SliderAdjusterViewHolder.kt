@@ -47,13 +47,13 @@ fun BindingViewHolder<ViewholderSliderDeltaBinding>.bind(item: Item.Slider) = bi
 
     title.setText(item.titleRes)
 
-    val enabled = item.enabledSupplier.invoke()
+    val enabled = item.isEnabled
 
     seekbar.isEnabled = enabled
-    seekbar.value = item.valueSupplier.invoke().toFloat()
+    seekbar.value = item.value.toFloat()
 
     value.isEnabled = enabled
-    value.text = item.function.invoke(item.valueSupplier.invoke())
+    value.text = item.function.invoke(item.value)
 
     if (item.infoRes != 0) title.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_info_outline_white_24dp, 0)
 }

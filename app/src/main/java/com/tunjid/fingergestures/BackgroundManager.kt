@@ -44,6 +44,7 @@ import androidx.core.content.ContextCompat.getColor
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.palette.graphics.Palette
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import io.reactivex.Single
 import io.reactivex.Single.error
@@ -58,27 +59,28 @@ class BackgroundManager private constructor() {
 
     private val wallpaperTargets: Array<String>
 
-    var sliderColor: Int
-        @ColorInt
-        get() = App.transformApp({ app -> app.preferences.getInt(SLIDER_COLOR, getColor(app, R.color.colorAccent)) }, Color.WHITE)
-        set(@ColorInt color) {
-            App.withApp { app -> app.preferences.edit().putInt(SLIDER_COLOR, color).apply() }
-        }
+    val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
+        preferencesName = BACKGROUND_COLOR,
+        default = Color.LTGRAY
+    )
+    val sliderColorPreference: ReactivePreference<Int> = ReactivePreference(
+        preferencesName = SLIDER_COLOR,
+        default = Color.WHITE
+    )
+    val sliderDurationPreference: ReactivePreference<Int> = ReactivePreference(
+        preferencesName = SLIDER_DURATION,
+        default = DEF_SLIDER_DURATION_PERCENT
+    )
+    val coloredNavPreference: ReactivePreference<Boolean> = ReactivePreference(
+        preferencesName = USES_COLORED_NAV_BAR,
+        default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P
+    )
 
-    var backgroundColor: Int
-        @ColorInt
-        get() = App.transformApp({ app -> app.preferences.getInt(BACKGROUND_COLOR, getColor(app, R.color.colorPrimary)) }, Color.LTGRAY)
-        set(@ColorInt color) {
-            App.withApp { app -> app.preferences.edit().putInt(BACKGROUND_COLOR, color).apply() }
-        }
+    var sliderColor: Int by sliderColorPreference.delegate
 
-    var sliderDurationPercentage: Int
-        @IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
-        get() = App.transformApp({ app -> app.preferences.getInt(SLIDER_DURATION, DEF_SLIDER_DURATION_PERCENT) }, GestureConsumer.FIFTY_PERCENT)
-        set(@IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
-            duration) {
-            App.withApp { app -> app.preferences.edit().putInt(SLIDER_DURATION, duration).apply() }
-        }
+    var backgroundColor: Int by backgroundColorPreference.delegate
+
+    var sliderDurationPercentage: Int by sliderColorPreference.delegate
 
     val sliderDurationMillis: Int
         get() = durationPercentageToMillis(sliderDurationPercentage)

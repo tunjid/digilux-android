@@ -42,17 +42,8 @@ import com.tunjid.fingergestures.viewholders.popUp
 import com.tunjid.fingergestures.viewholders.rotation
 import com.tunjid.fingergestures.viewholders.sliderAdjuster
 import com.tunjid.fingergestures.viewholders.toggle
+import com.tunjid.fingergestures.viewmodels.Inputs
 import com.tunjid.fingergestures.viewmodels.Tab
-
-internal fun RecyclerView.ViewHolder.goPremium(@StringRes description: Int) {
-    val context = itemView.context
-    MaterialAlertDialogBuilder(context)
-        .setTitle(R.string.go_premium_title)
-        .setMessage(context.getString(R.string.go_premium_body, context.getString(description)))
-        .setPositiveButton(R.string.continue_text) { _, _ -> listener.purchase(PurchasesManager.PREMIUM_SKU) }
-        .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-        .show()
-}
 
 private fun appAdapter2(items: List<Item>?) = listAdapterOf(
     initialItems = items ?: listOf(),
@@ -91,14 +82,17 @@ sealed class Item(
 ) : Differentiable {
 
     abstract val tab: Tab
+    abstract val index: Int
 
     data class Padding(
         override val tab: Tab,
+        override val index: Int,
         override val diffId: String
     ) : Item(diffId)
 
     data class Toggle(
         override val tab: Tab,
+        override val index: Int,
         @StringRes val titleRes: Int,
         val consumer: (Boolean) -> Unit,
         val isChecked: Boolean,
@@ -106,77 +100,89 @@ sealed class Item(
 
     data class Slider(
         override val tab: Tab,
+        override val index: Int,
         @StringRes val titleRes: Int,
         @StringRes val infoRes: Int,
         val consumer: (Int) -> Unit,
-        val valueSupplier: () -> Int,
-        val enabledSupplier: () -> Boolean,
+        val value: Int,
+        val isEnabled: Boolean,
         val function: (Int) -> String
     ) : Item(titleRes.toString())
 
     data class Mapper(
         override val tab: Tab,
+        override val index: Int,
         @param:GestureMapper.GestureDirection
         @field:GestureMapper.GestureDirection
         val direction: String,
-        val listener: AppAdapterListener
+        val input: Inputs
     ) : Item(direction)
 
     data class Rotation(
         override val tab: Tab,
+        override val index: Int,
         @param:RotationGestureConsumer.PersistedSet
         val persistedSet: String?,
         @StringRes val titleRes: Int,
         @StringRes val infoRes: Int,
         val items: List<Package>,
-        val listener: AppAdapterListener
+        val input: Inputs
     ) : Item(titleRes.toString())
 
     data class Link(
         override val tab: Tab,
+        override val index: Int,
         val linkItem: LinkViewHolder.LinkItem,
-        val listener: AppAdapterListener
+        val input: Inputs
     ) : Item(linkItem.link)
 
     data class AudioStreamType(
         override val tab: Tab,
-        val listener: AppAdapterListener
+        override val index: Int,
+        val input: Inputs
     ) : Item("AudioStreamType")
 
     data class AdFree(
         override val tab: Tab,
-        val listener: AppAdapterListener
+        override val index: Int,
+        val input: Inputs
     ) : Item("AdFree")
 
     data class WallpaperView(
         override val tab: Tab,
-        val listener: AppAdapterListener
+        override val index: Int,
+        val input: Inputs
     ) : Item("WallpaperView")
 
     data class WallpaperTrigger(
         override val tab: Tab,
-        val listener: AppAdapterListener
+        override val index: Int,
+        val input: Inputs
     ) : Item("WallpaperTrigger")
 
     data class PopUp(
         override val tab: Tab,
+        override val index: Int,
         val items: List<Action>,
-        val listener: AppAdapterListener
+        val input: Inputs
     ) : Item("PopUp")
 
     data class DiscreteBrightness(
         override val tab: Tab,
-        val listener: AppAdapterListener
+        override val index: Int,
+        val input: Inputs
     ) : Item("DiscreteBrightness")
 
     data class ColorAdjuster(
         override val tab: Tab,
-        val listener: AppAdapterListener
+        override val index: Int,
+        val input: Inputs
     ) : Item("ColorAdjuster")
 
     data class ScreenDimmer(
         override val tab: Tab,
-        val listener: AppAdapterListener
+        override val index: Int,
+        val input: Inputs
     ) : Item("ScreenDimmer")
 }
 

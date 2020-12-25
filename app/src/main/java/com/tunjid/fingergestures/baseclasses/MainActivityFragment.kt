@@ -38,7 +38,6 @@ import com.tunjid.fingergestures.models.UiState
 abstract class MainActivityFragment(
         @LayoutRes layoutRes: Int
 ) : Fragment(layoutRes),
-        InsetProvider,
         GlobalUiController {
 
     override val insetFlags: InsetFlags = InsetFlags.NO_BOTTOM

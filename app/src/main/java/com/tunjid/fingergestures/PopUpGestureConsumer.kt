@@ -19,6 +19,7 @@ package com.tunjid.fingergestures
 
 
 import android.content.Intent
+import android.graphics.Color
 import com.tunjid.fingergestures.activities.PopupActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
@@ -27,15 +28,26 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 
 class PopUpGestureConsumer private constructor() : GestureConsumer {
 
+    val accessibilityButtonEnabledPreference: ReactivePreference<Boolean> = ReactivePreference(
+        preferencesName = ACCESSIBILITY_BUTTON_ENABLED,
+        default = false
+    )
+    val accessibilityButtonSingleClickPreference: ReactivePreference<Boolean> = ReactivePreference(
+        preferencesName = ACCESSIBILITY_BUTTON_SINGLE_CLICK,
+        default = false
+    )
+    val animatePopUpPreference: ReactivePreference<Boolean> = ReactivePreference(
+        preferencesName = ANIMATES_POPUP,
+        default = true
+    )
+
     private val setManager: SetManager<Int> = SetManager(
             Comparator(Int::compareTo),
             this::canAddToSet,
             Integer::valueOf,
             Any::toString)
 
-    var isSingleClick: Boolean
-        get() = App.transformApp({ app -> app.preferences.getBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, false) }, false)
-        set(isSingleClick) = App.withApp { app -> app.preferences.edit().putBoolean(ACCESSIBILITY_BUTTON_SINGLE_CLICK, isSingleClick).apply() }
+    var isSingleClick: Boolean by accessibilityButtonSingleClickPreference.delegate
 
     val popUpActions = setManager.itemsFlowable(SAVED_ACTIONS)
 
@@ -48,11 +60,9 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
 
     override fun accepts(gesture: Int): Boolean = gesture == SHOW_POPUP
 
-    fun hasAccessibilityButton(): Boolean =
-            App.transformApp({ app -> app.preferences.getBoolean(ACCESSIBILITY_BUTTON_ENABLED, false) }, false)
+    fun hasAccessibilityButton(): Boolean = accessibilityButtonEnabledPreference.item
 
-    fun shouldAnimatePopup(): Boolean =
-            App.transformApp({ app -> app.preferences.getBoolean(ANIMATES_POPUP, true) }, true)
+    fun shouldAnimatePopup(): Boolean = animatePopUpPreference.item
 
     fun addToSet(@GestureConsumer.GestureAction action: Int): Boolean =
             setManager.addToSet(action.toString(), SAVED_ACTIONS)
@@ -61,7 +71,7 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
             setManager.removeFromSet(action.toString(), SAVED_ACTIONS)
 
     fun setAnimatesPopup(visible: Boolean) {
-        App.withApp { app -> app.preferences.edit().putBoolean(ANIMATES_POPUP, visible).apply() }
+        animatePopUpPreference.item = visible
     }
 
     fun showPopup() = if (isSingleClick) list.stream()
@@ -74,7 +84,7 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
     }
 
     fun enableAccessibilityButton(enabled: Boolean) = App.withApp { app ->
-        app.preferences.edit().putBoolean(ACCESSIBILITY_BUTTON_ENABLED, enabled).apply()
+        accessibilityButtonEnabledPreference.item = enabled
         app.broadcast(Intent(ACTION_ACCESSIBILITY_BUTTON)
                 .putExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, enabled))
     }

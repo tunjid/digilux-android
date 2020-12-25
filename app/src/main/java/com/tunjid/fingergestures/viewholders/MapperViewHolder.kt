@@ -21,7 +21,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.core.text.bold
 import com.tunjid.androidx.core.text.formatSpanned
 import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
@@ -36,7 +35,6 @@ import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.adapters.goPremium
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.databinding.ViewholderMapperBinding
-import com.tunjid.fingergestures.databinding.ViewholderSliderDeltaBinding
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_GESTURE
@@ -44,16 +42,17 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_G
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.GestureDirection
+import com.tunjid.fingergestures.viewmodels.Input
 
 private var BindingViewHolder<ViewholderMapperBinding>.item by viewHolderDelegate<Item.Mapper>()
 
 fun ViewGroup.mapper() = viewHolderFrom(ViewholderMapperBinding::inflate).apply {
-    binding.title.setOnClickListener { item.listener.showBottomSheetFragment(ActionFragment.directionInstance(item.direction)) }
+    binding.title.setOnClickListener { item.input.accept(Input.ShowSheet(ActionFragment.directionInstance(item.direction))) }
     binding.subTitle.setOnClickListener {
-        val notPremium = PurchasesManager.instance.isNotPremium
-
-        if (notPremium) goPremium(R.string.premium_prompt_double_swipe)
-        else item.listener.showBottomSheetFragment(ActionFragment.directionInstance(item.direction))
+         item.input.accept(
+            if (PurchasesManager.instance.isNotPremium) Input.GoPremium(R.string.premium_prompt_double_swipe)
+           else Input.ShowSheet(ActionFragment.directionInstance(item.direction))
+        )
     }
 }
 
@@ -70,23 +69,23 @@ fun BindingViewHolder<ViewholderMapperBinding>.bind(item: Item.Mapper) = binding
         RIGHT_GESTURE -> icon.setImageResource(R.drawable.ic_chevron_right_white_24dp)
     }
 
-    if (!App.accessibilityServiceEnabled()) item.listener.requestPermission(ACCESSIBILITY_CODE)
-    if (!App.canWriteToSettings()) item.listener.requestPermission(SETTINGS_CODE)
+    if (!App.accessibilityServiceEnabled()) item.input.accept(Input.Permission.Accessibility)
+    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
 
-     fun getFormattedText(@GestureDirection direction: String, text: String): CharSequence =
-         itemView.context.getString(R.string.mapper_format).formatSpanned(
-             mapper.getDirectionName(direction).bold(),
-             text
-         )
+    fun getFormattedText(@GestureDirection direction: String, text: String): CharSequence =
+        itemView.context.getString(R.string.mapper_format).formatSpanned(
+            mapper.getDirectionName(direction).bold(),
+            text
+        )
 
     title.text = getFormattedText(item.direction, mapper.getMappedAction(item.direction))
     subTitle.text = getFormattedText(doubleDirection, mapper.getMappedAction(doubleDirection))
 }
 
 class MapperViewHolder(
-        itemView: View,
-        @param:GestureDirection @field:GestureDirection private val direction: String,
-        listener: AppAdapterListener
+    itemView: View,
+    @param:GestureDirection @field:GestureDirection private val direction: String,
+    listener: AppAdapterListener
 ) : AppViewHolder(itemView, listener) {
 
     private val title: TextView
@@ -125,14 +124,14 @@ class MapperViewHolder(
     }
 
     private fun onClick(@GestureDirection direction: String) =
-            listener.showBottomSheetFragment(ActionFragment.directionInstance(direction))
+        listener.showBottomSheetFragment(ActionFragment.directionInstance(direction))
 
     private fun getFormattedText(@GestureDirection direction: String, text: String): CharSequence {
         val mapper = GestureMapper.instance
         val context = itemView.context
         return context.getString(R.string.mapper_format).formatSpanned(
-                mapper.getDirectionName(direction).bold(),
-                text
+            mapper.getDirectionName(direction).bold(),
+            text
         )
     }
 

@@ -26,6 +26,7 @@ import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 import androidx.annotation.StringDef
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.ReactivePreference
 import com.tunjid.fingergestures.SetManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ANDROID_SYSTEM_UI_PACKAGE
@@ -41,6 +42,11 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
             this::canAddToSet,
             this::fromPackageName,
             this::fromApplicationInfo)
+
+    val autoRotatePreference: ReactivePreference<Boolean> = ReactivePreference(
+        preferencesName = WATCHES_WINDOW_CONTENT,
+        default = false
+    )
 
     val applicationInfoComparator: Comparator<ApplicationInfo>
         get() = Comparator { infoA, infoB -> this.compareApplicationInfo(infoA, infoB) }
@@ -126,8 +132,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
     fun removeFromSet(packageName: String, @PersistedSet preferencesName: String) =
             setManager.removeFromSet(packageName, preferencesName)
 
-    fun canAutoRotate(): Boolean =
-            App.transformApp({ app -> app.preferences.getBoolean(WATCHES_WINDOW_CONTENT, false) }, false)
+    fun canAutoRotate(): Boolean = autoRotatePreference.item
 
     fun enableWindowContentWatching(enabled: Boolean) {
         App.withApp { app ->

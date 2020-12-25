@@ -66,25 +66,34 @@ import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.doOnLifecycleEvent
 import com.tunjid.androidx.navigation.multiStackNavigationController
 import com.tunjid.androidx.view.util.marginLayoutParams
-import com.tunjid.fingergestures.*
+import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
+import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_EDIT_WALLPAPER
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_NAV_BAR_CHANGED
+import com.tunjid.fingergestures.EventObserver
+import com.tunjid.fingergestures.GlobalUiController
+import com.tunjid.fingergestures.InsetLifecycleCallbacks
 import com.tunjid.fingergestures.InsetLifecycleCallbacks.Companion.topInset
+import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.billing.BillingManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
 import com.tunjid.fingergestures.fragments.AppFragment
+import com.tunjid.fingergestures.globalUiDriver
+import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.models.Shilling
 import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.models.UiState
 import com.tunjid.fingergestures.models.UiUpdate
 import com.tunjid.fingergestures.models.uiUpdate
+import com.tunjid.fingergestures.mutateGlobalUi
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.viewmodels.Input
 import io.reactivex.disposables.CompositeDisposable
 
 class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiController, Navigator.Controller {
@@ -135,16 +144,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected)
         bottomNavigationView.setOnApplyWindowInsetsListener { _: View?, windowInsets: WindowInsets? -> windowInsets }
-
-        supportFragmentManager.registerFragmentLifecycleCallbacks(InsetLifecycleCallbacks(
-                globalUiController = this@MainActivity,
-                parentContainer = this@MainActivity.findViewById(R.id.constraint_layout),
-                fragmentContainer = this@MainActivity.findViewById(R.id.main_fragment_container),
-                coordinatorLayout = this@MainActivity.findViewById(R.id.coordinator_layout),
-                toolbar = this@MainActivity.findViewById(R.id.toolbar),
-                bottomNavView = bottomNavigationView,
-                stackNavigatorSource = this@MainActivity.navigator::activeNavigator
-        ), true)
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
@@ -210,6 +209,20 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiControll
         }
 
         viewModel.broadcasts.observe(this, EventObserver(this::onBroadcastReceived))
+        viewModel.uiInteractions.observe(this){
+            when(it) {
+                is Input.ShowSheet -> {
+                    supportFragmentManager.beginTransaction().replace(R.id.bottom_sheet, it.fragment).commit()
+                    toggleBottomSheet(true)
+                }
+                is Input.GoPremium -> MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.go_premium_title)
+                    .setMessage(getString(R.string.go_premium_body, getString(it.description)))
+                    .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.PREMIUM_SKU) }
+                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                    .show()
+            }
+        }
     }
 
     override fun onResume() {

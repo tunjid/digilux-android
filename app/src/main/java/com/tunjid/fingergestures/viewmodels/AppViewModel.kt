@@ -25,6 +25,7 @@ import androidx.annotation.IdRes
 import androidx.annotation.IntDef
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.toLiveData
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.Event
@@ -36,6 +37,7 @@ import com.tunjid.fingergestures.activities.MainActivity.Companion.DO_NOT_DISTUR
 import com.tunjid.fingergestures.activities.MainActivity.Companion.SETTINGS_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.STORAGE_CODE
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.filterUnhandledEvents
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
@@ -51,6 +53,7 @@ import com.tunjid.fingergestures.toLiveData
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
 import io.reactivex.rxkotlin.addTo
@@ -59,11 +62,12 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 
-class AppViewModel(application: Application) : AndroidViewModel(application) {
+class AppViewModel(application: Application) : AndroidViewModel(application), Inputs {
+
+    private val interactionRelay = BehaviorProcessor.create<UiInteraction>()
 
     val liveState: LiveData<AppState> by lazy {
         val brightnessGestureConsumer = BrightnessGestureConsumer.instance
-        val rotationGestureConsumer = RotationGestureConsumer.instance
         val popUpGestureConsumer = PopUpGestureConsumer.instance
         val gestureMapper = GestureMapper.instance
 
@@ -73,10 +77,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 popUpGestureConsumer.popUpActions.listMap(::Action),
                 Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
                 installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
-                rotationGestureConsumer.rotatingApps.listMap(::Package),
-                rotationGestureConsumer.excludedRotatingApps.listMap(::Package),
-                RotationGestureConsumer.instance.lastSeenApps.listMap(::Package),
                 permissionsProcessor.debounce(160, TimeUnit.MILLISECONDS).startWith(listOf<Int>()),
+                items,
                 ::AppState
         ).toLiveData()
     }
@@ -90,6 +92,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             else Flowable.just(Shilling.Calm)
         }.toLiveData()
     }
+
+    val uiInteractions = interactionRelay
+        .toLiveData()
+        .filterUnhandledEvents()
 
     val broadcasts by lazy {
         getApplication<App>().broadcasts()
@@ -133,6 +139,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val disposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCleared() = disposable.clear()
+
+    override fun accept(input: Input): Unit = when(input) {
+        is Input.Permission.Storage -> requestPermission(input.code)
+        is Input.Permission.Settings -> requestPermission(input.code)
+        is Input.Permission.Accessibility -> requestPermission(input.code)
+        is Input.Permission.DoNotDisturb -> requestPermission(input.code)
+        is Input.ShowSheet -> interactionRelay.onNext(input)
+        is Input.GoPremium -> interactionRelay.onNext(input)
+    }
 
     fun itemsAt(position: Int): IntArray = tabItems.toList()[position].second
 

@@ -27,6 +27,7 @@ import androidx.annotation.StringRes
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.ReactivePreference
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.DO_NOTHING
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_BACK
@@ -57,6 +58,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 class GestureMapper private constructor() : FingerprintGestureController.FingerprintGestureCallback() {
 
+    val doubleSwipePreference: ReactivePreference<Int> = ReactivePreference(
+        preferencesName = DOUBLE_SWIPE_DELAY,
+        default = DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE
+    )
+
     private val actionIds: IntArray
     private val consumers: Array<GestureConsumer> = arrayOf(
             NothingGestureConsumer.instance,
@@ -80,11 +86,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
                 .filter(this::isSupportedAction)
                 .toIntArray()
 
-    var doubleSwipeDelay: Int
-        get() =
-            App.transformApp({ app -> app.preferences.getInt(DOUBLE_SWIPE_DELAY, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE) }, DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE)
-        set(percentage) =
-            App.withApp { app -> app.preferences.edit().putInt(DOUBLE_SWIPE_DELAY, percentage).apply() }
+    var doubleSwipeDelay: Int by doubleSwipePreference.delegate
 
     @Retention(AnnotationRetention.SOURCE)
     @StringDef(UP_GESTURE, DOWN_GESTURE, LEFT_GESTURE, RIGHT_GESTURE, DOUBLE_UP_GESTURE, DOUBLE_DOWN_GESTURE, DOUBLE_LEFT_GESTURE, DOUBLE_RIGHT_GESTURE)

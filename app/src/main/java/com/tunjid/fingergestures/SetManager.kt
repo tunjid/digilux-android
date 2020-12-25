@@ -17,19 +17,13 @@
 
 package com.tunjid.fingergestures
 
-
-import android.content.SharedPreferences
 import io.reactivex.Flowable
-import io.reactivex.processors.BehaviorProcessor
-import io.reactivex.schedulers.Schedulers
-import java.util.*
-import kotlin.collections.HashSet
-
+import java.util.Comparator
 
 class SetManager<T : Any>(private val sorter: Comparator<T>,
-                          private val addFilter: (String) -> Boolean,
-                          private val stringMapper: (String) -> T?,
-                          private val objectMapper: (T) -> String) {
+    private val addFilter: (String) -> Boolean,
+    private val stringMapper: (String) -> T?,
+    private val objectMapper: (T) -> String) {
 
     fun addToSet(value: String, preferencesName: String): Boolean {
         if (!addFilter.invoke(preferencesName)) return false
@@ -52,9 +46,9 @@ class SetManager<T : Any>(private val sorter: Comparator<T>,
     fun getItems(preferenceName: String): List<T> = stream(preferenceName).mapNotNull(stringMapper)
 
     private fun stream(preferenceName: String): List<String> = getSet(preferenceName)
-            .mapNotNull(stringMapper)
-            .sortedWith(sorter)
-            .map(objectMapper)
+        .mapNotNull(stringMapper)
+        .sortedWith(sorter)
+        .map(objectMapper)
 
     fun getSet(preferencesName: String): MutableSet<String> = HashSet<String>().apply {
         val saved = App.transformApp { app -> app.preferences.getStringSet(preferencesName, emptySet())?.filterNotNull() }
@@ -62,26 +56,10 @@ class SetManager<T : Any>(private val sorter: Comparator<T>,
     }
 
     private fun saveSet(set: Set<String>, preferencesName: String) =
-            App.withApp { app -> app.preferences.edit().putStringSet(preferencesName, set).apply() }
+        App.withApp { app -> app.preferences.edit().putStringSet(preferencesName, set).apply() }
 
-    fun itemsFlowable(preferencesName: String): Flowable<List<T>> {
-        val processor = BehaviorProcessor.create<List<T>>()
-        val prefs = App.transformApp(App::preferences)!!
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == preferencesName) processor.onNext(getItems(preferencesName))
-        }
-
-        return processor.subscribeOn(Schedulers.io())
-                .startWith(getItems(preferencesName))
-                .doOnSubscribe {
-                    listener.also(prefs::registerOnSharedPreferenceChangeListener)
-                            .let(listeners::add)
-                }
-                .doFinally {
-                    listener.also(prefs::unregisterOnSharedPreferenceChangeListener)
-                            .let(listeners::remove)
-                }
-    }
-
-    private val listeners = mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
+    fun itemsFlowable(preferencesName: String): Flowable<List<T>> =
+        ReactivePreference(preferencesName, emptySet<String>())
+            .monitor
+            .map { it.mapNotNull(stringMapper) }
 }

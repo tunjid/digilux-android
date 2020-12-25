@@ -19,6 +19,7 @@ package com.tunjid.fingergestures
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.LiveDataReactiveStreams
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Transformations
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -34,6 +35,41 @@ fun <T, R> LiveData<T>.map(mapper: (T) -> R): LiveData<R> =
 fun <T> LiveData<T>.distinctUntilChanged(): LiveData<T> =
         Transformations.distinctUntilChanged(this)
 
+fun <T> LiveData<T>.filter(predicate: (T) -> Boolean): LiveData<T> {
+    val mediator = MediatorLiveData<T>()
+    val current = this.value
+    if (current != null && predicate(current)) mediator.value = current
+    mediator.addSource(this) { if (predicate(it)) mediator.value = it }
+    return mediator
+}
+
+fun <T> LiveData<T>.filterUnhandledEvents(): LiveData<T> =
+    map(::LiveDataEvent)
+        .filter { !it.hasBeenHandled }
+        .map(LiveDataEvent<T>::peekContent)
+
+private data class LiveDataEvent<out T>(private val content: T) {
+
+    var hasBeenHandled = false
+        private set // Allow external read but not write
+
+    /**
+     * Returns the content and prevents its use again.
+     */
+    fun getContentIfNotHandled(): T? {
+        return if (hasBeenHandled) {
+            null
+        } else {
+            hasBeenHandled = true
+            content
+        }
+    }
+
+    /**
+     * Returns the content, even if it's already been handled.
+     */
+    fun peekContent(): T = content
+}
 /**
  * [LiveDataReactiveStreams.fromPublisher] uses [LiveData.postValue] internally which swallows
  * emissions if the occur before it can publish them using it's main thread executor.

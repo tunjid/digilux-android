@@ -24,6 +24,7 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.ReactivePreference
 import com.tunjid.fingergestures.R
 import io.reactivex.Flowable
 import java.util.*
@@ -34,6 +35,12 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
 
     private var numTrials: Int = 0
     private var isTrial: Boolean = false
+
+    val lockedContentPreference: ReactivePreference<Boolean> = ReactivePreference(
+        preferencesName = HAS_LOCKED_CONTENT,
+        default = false
+    )
+    val premium = lockedContentPreference.monitor.map { if (!it) true else !isNotPremium }
 
     var trialFlowable: Flowable<Long>? = null
         private set

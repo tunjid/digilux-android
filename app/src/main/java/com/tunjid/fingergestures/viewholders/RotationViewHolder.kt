@@ -43,6 +43,7 @@ import com.tunjid.fingergestures.fragments.PackageFragment
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.lifecycleOwner
 import com.tunjid.fingergestures.models.Package
+import com.tunjid.fingergestures.viewmodels.Input
 
 private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.Rotation>()
 private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Package, PackageViewHolder> by viewHolderDelegate()
@@ -55,7 +56,8 @@ fun ViewGroup.rotation() = viewHolderFrom(ViewholderHorizontalListBinding::infla
             !RotationGestureConsumer.instance.canAutoRotate() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
             item.persistedSet != null -> item.persistedSet
                 ?.let(PackageFragment.Companion::newInstance)
-                ?.let(item.listener::showBottomSheetFragment)
+                ?.let(Input::ShowSheet)
+                ?.let(item.input::accept)
         }
     }
     listAdapter = listAdapterOf(

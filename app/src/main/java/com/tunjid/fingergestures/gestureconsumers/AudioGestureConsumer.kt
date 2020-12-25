@@ -30,20 +30,23 @@ import androidx.annotation.IntDef
 import androidx.annotation.IntRange
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.ReactivePreference
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import kotlin.math.max
 import kotlin.math.min
 
 class AudioGestureConsumer private constructor() : GestureConsumer {
 
-    var volumeDelta: Int
-        @IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
+    val incrementPreference: ReactivePreference<Int> = ReactivePreference(
+        preferencesName = INCREMENT_VALUE,
+        default = DEF_INCREMENT_VALUE
+    )
+    val sliderPreference: ReactivePreference<Boolean> = ReactivePreference(
+        preferencesName = SHOWS_AUDIO_SLIDER,
+        default = true
+    )
 
-        get() = App.transformApp({ app -> app.preferences.getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE) }, DEF_INCREMENT_VALUE)
-        set(@IntRange(
-                from = GestureConsumer.ZERO_PERCENT.toLong(),
-                to = GestureConsumer.HUNDRED_PERCENT.toLong()
-        ) volumeDelta) = App.withApp { app -> app.preferences.edit().putInt(INCREMENT_VALUE, volumeDelta).apply() }
+    var volumeDelta: Int by incrementPreference.delegate
 
 
     var streamType: Int
@@ -89,8 +92,7 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
     fun canSetVolumeDelta(): Boolean =
             App.hasDoNotDisturbAccess() && streamType != STREAM_TYPE_DEFAULT
 
-    fun shouldShowSliders(): Boolean =
-            App.transformApp({ app -> app.preferences.getBoolean(SHOWS_AUDIO_SLIDER, true) }, true)
+    fun shouldShowSliders(): Boolean = sliderPreference.item
 
     private fun setStreamVolume(increase: Boolean, audioManager: AudioManager, streamType: Int) {
         val currentVolume = audioManager.getStreamVolume(streamType)
@@ -113,8 +115,9 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
         if (!turnDnDOn) audioManager.setStreamVolume(streamType, newVolume, flags)
     }
 
-    fun setShowsSliders(visible: Boolean) =
-            App.withApp { app -> app.preferences.edit().putBoolean(SHOWS_AUDIO_SLIDER, visible).apply() }
+    fun setShowsSliders(visible: Boolean) {
+        sliderPreference.item = visible
+    }
 
     private fun reduce(currentValue: Int, stream: Int, audioManager: AudioManager): Int =
             max(currentValue - normalizePercentageForStream(volumeDelta, stream, audioManager), MIN_VOLUME)
