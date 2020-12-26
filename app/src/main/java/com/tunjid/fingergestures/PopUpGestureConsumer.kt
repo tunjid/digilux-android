@@ -48,7 +48,7 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
         default = true
     )
 
-    private val setManager: SetManager<Preferences, Int> = SetManager(
+    val setManager: SetManager<Preferences, Int> = SetManager(
         keys = Preferences.values().toList(),
         sorter = Comparator(Int::compareTo),
         addFilter = this::canAddToSet,
@@ -65,16 +65,6 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
     }
 
     override fun accepts(gesture: Int): Boolean = gesture == SHOW_POPUP
-
-    fun hasAccessibilityButton(): Boolean = accessibilityButtonEnabledPreference.value
-
-    fun shouldAnimatePopup(): Boolean = animatePopUpPreference.value
-
-    fun addToSet(@GestureConsumer.GestureAction action: Int): Boolean =
-            setManager.addToSet(Preferences.SavedActions, action.toString())
-
-    fun removeFromSet(@GestureConsumer.GestureAction action: Int) =
-            setManager.removeFromSet(Preferences.SavedActions, action.toString())
 
     fun showPopup() = if (accessibilityButtonSingleClickPreference.value) list.stream()
             .findFirst()

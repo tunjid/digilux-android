@@ -49,7 +49,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
     binding.add.setOnClickListener {
         when {
             !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
-            !PopUpGestureConsumer.instance.hasAccessibilityButton() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
+            !PopUpGestureConsumer.instance.accessibilityButtonEnabledPreference.value -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
             else -> item.input.accept(Input.ShowSheet(ActionFragment.popUpInstance()))
         }
     }
@@ -91,10 +91,10 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(a
 
     when {
         !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
-        !buttonManager.hasAccessibilityButton() -> builder.setMessage(R.string.popup_prompt)
+        !buttonManager.accessibilityButtonEnabledPreference.value -> builder.setMessage(R.string.popup_prompt)
         else -> builder.setTitle(R.string.popup_remove)
             .setPositiveButton(R.string.yes) { _, _ ->
-                buttonManager.removeFromSet(action.value)
+                buttonManager.setManager.removeFromSet(PopUpGestureConsumer.Preferences.SavedActions, action.value.toString())
                 if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
@@ -114,7 +114,7 @@ class PopupViewHolder(
         itemView.findViewById<View>(R.id.add).setOnClickListener {
             when {
                 !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
-                !PopUpGestureConsumer.instance.hasAccessibilityButton() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
+                !PopUpGestureConsumer.instance.accessibilityButtonEnabledPreference.value -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
                 else -> listener.showBottomSheetFragment(ActionFragment.popUpInstance())
             }
         }
@@ -156,10 +156,10 @@ class PopupViewHolder(
 
         when {
             !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
-            !buttonManager.hasAccessibilityButton() -> builder.setMessage(R.string.popup_prompt)
+            !buttonManager.accessibilityButtonEnabledPreference.value -> builder.setMessage(R.string.popup_prompt)
             else -> builder.setTitle(R.string.popup_remove)
                 .setPositiveButton(R.string.yes) { _, _ ->
-                    buttonManager.removeFromSet(action.value)
+                    buttonManager.setManager.removeFromSet(PopUpGestureConsumer.Preferences.SavedActions, action.value.toString())
                     bind()
                 }
                 .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }

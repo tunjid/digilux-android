@@ -103,7 +103,7 @@ class PopupActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (PopUpGestureConsumer.instance.shouldAnimatePopup())
+        if (PopUpGestureConsumer.instance.animatePopUpPreference.value)
             overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
     }
 
@@ -114,7 +114,7 @@ class PopupActivity : AppCompatActivity() {
 
     override fun finish() {
         super.finish()
-        val shouldAnimate = PopUpGestureConsumer.instance.shouldAnimatePopup()
+        val shouldAnimate = PopUpGestureConsumer.instance.animatePopUpPreference.value
         if (shouldAnimate)
             overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
         else

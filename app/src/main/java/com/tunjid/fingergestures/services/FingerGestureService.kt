@@ -106,7 +106,7 @@ class FingerGestureService : AccessibilityService() {
         subscribeToBroadcasts()
         registerReceiver(screenWakeReceiver, IntentFilter(ACTION_SCREEN_ON))
         setWatchesWindows(RotationGestureConsumer.instance.autoRotatePreference.value)
-        setShowsAccessibilityButton(PopUpGestureConsumer.instance.hasAccessibilityButton())
+        setShowsAccessibilityButton(PopUpGestureConsumer.instance.accessibilityButtonEnabledPreference.value)
     }
 
     override fun onDestroy() {

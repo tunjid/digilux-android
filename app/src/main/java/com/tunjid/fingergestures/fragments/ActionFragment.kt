@@ -87,7 +87,9 @@ class ActionFragment : Fragment(R.layout.fragment_actions) {
 
         if (direction == null) { // Pop up instance
             val context = requireContext()
-            if (!PopUpGestureConsumer.instance.addToSet(action.value)) MaterialAlertDialogBuilder(context)
+            if (!PopUpGestureConsumer.instance
+                    .setManager
+                    .addToSet(PopUpGestureConsumer.Preferences.SavedActions, action.value.toString())) MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
                     .setPositiveButton(R.string.continue_text) { _, _ -> mainActivity.purchase(PurchasesManager.PREMIUM_SKU) }
