@@ -29,6 +29,7 @@ import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
+import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.viewholders.ReviewLinkItem
 import com.tunjid.fingergestures.viewholders.SupportLinkItem
@@ -249,10 +250,11 @@ interface Inputs {
 
     private val PopUpGestureConsumer.items: Flowable<List<Item>>
         get() = Flowables.combineLatest(
+            setManager.itemsFlowable(PopUpGestureConsumer.Preference.SavedActions).listMap(::Action),
             accessibilityButtonSingleClickPreference.monitor,
             accessibilityButtonEnabledPreference.monitor,
             animatePopUpPreference.monitor,
-        ).map { (isSingleClick, accessibilityButtonEnabled, animatePopup) ->
+        ) { savedActions, isSingleClick, accessibilityButtonEnabled, animatePopup ->
             listOf(
                 Item.Toggle(
                     tab = Tab.Shortcuts,
@@ -274,6 +276,14 @@ interface Inputs {
                     titleRes = R.string.popup_animate_in,
                     isChecked = animatePopup,
                     consumer = animatePopUpPreference.setter
+                ),
+                Item.PopUp(
+                    tab = Tab.Shortcuts,
+                    index = AppViewModel.POPUP_ACTION,
+                    items = savedActions,
+                    editor = setManager,
+                    accessibilityButtonEnabled = accessibilityButtonEnabled,
+                    input = this@Inputs
                 )
             )
         }
@@ -424,11 +434,6 @@ interface Inputs {
 //                // )
 //                // WALLPAPER_TRIGGER -> WallpaperTriggerViewHolder(
 //                //         viewGroup.inflate(R.layout.viewholder_wallpaper_trigger),
-//                //         listener
-//                // )
-//                // POPUP_ACTION -> PopupViewHolder(
-//                //         viewGroup.inflate(R.layout.viewholder_horizontal_list),
-//                //         state.map(AppState::popUpActions),
 //                //         listener
 //                // )
 //                // DISCRETE_BRIGHTNESS -> DiscreteBrightnessViewHolder(

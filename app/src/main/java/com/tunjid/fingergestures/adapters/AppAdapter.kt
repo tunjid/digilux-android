@@ -25,6 +25,7 @@ import com.tunjid.androidx.recyclerview.viewbinding.typed
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.ListPreferenceEditor
+import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.databinding.*
@@ -171,6 +172,8 @@ sealed class Item(
     data class PopUp(
         override val tab: Tab,
         override val index: Int,
+        val accessibilityButtonEnabled: Boolean,
+        val editor: ListPreferenceEditor<PopUpGestureConsumer.Preference>,
         val items: List<Action>,
         val input: Inputs
     ) : Item("PopUp")

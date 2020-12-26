@@ -27,7 +27,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 
 class PopUpGestureConsumer private constructor() : GestureConsumer {
 
-    enum class Preferences(override val preferenceName: String) : ListPreference {
+    enum class Preference(override val preferenceName: String) : ListPreference {
         SavedActions(preferenceName = "accessibility button apps");
     }
 
@@ -48,17 +48,17 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
         default = true
     )
 
-    val setManager: SetManager<Preferences, Int> = SetManager(
-        keys = Preferences.values().toList(),
+    val setManager: SetManager<Preference, Int> = SetManager(
+        keys = Preference.values().toList(),
         sorter = Comparator(Int::compareTo),
         addFilter = this::canAddToSet,
         stringMapper = Integer::valueOf,
         objectMapper = Any::toString)
 
-    val popUpActions = setManager.itemsFlowable(Preferences.SavedActions)
+    val popUpActions = setManager.itemsFlowable(Preference.SavedActions)
 
     private val list: List<Int>
-        get() = setManager.getItems(Preferences.SavedActions)
+        get() = setManager.getItems(Preference.SavedActions)
 
     override fun onGestureActionTriggered(gestureAction: Int) {
         App.withApp { app -> app.broadcast(Intent(ACTION_SHOW_POPUP)) }
@@ -75,7 +75,7 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
         app.startActivity(intent)
     }
 
-    private fun canAddToSet(preferenceName: Preferences): Boolean =
+    private fun canAddToSet(preferenceName: Preference): Boolean =
             setManager.getSet(preferenceName).size < 2 || PurchasesManager.instance.isPremiumNotTrial
 
     companion object {
