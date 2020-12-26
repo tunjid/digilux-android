@@ -176,9 +176,7 @@ class BackgroundManager private constructor() {
         if (handledEditPick(intent)) return
 
         val selection = selectionFromIntent(intent) ?: return
-
-        val wallpaperFile = App.transformApp { app -> getWallpaperFile(selection) }
-            ?: return
+        val wallpaperFile = getWallpaperFile(selection) ?: return
 
         val wallpaperManager = App.transformApp { app -> app.getSystemService(WallpaperManager::class.java) }
         if (wallpaperManager == null || !wallpaperFile.exists()) return
@@ -189,7 +187,6 @@ class BackgroundManager private constructor() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
 
     private fun selectionFromIntent(intent: Intent): WallpaperSelection? = when (intent.action) {
