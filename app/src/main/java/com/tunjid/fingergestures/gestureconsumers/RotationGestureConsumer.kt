@@ -36,7 +36,6 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
     enum class Preference(override val preferenceName: String) : ListPreference {
         RotatingApps(preferenceName = "rotation apps"),
         NonRotatingApps(preferenceName = "excluded rotation apps"),
-        RecentlySeenApps(preferenceName = "watches window content");
     }
 
     val setManager: SetManager<Preference, ApplicationInfo> = SetManager(
@@ -48,7 +47,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
     )
 
     val autoRotatePreference: ReactivePreference<Boolean> = ReactivePreference(
-        preferencesName = Preference.RecentlySeenApps.preferenceName,
+        preferencesName = WATCHES_WINDOW_CONTENT,
         default = false
     )
 
@@ -126,7 +125,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
 
     fun enableWindowContentWatching(enabled: Boolean) {
         App.withApp { app ->
-            app.preferences.edit().putBoolean(Preference.RecentlySeenApps.preferenceName, enabled).apply()
+            app.preferences.edit().putBoolean(WATCHES_WINDOW_CONTENT, enabled).apply()
 
             val intent = Intent(ACTION_WATCH_WINDOW_CHANGES)
             intent.putExtra(EXTRA_WATCHES_WINDOWS, enabled)
@@ -163,6 +162,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
 
         const val ACTION_WATCH_WINDOW_CHANGES = "com.tunjid.fingergestures.watch_windows"
         const val EXTRA_WATCHES_WINDOWS = "extra watches window content"
+        private const val WATCHES_WINDOW_CONTENT = "watches window content"
         private const val EMPTY_STRING = ""
 
         val instance: RotationGestureConsumer by lazy { RotationGestureConsumer() }

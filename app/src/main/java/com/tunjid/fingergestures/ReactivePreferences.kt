@@ -18,6 +18,7 @@
 package com.tunjid.fingergestures
 
 import android.content.SharedPreferences
+import android.util.Log
 import com.jakewharton.rx.replayingShare
 import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor
@@ -26,26 +27,33 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 class ReactivePreference<T>(
-        private val preferencesName: String,
-        private val default: T,
-        private val onSet: ((T) -> Unit)? = null
+    private val preferencesName: String,
+    private val default: T,
+    private val onSet: ((T) -> Unit)? = null
 ) {
     private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf()
 
     @Suppress("UNCHECKED_CAST")
     var value: T
-        get() = with(App.transformApp(App::preferences)!!) {
-            when (default) {
-                is String -> getString(preferencesName, default)
-                is Int -> getInt(preferencesName, default)
-                is Long -> getLong(preferencesName, default)
-                is Float -> getFloat(preferencesName, default)
-                is Boolean -> getBoolean(preferencesName, default)
-                is Set<*> -> HashSet(getStringSet(preferencesName, emptySet())?.filterNotNull()
+        get() = try {
+            with(App.transformApp(App::preferences)!!) {
+
+                when (default) {
+                    is String -> getString(preferencesName, default)
+                    is Int -> getInt(preferencesName, default)
+                    is Long -> getLong(preferencesName, default)
+                    is Float -> getFloat(preferencesName, default)
+                    is Boolean -> getBoolean(preferencesName, default)
+                    is Set<*> -> HashSet(getStringSet(preferencesName, emptySet())?.filterNotNull()
                         ?: emptySet<String>())
-                else -> throw IllegalArgumentException("Uhh what are you doing?")
-            }
-        } as T
+                    else -> throw IllegalArgumentException("Uhh what are you doing?")
+                }
+
+            } as T
+        } catch (e: Exception) {
+            Log.e("TEST", "Bad mapping with preference name $preferencesName")
+            throw e
+        }
         set(value) = with(App.transformApp(App::preferences)!!.edit()) {
             when (value) {
                 is String -> putString(preferencesName, value)
@@ -83,15 +91,16 @@ class ReactivePreference<T>(
             if (key == preferencesName) processor.onNext(value)
         }
 
+        Log.i("TEST", "Monitoring $preferencesName")
         return processor.subscribeOn(Schedulers.io())
-                .startWith(value)
-                .doOnSubscribe {
-                    listener.also(prefs::registerOnSharedPreferenceChangeListener)
-                            .let(listeners::add)
-                }
-                .doFinally {
-                    listener.also(prefs::unregisterOnSharedPreferenceChangeListener)
-                            .let(listeners::remove)
-                }
+            .startWith(value)
+            .doOnSubscribe {
+                listener.also(prefs::registerOnSharedPreferenceChangeListener)
+                    .let(listeners::add)
+            }
+            .doFinally {
+                listener.also(prefs::unregisterOnSharedPreferenceChangeListener)
+                    .let(listeners::remove)
+            }
     }
 }
