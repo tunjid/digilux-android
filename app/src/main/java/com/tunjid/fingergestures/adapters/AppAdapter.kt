@@ -85,17 +85,17 @@ sealed class Item(
 ) : Differentiable {
 
     abstract val tab: Tab
-    abstract val index: Int
+    abstract val sortKey: Int
 
     data class Padding(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         override val diffId: String
     ) : Item(diffId)
 
     data class Toggle(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         @StringRes val titleRes: Int,
         val consumer: (Boolean) -> Unit,
         val isChecked: Boolean,
@@ -103,7 +103,7 @@ sealed class Item(
 
     data class Slider(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         @StringRes val titleRes: Int,
         @StringRes val infoRes: Int,
         val consumer: (Int) -> Unit,
@@ -114,7 +114,7 @@ sealed class Item(
 
     data class Mapper(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         @param:GestureMapper.GestureDirection
         @field:GestureMapper.GestureDirection
         val direction: String,
@@ -127,7 +127,7 @@ sealed class Item(
 
     data class Rotation(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val preference: RotationGestureConsumer.Preference?,
         @StringRes val titleRes: Int,
         @StringRes val infoRes: Int,
@@ -141,14 +141,14 @@ sealed class Item(
 
     data class Link(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val linkItem: LinkItem,
         val input: Inputs
     ) : Item(linkItem.link)
 
     data class AudioStream(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val stream: AudioGestureConsumer.Stream,
         val hasDoNotDisturbAccess: Boolean,
         val titleFunction: (Int) -> String,
@@ -157,7 +157,7 @@ sealed class Item(
 
     data class AdFree(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val hasAds: Boolean,
         val notAdFree: Boolean,
         val notPremium: Boolean,
@@ -166,19 +166,19 @@ sealed class Item(
 
     data class WallpaperView(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val input: Inputs
     ) : Item("WallpaperView")
 
     data class WallpaperTrigger(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val input: Inputs
     ) : Item("WallpaperTrigger")
 
     data class PopUp(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val accessibilityButtonEnabled: Boolean,
         val editor: ListPreferenceEditor<PopUpGestureConsumer.Preference>,
         val items: List<Action>,
@@ -187,7 +187,7 @@ sealed class Item(
 
     data class DiscreteBrightness(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val brightnesses: List<Brightness>,
         val editor: ListPreferenceEditor<BrightnessGestureConsumer.Preference>,
         val input: Inputs
@@ -195,13 +195,13 @@ sealed class Item(
 
     data class ColorAdjuster(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val input: Inputs
     ) : Item("ColorAdjuster")
 
     data class ScreenDimmer(
         override val tab: Tab,
-        override val index: Int,
+        override val sortKey: Int,
         val input: Inputs
     ) : Item("ScreenDimmer")
 }

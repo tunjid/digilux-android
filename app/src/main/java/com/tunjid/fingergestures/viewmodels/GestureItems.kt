@@ -86,30 +86,30 @@ interface Inputs {
                 .map { (tab, items) ->
                     items + listOf(
                         Item.Padding(
-                            index = Int.MIN_VALUE,
+                            sortKey = Int.MIN_VALUE,
                             tab = tab,
                             diffId = "Top"
                         ),
                         Item.Padding(
-                            index = Int.MAX_VALUE,
+                            sortKey = Int.MAX_VALUE,
                             tab = tab,
                             diffId = "Bottom"
                         ))
                 }
                 .flatten()
-                .sortedBy(Item::index)
+                .sortedWith(COMPARATOR)
         }
 
     private val simpleGestureItems: Flowable<List<Item>>
         get() = Flowable.just(listOf(
             Item.Link(
-                index = AppViewModel.SUPPORT,
+                sortKey = AppViewModel.SUPPORT,
                 tab = Tab.Gestures,
                 linkItem = SupportLinkItem,
                 input = this@Inputs
             ),
             Item.Link(
-                index = AppViewModel.REVIEW,
+                sortKey = AppViewModel.REVIEW,
                 tab = Tab.Gestures,
                 linkItem = ReviewLinkItem,
                 input = this@Inputs
@@ -120,7 +120,7 @@ interface Inputs {
         get() = directionPreferencesFlowable.map { state ->
             listOf(
                 Item.Mapper(
-                    index = AppViewModel.MAP_UP_ICON,
+                    sortKey = AppViewModel.MAP_UP_ICON,
                     tab = Tab.Gestures,
                     direction = GestureMapper.UP_GESTURE,
                     doubleDirection = GestureMapper.DOUBLE_UP_GESTURE,
@@ -128,7 +128,7 @@ interface Inputs {
                     input = this@Inputs
                 ),
                 Item.Mapper(
-                    index = AppViewModel.MAP_DOWN_ICON,
+                    sortKey = AppViewModel.MAP_DOWN_ICON,
                     tab = Tab.Gestures,
                     direction = GestureMapper.DOWN_GESTURE,
                     doubleDirection = GestureMapper.DOUBLE_DOWN_GESTURE,
@@ -136,7 +136,7 @@ interface Inputs {
                     input = this@Inputs
                 ),
                 Item.Mapper(
-                    index = AppViewModel.MAP_LEFT_ICON,
+                    sortKey = AppViewModel.MAP_LEFT_ICON,
                     tab = Tab.Gestures,
                     direction = GestureMapper.LEFT_GESTURE,
                     doubleDirection = GestureMapper.DOUBLE_LEFT_GESTURE,
@@ -144,7 +144,7 @@ interface Inputs {
                     input = this@Inputs
                 ),
                 Item.Mapper(
-                    index = AppViewModel.MAP_RIGHT_ICON,
+                    sortKey = AppViewModel.MAP_RIGHT_ICON,
                     tab = Tab.Gestures,
                     direction = GestureMapper.RIGHT_GESTURE,
                     doubleDirection = GestureMapper.DOUBLE_RIGHT_GESTURE,
@@ -159,7 +159,7 @@ interface Inputs {
             listOf(
                 Item.Slider(
                     tab = Tab.Brightness,
-                    index = AppViewModel.SLIDER_DELTA,
+                    sortKey = AppViewModel.SLIDER_DELTA,
                     titleRes = R.string.adjust_slider_delta,
                     infoRes = 0,
                     consumer = percentagePreference.setter,
@@ -169,7 +169,7 @@ interface Inputs {
                 ),
                 Item.Slider(
                     tab = Tab.Display,
-                    index = AppViewModel.SLIDER_POSITION,
+                    sortKey = AppViewModel.SLIDER_POSITION,
                     titleRes = R.string.adjust_slider_position,
                     infoRes = 0,
                     consumer = positionPreference.setter,
@@ -179,7 +179,7 @@ interface Inputs {
                 ),
                 Item.Slider(
                     tab = Tab.Brightness,
-                    index = AppViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+                    sortKey = AppViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
                     titleRes = R.string.adjust_adaptive_threshold,
                     infoRes = R.string.adjust_adaptive_threshold_description,
                     consumer = adaptiveBrightnessThresholdPreference.setter,
@@ -189,35 +189,35 @@ interface Inputs {
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
-                    index = AppViewModel.ADAPTIVE_BRIGHTNESS,
+                    sortKey = AppViewModel.ADAPTIVE_BRIGHTNESS,
                     titleRes = R.string.adaptive_brightness,
                     isChecked = it.restoresAdaptiveBrightnessOnDisplaySleep,
                     consumer = adaptiveBrightnessPreference.setter,
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
-                    index = AppViewModel.USE_LOGARITHMIC_SCALE,
+                    sortKey = AppViewModel.USE_LOGARITHMIC_SCALE,
                     titleRes = R.string.use_logarithmic_scale,
                     isChecked = it.usesLogarithmicScale,
                     consumer = logarithmicBrightnessPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
-                    index = AppViewModel.SHOW_SLIDER,
+                    sortKey = AppViewModel.SHOW_SLIDER,
                     titleRes = R.string.show_slider,
                     isChecked = it.shouldShowSlider,
                     consumer = showSliderPreference.setter,
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
-                    index = AppViewModel.ANIMATES_SLIDER,
+                    sortKey = AppViewModel.ANIMATES_SLIDER,
                     titleRes = R.string.slider_animate,
                     isChecked = it.shouldAnimateSlider,
                     consumer = animateSliderPreference.setter
                 ),
                 Item.DiscreteBrightness(
                     tab = Tab.Brightness,
-                    index = AppViewModel.DISCRETE_BRIGHTNESS,
+                    sortKey = AppViewModel.DISCRETE_BRIGHTNESS,
                     editor = discreteBrightnessManager,
                     brightnesses = it.discreteBrightnesses.map(Int::toString).map(::Brightness),
                     input = this@Inputs,
@@ -233,7 +233,7 @@ interface Inputs {
             listOf(
                 Item.Slider(
                     tab = Tab.Display,
-                    index = AppViewModel.SLIDER_DURATION,
+                    sortKey = AppViewModel.SLIDER_DURATION,
                     titleRes = R.string.adjust_slider_duration,
                     infoRes = 0,
                     value = sliderDuration,
@@ -243,7 +243,7 @@ interface Inputs {
                 ),
                 Item.Toggle(
                     tab = Tab.Display,
-                    index = AppViewModel.NAV_BAR_COLOR,
+                    sortKey = AppViewModel.NAV_BAR_COLOR,
                     titleRes = R.string.use_colored_nav,
                     isChecked = coloredNav,
                     consumer = coloredNavPreference.setter
@@ -261,28 +261,28 @@ interface Inputs {
             listOf(
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    index = AppViewModel.ENABLE_ACCESSIBILITY_BUTTON,
+                    sortKey = AppViewModel.ENABLE_ACCESSIBILITY_BUTTON,
                     titleRes = R.string.popup_enable,
                     isChecked = accessibilityButtonEnabled,
                     consumer = accessibilityButtonEnabledPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    index = AppViewModel.ACCESSIBILITY_SINGLE_CLICK,
+                    sortKey = AppViewModel.ACCESSIBILITY_SINGLE_CLICK,
                     titleRes = R.string.popup_single_click,
                     isChecked = isSingleClick,
                     consumer = accessibilityButtonSingleClickPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    index = AppViewModel.ANIMATES_POPUP,
+                    sortKey = AppViewModel.ANIMATES_POPUP,
                     titleRes = R.string.popup_animate_in,
                     isChecked = animatePopup,
                     consumer = animatePopUpPreference.setter
                 ),
                 Item.PopUp(
                     tab = Tab.Shortcuts,
-                    index = AppViewModel.POPUP_ACTION,
+                    sortKey = AppViewModel.POPUP_ACTION,
                     items = savedActions,
                     editor = setManager,
                     accessibilityButtonEnabled = accessibilityButtonEnabled,
@@ -301,14 +301,14 @@ interface Inputs {
             listOf(
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    index = AppViewModel.ENABLE_WATCH_WINDOWS,
+                    sortKey = AppViewModel.ENABLE_WATCH_WINDOWS,
                     titleRes = R.string.selective_app_rotation,
                     isChecked = canAutoRotate,
                     consumer = autoRotatePreference.setter
                 ),
                 Item.Rotation(
                     tab = Tab.Shortcuts,
-                    index = AppViewModel.ROTATION_LOCK,
+                    sortKey = AppViewModel.ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.RotatingApps,
                     removeText = getRemoveText(RotationGestureConsumer.Preference.RotatingApps),
                     titleRes = R.string.auto_rotate_apps,
@@ -321,7 +321,7 @@ interface Inputs {
                 ),
                 Item.Rotation(
                     tab = Tab.Shortcuts,
-                    index = AppViewModel.EXCLUDED_ROTATION_LOCK,
+                    sortKey = AppViewModel.EXCLUDED_ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.NonRotatingApps,
                     removeText = getRemoveText(RotationGestureConsumer.Preference.NonRotatingApps),
                     titleRes = R.string.auto_rotate_apps_excluded,
@@ -334,7 +334,7 @@ interface Inputs {
                 ),
                 Item.Rotation(
                     tab = Tab.Shortcuts,
-                    index = AppViewModel.ROTATION_HISTORY,
+                    sortKey = AppViewModel.ROTATION_HISTORY,
                     preference = null,
                     removeText = "",
                     titleRes = R.string.app_rotation_history_title,
@@ -357,14 +357,14 @@ interface Inputs {
             listOf(
                 Item.Toggle(
                     tab = Tab.Audio,
-                    index = AppViewModel.AUDIO_SLIDER_SHOW,
+                    sortKey = AppViewModel.AUDIO_SLIDER_SHOW,
                     titleRes = R.string.audio_stream_slider_show,
                     isChecked = showSlider,
                     consumer = sliderPreference.setter,
                 ),
                 Item.Slider(
                     tab = Tab.Audio,
-                    index = AppViewModel.AUDIO_DELTA,
+                    sortKey = AppViewModel.AUDIO_DELTA,
                     titleRes = R.string.audio_stream_delta,
                     infoRes = 0,
                     value = audioValue,
@@ -375,7 +375,7 @@ interface Inputs {
                 ),
                 Item.AudioStream(
                     tab = Tab.Audio,
-                    index = AppViewModel.AUDIO_STREAM_TYPE,
+                    sortKey = AppViewModel.AUDIO_STREAM_TYPE,
                     titleFunction = ::getStreamTitle,
                     hasDoNotDisturbAccess = App.hasDoNotDisturbAccess(),
                     stream = AudioGestureConsumer.Stream
@@ -393,7 +393,7 @@ interface Inputs {
         ) { doubleSwipe, state ->
             listOf(
                 Item.AdFree(
-                    index = AppViewModel.AD_FREE,
+                    sortKey = AppViewModel.AD_FREE,
                     tab = Tab.Gestures,
                     input = this@Inputs,
                     notAdFree = state.notAdFree,
@@ -402,14 +402,14 @@ interface Inputs {
                 ),
                 Item.Toggle(
                     tab = Tab.Gestures,
-                    index = AppViewModel.LOCKED_CONTENT,
+                    sortKey = AppViewModel.LOCKED_CONTENT,
                     titleRes = R.string.set_locked_content,
                     isChecked = state.hasLockedContent,
                     consumer = lockedContentPreference.setter
                 ),
                 Item.Slider(
                     tab = Tab.Brightness,
-                    index = AppViewModel.DOUBLE_SWIPE_SETTINGS,
+                    sortKey = AppViewModel.DOUBLE_SWIPE_SETTINGS,
                     titleRes = R.string.adjust_double_swipe_settings,
                     infoRes = 0,
                     isEnabled = state.isPremium,
@@ -457,26 +457,35 @@ interface Inputs {
 //    }
 //}
 
-// private fun getTabItems() {
-//     listOf(
-//         R.id.action_directions to intArrayOf(
-//             AppViewModel.LOCKED_CONTENT
-//         ),
-//         R.id.action_slider to intArrayOf(
-//             AppViewModel.PADDING, AppViewModel.SLIDER_DELTA, AppViewModel.DISCRETE_BRIGHTNESS, AppViewModel.SCREEN_DIMMER, AppViewModel.USE_LOGARITHMIC_SCALE,
-//             AppViewModel.SHOW_SLIDER, AppViewModel.ADAPTIVE_BRIGHTNESS, AppViewModel.ANIMATES_SLIDER, AppViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
-//             AppViewModel.DOUBLE_SWIPE_SETTINGS
-//         ),
-//         R.id.action_audio to intArrayOf(
-//             AppViewModel.PADDING, AppViewModel.AUDIO_DELTA, AppViewModel.AUDIO_STREAM_TYPE, AppViewModel.AUDIO_SLIDER_SHOW
-//         ),
-//         R.id.action_accessibility_popup to intArrayOf(AppViewModel.PADDING, AppViewModel.ENABLE_ACCESSIBILITY_BUTTON, AppViewModel.ACCESSIBILITY_SINGLE_CLICK,
-//             AppViewModel.ANIMATES_POPUP, AppViewModel.ENABLE_WATCH_WINDOWS, AppViewModel.POPUP_ACTION,
-//             AppViewModel.ROTATION_LOCK, AppViewModel.EXCLUDED_ROTATION_LOCK, AppViewModel.ROTATION_HISTORY
-//         ),
-//         R.id.action_wallpaper to intArrayOf(
-//             AppViewModel.PADDING, AppViewModel.SLIDER_POSITION, AppViewModel.SLIDER_DURATION, AppViewModel.NAV_BAR_COLOR,
-//             AppViewModel.SLIDER_COLOR, AppViewModel.WALLPAPER_PICKER, AppViewModel.WALLPAPER_TRIGGER
-//         )
-//     ).toMap()
-// }
+private val COMPARATOR: Comparator<Item> = compareBy(Item::tab, {
+    when (val index = it.sortList.indexOf(it.sortKey)) {
+        in Int.MIN_VALUE until 0 -> it.sortKey
+        else -> index
+    }
+})
+
+private val Item.sortList get() = tabItems.getValue(tab)
+
+private val tabItems = listOf(
+    Tab.Gestures to intArrayOf(
+        AppViewModel.MAP_UP_ICON, AppViewModel.MAP_DOWN_ICON, AppViewModel.MAP_LEFT_ICON, AppViewModel.MAP_RIGHT_ICON,
+        AppViewModel.AD_FREE, AppViewModel.SUPPORT, AppViewModel.REVIEW, AppViewModel.LOCKED_CONTENT
+    ),
+    Tab.Brightness to intArrayOf(
+        AppViewModel.SLIDER_DELTA, AppViewModel.DISCRETE_BRIGHTNESS, AppViewModel.SCREEN_DIMMER, AppViewModel.USE_LOGARITHMIC_SCALE,
+        AppViewModel.SHOW_SLIDER, AppViewModel.ADAPTIVE_BRIGHTNESS, AppViewModel.ANIMATES_SLIDER, AppViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+        AppViewModel.DOUBLE_SWIPE_SETTINGS
+    ),
+    Tab.Audio to intArrayOf(
+        AppViewModel.AUDIO_DELTA, AppViewModel.AUDIO_STREAM_TYPE, AppViewModel.AUDIO_SLIDER_SHOW
+    ),
+    Tab.Shortcuts to intArrayOf(
+        AppViewModel.ENABLE_ACCESSIBILITY_BUTTON, AppViewModel.ACCESSIBILITY_SINGLE_CLICK,
+        AppViewModel.ANIMATES_POPUP, AppViewModel.ENABLE_WATCH_WINDOWS, AppViewModel.POPUP_ACTION,
+        AppViewModel.ROTATION_LOCK, AppViewModel.EXCLUDED_ROTATION_LOCK, AppViewModel.ROTATION_HISTORY
+    ),
+    Tab.Display to intArrayOf(
+        AppViewModel.SLIDER_POSITION, AppViewModel.SLIDER_DURATION, AppViewModel.NAV_BAR_COLOR,
+        AppViewModel.SLIDER_COLOR, AppViewModel.WALLPAPER_PICKER, AppViewModel.WALLPAPER_TRIGGER
+    )
+).toMap()
