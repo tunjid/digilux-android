@@ -136,6 +136,14 @@ class BackgroundManager private constructor() {
         day.cancel()
     }
 
+    val wallpaperEditPendingIntent: PendingIntent
+        get() {
+            val app = App.instance!!
+            val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
+            intent.action = ACTION_EDIT_WALLPAPER
+            return PendingIntent.getBroadcast(app, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+
     // TODO: Fix this
     fun setUsesColoredNav(usesColoredNav: Boolean) {
         App.withApp { app ->
@@ -262,13 +270,6 @@ class BackgroundManager private constructor() {
         PendingIntent.getBroadcast(app, selection.code, getWallPaperChangeIntent(app, selection), PendingIntent.FLAG_NO_CREATE) != null
     }, false)
 
-    fun getWallpaperEditPendingIntent(context: Context): PendingIntent {
-        val app = context.applicationContext
-        val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
-        intent.action = ACTION_EDIT_WALLPAPER
-        return PendingIntent.getBroadcast(app, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
-
     private fun getWallPaperChangeIntent(app: Context, selection: WallpaperSelection): Intent {
         val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
         intent.action = ACTION_CHANGE_WALLPAPER
@@ -293,6 +294,8 @@ class BackgroundManager private constructor() {
         (percentage * MAX_SLIDER_DURATION / 100f).toInt()
 
     companion object {
+        const val ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper"
+        const val ACTION_NAV_BAR_CHANGED = "com.tunjid.fingergestures.action.navBarChanged"
         val instance: BackgroundManager by lazy { BackgroundManager() }
     }
 }
@@ -312,8 +315,6 @@ private const val ERROR_NOT_A_BITMAP = "Not a Bitmap"
 
 private const val EXTRA_CHOSEN_COMPONENT = "android.intent.extra.CHOSEN_COMPONENT"
 private const val ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper"
-const val ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper"
-const val ACTION_NAV_BAR_CHANGED = "com.tunjid.fingergestures.action.navBarChanged"
 
 private var Intent.changeWallpaperSelection by intentExtras<WallpaperSelection?>()
 

@@ -288,12 +288,13 @@ interface Inputs {
                     cancelAutoWallpaper = cancelAutoWallpaper,
                     input = this@Inputs,
                 ),
-                Item.WallpaperView(
+                Item.WallpaperPick(
                     tab = Tab.Display,
                     sortKey = AppViewModel.WALLPAPER_PICKER,
                     dayFile = getWallpaperFile(WallpaperSelection.Day),
                     nightFile = getWallpaperFile(WallpaperSelection.Night),
                     screenDimensionRatio = screenDimensionRatio,
+                    editWallPaperPendingIntent = wallpaperEditPendingIntent,
                     input = this@Inputs,
                 ),
             )

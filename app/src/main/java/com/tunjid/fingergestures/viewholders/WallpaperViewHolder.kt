@@ -39,7 +39,7 @@ import com.tunjid.fingergestures.databinding.ViewholderWallpaperPickBinding
 import com.tunjid.fingergestures.viewmodels.Input
 import java.io.File
 
-private var BindingViewHolder<ViewholderWallpaperPickBinding>.item by viewHolderDelegate<Item.WallpaperView>()
+private var BindingViewHolder<ViewholderWallpaperPickBinding>.item by viewHolderDelegate<Item.WallpaperPick>()
 
 fun ViewGroup.wallpaperPick() = viewHolderFrom(ViewholderWallpaperPickBinding::inflate).apply {
     binding.mainWallpaper.setOnClickListener { item.input.accept(Input.WallpaperPick(WallpaperSelection.Day)) }
@@ -49,7 +49,7 @@ fun ViewGroup.wallpaperPick() = viewHolderFrom(ViewholderWallpaperPickBinding::i
 }
 
 @SuppressLint("MissingPermission")
-fun BindingViewHolder<ViewholderWallpaperPickBinding>.bind(item: Item.WallpaperView) = binding.run {
+fun BindingViewHolder<ViewholderWallpaperPickBinding>.bind(item: Item.WallpaperPick) = binding.run {
     this@bind.item = item
 
     setAspectRatio(currentWallpaper)
@@ -95,8 +95,8 @@ private fun BindingViewHolder<ViewholderWallpaperPickBinding>.requestEdit(select
     context.startActivity(Intent.createChooser(
         editIntent,
         context.getString(R.string.choose_edit_source_message),
-        backgroundManager.getWallpaperEditPendingIntent(context).intentSender)
-    )
+        item.editWallPaperPendingIntent.intentSender
+    ))
 }
 
 private fun ImageView.loadImage(file: File) {

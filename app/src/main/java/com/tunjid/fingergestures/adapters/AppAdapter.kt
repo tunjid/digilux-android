@@ -17,6 +17,7 @@
 
 package com.tunjid.fingergestures.adapters
 
+import android.app.PendingIntent
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.palette.graphics.Palette
@@ -57,6 +58,7 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             Item.ScreenDimmer::class.hashCode() -> parent.screenDimmer()
             Item.ColorAdjuster::class.hashCode() -> parent.colorAdjuster()
             Item.WallpaperTrigger::class.hashCode() -> parent.wallpaperTrigger()
+            Item.WallpaperPick::class.hashCode() -> parent.wallpaperPick()
             Item.Padding::class.hashCode() -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
             else -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
         }
@@ -75,8 +77,8 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             is Item.ScreenDimmer -> holder.typed<ViewholderScreenDimmerBinding>().bind(item)
             is Item.ColorAdjuster -> holder.typed<ViewholderSliderColorBinding>().bind(item)
             is Item.WallpaperTrigger -> holder.typed<ViewholderWallpaperTriggerBinding>().bind(item)
+            is Item.WallpaperPick -> holder.typed<ViewholderWallpaperPickBinding>().bind(item)
             is Item.Padding -> Unit
-            is Item.WallpaperView -> Unit
         }
     },
     viewTypeFunction = { it::class.hashCode() },
@@ -167,11 +169,12 @@ sealed class Item(
         val input: Inputs
     ) : Item("AdFree")
 
-    data class WallpaperView(
+    data class WallpaperPick(
         override val tab: Tab,
         override val sortKey: Int,
         val dayFile: File?,
         val nightFile: File?,
+        val editWallPaperPendingIntent: PendingIntent,
         val screenDimensionRatio: String,
         val input: Inputs
     ) : Item("WallpaperView")
