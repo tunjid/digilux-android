@@ -17,6 +17,7 @@
 
 package com.tunjid.fingergestures
 
+import android.util.Log
 import io.reactivex.Flowable
 import java.util.*
 import kotlin.collections.HashSet

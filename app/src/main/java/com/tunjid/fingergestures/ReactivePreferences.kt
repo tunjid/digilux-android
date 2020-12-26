@@ -35,25 +35,18 @@ class ReactivePreference<T>(
 
     @Suppress("UNCHECKED_CAST")
     var value: T
-        get() = try {
-            with(App.transformApp(App::preferences)!!) {
-
-                when (default) {
-                    is String -> getString(preferencesName, default)
-                    is Int -> getInt(preferencesName, default)
-                    is Long -> getLong(preferencesName, default)
-                    is Float -> getFloat(preferencesName, default)
-                    is Boolean -> getBoolean(preferencesName, default)
-                    is Set<*> -> HashSet(getStringSet(preferencesName, emptySet())?.filterNotNull()
-                        ?: emptySet<String>())
-                    else -> throw IllegalArgumentException("Uhh what are you doing?")
-                }
-
-            } as T
-        } catch (e: Exception) {
-            Log.e("TEST", "Bad mapping with preference name $preferencesName")
-            throw e
-        }
+        get() = with(App.transformApp(App::preferences)!!) {
+            when (default) {
+                is String -> getString(preferencesName, default)
+                is Int -> getInt(preferencesName, default)
+                is Long -> getLong(preferencesName, default)
+                is Float -> getFloat(preferencesName, default)
+                is Boolean -> getBoolean(preferencesName, default)
+                is Set<*> -> HashSet(getStringSet(preferencesName, emptySet())?.filterNotNull()
+                    ?: emptySet<String>())
+                else -> throw IllegalArgumentException("Uhh what are you doing?")
+            }
+        } as T
         set(value) = with(App.transformApp(App::preferences)!!.edit()) {
             when (value) {
                 is String -> putString(preferencesName, value)
@@ -91,7 +84,6 @@ class ReactivePreference<T>(
             if (key == preferencesName) processor.onNext(value)
         }
 
-        Log.i("TEST", "Monitoring $preferencesName")
         return processor.subscribeOn(Schedulers.io())
             .startWith(value)
             .doOnSubscribe {

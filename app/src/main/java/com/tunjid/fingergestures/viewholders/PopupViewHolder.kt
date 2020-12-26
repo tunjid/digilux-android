@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.viewholders
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
@@ -65,6 +66,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
     }
 
     binding.itemList.apply {
+        layoutManager = gridLayoutManager(3)
         adapter = listAdapter
     }
 }
