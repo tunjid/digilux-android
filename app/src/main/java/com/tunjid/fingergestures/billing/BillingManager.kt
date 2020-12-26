@@ -49,10 +49,10 @@ class BillingManager(context: Context) {
     /**
      * Start a purchase flow
      */
-    fun initiatePurchaseFlow(activity: Activity, skuId: String): Single<Int> {
+    fun initiatePurchaseFlow(activity: Activity, sku: PurchasesManager.Sku): Single<Int> {
         return checkClient().andThen(Single.fromCallable {
             val purchaseParams = BillingFlowParams.newBuilder()
-                    .setSku(skuId)
+                    .setSku(sku.id)
                     .setType(INAPP)
                     .build()
             billingClient!!.launchBillingFlow(activity, purchaseParams)

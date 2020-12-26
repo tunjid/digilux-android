@@ -214,9 +214,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
                 is Input.GoPremium -> MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.go_premium_title)
                         .setMessage(getString(R.string.go_premium_body, getString(it.description)))
-                        .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.PREMIUM_SKU) }
+                        .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.Sku.Premium) }
                         .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                         .show()
+                is Input.Purchase -> purchase(it.sku)
             }
         }
     }
@@ -238,7 +239,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
                 val isTrialRunning = purchasesManager.isTrialRunning
 
                 withSnackbar { snackbar ->
-                    snackbar.setText(purchasesManager.trialPeriodText)
+                    snackbar.setText(viewModel.liveState.value?.purchasesState?.trialPeriodText ?: "")
                     snackbar.duration = if (isTrialRunning) LENGTH_SHORT else LENGTH_INDEFINITE
 
                     if (!isTrialRunning)
@@ -398,7 +399,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
     }
 
 
-    fun purchase(@PurchasesManager.SKU sku: String) = when (val billingManager = billingManager) {
+    fun purchase(sku: PurchasesManager.Sku) = when (val billingManager = billingManager) {
         null -> showSnackbar(R.string.generic_error)
         else -> disposables.add(billingManager.initiatePurchaseFlow(this, sku)
                 .subscribe({ launchStatus ->

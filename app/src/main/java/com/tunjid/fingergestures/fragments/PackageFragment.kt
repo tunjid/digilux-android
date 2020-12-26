@@ -94,7 +94,7 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
             MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.go_premium_title)
                 .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.auto_rotate_description)))
-                .setPositiveButton(R.string.continue_text) { _, _ -> mainActivity.purchase(PurchasesManager.PREMIUM_SKU) }
+                .setPositiveButton(R.string.continue_text) { _, _ -> mainActivity.purchase(PurchasesManager.Sku.Premium) }
                 .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                 .show()
             return

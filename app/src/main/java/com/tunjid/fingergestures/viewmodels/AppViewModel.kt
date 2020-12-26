@@ -24,30 +24,19 @@ import android.content.pm.ApplicationInfo
 import androidx.annotation.IntDef
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.Event
-import com.tunjid.fingergestures.PopUpGestureConsumer
-import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.activities.MainActivity.Companion.ACCESSIBILITY_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.DO_NOT_DISTURB_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.SETTINGS_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.STORAGE_CODE
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.filterUnhandledEvents
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.models.Action
-import com.tunjid.fingergestures.models.AppState
-import com.tunjid.fingergestures.models.Brightness
-import com.tunjid.fingergestures.models.Package
-import com.tunjid.fingergestures.models.Shilling
+import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.models.Shilling.Quip
-import com.tunjid.fingergestures.models.TextLink
 import com.tunjid.fingergestures.services.FingerGestureService
-import com.tunjid.fingergestures.toLiveData
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
@@ -68,61 +57,67 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
         val brightnessGestureConsumer = BrightnessGestureConsumer.instance
         val popUpGestureConsumer = PopUpGestureConsumer.instance
         val gestureMapper = GestureMapper.instance
+        val purchasesManager = PurchasesManager.instance
 
         Flowables.combineLatest(
-                Flowable.just(getApplication<Application>().links),
-                brightnessGestureConsumer.discreteBrightnesses.listMap(::Brightness),
-                popUpGestureConsumer.popUpActions.listMap(::Action),
-                Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
-                installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
-                permissionsProcessor.debounce(160, TimeUnit.MILLISECONDS).startWith(listOf<Int>()),
-                items,
-                ::AppState
+            purchasesManager.state,
+            Flowable.just(getApplication<Application>().links),
+            brightnessGestureConsumer.discreteBrightnesses.listMap(::Brightness),
+            popUpGestureConsumer.popUpActions.listMap(::Action),
+            Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
+            installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
+            permissionsProcessor.debounce(160, TimeUnit.MILLISECONDS).startWith(listOf<Int>()),
+            items,
+            ::AppState
         ).toLiveData()
     }
 
     val shill: LiveData<Shilling> by lazy {
-        Flowable.defer {
-            if (PurchasesManager.instance.hasAds()) Flowable.merge(
+        PurchasesManager.instance.state
+            .map(PurchasesManager.State::hasAds)
+            .distinctUntilChanged()
+            .switchMap {
+                if (it) Flowable.merge(
                     shillProcessor.map(::Quip),
                     Flowable.interval(10, TimeUnit.SECONDS).map { Quip(getNextQuip()) }
-            )
-            else Flowable.just(Shilling.Calm)
-        }.toLiveData()
+                )
+                else Flowable.just(Shilling.Calm)
+            }
+            .toLiveData()
     }
 
     val uiInteractions = interactionRelay
-            .toLiveData()
-            .filterUnhandledEvents()
+        .toLiveData()
+        .filterUnhandledEvents()
 
     val broadcasts by lazy {
         getApplication<App>().broadcasts()
-                .filter(this::intentMatches)
-                .map { Event(it) }
-                .toLiveData()
+            .filter(this::intentMatches)
+            .map { Event(it) }
+            .toLiveData()
     }
 
     private val tabItems = listOf(
-            R.id.action_directions to intArrayOf(
-                    PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
-                    AD_FREE, SUPPORT, REVIEW, LOCKED_CONTENT
-            ),
-            R.id.action_slider to intArrayOf(
-                    PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS, SCREEN_DIMMER, USE_LOGARITHMIC_SCALE,
-                    SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
-                    DOUBLE_SWIPE_SETTINGS
-            ),
-            R.id.action_audio to intArrayOf(
-                    PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW
-            ),
-            R.id.action_accessibility_popup to intArrayOf(PADDING, ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK,
-                    ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, POPUP_ACTION,
-                    ROTATION_LOCK, EXCLUDED_ROTATION_LOCK, ROTATION_HISTORY
-            ),
-            R.id.action_wallpaper to intArrayOf(
-                    PADDING, SLIDER_POSITION, SLIDER_DURATION, NAV_BAR_COLOR,
-                    SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER
-            )
+        R.id.action_directions to intArrayOf(
+            PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
+            AD_FREE, SUPPORT, REVIEW, LOCKED_CONTENT
+        ),
+        R.id.action_slider to intArrayOf(
+            PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS, SCREEN_DIMMER, USE_LOGARITHMIC_SCALE,
+            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+            DOUBLE_SWIPE_SETTINGS
+        ),
+        R.id.action_audio to intArrayOf(
+            PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW
+        ),
+        R.id.action_accessibility_popup to intArrayOf(PADDING, ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK,
+            ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, POPUP_ACTION,
+            ROTATION_LOCK, EXCLUDED_ROTATION_LOCK, ROTATION_HISTORY
+        ),
+        R.id.action_wallpaper to intArrayOf(
+            PADDING, SLIDER_POSITION, SLIDER_DURATION, NAV_BAR_COLOR,
+            SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER
+        )
     ).toMap()
 
     private val quips = application.resources.getStringArray(R.array.upsell_text)
@@ -145,17 +140,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
         is Input.Permission.DoNotDisturb -> requestPermission(input.code)
         is Input.ShowSheet -> interactionRelay.onNext(input)
         is Input.GoPremium -> interactionRelay.onNext(input)
+        is Input.Purchase -> interactionRelay.onNext(input)
     }
 
     fun updateApps() {
         Single.fromCallable {
             getApplication<Application>().packageManager.getInstalledApplications(0)
-                    .filter(this::isUserInstalledApp)
-                    .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
+                .filter(this::isUserInstalledApp)
+                .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
         }
-                .subscribeOn(Schedulers.io())
-                .subscribe(installedAppsProcessor::onNext, Throwable::printStackTrace)
-                .addTo(disposable)
+            .subscribeOn(Schedulers.io())
+            .subscribe(installedAppsProcessor::onNext, Throwable::printStackTrace)
+            .addTo(disposable)
     }
 
     fun shillMoar() = shillProcessor.onNext(getNextQuip())
@@ -201,7 +197,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
     }
 
     private fun isUserInstalledApp(info: ApplicationInfo): Boolean =
-            info.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0 || info.flags and ApplicationInfo.FLAG_SYSTEM == 0
+        info.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0 || info.flags and ApplicationInfo.FLAG_SYSTEM == 0
 
     private fun removePermission(permission: Int) {
         permissionsProcessor.onNext(permissionsQueue - permission)
@@ -210,21 +206,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
     private fun intentMatches(intent: Intent): Boolean {
         val action = intent.action
         return (BackgroundManager.ACTION_EDIT_WALLPAPER == action
-                || FingerGestureService.ACTION_SHOW_SNACK_BAR == action
-                || BackgroundManager.ACTION_NAV_BAR_CHANGED == action
-                || PurchasesManager.ACTION_LOCKED_CONTENT_CHANGED == action)
+            || FingerGestureService.ACTION_SHOW_SNACK_BAR == action
+            || BackgroundManager.ACTION_NAV_BAR_CHANGED == action
+            || PurchasesManager.ACTION_LOCKED_CONTENT_CHANGED == action)
     }
 
     @Retention(AnnotationRetention.SOURCE)
     @IntDef(SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
-            SHOW_SLIDER, USE_LOGARITHMIC_SCALE, ADAPTIVE_BRIGHTNESS,
-            ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON,
-            MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW, WALLPAPER_PICKER,
-            WALLPAPER_TRIGGER, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
-            ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
-            ACCESSIBILITY_SINGLE_CLICK, ANIMATES_SLIDER, ANIMATES_POPUP,
-            DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW,
-            NAV_BAR_COLOR, LOCKED_CONTENT, SUPPORT, ROTATION_HISTORY)
+        SHOW_SLIDER, USE_LOGARITHMIC_SCALE, ADAPTIVE_BRIGHTNESS,
+        ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON,
+        MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW, WALLPAPER_PICKER,
+        WALLPAPER_TRIGGER, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
+        ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
+        ACCESSIBILITY_SINGLE_CLICK, ANIMATES_SLIDER, ANIMATES_POPUP,
+        DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW,
+        NAV_BAR_COLOR, LOCKED_CONTENT, SUPPORT, ROTATION_HISTORY)
     annotation class AdapterIndex
 
     companion object {
@@ -275,12 +271,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
 
 val Context.links
     get() = listOf(
-            TextLink(getString(R.string.get_set_icon), AppViewModel.GET_SET_ICON_LINK),
-            TextLink(getString(R.string.rxjava), AppViewModel.RX_JAVA_LINK),
-            TextLink(getString(R.string.color_picker), AppViewModel.COLOR_PICKER_LINK),
-            TextLink(getString(R.string.image_cropper), AppViewModel.IMAGE_CROPPER_LINK),
-            TextLink(getString(R.string.material_design_icons), AppViewModel.MATERIAL_DESIGN_ICONS_LINK),
-            TextLink(getString(R.string.android_bootstrap), AppViewModel.ANDROID_BOOTSTRAP_LINK)
+        TextLink(getString(R.string.get_set_icon), AppViewModel.GET_SET_ICON_LINK),
+        TextLink(getString(R.string.rxjava), AppViewModel.RX_JAVA_LINK),
+        TextLink(getString(R.string.color_picker), AppViewModel.COLOR_PICKER_LINK),
+        TextLink(getString(R.string.image_cropper), AppViewModel.IMAGE_CROPPER_LINK),
+        TextLink(getString(R.string.material_design_icons), AppViewModel.MATERIAL_DESIGN_ICONS_LINK),
+        TextLink(getString(R.string.android_bootstrap), AppViewModel.ANDROID_BOOTSTRAP_LINK)
     )
 
 fun <T, R> Flowable<List<T>>.listMap(mapper: (T) -> R): Flowable<List<R>> = map { it.map(mapper) }

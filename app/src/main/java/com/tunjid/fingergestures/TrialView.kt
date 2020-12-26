@@ -25,48 +25,32 @@ import android.view.MenuItem
 import android.view.View
 import android.view.Window.FEATURE_OPTIONS_PANEL
 import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.core.view.isVisible
 import com.tunjid.androidx.core.content.unwrapActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.billing.TrialStatus
+import com.tunjid.fingergestures.databinding.TrialViewBinding
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import io.reactivex.disposables.Disposable
 
 @SuppressLint("ViewConstructor")
 class TrialView(context: Context, menuItem: MenuItem) : FrameLayout(context) {
 
-    private val textView: TextView
-    private val imageView: ImageView
+    private val binding = TrialViewBinding.inflate(LayoutInflater.from(context), this, true)
     private var disposable: Disposable? = null
 
     init {
-        val root = LayoutInflater.from(context).inflate(R.layout.trial_view, this, true)
-
-        textView = root.findViewById(R.id.text)
-        imageView = root.findViewById(R.id.icon)
-
         val clickListener = { _: View ->
             context.unwrapActivity?.onMenuItemSelected(FEATURE_OPTIONS_PANEL, menuItem)
             Unit
         }
 
         setOnClickListener(clickListener)
-        imageView.setOnClickListener(clickListener)
+        binding.icon.setOnClickListener(clickListener)
 
-        val flowable = PurchasesManager.instance.trialFlowable
-
-        if (flowable == null) changeState(false)
-        else disposable = flowable.map(Long::toString)
-                .doOnSubscribe { changeState(true) }
-                .doOnComplete {
-                    val activity = context.unwrapActivity ?: return@doOnComplete
-                    activity.runOnUiThread {
-                        changeState(false)
-                        activity.recreate()
-                    }
-                }
-                .observeOn(mainThread())
-                .subscribe(textView::setText, Throwable::printStackTrace)
+        disposable = PurchasesManager.instance.state
+            .observeOn(mainThread())
+            .subscribe(::update, Throwable::printStackTrace)
 
         CheatSheet.setup(this, menuItem.title)
     }
@@ -76,8 +60,11 @@ class TrialView(context: Context, menuItem: MenuItem) : FrameLayout(context) {
         super.onDetachedFromWindow()
     }
 
-    private fun changeState(isOnTrial: Boolean) {
-        imageView.visibility = if (isOnTrial) View.GONE else View.VISIBLE
-        textView.visibility = if (isOnTrial) View.VISIBLE else View.GONE
+    private fun update(state: PurchasesManager.State) {
+        binding.icon.isVisible = !state.isOnTrial
+        binding.text.isVisible = state.isOnTrial
+
+        if (state.trialStatus is TrialStatus.Trial) binding.text.text = state.trialStatus.countDown.toString()
+
     }
 }

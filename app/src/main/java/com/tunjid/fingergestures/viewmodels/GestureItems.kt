@@ -60,6 +60,7 @@ sealed class Input {
 
     data class ShowSheet(val fragment: Fragment) : Input(), UiInteraction
     data class GoPremium(val description: Int) : Input(), UiInteraction
+    data class Purchase(val sku: PurchasesManager.Sku) : Input(), UiInteraction
 }
 
 interface Inputs {
@@ -100,11 +101,6 @@ interface Inputs {
 
     private val simpleGestureItems: Flowable<List<Item>>
         get() = Flowable.just(listOf(
-            Item.AdFree(
-                index = AppViewModel.AD_FREE,
-                tab = Tab.Gestures,
-                input = this@Inputs
-            ),
             Item.Link(
                 index = AppViewModel.SUPPORT,
                 tab = Tab.Gestures,
@@ -386,23 +382,30 @@ interface Inputs {
     private val PurchasesManager.items
         get() = Flowables.combineLatest(
             GestureMapper.instance.doubleSwipePreference.monitor,
-            lockedContentPreference.monitor,
-            premium
-        ) { doubleSwipe, hasLockedContent, premium ->
+            state
+        ) { doubleSwipe, state ->
             listOf(
+                Item.AdFree(
+                    index = AppViewModel.AD_FREE,
+                    tab = Tab.Gestures,
+                    input = this@Inputs,
+                    notAdFree = state.notAdFree,
+                    notPremium = !state.isPremium,
+                    hasAds = state.hasAds,
+                ),
                 Item.Toggle(
                     tab = Tab.Gestures,
                     index = AppViewModel.LOCKED_CONTENT,
                     titleRes = R.string.set_locked_content,
-                    isChecked = hasLockedContent,
-                    consumer = ::setHasLockedContent
+                    isChecked = state.hasLockedContent,
+                    consumer = lockedContentPreference.setter
                 ),
                 Item.Slider(
                     tab = Tab.Brightness,
                     index = AppViewModel.DOUBLE_SWIPE_SETTINGS,
                     titleRes = R.string.adjust_double_swipe_settings,
                     infoRes = 0,
-                    isEnabled = premium,
+                    isEnabled = state.isPremium,
                     value = doubleSwipe,
                     consumer = GestureMapper.instance.doubleSwipePreference.setter,
                     function = GestureMapper.instance::getSwipeDelayText

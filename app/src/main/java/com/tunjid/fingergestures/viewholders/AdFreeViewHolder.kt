@@ -18,84 +18,84 @@
 package com.tunjid.fingergestures.viewholders
 
 import android.view.View
-import android.widget.TextView
+import android.view.ViewGroup
 import androidx.annotation.StringRes
 import androidx.core.widget.TextViewCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.AppAdapterListener
+import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.databinding.ViewholderSimpleTextBinding
+import com.tunjid.fingergestures.viewmodels.Input
 
-class AdFreeViewHolder(
-        itemView: View,
-        listener: AppAdapterListener
-) : AppViewHolder(itemView, listener) {
+private var BindingViewHolder<ViewholderSimpleTextBinding>.item by viewHolderDelegate<Item.AdFree>()
 
-    private val purchasesManager: PurchasesManager = PurchasesManager.instance
-    private val title: TextView = itemView.findViewById(R.id.title)
+fun ViewGroup.adFree() = viewHolderFrom(ViewholderSimpleTextBinding::inflate)
 
-    override fun bind() {
-        super.bind()
-        val hasAds = purchasesManager.hasAds()
-        val notAdFree = purchasesManager.hasNotGoneAdFree()
-        val notPremium = purchasesManager.isNotPremium
+fun BindingViewHolder<ViewholderSimpleTextBinding>.bind(item: Item.AdFree) = binding.run {
+    this@bind.item = item
 
-        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                title,
-                if (hasAds) R.drawable.ic_attach_money_white_24dp
-                else R.drawable.ic_check_white_24dp,
-                0,
-                0,
-                0)
+    TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(
+        title,
+        if (item.hasAds) R.drawable.ic_attach_money_white_24dp
+        else R.drawable.ic_check_white_24dp,
+        0,
+        0,
+        0)
 
-        title.setText(when {
-            hasAds -> R.string.go_ad_free_title
-            notPremium -> R.string.ad_free_no_ad_user
-            else -> R.string.ad_free_premium_user
-        })
+    title.setText(when {
+        item.hasAds -> R.string.go_ad_free_title
+        item.notPremium -> R.string.ad_free_no_ad_user
+        else -> R.string.ad_free_premium_user
+    })
 
-        val goAdFree = { _: View ->
-            if (hasAds) showPurchaseOptions()
-            else showRemainingPurchaseOption()
-        }
-
-        itemView.setOnClickListener(if (notAdFree || notPremium) goAdFree else null)
+    val goAdFree = { _: View ->
+        if (item.hasAds) showPurchaseOptions()
+        else showRemainingPurchaseOption()
     }
 
-    private fun showPurchaseOptions() {
-        val context = itemView.context
-        MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.purchase_options)
-                .setItems(R.array.purchase_options
-                ) { _, index ->
-                    listener?.purchase(
-                            if (index == 0) PurchasesManager.AD_FREE_SKU
-                            else PurchasesManager.PREMIUM_SKU)
-                }
-                .show()
-    }
-
-    private fun showRemainingPurchaseOption() {
-        val notPremium = purchasesManager.isNotPremium
-        val action = {
-            if (notPremium) listener.purchase(PurchasesManager.PREMIUM_SKU)
-            else listener.purchase(PurchasesManager.AD_FREE_SKU)
-        }
-
-        @StringRes val title =
-                if (notPremium) R.string.go_premium_title
-                else R.string.premium_generosity_title
-
-        @StringRes val description =
-                if (notPremium) R.string.go_premium_confirmation
-                else R.string.premium_generosity_confirmation
-
-        val context = itemView.context
-        MaterialAlertDialogBuilder(context)
-                .setTitle(title)
-                .setMessage(description)
-                .setPositiveButton(R.string.continue_text) { _, _ -> action.invoke() }
-                .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                .show()
-    }
+    itemView.setOnClickListener(if (item.notAdFree || item.notPremium) goAdFree else null)
 }
+
+private fun BindingViewHolder<ViewholderSimpleTextBinding>.showPurchaseOptions() {
+    val context = itemView.context
+    MaterialAlertDialogBuilder(context)
+        .setTitle(R.string.purchase_options)
+        .setItems(R.array.purchase_options
+        ) { _, index ->
+            item.input.accept(Input.Purchase(
+                if (index == 0) PurchasesManager.Sku.AdFree
+                else PurchasesManager.Sku.Premium
+            ))
+        }
+        .show()
+}
+
+private fun BindingViewHolder<ViewholderSimpleTextBinding>.showRemainingPurchaseOption() {
+    val action = {
+        item.input.accept(Input.Purchase(
+            if (item.notPremium) PurchasesManager.Sku.Premium
+            else PurchasesManager.Sku.AdFree
+        ))
+    }
+
+    @StringRes val title =
+        if (item.notPremium) R.string.go_premium_title
+        else R.string.premium_generosity_title
+
+    @StringRes val description =
+        if (item.notPremium) R.string.go_premium_confirmation
+        else R.string.premium_generosity_confirmation
+
+    val context = itemView.context
+    MaterialAlertDialogBuilder(context)
+        .setTitle(title)
+        .setMessage(description)
+        .setPositiveButton(R.string.continue_text) { _, _ -> action.invoke() }
+        .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+        .show()
+}
+

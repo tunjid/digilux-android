@@ -116,18 +116,18 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         .replayingShare()
 
     private val supportsAmbientThreshold = Flowables.combineLatest(
-        PurchasesManager.instance.premium,
+        PurchasesManager.instance.state,
         adaptiveBrightnessPreference.monitor
-    ) { isPremium, restores -> isPremium && restores && hasBrightnessSensor() }
+    ) { purchaseState, restores -> purchaseState.isPremium && restores && hasBrightnessSensor() }
 
     val state: Flowable<State> = Flowables.combineLatest(
         Flowables.combineLatest(
-            PurchasesManager.instance.premium,
+            PurchasesManager.instance.state,
             percentagePreference.monitor,
             discreteBrightnesses,
 
-            ) { isPremium, percentage, discreteBrightnesses ->
-            SliderPair(value = percentage, enabled = isPremium || discreteBrightnesses.isEmpty())
+            ) { purchaseState, percentage, discreteBrightnesses ->
+            SliderPair(value = percentage, enabled = purchaseState.isPremium || discreteBrightnesses.isEmpty())
         },
         Flowables.combineLatest(
             positionPreference.monitor,

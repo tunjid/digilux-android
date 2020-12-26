@@ -50,6 +50,7 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             Item.PopUp::class.hashCode() -> parent.popUp()
             Item.Link::class.hashCode() -> parent.link()
             Item.AudioStream::class.hashCode() -> parent.audioStream()
+            Item.AdFree::class.hashCode() -> parent.adFree()
             Item.Padding::class.hashCode() -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
             else -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
         }
@@ -63,8 +64,8 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             is Item.PopUp -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
             is Item.Link -> holder.typed<ViewholderSimpleTextBinding>().bind(item)
             is Item.AudioStream -> holder.typed<ViewholderAudioStreamTypeBinding>().bind(item)
+            is Item.AdFree -> holder.typed<ViewholderSimpleTextBinding>().bind(item)
             is Item.Padding -> Unit
-            is Item.AdFree -> Unit
             is Item.WallpaperView -> Unit
             is Item.WallpaperTrigger -> Unit
             is Item.DiscreteBrightness -> Unit
@@ -154,6 +155,9 @@ sealed class Item(
     data class AdFree(
         override val tab: Tab,
         override val index: Int,
+        val hasAds :Boolean,
+        val notAdFree :Boolean,
+        val notPremium :Boolean,
         val input: Inputs
     ) : Item("AdFree")
 
@@ -199,7 +203,7 @@ sealed class Item(
 
 
 interface AppAdapterListener {
-    fun purchase(@PurchasesManager.SKU sku: String)
+    fun purchase(sku: PurchasesManager.Sku)
 
     fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int)
 
@@ -214,7 +218,7 @@ interface AppAdapterListener {
     companion object {
         val noOpInstance
             get() = object : AppAdapterListener {
-                override fun purchase(@PurchasesManager.SKU sku: String) = Unit
+                override fun purchase(sku: PurchasesManager.Sku) = Unit
 
                 override fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int) = Unit
 

@@ -19,124 +19,152 @@ package com.tunjid.fingergestures.billing
 
 import android.content.Intent
 import android.text.TextUtils
-import androidx.annotation.StringDef
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.ReactivePreference
-import com.tunjid.fingergestures.R
+import com.jakewharton.rx.replayingShare
+import com.tunjid.fingergestures.*
 import io.reactivex.Flowable
-import java.util.*
+import io.reactivex.processors.BehaviorProcessor
+import io.reactivex.rxkotlin.Flowables
 import java.util.concurrent.TimeUnit
 
 
 class PurchasesManager private constructor() : PurchasesUpdatedListener {
 
-    private var numTrials: Int = 0
-    private var isTrial: Boolean = false
+    enum class Sku(val id: String) {
+        Premium(id = "premium"),
+        AdFree(id = "ad.free");
+    }
+
+    private object SkuKey : ListPreference by object : ListPreference {
+        override val preferenceName get() = "purchases"
+    }
+
+    data class State(
+        val numTrials: Int,
+        val trialStatus: TrialStatus,
+        val hasLockedContent: Boolean,
+        val ownedSkus: List<Sku>,
+        val isPremium: Boolean,
+    ) {
+        private val isTrialRunning get() = trialStatus is TrialStatus.Trial
+
+        val isOnTrial get() = trialStatus is TrialStatus.Trial
+
+        val notAdFree: Boolean
+            get() = when {
+                !hasLockedContent -> false
+                isTrialRunning -> false
+                else -> !ownedSkus.contains(Sku.AdFree)
+            }
+
+        val hasAds get() = if (!hasLockedContent) false else !isPremium && notAdFree
+
+        val trialPeriodText: String
+            get() = App.transformApp({ app ->
+                if (isTrialRunning) app.getString(R.string.trial_running)
+                else app.getString(R.string.trial_text, when (trialPeriod(trialStatus.numTrials)) {
+                    FIRST_TRIAL_PERIOD -> "10m"
+                    SECOND_TRIAL_PERIOD -> "60s"
+                    else -> "10s"
+                })
+            }, App.EMPTY)
+    }
 
     val lockedContentPreference: ReactivePreference<Boolean> = ReactivePreference(
-        preferencesName = HAS_LOCKED_CONTENT,
-        default = false
+        preferencesName = "has locked content",
+        default = false,
+        onSet = {
+            App.withApp { app -> app.broadcast(Intent(ACTION_LOCKED_CONTENT_CHANGED)) }
+        }
     )
-    val premium = lockedContentPreference.monitor.map { if (!it) true else !isNotPremium }
+    private val setManager: SetManager<SkuKey, Sku> = SetManager(
+        keys = listOf(SkuKey),
+        sorter = compareBy(Sku::ordinal),
+        addFilter = Sku.values().map(Sku::id)::contains,
+        stringMapper = { kind -> Sku.values().find { it.id == kind } },
+        objectMapper = Sku::id
+    )
 
-    var trialFlowable: Flowable<Long>? = null
-        private set
+    private val trigger = BehaviorProcessor.createDefault(false)
+
+    private val trialStatus: Flowable<TrialStatus> = trigger
+        .distinctUntilChanged()
+        .scan(false to 0) { pair, isTrial -> pair.copy(first = isTrial, second = if (isTrial) pair.second + 1 else pair.second) }
+        .concatMap { (trialRunning, numTrials) ->
+            val trialPeriod = trialPeriod(numTrials)
+            if (trialRunning) Flowable.intervalRange(0, trialPeriod.toLong(), 0, 1, TimeUnit.SECONDS)
+                .map<TrialStatus> { elapsed -> TrialStatus.Trial(numTrials = numTrials, countDown = trialPeriod - elapsed) }
+                .doFinally { trigger.onNext(false) }
+            else Flowable.just(TrialStatus.Normal(numTrials = numTrials))
+        }
+        .replayingShare()
+
+
+    val state: Flowable<State> = Flowables.combineLatest(
+        lockedContentPreference.monitor,
+        setManager.itemsFlowable(SkuKey),
+        trialStatus
+    ) { lockedContent, ownedSkus, trialStatus ->
+        State(
+            numTrials = trialStatus.numTrials,
+            isPremium = if (!lockedContent) true else ownedSkus.contains(Sku.Premium),
+            trialStatus = trialStatus,
+            hasLockedContent = lockedContent,
+            ownedSkus = ownedSkus
+        )
+    }
+        .replayingShare()
 
     //        if (BuildConfig.DEV) return false;
     val isNotPremium: Boolean
-        get() {
-            if (!hasLockedContent()) return false
-            return if (isTrial) false else !App.transformApp({ app -> getPurchaseSet(app).contains(PREMIUM_SKU) }, false)
+        get() = when {
+            !lockedContentPreference.value -> false
+            isTrialRunning -> false
+            else -> !setManager.getItems(SkuKey).contains(Sku.Premium)
         }
 
     val isPremium: Boolean
-        get() = if (!hasLockedContent()) true else !isNotPremium
+        get() = when {
+            !lockedContentPreference.value -> true
+            else -> !isNotPremium
+        }
 
     //        if (BuildConfig.DEV) return true;
     val isPremiumNotTrial: Boolean
-        get() = if (!hasLockedContent()) true else App.transformApp({ app -> getPurchaseSet(app).contains(PREMIUM_SKU) }, false)
-
-    val isTrialRunning: Boolean
-        get() = trialFlowable != null
-
-    val trialPeriodText: String
-        get() {
-            if (isTrialRunning)
-                return App.transformApp({ app -> app.getString(R.string.trial_running) }, App.EMPTY)
-
-            val trialPeriod = trialPeriod
-            val periodText = if (trialPeriod == FIRST_TRIAL_PERIOD) "10m" else if (trialPeriod == SECOND_TRIAL_PERIOD) "60s" else "10s"
-
-            return App.transformApp({ app -> app.getString(R.string.trial_text, periodText) }, App.EMPTY)
+        get() = when {
+            !lockedContentPreference.value -> true
+            else -> setManager.getItems(SkuKey).contains(Sku.Premium)
         }
 
-    private val trialPeriod: Int
-        get() = if (numTrials == 0) FIRST_TRIAL_PERIOD else if (numTrials == 1) SECOND_TRIAL_PERIOD else FINAL_TRIAL_PERIOD
+    val isTrialRunning: Boolean
+        get() = trigger.value == true
 
-    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
-    @StringDef(AD_FREE_SKU, PREMIUM_SKU)
-    annotation class SKU
+    init {
+        // Keep the Flowable alive
+        trialStatus.subscribe()
+    }
 
     override fun onPurchasesUpdated(responseCode: Int, purchases: List<Purchase>?) {
         if (purchases == null) return
         if (responseCode != BillingClient.BillingResponse.OK) return
 
-        val preferences = App.transformApp(({ it.preferences })) ?: return
-
-        val skus = HashSet<String>(preferences.getStringSet(PURCHASES, EMPTY))
-        purchases.filter(this::filterPurchases).map(Purchase::getSku).forEach { skus.add(it) }
-
-        preferences.edit().putStringSet(PURCHASES, skus).apply()
+        purchases.filter(::filterPurchases)
+            .map(Purchase::getSku)
+            .filter(Sku.values().map(Sku::id)::contains)
+            .forEach { setManager.addToSet(SkuKey, it) }
     }
 
-    fun setHasLockedContent(hasLockedContent: Boolean) {
-        App.withApp { app ->
-            app.preferences.edit().putBoolean(HAS_LOCKED_CONTENT, hasLockedContent).apply()
-            app.broadcast(Intent(ACTION_LOCKED_CONTENT_CHANGED))
-        }
-    }
-
-    fun hasLockedContent(): Boolean {
-        return App.transformApp({ app -> app.preferences.getBoolean(HAS_LOCKED_CONTENT, false) }, false)
-    }
-
-    fun hasNotGoneAdFree(): Boolean {
-        if (!hasLockedContent()) return false
-        return if (isTrial) false else !App.transformApp({ app -> getPurchaseSet(app).contains(AD_FREE_SKU) }, false)
-    }
-
-    fun hasAds(): Boolean {
-        return if (!hasLockedContent()) false else isNotPremium && hasNotGoneAdFree()
-    }
-
-    fun startTrial() {
-        if (trialFlowable != null) return
-        val trialPeriod = trialPeriod
-
-        val actual = Flowable.intervalRange(0, trialPeriod.toLong(), 0, 1, TimeUnit.SECONDS)
-                .map { elapsed -> trialPeriod - elapsed }
-                .doFinally {
-                    isTrial = false
-                    trialFlowable = null
-                }.publish()
-
-        actual.connect()
-
-        trialFlowable = actual
-        isTrial = true
-        numTrials++
-    }
+    fun startTrial() = trigger.onNext(true)
 
     internal fun onPurchasesQueried(responseCode: Int, purchases: List<Purchase>?) {
-        App.withApp { app -> app.preferences.edit().remove(PURCHASES).apply() }
+        Sku.values().forEach { setManager.removeFromSet(SkuKey, it.id) }
         onPurchasesUpdated(responseCode, purchases)
     }
 
     internal fun clearPurchases() {
-        App.withApp { app -> app.preferences.edit().remove(PURCHASES).apply() }
+        Sku.values().forEach { setManager.removeFromSet(SkuKey, it.id) }
     }
 
     // App is open source, do a psuedo check.
@@ -147,24 +175,24 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
         return !TextUtils.isEmpty(purchase.originalJson)
     }
 
-    private fun getPurchaseSet(app: App): Set<String> =
-            app.preferences.getStringSet(PURCHASES, EMPTY) ?: EMPTY
-
     companion object {
-
         private const val FIRST_TRIAL_PERIOD = 60 * 10
         private const val SECOND_TRIAL_PERIOD = 60
         private const val FINAL_TRIAL_PERIOD = 10
 
-
-        const val AD_FREE_SKU = "ad.free"
-        const val PREMIUM_SKU = "premium"
         const val ACTION_LOCKED_CONTENT_CHANGED = "com.tunjid.fingergestures.action.lockedContentChanged"
 
-        private const val PURCHASES = "purchases"
-        private const val HAS_LOCKED_CONTENT = "has locked content"
-        private val EMPTY = HashSet<String>()
-
         var instance = PurchasesManager()
+
+        private fun trialPeriod(numTrials: Int) = when (numTrials) {
+            0 -> FIRST_TRIAL_PERIOD
+            1 -> SECOND_TRIAL_PERIOD
+            else -> FINAL_TRIAL_PERIOD
+        }
     }
+}
+
+sealed class TrialStatus(open val numTrials: Int) {
+    data class Trial(override val numTrials: Int, val countDown: Long) : TrialStatus(numTrials)
+    data class Normal(override val numTrials: Int) : TrialStatus(numTrials)
 }
