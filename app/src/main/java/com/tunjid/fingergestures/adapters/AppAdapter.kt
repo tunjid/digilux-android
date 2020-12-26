@@ -24,6 +24,7 @@ import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.viewbinding.typed
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.BackgroundManager
+import com.tunjid.fingergestures.ListPreferenceEditor
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.databinding.*
@@ -126,6 +127,9 @@ sealed class Item(
         @StringRes val titleRes: Int,
         @StringRes val infoRes: Int,
         val canAutoRotate: Boolean,
+        val removeText: String?,
+        val editor: ListPreferenceEditor<RotationGestureConsumer.Preference>,
+        val unRemovablePackages: List<String>,
         val items: List<Package>,
         val input: Inputs
     ) : Item(titleRes.toString())

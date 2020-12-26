@@ -280,8 +280,8 @@ interface Inputs {
 
     private val RotationGestureConsumer.items: Flowable<List<Item>>
         get() = Flowables.combineLatest(
-            rotatingApps.listMap(::Package),
-            excludedRotatingApps.listMap(::Package),
+            setManager.itemsFlowable(RotationGestureConsumer.Preference.RotatingApps).listMap(::Package),
+            setManager.itemsFlowable(RotationGestureConsumer.Preference.NonRotatingApps).listMap(::Package),
             lastSeenApps.listMap(::Package),
             autoRotatePreference.monitor,
         ) { rotating, excluded, lastSeen, canAutoRotate ->
@@ -297,9 +297,12 @@ interface Inputs {
                     tab = Tab.Shortcuts,
                     index = AppViewModel.ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.RotatingApps,
+                    removeText = getRemoveText(RotationGestureConsumer.Preference.RotatingApps),
                     titleRes = R.string.auto_rotate_apps,
                     infoRes = R.string.auto_rotate_description,
+                    unRemovablePackages = unRemovablePackages,
                     canAutoRotate = canAutoRotate,
+                    editor = setManager,
                     items = rotating,
                     input = this@Inputs
                 ),
@@ -307,9 +310,12 @@ interface Inputs {
                     tab = Tab.Shortcuts,
                     index = AppViewModel.EXCLUDED_ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.NonRotatingApps,
+                    removeText = getRemoveText(RotationGestureConsumer.Preference.NonRotatingApps),
                     titleRes = R.string.auto_rotate_apps_excluded,
                     infoRes = R.string.auto_rotate_ignored_description,
+                    unRemovablePackages = unRemovablePackages,
                     canAutoRotate = canAutoRotate,
+                    editor = setManager,
                     items = excluded,
                     input = this@Inputs
                 ),
@@ -317,9 +323,12 @@ interface Inputs {
                     tab = Tab.Shortcuts,
                     index = AppViewModel.ROTATION_HISTORY,
                     preference = null,
+                    removeText = "",
                     titleRes = R.string.app_rotation_history_title,
                     infoRes = R.string.app_rotation_history_info,
+                    unRemovablePackages = unRemovablePackages,
                     canAutoRotate = canAutoRotate,
+                    editor = setManager,
                     items = lastSeen,
                     input = this@Inputs
                 )

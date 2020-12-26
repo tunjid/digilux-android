@@ -105,7 +105,7 @@ class FingerGestureService : AccessibilityService() {
 
         subscribeToBroadcasts()
         registerReceiver(screenWakeReceiver, IntentFilter(ACTION_SCREEN_ON))
-        setWatchesWindows(RotationGestureConsumer.instance.canAutoRotate())
+        setWatchesWindows(RotationGestureConsumer.instance.autoRotatePreference.value)
         setShowsAccessibilityButton(PopUpGestureConsumer.instance.hasAccessibilityButton())
     }
 

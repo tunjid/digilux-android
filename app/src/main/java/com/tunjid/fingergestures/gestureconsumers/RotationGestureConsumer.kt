@@ -39,7 +39,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         RecentlySeenApps(preferenceName = "watches window content");
     }
 
-    private val setManager: SetManager<Preference, ApplicationInfo> = SetManager(
+    val setManager: SetManager<Preference, ApplicationInfo> = SetManager(
         keys = Preference.values().asIterable(),
         sorter = Comparator(this::compareApplicationInfo),
         addFilter = this::canAddToSet,
@@ -55,13 +55,14 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
     val applicationInfoComparator: Comparator<ApplicationInfo>
         get() = Comparator { infoA, infoB -> this.compareApplicationInfo(infoA, infoB) }
 
-    val rotatingApps = setManager.itemsFlowable(Preference.RotatingApps)
-
-    val excludedRotatingApps = setManager.itemsFlowable(Preference.NonRotatingApps)
-
     val lastSeenApps
         get() = shifter.flowable.map { it.mapNotNull(this::fromPackageName) }
             .subscribeOn(Schedulers.io())
+
+    val unRemovablePackages = listOfNotNull(
+        ANDROID_SYSTEM_UI_PACKAGE,
+        App.instance?.packageName
+    )
 
     private var lastPackageName: String? = null
     private val shifter = Shifter(9)
@@ -123,17 +124,6 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
             app.getString(R.string.auto_rotate_apps_excluded))
     }, EMPTY_STRING)
 
-    fun isRemovable(packageName: String): Boolean =
-        App.transformApp({ app -> ANDROID_SYSTEM_UI_PACKAGE != packageName && app.packageName != packageName }, false)
-
-    fun addToSet(preferencesName: Preference, packageName: String): Boolean =
-        setManager.addToSet(preferencesName, packageName)
-
-    fun removeFromSet(preferencesName: Preference, packageName: String) =
-        setManager.removeFromSet(preferencesName, packageName)
-
-    fun canAutoRotate(): Boolean = autoRotatePreference.value
-
     fun enableWindowContentWatching(enabled: Boolean) {
         App.withApp { app ->
             app.preferences.edit().putBoolean(Preference.RecentlySeenApps.preferenceName, enabled).apply()
@@ -147,7 +137,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
 
     private fun canAddToSet(preferenceName: Preference): Boolean {
         val set = setManager.getSet(preferenceName)
-        val count = set.filter(this::isRemovable).count()
+        val count = set.filterNot(unRemovablePackages::contains).count()
         return count < 2 || PurchasesManager.instance.isPremiumNotTrial
     }
 
