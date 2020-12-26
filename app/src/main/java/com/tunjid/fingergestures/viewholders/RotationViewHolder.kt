@@ -44,7 +44,7 @@ fun ViewGroup.rotation() = viewHolderFrom(ViewholderHorizontalListBinding::infla
     binding.add.setOnClickListener {
         when {
             !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
-            !RotationGestureConsumer.instance.canAutoRotate() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
+            !item.canAutoRotate -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
             item.persistedSet != null -> item.persistedSet
                 ?.let(PackageFragment.Companion::newInstance)
                 ?.let(Input::ShowSheet)

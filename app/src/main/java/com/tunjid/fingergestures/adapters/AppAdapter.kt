@@ -126,6 +126,7 @@ sealed class Item(
         val persistedSet: String?,
         @StringRes val titleRes: Int,
         @StringRes val infoRes: Int,
+        val canAutoRotate: Boolean,
         val items: List<Package>,
         val input: Inputs
     ) : Item(titleRes.toString())

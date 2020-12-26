@@ -299,6 +299,7 @@ interface Inputs {
                     persistedSet = RotationGestureConsumer.ROTATION_APPS,
                     titleRes = R.string.auto_rotate_apps,
                     infoRes = R.string.auto_rotate_description,
+                    canAutoRotate = canAutoRotate,
                     items = rotating,
                     input = this@Inputs
                 ),
@@ -308,6 +309,7 @@ interface Inputs {
                     persistedSet = RotationGestureConsumer.EXCLUDED_APPS,
                     titleRes = R.string.auto_rotate_apps_excluded,
                     infoRes = R.string.auto_rotate_ignored_description,
+                    canAutoRotate = canAutoRotate,
                     items = excluded,
                     input = this@Inputs
                 ),
@@ -317,6 +319,7 @@ interface Inputs {
                     persistedSet = null,
                     titleRes = R.string.app_rotation_history_title,
                     infoRes = R.string.app_rotation_history_info,
+                    canAutoRotate = canAutoRotate,
                     items = lastSeen,
                     input = this@Inputs
                 )
@@ -402,10 +405,6 @@ interface Inputs {
 //        items.map { itemType ->
 //            when (itemType) {
 //                AppViewModel.PADDING -> 5
-//                // AUDIO_STREAM_TYPE -> AudioStreamViewHolder(
-//                //         viewGroup.inflate(R.layout.viewholder_audio_stream_type),
-//                //         listener
-//                // )
 //                // AD_FREE -> AdFreeViewHolder(
 //                //         viewGroup.inflate(R.layout.viewholder_simple_text),
 //                //         listener
