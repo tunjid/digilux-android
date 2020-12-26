@@ -21,6 +21,8 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.tunjid.androidx.core.content.drawableAt
+import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.DO_NOTHING
@@ -73,7 +75,7 @@ class ActionViewHolder(
         val iconColor = backgroundManager.sliderColorPreference.value
 
         if (showsText) imageView.setImageResource(iconRes)
-        else imageView.setImageDrawable(backgroundManager.tint(iconRes, iconColor))
+        else imageView.setImageDrawable(imageView.context.drawableAt(iconRes)?.withTint(iconColor))
     }
 
     private fun actionToIcon(action: Action): Int = when (action.value) {

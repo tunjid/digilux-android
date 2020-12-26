@@ -17,8 +17,10 @@
 
 package com.tunjid.fingergestures.adapters
 
+import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
+import androidx.palette.graphics.Palette
 import com.tunjid.androidx.recyclerview.diff.Differentiable
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.viewbinding.typed
@@ -55,6 +57,7 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             Item.AdFree::class.hashCode() -> parent.adFree()
             Item.DiscreteBrightness::class.hashCode() -> parent.discreteBrightness()
             Item.ScreenDimmer::class.hashCode() -> parent.screenDimmer()
+            Item.ColorAdjuster::class.hashCode() -> parent.colorAdjuster()
             Item.Padding::class.hashCode() -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
             else -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
         }
@@ -71,10 +74,10 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             is Item.AdFree -> holder.typed<ViewholderSimpleTextBinding>().bind(item)
             is Item.DiscreteBrightness -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
             is Item.ScreenDimmer -> holder.typed<ViewholderScreenDimmerBinding>().bind(item)
+            is Item.ColorAdjuster -> holder.typed<ViewholderSliderColorBinding>().bind(item)
             is Item.Padding -> Unit
             is Item.WallpaperView -> Unit
             is Item.WallpaperTrigger -> Unit
-            is Item.ColorAdjuster -> Unit
         }
     },
     viewTypeFunction = { it::class.hashCode() },
@@ -197,6 +200,14 @@ sealed class Item(
     data class ColorAdjuster(
         override val tab: Tab,
         override val sortKey: Int,
+        @ColorInt
+        val backgroundColor: Int,
+        @ColorInt
+        val sliderColor: Int,
+        val palette: Palette?,
+        val canPickColorFromWallpaper: Boolean,
+        val backgroundColorSetter: (Int) -> Unit,
+        val sliderColorSetter: (Int) -> Unit,
         val input: Inputs
     ) : Item("ColorAdjuster")
 

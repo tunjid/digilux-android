@@ -44,10 +44,7 @@ import androidx.palette.graphics.Palette
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
-import io.reactivex.Single
-import io.reactivex.Single.error
-import io.reactivex.Single.fromCallable
-import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
+import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers.computation
 import java.io.File
 import java.io.FileInputStream
@@ -73,20 +70,44 @@ class BackgroundManager private constructor() {
         preferencesName = USES_COLORED_NAV_BAR,
         default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P
     )
+    val paletteFlowable: Flowable<PaletteStatus> = Flowable.defer {
+        if (!App.hasStoragePermission) return@defer Flowable.just(PaletteStatus.Unavailable(ERROR_NEED_PERMISSION))
+
+        val wallpaperManager = App.transformApp { app -> app.getSystemService(WallpaperManager::class.java) }
+            ?: return@defer Flowable.just(PaletteStatus.Unavailable(ERROR_NO_WALLPAPER_MANAGER))
+
+        if (isLiveWallpaper(wallpaperManager)) {
+            val swatches = getLiveWallpaperWatches(wallpaperManager)
+            if (swatches.isNotEmpty())
+                return@defer Flowable.fromCallable { Palette.from(swatches) }
+                    .map(PaletteStatus::Available)
+                    .subscribeOn(computation())
+        }
+
+        val drawable = (wallpaperManager.drawable
+            ?: return@defer Flowable.just(PaletteStatus.Unavailable(ERROR_NO_DRAWABLE_FOUND)))
+            as? BitmapDrawable
+            ?: return@defer Flowable.just(PaletteStatus.Unavailable(ERROR_NOT_A_BITMAP))
+
+        val bitmap = drawable.bitmap
+        Flowable.fromCallable { Palette.from(bitmap).generate() }
+            .map(PaletteStatus::Available)
+            .subscribeOn(computation())
+    }
 
     val sliderDurationMillis: Int
         get() = durationPercentageToMillis(sliderDurationPreference.value)
 
     val screenAspectRatio: IntArray?
-        get() {
-            val displayMetrics = App.transformApp { app -> app.resources.displayMetrics }
-            return if (displayMetrics == null) null else intArrayOf(displayMetrics.widthPixels, displayMetrics.heightPixels)
+        get() = when (val displayMetrics = App.transformApp { app -> app.resources.displayMetrics }) {
+            null -> null
+            else -> intArrayOf(displayMetrics.widthPixels, displayMetrics.heightPixels)
         }
 
     val screenDimensionRatio: String
-        get() {
-            val dimensions = screenAspectRatio
-            return if (dimensions == null) "H, 16:9" else "H," + dimensions[0] + ":" + dimensions[1]
+        get() = when (val dimensions = screenAspectRatio) {
+            null -> "H, 16:9"
+            else -> "H," + dimensions[0] + ":" + dimensions[1]
         }
 
     @Retention(AnnotationRetention.SOURCE)
@@ -130,44 +151,15 @@ class BackgroundManager private constructor() {
         return File(app.filesDir, getFileName(selection))
     }
 
-    private fun getFileName(@WallpaperSelection selection: Int): String {
-        return if (selection == DAY_WALLPAPER_PICK_CODE) DAY_WALLPAPER_NAME else NIGHT_WALLPAPER_NAME
-    }
+    private fun getFileName(@WallpaperSelection selection: Int): String =
+        when (selection) {
+            DAY_WALLPAPER_PICK_CODE -> DAY_WALLPAPER_NAME
+            else -> NIGHT_WALLPAPER_NAME
+        }
 
     fun usesColoredNav(): Boolean {
         val higherThanPie = Build.VERSION.SDK_INT > Build.VERSION_CODES.P
         return App.transformApp({ app -> app.preferences.getBoolean(USES_COLORED_NAV_BAR, higherThanPie) }, higherThanPie)
-    }
-
-    fun tint(@DrawableRes drawableRes: Int, color: Int): Drawable {
-        val normalDrawable = App.transformApp { app -> ContextCompat.getDrawable(app, drawableRes) }
-            ?: return ColorDrawable(color)
-
-        val wrapDrawable = DrawableCompat.wrap(normalDrawable)
-        DrawableCompat.setTint(wrapDrawable, color)
-
-        return wrapDrawable
-    }
-
-    fun extractPalette(): Single<Palette> {
-        if (!App.hasStoragePermission) return error(Exception(ERROR_NEED_PERMISSION))
-
-        val wallpaperManager = App.transformApp { app -> app.getSystemService(WallpaperManager::class.java) }
-            ?: return error(Exception(ERROR_NO_WALLPAPER_MANAGER))
-
-        if (isLiveWallpaper(wallpaperManager)) {
-            val swatches = getLiveWallpaperWatches(wallpaperManager)
-            if (swatches.isNotEmpty())
-                return fromCallable { Palette.from(swatches) }.subscribeOn(computation()).observeOn(mainThread())
-        }
-
-        val drawable = (wallpaperManager.drawable
-            ?: return error(Exception(ERROR_NO_DRAWABLE_FOUND)))
-            as? BitmapDrawable
-            ?: return error(Exception(ERROR_NOT_A_BITMAP))
-
-        val bitmap = drawable.bitmap
-        return fromCallable { Palette.from(bitmap).generate() }.subscribeOn(computation()).observeOn(mainThread())
     }
 
     fun restoreWallpaperChange() {
@@ -398,4 +390,9 @@ class BackgroundManager private constructor() {
 
         val instance: BackgroundManager by lazy { BackgroundManager() }
     }
+}
+
+sealed class PaletteStatus {
+    data class Available(val palette: Palette) : PaletteStatus()
+    data class Unavailable(val reason: String) : PaletteStatus()
 }

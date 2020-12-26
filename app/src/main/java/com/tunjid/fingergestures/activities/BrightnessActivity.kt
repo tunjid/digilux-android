@@ -29,6 +29,8 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import com.tunjid.androidx.core.content.drawableAt
+import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.CURRENT_BRIGHTNESS_BYTE
@@ -61,8 +63,8 @@ class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
         seekBarText.setTextColor(sliderColor)
         seekBar.thumb.setColorFilter(sliderColor, SRC_IN)
         seekBar.progressDrawable.setColorFilter(sliderColor, SRC_IN)
-        settingsIcon.setImageDrawable(backgroundManager.tint(R.drawable.ic_settings_white_24dp, sliderColor))
-        seekBarBackground.background = backgroundManager.tint(R.drawable.color_indicator, sliderBackgroundColor)
+        settingsIcon.setImageDrawable(drawableAt(R.drawable.ic_settings_white_24dp)?.withTint(sliderColor))
+        seekBarBackground.background = drawableAt(R.drawable.color_indicator)?.withTint(sliderBackgroundColor)
 
         val set = ConstraintSet()
         set.clone(layout)

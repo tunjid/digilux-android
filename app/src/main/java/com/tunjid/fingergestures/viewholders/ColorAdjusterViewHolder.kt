@@ -17,142 +17,128 @@
 
 package com.tunjid.fingergestures.viewholders
 
+import android.content.Context
 import android.content.DialogInterface
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.View.OnClickListener
-import android.widget.TextView
+import android.view.ViewGroup
+import androidx.annotation.ColorInt
+import androidx.core.view.isVisible
 import androidx.palette.graphics.Palette
 import com.flask.colorpicker.ColorPickerView.WHEEL_TYPE.FLOWER
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.core.content.drawableAt
+import com.tunjid.androidx.core.graphics.drawable.withTint
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapterListener
-import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.databinding.ViewholderSliderColorBinding
+import com.tunjid.fingergestures.viewmodels.Input
 
-class ColorAdjusterViewHolder(
-        itemView: View,
-        listener: AppAdapterListener
-) : AppViewHolder(itemView, listener) {
+private var BindingViewHolder<ViewholderSliderColorBinding>.item by viewHolderDelegate<Item.ColorAdjuster>()
+private var BindingViewHolder<ViewholderSliderColorBinding>.targetOptions by viewHolderDelegate<List<String>>()
+private var BindingViewHolder<ViewholderSliderColorBinding>.wallpaperColorIndicators by viewHolderDelegate<List<View>>()
 
-    private val backgroundIndicator: View
-    private val sliderIndicator: View
-    private val wallpaperColorIndicators: Array<View>
-    private val targetOptions: Array<CharSequence>
-    private val backgroundManager: BackgroundManager
+fun ViewGroup.colorAdjuster() = viewHolderFrom(ViewholderSliderColorBinding::inflate).apply {
+    val context = itemView.context
+    targetOptions = listOf(context.getString(R.string.slider_background), context.getString(R.string.slider))
+    wallpaperColorIndicators = listOf(
+        binding.color1,
+        binding.color2,
+        binding.color3,
+        binding.color4,
+        binding.color5,
+        binding.color6,
+        binding.color7,
+    )
 
-    init {
-        val context = itemView.context
+    binding.sliderBackgroundColor.setText(R.string.change_slider_background_color)
+    binding.sliderColor.setText(R.string.change_slider_color)
 
-        backgroundManager = BackgroundManager.instance
+    val backgroundPicker = { _: View -> context.pickColor(item.backgroundColor, item.backgroundColorSetter) }
+    val sliderPicker = { _: View -> context.pickColor(item.sliderColor, item.sliderColorSetter) }
 
-        backgroundIndicator = itemView.findViewById(R.id.slider_background_color_indicator)
-        sliderIndicator = itemView.findViewById(R.id.slider_color_indicator)
+    binding.sliderBackgroundColorIndicator.setOnClickListener(backgroundPicker)
+    binding.sliderBackgroundColor.setOnClickListener(backgroundPicker)
+    binding.sliderColorIndicator.setOnClickListener(sliderPicker)
+    binding.sliderColor.setOnClickListener(sliderPicker)
+}
 
-        targetOptions = arrayOf(context.getString(R.string.slider_background), context.getString(R.string.slider))
-        wallpaperColorIndicators = arrayOf(
-                itemView.findViewById(R.id.color_1),
-                itemView.findViewById(R.id.color_2),
-                itemView.findViewById(R.id.color_3),
-                itemView.findViewById(R.id.color_4),
-                itemView.findViewById(R.id.color_5),
-                itemView.findViewById(R.id.color_6), itemView.findViewById(R.id.color_7)
-        )
+fun BindingViewHolder<ViewholderSliderColorBinding>.bind(item: Item.ColorAdjuster) = binding.run {
+    this@bind.item = item
+    val context = root.context
 
-        val backgroundText = itemView.findViewById<TextView>(R.id.slider_background_color)
-        val sliderText = itemView.findViewById<TextView>(R.id.slider_color)
+    sliderBackgroundColorIndicator.background = context.tintedIndicator(item.backgroundColor)
+    sliderColorIndicator.background = context.tintedIndicator(item.sliderColor)
 
-        backgroundText.setText(R.string.change_slider_background_color)
-        sliderText.setText(R.string.change_slider_color)
+    item.palette?.let(::onPaletteExtracted)
 
-        val backgroundPicker = { _: View -> pickColor(backgroundManager.backgroundColorPreference.value, this::setBackgroundColor) }
-        val sliderPicker = { _: View -> pickColor(backgroundManager.sliderColorPreference.value, this::setSliderColor) }
+    if (!App.hasStoragePermission) item.input.accept(Input.Permission.Storage)
+}
 
-        setBackgroundColor(backgroundManager.backgroundColorPreference.value)
-        setSliderColor(backgroundManager.sliderColorPreference.value)
+private fun BindingViewHolder<ViewholderSliderColorBinding>.onPaletteExtracted(palette: Palette) {
+    val pickWallpaper = OnClickListener(::getColorFromWallpaper)
 
-        backgroundIndicator.setOnClickListener(backgroundPicker)
-        sliderIndicator.setOnClickListener(sliderPicker)
+    val colors = listOf(
+        palette.getDominantColor(INVALID_COLOR),
+        palette.getVibrantColor(INVALID_COLOR),
+        palette.getMutedColor(INVALID_COLOR),
+        palette.getDarkVibrantColor(INVALID_COLOR),
+        palette.getDarkMutedColor(INVALID_COLOR),
+        palette.getLightVibrantColor(INVALID_COLOR),
+        palette.getLightMutedColor(INVALID_COLOR)
+    )
 
-        backgroundText.setOnClickListener(backgroundPicker)
-        sliderText.setOnClickListener(sliderPicker)
-    }
-
-    override fun bind() {
-        super.bind()
-        if (!App.hasStoragePermission) listener.requestPermission(MainActivity.STORAGE_CODE)
-        else backgroundManager.extractPalette().subscribe(this::onPaletteExtracted, Throwable::printStackTrace)
-    }
-
-    private fun setBackgroundColor(color: Int) {
-        backgroundManager.backgroundColorPreference.value = color
-        backgroundIndicator.background = backgroundManager.tint(R.drawable.color_indicator, color)
-    }
-
-    private fun setSliderColor(color: Int) {
-        backgroundManager.sliderColorPreference.value = color
-        sliderIndicator.background = backgroundManager.tint(R.drawable.color_indicator, color)
-    }
-
-    private fun onPaletteExtracted(palette: Palette) {
-        val pickWallpaper = OnClickListener(this::getColorFromWallpaper)
-        val colors = intArrayOf(
-                palette.getDominantColor(INVALID_COLOR),
-                palette.getVibrantColor(INVALID_COLOR),
-                palette.getMutedColor(INVALID_COLOR),
-                palette.getDarkVibrantColor(INVALID_COLOR),
-                palette.getDarkMutedColor(INVALID_COLOR),
-                palette.getLightVibrantColor(INVALID_COLOR),
-                palette.getLightMutedColor(INVALID_COLOR)
-        )
-
-        for (i in wallpaperColorIndicators.indices) {
-            val color = colors[i]
-            val indicator = wallpaperColorIndicators[i]
-            indicator.visibility = if (color == INVALID_COLOR) View.GONE else View.VISIBLE
-            if (color == INVALID_COLOR) continue
-
-            indicator.tag = colors[i]
-            indicator.background = backgroundManager.tint(R.drawable.color_indicator, colors[i])
+    wallpaperColorIndicators.zip(colors).forEach { (indicator, color) ->
+        indicator.isVisible = color != INVALID_COLOR
+        if (color != INVALID_COLOR) {
+            indicator.tag = color
+            indicator.background = binding.root.context.tintedIndicator(color)
             indicator.setOnClickListener(pickWallpaper)
         }
     }
-
-    private fun pickColor(initialColor: Int, consumer: (Int) -> Unit) {
-        ColorPickerDialogBuilder.with(itemView.context)
-                .setPositiveButton(R.string.ok) { _: DialogInterface, selectedColor: Int, _: Array<Int> -> consumer.invoke(selectedColor) }
-                .setNegativeButton(R.string.cancel) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
-                .density(COLOR_WHEEL_DENSITY)
-                .setTitle(R.string.choose_color)
-                .initialColor(initialColor)
-                .showColorPreview(true)
-                .showAlphaSlider(false)
-                .showColorEdit(true)
-                .wheelType(FLOWER)
-                .build()
-                .show()
-    }
-
-    private fun getColorFromWallpaper(indicator: View) {
-        if (PurchasesManager.instance.isNotPremium) return goPremium(R.string.premium_prompt_slider)
-
-        MaterialAlertDialogBuilder(indicator.context)
-                .setTitle(R.string.choose_target)
-                .setItems(targetOptions) { _, position ->
-                    val tag = indicator.tag
-                    if (tag == null || tag !is Int) return@setItems
-
-                    if (position == 0) setBackgroundColor(tag)
-                    else setSliderColor(tag)
-                }
-                .show()
-    }
-
-    companion object {
-
-        private const val COLOR_WHEEL_DENSITY = 12
-        private const val INVALID_COLOR = -1
-    }
 }
+
+private fun Context.tintedIndicator(@ColorInt color: Int): Drawable =
+    drawableAt(R.drawable.color_indicator)
+        ?.withTint(color)
+        ?: ColorDrawable(color)
+
+private fun BindingViewHolder<ViewholderSliderColorBinding>.getColorFromWallpaper(indicator: View) {
+    if (!item.canPickColorFromWallpaper) return item.input.accept(Input.GoPremium(R.string.premium_prompt_slider))
+
+    MaterialAlertDialogBuilder(indicator.context)
+        .setTitle(R.string.choose_target)
+        .setItems(targetOptions.toTypedArray()) { _, position ->
+            val tag = indicator.tag
+            if (tag == null || tag !is Int) return@setItems
+
+            if (position == 0) item.backgroundColorSetter(tag)
+            else item.sliderColorSetter(tag)
+        }
+        .show()
+}
+
+private fun Context.pickColor(initialColor: Int, consumer: (Int) -> Unit) {
+    ColorPickerDialogBuilder.with(this)
+        .setPositiveButton(R.string.ok) { _: DialogInterface, selectedColor: Int, _: Array<Int> -> consumer.invoke(selectedColor) }
+        .setNegativeButton(R.string.cancel) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
+        .density(COLOR_WHEEL_DENSITY)
+        .setTitle(R.string.choose_color)
+        .initialColor(initialColor)
+        .showColorPreview(true)
+        .showAlphaSlider(false)
+        .showColorEdit(true)
+        .wheelType(FLOWER)
+        .build()
+        .show()
+}
+
+private const val COLOR_WHEEL_DENSITY = 12
+private const val INVALID_COLOR = -1

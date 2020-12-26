@@ -18,10 +18,7 @@
 package com.tunjid.fingergestures.viewmodels
 
 import androidx.fragment.app.Fragment
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.PopUpGestureConsumer
-import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
@@ -234,9 +231,13 @@ interface Inputs {
 
     private val BackgroundManager.items: Flowable<List<Item>>
         get() = Flowables.combineLatest(
-            coloredNavPreference.monitor,
+            PurchasesManager.instance.state,
             sliderDurationPreference.monitor,
-        ).map { (coloredNav, sliderDuration) ->
+            backgroundColorPreference.monitor,
+            sliderColorPreference.monitor,
+            coloredNavPreference.monitor,
+            paletteFlowable,
+        ) { purchasesState, sliderDuration, backgroundColor, sliderColor, coloredNav, paletteStatus ->
             listOf(
                 Item.Slider(
                     tab = Tab.Display,
@@ -254,7 +255,26 @@ interface Inputs {
                     titleRes = R.string.use_colored_nav,
                     isChecked = coloredNav,
                     consumer = coloredNavPreference.setter
-                )
+                ),
+                //                // SLIDER_COLOR -> ColorAdjusterViewHolder(
+//                //         viewGroup.inflate(R.layout.viewholder_slider_color),
+//                //         listener
+//                // )
+//                else -> 5
+                Item.ColorAdjuster(
+                    tab = Tab.Display,
+                    sortKey = AppViewModel.SLIDER_COLOR,
+                    backgroundColor = backgroundColor,
+                    sliderColor = sliderColor,
+                    canPickColorFromWallpaper = purchasesState.isPremium,
+                    backgroundColorSetter = backgroundColorPreference.setter,
+                    sliderColorSetter = sliderColorPreference.setter,
+                    palette = when (paletteStatus) {
+                        is PaletteStatus.Available -> paletteStatus.palette
+                        is PaletteStatus.Unavailable -> null
+                    },
+                    input = this@Inputs,
+                ),
             )
         }
 
@@ -450,15 +470,6 @@ interface Inputs {
 //                //         listener
 //                // )
 //                // )
-//                // SLIDER_COLOR -> ColorAdjusterViewHolder(
-//                //         viewGroup.inflate(R.layout.viewholder_slider_color),
-//                //         listener
-//                // )
-//                // SCREEN_DIMMER -> ScreenDimmerViewHolder(
-//                //         viewGroup.inflate(R.layout.viewholder_screen_dimmer),
-//                //         listener
-//                // )
-//                else -> 5
 //            }
 //        }
 //    }

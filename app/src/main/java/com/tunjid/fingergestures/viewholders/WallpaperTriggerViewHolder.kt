@@ -21,8 +21,9 @@ import android.app.TimePickerDialog
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.TextView
-import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import com.tunjid.androidx.core.content.drawableAt
+import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
@@ -35,8 +36,8 @@ import java.util.Calendar.HOUR_OF_DAY
 import java.util.Calendar.MINUTE
 
 class WallpaperTriggerViewHolder(
-        itemView: View,
-        appAdapterListener: AppAdapterListener
+    itemView: View,
+    appAdapterListener: AppAdapterListener
 ) : AppViewHolder(itemView, appAdapterListener) {
 
     private val backgroundManager: BackgroundManager = BackgroundManager.instance
@@ -46,18 +47,18 @@ class WallpaperTriggerViewHolder(
     init {
         start.setOnClickListener {
             showTimePicker(backgroundManager.getMainWallpaperCalendar(DAY_WALLPAPER_PICK_CODE),
-                    TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                        backgroundManager.setWallpaperChangeTime(DAY_WALLPAPER_PICK_CODE, hour, minute)
-                        bind()
-                    })
+                TimePickerDialog.OnTimeSetListener { _, hour, minute ->
+                    backgroundManager.setWallpaperChangeTime(DAY_WALLPAPER_PICK_CODE, hour, minute)
+                    bind()
+                })
         }
 
         end.setOnClickListener {
             showTimePicker(backgroundManager.getMainWallpaperCalendar(NIGHT_WALLPAPER_PICK_CODE),
-                    TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                        backgroundManager.setWallpaperChangeTime(NIGHT_WALLPAPER_PICK_CODE, hour, minute)
-                        bind()
-                    }
+                TimePickerDialog.OnTimeSetListener { _, hour, minute ->
+                    backgroundManager.setWallpaperChangeTime(NIGHT_WALLPAPER_PICK_CODE, hour, minute)
+                    bind()
+                }
             )
         }
 
@@ -93,10 +94,11 @@ class WallpaperTriggerViewHolder(
             R.color.dark_grey)
     }
 
-    private fun getTopDrawable(@BackgroundManager.WallpaperSelection selection: Int): Drawable {
-        @DrawableRes val drawableRes = if (selection == DAY_WALLPAPER_PICK_CODE) R.drawable.ic_day_24dp else R.drawable.ic_night_24dp
-        return backgroundManager.tint(drawableRes, getTextColor(selection))
-    }
+    private fun getTopDrawable(@BackgroundManager.WallpaperSelection selection: Int): Drawable? =
+        itemView.context.drawableAt(when (selection) {
+            DAY_WALLPAPER_PICK_CODE -> R.drawable.ic_day_24dp
+            else -> R.drawable.ic_night_24dp
+        })?.withTint(getTextColor(selection))
 
     companion object {
 
