@@ -111,7 +111,7 @@ private fun Context.tintedIndicator(@ColorInt color: Int): Drawable =
         ?: ColorDrawable(color)
 
 private fun BindingViewHolder<ViewholderSliderColorBinding>.getColorFromWallpaper(indicator: View) {
-    if (!item.canPickColorFromWallpaper) return item.input.accept(Input.GoPremium(R.string.premium_prompt_slider))
+    if (!item.canPickColorFromWallpaper) return item.input.accept(Input.UiInteraction.GoPremium(R.string.premium_prompt_slider))
 
     MaterialAlertDialogBuilder(indicator.context)
         .setTitle(R.string.choose_target)

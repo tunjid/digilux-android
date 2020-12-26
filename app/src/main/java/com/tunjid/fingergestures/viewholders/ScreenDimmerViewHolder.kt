@@ -35,7 +35,7 @@ fun ViewGroup.screenDimmer() = viewHolderFrom(ViewholderScreenDimmerBinding::inf
     itemView.setOnClickListener {
         if (!item.dimmerState.visible) {
             if (item.dimmerState.enabled) it.context.startActivity(Intent(ACTION_MANAGE_OVERLAY_PERMISSION))
-            else item.input.accept(Input.GoPremium(R.string.premium_prompt_dimmer))
+            else item.input.accept(Input.UiInteraction.GoPremium(R.string.premium_prompt_dimmer))
         }
     }
     binding.toggle.setOnCheckedChangeListener { _, isChecked -> item.consumer(isChecked) }

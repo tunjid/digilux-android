@@ -38,11 +38,11 @@ import com.tunjid.fingergestures.viewmodels.Input
 private var BindingViewHolder<ViewholderMapperBinding>.item by viewHolderDelegate<Item.Mapper>()
 
 fun ViewGroup.mapper() = viewHolderFrom(ViewholderMapperBinding::inflate).apply {
-    binding.title.setOnClickListener { item.input.accept(Input.ShowSheet(ActionFragment.directionInstance(item.direction))) }
+    binding.title.setOnClickListener { item.input.accept(Input.UiInteraction.ShowSheet(ActionFragment.directionInstance(item.direction))) }
     binding.subTitle.setOnClickListener {
         item.input.accept(
-                if (PurchasesManager.instance.isNotPremium) Input.GoPremium(R.string.premium_prompt_double_swipe)
-                else Input.ShowSheet(ActionFragment.directionInstance(item.doubleDirection))
+                if (PurchasesManager.instance.isNotPremium) Input.UiInteraction.GoPremium(R.string.premium_prompt_double_swipe)
+                else Input.UiInteraction.ShowSheet(ActionFragment.directionInstance(item.doubleDirection))
         )
     }
 }

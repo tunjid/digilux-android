@@ -47,8 +47,6 @@ enum class Tab(val resource: Int) {
     }
 }
 
-interface UiInteraction
-
 sealed class Input {
     sealed class Permission(val code: Int) : Input() {
         object Storage : Permission(MainActivity.STORAGE_CODE)
@@ -57,10 +55,12 @@ sealed class Input {
         object DoNotDisturb : Permission(MainActivity.DO_NOT_DISTURB_CODE)
     }
 
-    data class ShowSheet(val fragment: Fragment) : Input(), UiInteraction
-    data class GoPremium(val description: Int) : Input(), UiInteraction
-    data class Purchase(val sku: PurchasesManager.Sku) : Input(), UiInteraction
-    data class WallpaperPick(val selection: WallpaperSelection) : Input(), UiInteraction
+    sealed class UiInteraction : Input() {
+        data class ShowSheet(val fragment: Fragment) : UiInteraction()
+        data class GoPremium(val description: Int) : UiInteraction()
+        data class Purchase(val sku: PurchasesManager.Sku) : UiInteraction()
+        data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
+    }
 }
 
 interface Inputs {

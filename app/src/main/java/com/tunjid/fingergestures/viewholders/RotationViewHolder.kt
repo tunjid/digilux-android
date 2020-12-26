@@ -47,7 +47,7 @@ fun ViewGroup.rotation() = viewHolderFrom(ViewholderHorizontalListBinding::infla
             !item.canAutoRotate -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
             item.preference != null -> item.preference
                 ?.let(PackageFragment.Companion::newInstance)
-                ?.let(Input::ShowSheet)
+                ?.let(Input.UiInteraction::ShowSheet)
                 ?.let(item.input::accept)
         }
     }

@@ -203,18 +203,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         viewModel.broadcasts.observe(this, EventObserver(this::onBroadcastReceived))
         viewModel.uiInteractions.observe(this) {
             when (it) {
-                is Input.ShowSheet -> {
+                is Input.UiInteraction.ShowSheet -> {
                     supportFragmentManager.beginTransaction().replace(R.id.bottom_sheet, it.fragment).commit()
                     toggleBottomSheet(true)
                 }
-                is Input.GoPremium -> MaterialAlertDialogBuilder(this)
+                is Input.UiInteraction.GoPremium -> MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.go_premium_title)
                     .setMessage(getString(R.string.go_premium_body, getString(it.description)))
                     .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.Sku.Premium) }
                     .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                     .show()
-                is Input.Purchase -> purchase(it.sku)
-                is Input.WallpaperPick -> when {
+                is Input.UiInteraction.Purchase -> purchase(it.sku)
+                is Input.UiInteraction.WallpaperPick -> when {
                     App.hasStoragePermission -> startActivityForResult(Intent.createChooser(Intent()
                         .setType(IMAGE_SELECTION)
                         .setAction(Intent.ACTION_GET_CONTENT), ""), it.selection.code)

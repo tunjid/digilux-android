@@ -66,7 +66,7 @@ private fun BindingViewHolder<ViewholderSimpleTextBinding>.showPurchaseOptions()
         .setTitle(R.string.purchase_options)
         .setItems(R.array.purchase_options
         ) { _, index ->
-            item.input.accept(Input.Purchase(
+            item.input.accept(Input.UiInteraction.Purchase(
                 if (index == 0) PurchasesManager.Sku.AdFree
                 else PurchasesManager.Sku.Premium
             ))
@@ -76,7 +76,7 @@ private fun BindingViewHolder<ViewholderSimpleTextBinding>.showPurchaseOptions()
 
 private fun BindingViewHolder<ViewholderSimpleTextBinding>.showRemainingPurchaseOption() {
     val action = {
-        item.input.accept(Input.Purchase(
+        item.input.accept(Input.UiInteraction.Purchase(
             if (item.notPremium) PurchasesManager.Sku.Premium
             else PurchasesManager.Sku.AdFree
         ))

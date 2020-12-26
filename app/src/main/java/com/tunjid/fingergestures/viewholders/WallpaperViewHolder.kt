@@ -42,8 +42,8 @@ import java.io.File
 private var BindingViewHolder<ViewholderWallpaperPickBinding>.item by viewHolderDelegate<Item.WallpaperPick>()
 
 fun ViewGroup.wallpaperPick() = viewHolderFrom(ViewholderWallpaperPickBinding::inflate).apply {
-    binding.mainWallpaper.setOnClickListener { item.input.accept(Input.WallpaperPick(WallpaperSelection.Day)) }
-    binding.altWallpaper.setOnClickListener { item.input.accept(Input.WallpaperPick(WallpaperSelection.Night)) }
+    binding.mainWallpaper.setOnClickListener { item.input.accept(Input.UiInteraction.WallpaperPick(WallpaperSelection.Day)) }
+    binding.altWallpaper.setOnClickListener { item.input.accept(Input.UiInteraction.WallpaperPick(WallpaperSelection.Night)) }
     binding.shareDayWallpaper.setOnClickListener { requestEdit(WallpaperSelection.Day) }
     binding.shareNightWallpaper.setOnClickListener { requestEdit(WallpaperSelection.Night) }
 }

@@ -31,7 +31,6 @@ import com.tunjid.fingergestures.activities.MainActivity.Companion.DO_NOT_DISTUR
 import com.tunjid.fingergestures.activities.MainActivity.Companion.SETTINGS_CODE
 import com.tunjid.fingergestures.activities.MainActivity.Companion.STORAGE_CODE
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.*
@@ -51,7 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class AppViewModel(application: Application) : AndroidViewModel(application), Inputs {
 
-    private val interactionRelay = BehaviorProcessor.create<UiInteraction>()
+    private val interactionRelay = BehaviorProcessor.create<Input.UiInteraction>()
 
     val liveState: LiveData<AppState> by lazy {
         val popUpGestureConsumer = PopUpGestureConsumer.instance
@@ -136,10 +135,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
         is Input.Permission.Settings -> requestPermission(input.code)
         is Input.Permission.Accessibility -> requestPermission(input.code)
         is Input.Permission.DoNotDisturb -> requestPermission(input.code)
-        is Input.ShowSheet -> interactionRelay.onNext(input)
-        is Input.GoPremium -> interactionRelay.onNext(input)
-        is Input.Purchase -> interactionRelay.onNext(input)
-        is Input.WallpaperPick -> interactionRelay.onNext(input)
+        is Input.UiInteraction.ShowSheet -> interactionRelay.onNext(input)
+        is Input.UiInteraction.GoPremium -> interactionRelay.onNext(input)
+        is Input.UiInteraction.Purchase -> interactionRelay.onNext(input)
+        is Input.UiInteraction.WallpaperPick -> interactionRelay.onNext(input)
     }
 
     fun updateApps() {

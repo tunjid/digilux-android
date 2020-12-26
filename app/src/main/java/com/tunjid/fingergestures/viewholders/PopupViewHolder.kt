@@ -43,7 +43,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
         when {
             !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
             !item.accessibilityButtonEnabled -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
-            else -> item.input.accept(Input.ShowSheet(ActionFragment.popUpInstance()))
+            else -> item.input.accept(Input.UiInteraction.ShowSheet(ActionFragment.popUpInstance()))
         }
     }
     listAdapter = listAdapterOf(
