@@ -47,10 +47,17 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         val enabled: Boolean,
     )
 
+    data class DimmerState(
+        val enabled: Boolean,
+        val visible: Boolean,
+        val checked: Boolean
+    )
+
     data class State(
         val increment: SliderPair,
         val position: SliderPair,
         val adaptive: SliderPair,
+        val dimmerState: DimmerState,
         val restoresAdaptiveBrightnessOnDisplaySleep: Boolean,
         val usesLogarithmicScale: Boolean,
         val shouldShowSlider: Boolean,
@@ -94,6 +101,11 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         preferencesName = SCREEN_DIMMER_DIM_PERCENT,
         default = DEF_DIM_PERCENT
     )
+    val screenDimmerEnabledPreference: ReactivePreference<Boolean> = ReactivePreference(
+        preferencesName = SCREEN_DIMMER_ENABLED,
+        default = false,
+        onSet = { enabled -> if (!enabled) removeDimmer() }
+    )
 
     val discreteBrightnessManager: SetManager<Preference, Int> = SetManager(
         keys = Preference.values().toList(),
@@ -135,6 +147,15 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
             supportsAmbientThreshold,
             ::SliderPair,
         ),
+        Flowables.combineLatest(
+            PurchasesManager.instance.state,
+            screenDimmerEnabledPreference.monitor,
+        ) { purchaseState, dimmerEnabled -> DimmerState(
+            enabled = purchaseState.isPremium,
+            // TODO: Make reactive
+            visible = hasOverlayPermission(),
+            checked = dimmerEnabled
+        ) },
         adaptiveBrightnessPreference.monitor,
         logarithmicBrightnessPreference.monitor,
         showSliderPreference.monitor,

@@ -221,7 +221,14 @@ interface Inputs {
                     editor = discreteBrightnessManager,
                     brightnesses = it.discreteBrightnesses.map(Int::toString).map(::Brightness),
                     input = this@Inputs,
-                )
+                ),
+                Item.ScreenDimmer(
+                    tab = Tab.Brightness,
+                    sortKey = AppViewModel.SLIDER_DELTA,
+                    dimmerState = it.dimmerState,
+                    consumer = screenDimmerEnabledPreference.setter,
+                    input = this@Inputs,
+                ),
             )
         }
 

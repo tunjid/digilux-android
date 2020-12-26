@@ -54,6 +54,7 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             Item.AudioStream::class.hashCode() -> parent.audioStream()
             Item.AdFree::class.hashCode() -> parent.adFree()
             Item.DiscreteBrightness::class.hashCode() -> parent.discreteBrightness()
+            Item.ScreenDimmer::class.hashCode() -> parent.screenDimmer()
             Item.Padding::class.hashCode() -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
             else -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
         }
@@ -69,11 +70,11 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             is Item.AudioStream -> holder.typed<ViewholderAudioStreamTypeBinding>().bind(item)
             is Item.AdFree -> holder.typed<ViewholderSimpleTextBinding>().bind(item)
             is Item.DiscreteBrightness -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
+            is Item.ScreenDimmer -> holder.typed<ViewholderScreenDimmerBinding>().bind(item)
             is Item.Padding -> Unit
             is Item.WallpaperView -> Unit
             is Item.WallpaperTrigger -> Unit
             is Item.ColorAdjuster -> Unit
-            is Item.ScreenDimmer -> Unit
         }
     },
     viewTypeFunction = { it::class.hashCode() },
@@ -202,6 +203,8 @@ sealed class Item(
     data class ScreenDimmer(
         override val tab: Tab,
         override val sortKey: Int,
+        val dimmerState: BrightnessGestureConsumer.DimmerState,
+        val consumer: (Boolean) -> Unit,
         val input: Inputs
     ) : Item("ScreenDimmer")
 }

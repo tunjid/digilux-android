@@ -18,7 +18,6 @@
 package com.tunjid.fingergestures
 
 import android.content.SharedPreferences
-import android.util.Log
 import com.jakewharton.rx.replayingShare
 import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor

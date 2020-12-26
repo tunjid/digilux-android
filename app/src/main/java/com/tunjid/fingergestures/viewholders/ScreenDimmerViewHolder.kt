@@ -19,41 +19,41 @@ package com.tunjid.fingergestures.viewholders
 
 import android.content.Intent
 import android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION
-import android.view.View
-import android.widget.Button
-import android.widget.Switch
+import android.view.ViewGroup
+import androidx.core.view.isVisible
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.AppAdapterListener
-import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
+import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.databinding.ViewholderScreenDimmerBinding
+import com.tunjid.fingergestures.viewmodels.Input
 
-class ScreenDimmerViewHolder(itemView: View, listener: AppAdapterListener) : AppViewHolder(itemView, listener) {
+private var BindingViewHolder<ViewholderScreenDimmerBinding>.item by viewHolderDelegate<Item.ScreenDimmer>()
 
-    private val purchasesManager: PurchasesManager = PurchasesManager.instance
-    private val brightnessGestureConsumer: BrightnessGestureConsumer = BrightnessGestureConsumer.instance
-    private val goToSettings: Button = itemView.findViewById(R.id.go_to_settings)
-    private val overLayToggle: Switch = itemView.findViewById<Switch>(R.id.toggle).apply {
-        setOnCheckedChangeListener { _, isChecked -> brightnessGestureConsumer.isDimmerEnabled = isChecked }
+fun ViewGroup.screenDimmer() = viewHolderFrom(ViewholderScreenDimmerBinding::inflate).apply {
+    itemView.setOnClickListener {
+        if (!item.dimmerState.visible) {
+            if (item.dimmerState.enabled) it.context.startActivity(Intent(ACTION_MANAGE_OVERLAY_PERMISSION))
+            else item.input.accept(Input.GoPremium(R.string.premium_prompt_dimmer))
+        }
     }
+    binding.toggle.setOnCheckedChangeListener { _, isChecked -> item.consumer(isChecked) }
+}
 
-    override fun bind() {
-        super.bind()
-        val isPremium = purchasesManager.isPremium
-        val hasOverlayPermission = brightnessGestureConsumer.hasOverlayPermission()
+fun BindingViewHolder<ViewholderScreenDimmerBinding>.bind(item: Item.ScreenDimmer) = binding.run {
+    this@bind.item = item
 
-        goToSettings.visibility = if (hasOverlayPermission) View.GONE else View.VISIBLE
-        goToSettings.setOnClickListener { this.goToSettings(it) }
+    // For reference:
+    // enabled: is premium
+    // visible: has overlay permissions
+    // checked: user wants to use dimmer
 
-        overLayToggle.isEnabled = isPremium
-        overLayToggle.visibility = if (hasOverlayPermission) View.VISIBLE else View.GONE
-        overLayToggle.setText(if (isPremium) R.string.screen_dimmer_toggle else R.string.go_premium_text)
-        overLayToggle.isChecked = brightnessGestureConsumer.isDimmerEnabled
+    val dimmerState = item.dimmerState
+    goToSettings.isVisible = !dimmerState.visible
 
-        if (!isPremium) itemView.setOnClickListener { this.goToSettings(it) }
-    }
-
-    private fun goToSettings(view: View) {
-        if (purchasesManager.isNotPremium) return  goPremium(R.string.premium_prompt_dimmer)
-        view.context.startActivity(Intent(ACTION_MANAGE_OVERLAY_PERMISSION))
-    }
+    toggle.isEnabled = dimmerState.enabled
+    toggle.isVisible = dimmerState.visible
+    toggle.setText(if (dimmerState.enabled) R.string.screen_dimmer_toggle else R.string.go_premium_text)
+    toggle.isChecked = dimmerState.checked
 }
