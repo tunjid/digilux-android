@@ -111,11 +111,6 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
             if (!enabled) removeDimmer()
         }
 
-    val discreteBrightnesses: Flowable<List<String>> = discreteBrightnessManager
-        .itemsFlowable(Preference.DiscreteBrightnesses)
-        .map { it.map(Int::toString) }
-        .replayingShare()
-
     private val supportsAmbientThreshold = Flowables.combineLatest(
         PurchasesManager.instance.state,
         adaptiveBrightnessPreference.monitor
@@ -123,11 +118,11 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
 
     val state: Flowable<State> = Flowables.combineLatest(
         Flowables.combineLatest(
+            discreteBrightnessManager.itemsFlowable(Preference.DiscreteBrightnesses),
             PurchasesManager.instance.state,
             percentagePreference.monitor,
-            discreteBrightnesses,
 
-            ) { purchaseState, percentage, discreteBrightnesses ->
+            ) { discreteBrightnesses, purchaseState, percentage ->
             SliderPair(value = percentage, enabled = purchaseState.isPremium || discreteBrightnesses.isEmpty())
         },
         Flowables.combineLatest(
@@ -286,13 +281,6 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     fun hasOverlayPermission(): Boolean = App.transformApp(Settings::canDrawOverlays, false)
 
     fun shouldShowDimmer(): Boolean = screenDimmerPercentPreference.value != MIN_DIM_PERCENT
-
-    fun addDiscreteBrightnessValue(discreteValue: String) {
-        discreteBrightnessManager.addToSet(Preference.DiscreteBrightnesses, discreteValue)
-    }
-
-    fun removeDiscreteBrightnessValue(discreteValue: String) =
-        discreteBrightnessManager.removeFromSet(Preference.DiscreteBrightnesses, discreteValue)
 
     fun getAdjustDeltaText(percentage: Int): String = App.transformApp({ app ->
         if (PurchasesManager.instance.isPremium && !noDiscreteBrightness())

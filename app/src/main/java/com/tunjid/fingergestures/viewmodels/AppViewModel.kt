@@ -54,7 +54,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
     private val interactionRelay = BehaviorProcessor.create<UiInteraction>()
 
     val liveState: LiveData<AppState> by lazy {
-        val brightnessGestureConsumer = BrightnessGestureConsumer.instance
         val popUpGestureConsumer = PopUpGestureConsumer.instance
         val gestureMapper = GestureMapper.instance
         val purchasesManager = PurchasesManager.instance
@@ -62,7 +61,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
         Flowables.combineLatest(
             purchasesManager.state,
             Flowable.just(getApplication<Application>().links),
-            brightnessGestureConsumer.discreteBrightnesses.listMap(::Brightness),
             popUpGestureConsumer.popUpActions.listMap(::Action),
             Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
             installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
