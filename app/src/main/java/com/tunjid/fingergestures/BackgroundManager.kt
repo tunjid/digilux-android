@@ -289,33 +289,31 @@ class BackgroundManager private constructor() {
         return handled
     }
 
-    private fun durationPercentageToMillis(percentage: Int): Int {
-        return (percentage * MAX_SLIDER_DURATION / 100f).toInt()
-    }
+    private fun durationPercentageToMillis(percentage: Int): Int =
+        (percentage * MAX_SLIDER_DURATION / 100f).toInt()
 
     companion object {
-
-        private const val MAX_SLIDER_DURATION = 5000
-        private const val DEF_SLIDER_DURATION_PERCENT = 60
-
-        private const val SLIDER_DURATION = "slider duration"
-        private const val BACKGROUND_COLOR = "background color"
-        private const val SLIDER_COLOR = "slider color"
-        private const val USES_COLORED_NAV_BAR = "colored nav bar"
-
-        private const val ERROR_NEED_PERMISSION = "Need permission"
-        private const val ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager"
-        private const val ERROR_NO_DRAWABLE_FOUND = "No Drawable found"
-        private const val ERROR_NOT_A_BITMAP = "Not a Bitmap"
-
-        private const val EXTRA_CHOSEN_COMPONENT = "android.intent.extra.CHOSEN_COMPONENT"
-        private const val ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper"
-        const val ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper"
-        const val ACTION_NAV_BAR_CHANGED = "com.tunjid.fingergestures.action.navBarChanged"
-
         val instance: BackgroundManager by lazy { BackgroundManager() }
     }
 }
+
+private const val MAX_SLIDER_DURATION = 5000
+private const val DEF_SLIDER_DURATION_PERCENT = 60
+
+private const val SLIDER_DURATION = "slider duration"
+private const val BACKGROUND_COLOR = "background color"
+private const val SLIDER_COLOR = "slider color"
+private const val USES_COLORED_NAV_BAR = "colored nav bar"
+
+private const val ERROR_NEED_PERMISSION = "Need permission"
+private const val ERROR_NO_WALLPAPER_MANAGER = "No Wallpaper manager"
+private const val ERROR_NO_DRAWABLE_FOUND = "No Drawable found"
+private const val ERROR_NOT_A_BITMAP = "Not a Bitmap"
+
+private const val EXTRA_CHOSEN_COMPONENT = "android.intent.extra.CHOSEN_COMPONENT"
+private const val ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper"
+const val ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper"
+const val ACTION_NAV_BAR_CHANGED = "com.tunjid.fingergestures.action.navBarChanged"
 
 private var Intent.changeWallpaperSelection by intentExtras<WallpaperSelection?>()
 
