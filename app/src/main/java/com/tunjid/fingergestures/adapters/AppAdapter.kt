@@ -30,9 +30,11 @@ import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.databinding.*
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.viewholders.*
 import com.tunjid.fingergestures.viewmodels.AppViewModel
@@ -51,6 +53,7 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             Item.Link::class.hashCode() -> parent.link()
             Item.AudioStream::class.hashCode() -> parent.audioStream()
             Item.AdFree::class.hashCode() -> parent.adFree()
+            Item.DiscreteBrightness::class.hashCode() -> parent.discreteBrightness()
             Item.Padding::class.hashCode() -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
             else -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
         }
@@ -65,10 +68,10 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             is Item.Link -> holder.typed<ViewholderSimpleTextBinding>().bind(item)
             is Item.AudioStream -> holder.typed<ViewholderAudioStreamTypeBinding>().bind(item)
             is Item.AdFree -> holder.typed<ViewholderSimpleTextBinding>().bind(item)
+            is Item.DiscreteBrightness -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
             is Item.Padding -> Unit
             is Item.WallpaperView -> Unit
             is Item.WallpaperTrigger -> Unit
-            is Item.DiscreteBrightness -> Unit
             is Item.ColorAdjuster -> Unit
             is Item.ScreenDimmer -> Unit
         }
@@ -155,9 +158,9 @@ sealed class Item(
     data class AdFree(
         override val tab: Tab,
         override val index: Int,
-        val hasAds :Boolean,
-        val notAdFree :Boolean,
-        val notPremium :Boolean,
+        val hasAds: Boolean,
+        val notAdFree: Boolean,
+        val notPremium: Boolean,
         val input: Inputs
     ) : Item("AdFree")
 
@@ -185,6 +188,8 @@ sealed class Item(
     data class DiscreteBrightness(
         override val tab: Tab,
         override val index: Int,
+        val brightnesses: List<Brightness>,
+        val editor: ListPreferenceEditor<BrightnessGestureConsumer.Preference>,
         val input: Inputs
     ) : Item("DiscreteBrightness")
 

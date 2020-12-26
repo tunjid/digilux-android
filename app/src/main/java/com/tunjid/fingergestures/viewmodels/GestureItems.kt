@@ -30,6 +30,7 @@ import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.viewholders.ReviewLinkItem
 import com.tunjid.fingergestures.viewholders.SupportLinkItem
@@ -207,13 +208,19 @@ interface Inputs {
                     isChecked = it.shouldShowSlider,
                     consumer = showSliderPreference.setter,
                 ),
-
                 Item.Toggle(
                     tab = Tab.Brightness,
                     index = AppViewModel.ANIMATES_SLIDER,
                     titleRes = R.string.slider_animate,
                     isChecked = it.shouldAnimateSlider,
                     consumer = animateSliderPreference.setter
+                ),
+                Item.DiscreteBrightness(
+                    tab = Tab.Brightness,
+                    index = AppViewModel.DISCRETE_BRIGHTNESS,
+                    editor = discreteBrightnessManager,
+                    brightnesses = it.discreteBrightnesses.map(Int::toString).map(::Brightness),
+                    input = this@Inputs,
                 )
             )
         }
@@ -427,10 +434,6 @@ interface Inputs {
 //        items.map { itemType ->
 //            when (itemType) {
 //                AppViewModel.PADDING -> 5
-//                // AD_FREE -> AdFreeViewHolder(
-//                //         viewGroup.inflate(R.layout.viewholder_simple_text),
-//                //         listener
-//                // )
 //                // WALLPAPER_PICKER -> WallpaperViewHolder(
 //                //         viewGroup.inflate(R.layout.viewholder_wallpaper_pick),
 //                //         listener
@@ -439,10 +442,6 @@ interface Inputs {
 //                //         viewGroup.inflate(R.layout.viewholder_wallpaper_trigger),
 //                //         listener
 //                // )
-//                // DISCRETE_BRIGHTNESS -> DiscreteBrightnessViewHolder(
-//                //         viewGroup.inflate(R.layout.viewholder_horizontal_list),
-//                //         state.map(AppState::brightnessValues),
-//                //         listener
 //                // )
 //                // SLIDER_COLOR -> ColorAdjusterViewHolder(
 //                //         viewGroup.inflate(R.layout.viewholder_slider_color),
