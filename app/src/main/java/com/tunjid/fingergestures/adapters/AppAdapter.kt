@@ -27,6 +27,7 @@ import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.databinding.*
+import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Action
@@ -46,6 +47,7 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             Item.Rotation::class.hashCode() -> parent.rotation()
             Item.PopUp::class.hashCode() -> parent.popUp()
             Item.Link::class.hashCode() -> parent.link()
+            Item.AudioStream::class.hashCode() -> parent.audioStream()
             Item.Padding::class.hashCode() -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
             else -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
         }
@@ -58,8 +60,8 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             is Item.Rotation -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
             is Item.PopUp -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
             is Item.Link -> holder.typed<ViewholderSimpleTextBinding>().bind(item)
+            is Item.AudioStream -> holder.typed<ViewholderAudioStreamTypeBinding>().bind(item)
             is Item.Padding -> Unit
-            is Item.AudioStreamType -> Unit
             is Item.AdFree -> Unit
             is Item.WallpaperView -> Unit
             is Item.WallpaperTrigger -> Unit
@@ -135,9 +137,12 @@ sealed class Item(
         val input: Inputs
     ) : Item(linkItem.link)
 
-    data class AudioStreamType(
+    data class AudioStream(
         override val tab: Tab,
         override val index: Int,
+        val stream: AudioGestureConsumer.Stream,
+        val hasDoNotDisturbAccess: Boolean,
+        val titleFunction: (Int) -> String,
         val input: Inputs
     ) : Item("AudioStreamType")
 

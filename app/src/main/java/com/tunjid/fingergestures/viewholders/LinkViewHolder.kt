@@ -42,18 +42,15 @@ fun BindingViewHolder<ViewholderSimpleTextBinding>.bind(item: Item.Link) = bindi
     title.setCompoundDrawablesRelativeWithIntrinsicBounds(item.linkItem.icon, 0, 0, 0)
 }
 
-private const val APP_URI = "market://details?id=com.tunjid.fingergestures"
-private const val SUPPORT_LINK = "https://github.com/tunjid/digilux-android/issues"
-
 val ReviewLinkItem = LinkItem(
     titleRes = R.string.review_app,
     icon = R.drawable.ic_rate_review_white_24dp,
-    link = APP_URI
+    link = "market://details?id=com.tunjid.fingergestures"
 )
 val SupportLinkItem = LinkItem(
     titleRes = R.string.help_support,
     icon = R.drawable.ic_help_24dp,
-    link = SUPPORT_LINK
+    link = "https://github.com/tunjid/digilux-android/issues"
 )
 
 class LinkItem internal constructor(
