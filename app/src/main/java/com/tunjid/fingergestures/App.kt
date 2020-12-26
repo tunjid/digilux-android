@@ -135,27 +135,5 @@ class App : android.app.Application() {
         }
 
         fun <T> transformApp(appTFunction: (App) -> T?): T? = transformApp(appTFunction, null)
-
-        fun <T> diff(list: MutableList<T>, supplier: () -> List<T>): Single<DiffUtil.DiffResult> =
-                diff(list, supplier, { it.toString() })
-
-        fun <T> diff(list: MutableList<T>,
-                     supplier: () -> List<T>,
-                     diffFunction: (T) -> String): Single<DiffUtil.DiffResult> =
-                backgroundToMain {
-                    Diff.calculate(
-                            list,
-                            supplier.invoke(),
-                            { _, newList -> newList },
-                            { item -> Differentiable.fromCharSequence { diffFunction.invoke(item) } })
-                }
-                        .doOnSuccess { diff -> list.clear(); list.addAll(diff.items) }
-                        .map { diff -> diff.result }
-
-        fun <T> backgroundToMain(supplier: () -> T): Single<T> {
-            return Single.fromCallable<T> { supplier.invoke() }
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(mainThread())
-        }
     }
 }

@@ -30,16 +30,11 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.Pair
-import androidx.annotation.DrawableRes
 import androidx.annotation.IntDef
 import androidx.annotation.IntRange
 import androidx.annotation.StringRes
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.palette.graphics.Palette
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.core.content.colorAt
@@ -70,6 +65,7 @@ class BackgroundManager private constructor() {
         preferencesName = USES_COLORED_NAV_BAR,
         default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P
     )
+    // TODO: Improve this
     val paletteFlowable: Flowable<PaletteStatus> = Flowable.defer {
         if (!App.hasStoragePermission) return@defer Flowable.just(PaletteStatus.Unavailable(ERROR_NEED_PERMISSION))
 
