@@ -94,9 +94,10 @@ class AppFragment : Fragment(R.layout.fragment_home) {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        when {
-            resultCode != Activity.RESULT_OK -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.cancel_wallpaper)) }
-            requestCode == WallPaperSelection.Day.code || requestCode == WallPaperSelection.Night.code -> cropImage(data!!.data, requestCode)
+        when (resultCode){
+            Activity.RESULT_OK -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.cancel_wallpaper)) }
+            else -> WallpaperSelection.values().firstOrNull { it.code == requestCode }
+                ?.let { cropImage(data!!.data, it) }
         }
     }
 
@@ -108,20 +109,12 @@ class AppFragment : Fragment(R.layout.fragment_home) {
         if (isTrialVisible && item != null) item.actionView = TrialView(requireContext(), item)
     }
 
-//    override fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int) = when {
-//        App.hasStoragePermission -> startActivityForResult(Intent.createChooser(Intent()
-//                .setType(IMAGE_SELECTION)
-//                .setAction(Intent.ACTION_GET_CONTENT), ""), selection)
-//        else -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.enable_storage_settings)) }
-//    }
-
-    fun cropImage(source: Uri?, selection: WallPaperSelection) {
+    fun cropImage(source: Uri?, selection: WallpaperSelection) {
         val backgroundManager = BackgroundManager.instance
         val aspectRatio = backgroundManager.screenAspectRatio ?: return
 
         val activity = activity ?: return
-
-        val file = backgroundManager.getWallpaperFile(selection, activity)
+        val file = backgroundManager.getWallpaperFile(selection) ?: return
         val destination = Uri.fromFile(file)
 
         CropImage.activity(source)
@@ -134,8 +127,6 @@ class AppFragment : Fragment(R.layout.fragment_home) {
     }
 
     companion object {
-
-        private const val IMAGE_SELECTION = "image/*"
 
         fun newInstance(tab: Tab): AppFragment = AppFragment().apply {
             this.tab = tab

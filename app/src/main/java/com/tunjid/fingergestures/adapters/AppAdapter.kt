@@ -19,17 +19,15 @@ package com.tunjid.fingergestures.adapters
 
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
-import androidx.fragment.app.Fragment
 import androidx.palette.graphics.Palette
 import com.tunjid.androidx.recyclerview.diff.Differentiable
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.viewbinding.typed
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
-import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.ListPreferenceEditor
 import com.tunjid.fingergestures.PopUpGestureConsumer
-import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.WallpaperSelection
+import com.tunjid.fingergestures.WallpaperStatus
 import com.tunjid.fingergestures.databinding.*
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
@@ -39,9 +37,9 @@ import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.viewholders.*
-import com.tunjid.fingergestures.viewmodels.AppViewModel
 import com.tunjid.fingergestures.viewmodels.Inputs
 import com.tunjid.fingergestures.viewmodels.Tab
+import java.io.File
 
 fun appAdapter(items: List<Item>?) = listAdapterOf(
     initialItems = items ?: listOf(),
@@ -58,6 +56,7 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             Item.DiscreteBrightness::class.hashCode() -> parent.discreteBrightness()
             Item.ScreenDimmer::class.hashCode() -> parent.screenDimmer()
             Item.ColorAdjuster::class.hashCode() -> parent.colorAdjuster()
+            Item.WallpaperTrigger::class.hashCode() -> parent.wallpaperTrigger()
             Item.Padding::class.hashCode() -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
             else -> parent.viewHolderFrom(ViewholderPaddingBinding::inflate)
         }
@@ -75,9 +74,9 @@ fun appAdapter(items: List<Item>?) = listAdapterOf(
             is Item.DiscreteBrightness -> holder.typed<ViewholderHorizontalListBinding>().bind(item)
             is Item.ScreenDimmer -> holder.typed<ViewholderScreenDimmerBinding>().bind(item)
             is Item.ColorAdjuster -> holder.typed<ViewholderSliderColorBinding>().bind(item)
+            is Item.WallpaperTrigger -> holder.typed<ViewholderWallpaperTriggerBinding>().bind(item)
             is Item.Padding -> Unit
             is Item.WallpaperView -> Unit
-            is Item.WallpaperTrigger -> Unit
         }
     },
     viewTypeFunction = { it::class.hashCode() },
@@ -171,12 +170,19 @@ sealed class Item(
     data class WallpaperView(
         override val tab: Tab,
         override val sortKey: Int,
+        val dayFile: File?,
+        val nightFile: File?,
+        val screenDimensionRatio: String,
         val input: Inputs
     ) : Item("WallpaperView")
 
     data class WallpaperTrigger(
         override val tab: Tab,
         override val sortKey: Int,
+        val dayStatus: WallpaperStatus,
+        val nightStatus: WallpaperStatus,
+        val selectTime: (WallpaperSelection, Int, Int) -> Unit,
+        val cancelAutoWallpaper: () -> Unit,
         val input: Inputs
     ) : Item("WallpaperTrigger")
 
@@ -218,36 +224,4 @@ sealed class Item(
         val consumer: (Boolean) -> Unit,
         val input: Inputs
     ) : Item("ScreenDimmer")
-}
-
-
-interface AppAdapterListener {
-    fun purchase(sku: PurchasesManager.Sku)
-
-    fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int)
-
-    fun requestPermission(@MainActivity.PermissionRequest permission: Int)
-
-    fun showSnackbar(@StringRes message: Int)
-
-    fun notifyItemChanged(@AppViewModel.AdapterIndex index: Int)
-
-    fun showBottomSheetFragment(fragment: Fragment)
-
-    companion object {
-        val noOpInstance
-            get() = object : AppAdapterListener {
-                override fun purchase(sku: PurchasesManager.Sku) = Unit
-
-                override fun pickWallpaper(@BackgroundManager.WallpaperSelection selection: Int) = Unit
-
-                override fun requestPermission(@MainActivity.PermissionRequest permission: Int) = Unit
-
-                override fun showSnackbar(@StringRes message: Int) = Unit
-
-                override fun notifyItemChanged(@AppViewModel.AdapterIndex index: Int) = Unit
-
-                override fun showBottomSheetFragment(fragment: Fragment) = Unit
-            }
-    }
 }

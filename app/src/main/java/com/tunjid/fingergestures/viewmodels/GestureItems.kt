@@ -33,6 +33,7 @@ import com.tunjid.fingergestures.viewholders.ReviewLinkItem
 import com.tunjid.fingergestures.viewholders.SupportLinkItem
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
+import java.util.*
 
 enum class Tab(val resource: Int) {
     Gestures(R.id.action_directions),
@@ -59,6 +60,7 @@ sealed class Input {
     data class ShowSheet(val fragment: Fragment) : Input(), UiInteraction
     data class GoPremium(val description: Int) : Input(), UiInteraction
     data class Purchase(val sku: PurchasesManager.Sku) : Input(), UiInteraction
+    data class WallpaperPick(val selection: WallpaperSelection) : Input(), UiInteraction
 }
 
 interface Inputs {
@@ -236,8 +238,10 @@ interface Inputs {
             backgroundColorPreference.monitor,
             sliderColorPreference.monitor,
             coloredNavPreference.monitor,
+            nightWallpaperStatus,
+            dayWallpaperStatus,
             paletteFlowable,
-        ) { purchasesState, sliderDuration, backgroundColor, sliderColor, coloredNav, paletteStatus ->
+        ) { purchasesState, sliderDuration, backgroundColor, sliderColor, coloredNav, nightStatus, dayStatus, paletteStatus ->
             listOf(
                 Item.Slider(
                     tab = Tab.Display,
@@ -273,6 +277,23 @@ interface Inputs {
                         is PaletteStatus.Available -> paletteStatus.palette
                         is PaletteStatus.Unavailable -> null
                     },
+                    input = this@Inputs,
+                ),
+                Item.WallpaperTrigger(
+                    tab = Tab.Display,
+                    sortKey = AppViewModel.WALLPAPER_TRIGGER,
+                    dayStatus = dayStatus,
+                    nightStatus = nightStatus,
+                    selectTime = setWallpaperChangeTime,
+                    cancelAutoWallpaper = cancelAutoWallpaper,
+                    input = this@Inputs,
+                ),
+                Item.WallpaperView(
+                    tab = Tab.Display,
+                    sortKey = AppViewModel.WALLPAPER_PICKER,
+                    dayFile = getWallpaperFile(WallpaperSelection.Day),
+                    nightFile = getWallpaperFile(WallpaperSelection.Night),
+                    screenDimensionRatio = screenDimensionRatio,
                     input = this@Inputs,
                 ),
             )
@@ -447,33 +468,6 @@ interface Inputs {
             )
         }
 }
-
-//    private fun Context.appAdapter2(
-//        items: IntArray,
-//        state: LiveData<AppState>,
-//        listener: AppAdapterListener
-//    ) {
-//        val purchasesManager = PurchasesManager.instance
-//        val mapper = GestureMapper.instance
-//
-//
-//
-//        items.map { itemType ->
-//            when (itemType) {
-//                AppViewModel.PADDING -> 5
-//                // WALLPAPER_PICKER -> WallpaperViewHolder(
-//                //         viewGroup.inflate(R.layout.viewholder_wallpaper_pick),
-//                //         listener
-//                // )
-//                // WALLPAPER_TRIGGER -> WallpaperTriggerViewHolder(
-//                //         viewGroup.inflate(R.layout.viewholder_wallpaper_trigger),
-//                //         listener
-//                // )
-//                // )
-//            }
-//        }
-//    }
-//}
 
 private val COMPARATOR: Comparator<Item> = compareBy(Item::tab, {
     when (val index = it.sortList.indexOf(it.sortKey)) {

@@ -139,6 +139,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
         is Input.ShowSheet -> interactionRelay.onNext(input)
         is Input.GoPremium -> interactionRelay.onNext(input)
         is Input.Purchase -> interactionRelay.onNext(input)
+        is Input.WallpaperPick -> interactionRelay.onNext(input)
     }
 
     fun updateApps() {

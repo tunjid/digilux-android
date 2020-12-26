@@ -65,20 +65,16 @@ import com.tunjid.androidx.navigation.multiStackNavigationController
 import com.tunjid.androidx.uidrivers.UiState
 import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.androidx.view.util.marginLayoutParams
-import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
-import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_EDIT_WALLPAPER
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_NAV_BAR_CHANGED
-import com.tunjid.fingergestures.EventObserver
-import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.billing.BillingManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.fragments.AppFragment
-import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
@@ -103,8 +99,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
     override val globalUiController: GlobalUiController by lazy { GlobalUiDriver(this, binding, navigator) }
 
     override val navigator: MultiStackNavigator by multiStackNavigationController(
-            stackCount = 5,
-            containerId = R.id.content_container
+        stackCount = 5,
+        containerId = R.id.content_container
     ) {
         AppFragment.newInstance(Tab.values()[it])
     }
@@ -117,8 +113,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
     private val navBarColor: Int
         get() = colorAt(
-                if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
-                else R.color.black
+            if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
+            else R.color.black
         )
 
     @Retention(AnnotationRetention.SOURCE)
@@ -142,10 +138,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         navigator.stackSelectedListener = { bottomNavigationView.menu.findItem(Tab.values()[it].resource)?.isChecked = true }
         navigator.stackTransactionModifier = {
             setCustomAnimations(
-                    android.R.anim.fade_in,
-                    android.R.anim.fade_out,
-                    android.R.anim.fade_in,
-                    android.R.anim.fade_out
+                android.R.anim.fade_in,
+                android.R.anim.fade_out,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
             )
         }
         onBackPressedDispatcher.addCallback(this) { if (!navigator.pop()) finish() }
@@ -154,8 +150,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         val (r, g, b) = Color.valueOf(primary)
 
         val bottomNavBackground = GradientDrawable(
-                GradientDrawable.Orientation.BOTTOM_TOP,
-                intArrayOf(primary, Color.argb(0.5f, r, g, b)))
+            GradientDrawable.Orientation.BOTTOM_TOP,
+            intArrayOf(primary, Color.argb(0.5f, r, g, b)))
 
         bottomNavigationView.background = bottomNavBackground
 
@@ -172,9 +168,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
         binding.bottomSheet.doOnLayout { sheet ->
             globalUiController.liveUiState
-                    .map { it.systemUI.static.statusBarSize }
-                    .distinctUntilChanged()
-                    .observe(this) { sheet.marginLayoutParams.topMargin = it }
+                .map { it.systemUI.static.statusBarSize }
+                .distinctUntilChanged()
+                .observe(this) { sheet.marginLayoutParams.topMargin = it }
         }
         toggleBottomSheet(false)
 
@@ -195,9 +191,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         }
 
         viewModel.liveState
-                .map(AppState::uiUpdate)
-                .distinctUntilChanged()
-                .observe(this, this::onStateChanged)
+            .map(AppState::uiUpdate)
+            .distinctUntilChanged()
+            .observe(this, this::onStateChanged)
 
         viewModel.shill.observe(this) {
             if (it is Shilling.Quip) binding.upgradePrompt.apply { setText(it.message); isVisible = true }
@@ -212,12 +208,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
                     toggleBottomSheet(true)
                 }
                 is Input.GoPremium -> MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.go_premium_title)
-                        .setMessage(getString(R.string.go_premium_body, getString(it.description)))
-                        .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.Sku.Premium) }
-                        .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                        .show()
+                    .setTitle(R.string.go_premium_title)
+                    .setMessage(getString(R.string.go_premium_body, getString(it.description)))
+                    .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.Sku.Premium) }
+                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                    .show()
                 is Input.Purchase -> purchase(it.sku)
+                is Input.WallpaperPick -> when {
+                    App.hasStoragePermission -> startActivityForResult(Intent.createChooser(Intent()
+                        .setType(IMAGE_SELECTION)
+                        .setAction(Intent.ACTION_GET_CONTENT), ""), it.selection.code)
+                    else -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.enable_storage_settings)) }
+                }
             }
         }
     }
@@ -239,7 +241,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
                 val isTrialRunning = purchasesManager.isTrialRunning
 
                 withSnackbar { snackbar ->
-                    snackbar.setText(viewModel.liveState.value?.purchasesState?.trialPeriodText ?: "")
+                    snackbar.setText(viewModel.liveState.value?.purchasesState?.trialPeriodText
+                        ?: "")
                     snackbar.duration = if (isTrialRunning) LENGTH_SHORT else LENGTH_INDEFINITE
 
                     if (!isTrialRunning)
@@ -258,9 +261,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
             }
             R.id.info -> {
                 MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.open_source_libraries)
-                        .setItems(links) { _, index -> showLink(links[index]) }
-                        .show()
+                    .setTitle(R.string.open_source_libraries)
+                    .setItems(links) { _, index -> showLink(links[index]) }
+                    .show()
                 return true
             }
         }
@@ -268,8 +271,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
     }
 
     override fun onBackPressed() =
-            if (bottomSheetBehavior.state != STATE_HIDDEN) toggleBottomSheet(false)
-            else super.onBackPressed()
+        if (bottomSheetBehavior.state != STATE_HIDDEN) toggleBottomSheet(false)
+        else super.onBackPressed()
 
     override fun onPause() {
         billingManager?.destroy()
@@ -316,13 +319,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
         navigator.performConsecutively(lifecycleScope) {
             show(Tab.at(R.id.action_wallpaper).ordinal)
+            MaterialAlertDialogBuilder(this@MainActivity)
+                .setTitle(R.string.choose_target)
+                .setItems(
+                    WallpaperSelection.values()
+                        .map(WallpaperSelection::textRes)
+                        .map(::getString)
+                        .toTypedArray()
+                ) { _, index ->
+                    val selection = if (index == 0) WallpaperSelection.Day
+                    else WallpaperSelection.Night
 
-            BackgroundManager.instance.requestWallPaperConstant(R.string.choose_target, this@MainActivity) { selection ->
-                val shown = navigator.current as AppFragment?
+                    val shown = navigator.current as AppFragment?
 
-                if (shown != null && shown.isVisible) shown.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) { shown.cropImage(imageUri, selection) }
-                else showSnackbar(R.string.error_wallpaper)
-            }
+                    if (shown != null && shown.isVisible) shown.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) { shown.cropImage(imageUri, selection) }
+                    else showSnackbar(R.string.error_wallpaper)
+                }
+                .show()
         }
     }
 
@@ -344,11 +357,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
     private fun showPermissionDialog(@StringRes stringRes: Int, yesAction: () -> Unit) {
         MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.permission_required)
-                .setMessage(stringRes)
-                .setPositiveButton(R.string.yes) { _, _ -> yesAction.invoke() }
-                .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
-                .show()
+            .setTitle(R.string.permission_required)
+            .setMessage(stringRes)
+            .setPositiveButton(R.string.yes) { _, _ -> yesAction.invoke() }
+            .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 
     fun onPermissionClicked(permissionRequest: Int) {
@@ -379,9 +392,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
     private fun onStateChanged(uiUpdate: UiUpdate) {
         uiState = uiState.copy(
-                fabIcon = uiUpdate.iconRes,
-                fabText = getString(uiUpdate.titleRes),
-                fabShows = uiUpdate.fabVisible
+            fabIcon = uiUpdate.iconRes,
+            fabText = getString(uiUpdate.titleRes),
+            fabShows = uiUpdate.fabVisible
         )
     }
 
@@ -402,14 +415,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
     fun purchase(sku: PurchasesManager.Sku) = when (val billingManager = billingManager) {
         null -> showSnackbar(R.string.generic_error)
         else -> disposables.add(billingManager.initiatePurchaseFlow(this, sku)
-                .subscribe({ launchStatus ->
-                    when (launchStatus) {
-                        BillingClient.BillingResponse.OK -> Unit
-                        BillingClient.BillingResponse.SERVICE_UNAVAILABLE, BillingClient.BillingResponse.SERVICE_DISCONNECTED -> showSnackbar(R.string.billing_not_connected)
-                        BillingClient.BillingResponse.ITEM_ALREADY_OWNED -> showSnackbar(R.string.billing_you_own_this)
-                        else -> showSnackbar(R.string.generic_error)
-                    }
-                }, { showSnackbar(R.string.generic_error) })).let { }
+            .subscribe({ launchStatus ->
+                when (launchStatus) {
+                    BillingClient.BillingResponse.OK -> Unit
+                    BillingClient.BillingResponse.SERVICE_UNAVAILABLE, BillingClient.BillingResponse.SERVICE_DISCONNECTED -> showSnackbar(R.string.billing_not_connected)
+                    BillingClient.BillingResponse.ITEM_ALREADY_OWNED -> showSnackbar(R.string.billing_you_own_this)
+                    else -> showSnackbar(R.string.generic_error)
+                }
+            }, { showSnackbar(R.string.generic_error) })).let { }
     }
 
     private fun withSnackbar(consumer: (Snackbar) -> Unit) {
@@ -424,6 +437,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         const val SETTINGS_CODE = 200
         const val ACCESSIBILITY_CODE = 300
         const val DO_NOT_DISTURB_CODE = 400
+        private const val IMAGE_SELECTION = "image/*"
 
         private val STORAGE_PERMISSIONS = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
     }
