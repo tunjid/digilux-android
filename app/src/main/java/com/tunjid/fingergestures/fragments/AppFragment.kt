@@ -35,8 +35,6 @@ import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.androidx.uidrivers.uiState
 import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
-import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
 import com.tunjid.fingergestures.adapters.appAdapter
 import com.tunjid.fingergestures.baseclasses.divider
 import com.tunjid.fingergestures.baseclasses.mainActivity
@@ -98,7 +96,7 @@ class AppFragment : Fragment(R.layout.fragment_home) {
 
         when {
             resultCode != Activity.RESULT_OK -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.cancel_wallpaper)) }
-            requestCode == DAY_WALLPAPER_PICK_CODE || requestCode == NIGHT_WALLPAPER_PICK_CODE -> cropImage(data!!.data, requestCode)
+            requestCode == WallPaperSelection.Day.code || requestCode == WallPaperSelection.Night.code -> cropImage(data!!.data, requestCode)
         }
     }
 
@@ -117,7 +115,7 @@ class AppFragment : Fragment(R.layout.fragment_home) {
 //        else -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.enable_storage_settings)) }
 //    }
 
-    fun cropImage(source: Uri?, @BackgroundManager.WallpaperSelection selection: Int) {
+    fun cropImage(source: Uri?, selection: WallPaperSelection) {
         val backgroundManager = BackgroundManager.instance
         val aspectRatio = backgroundManager.screenAspectRatio ?: return
 

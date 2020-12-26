@@ -31,16 +31,18 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
+import android.os.Parcelable
 import android.util.Pair
-import androidx.annotation.IntDef
 import androidx.annotation.IntRange
 import androidx.annotation.StringRes
 import androidx.palette.graphics.Palette
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.core.content.colorAt
+import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers.computation
+import kotlinx.parcelize.Parcelize
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
@@ -63,8 +65,12 @@ class BackgroundManager private constructor() {
     )
     val coloredNavPreference: ReactivePreference<Boolean> = ReactivePreference(
         preferencesName = USES_COLORED_NAV_BAR,
-        default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P
+        default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P,
+        onSet = {
+            App.transformApp { it.broadcast(Intent(ACTION_NAV_BAR_CHANGED)) }
+        }
     )
+
     // TODO: Improve this
     val paletteFlowable: Flowable<PaletteStatus> = Flowable.defer {
         if (!App.hasStoragePermission) return@defer Flowable.just(PaletteStatus.Unavailable(ERROR_NEED_PERMISSION))
@@ -106,10 +112,6 @@ class BackgroundManager private constructor() {
             else -> "H," + dimensions[0] + ":" + dimensions[1]
         }
 
-    @Retention(AnnotationRetention.SOURCE)
-    @IntDef(INVALID_WALLPAPER_PICK_CODE, DAY_WALLPAPER_PICK_CODE, NIGHT_WALLPAPER_PICK_CODE)
-    annotation class WallpaperSelection
-
     init {
         wallpaperTargets = arrayOf(
             App.transformApp({ app -> app.getString(R.string.day_wallpaper) }, App.EMPTY),
@@ -136,34 +138,23 @@ class BackgroundManager private constructor() {
             .setTitle(titleRes)
             .setItems(wallpaperTargets) { _, index ->
                 consumer.invoke(
-                    if (index == 0) DAY_WALLPAPER_PICK_CODE
-                    else NIGHT_WALLPAPER_PICK_CODE)
+                    if (index == 0) WallPaperSelection.Day.code
+                    else WallPaperSelection.Night.code)
             }
             .show()
     }
 
-    fun getWallpaperFile(@WallpaperSelection selection: Int, context: Context): File {
-        val app = context.applicationContext
-        return File(app.filesDir, getFileName(selection))
-    }
+    fun getWallpaperFile(selection: WallPaperSelection, context: Context): File =
+        File(context.applicationContext.filesDir, selection.fileName)
 
-    private fun getFileName(@WallpaperSelection selection: Int): String =
-        when (selection) {
-            DAY_WALLPAPER_PICK_CODE -> DAY_WALLPAPER_NAME
-            else -> NIGHT_WALLPAPER_NAME
-        }
-
-    fun usesColoredNav(): Boolean {
-        val higherThanPie = Build.VERSION.SDK_INT > Build.VERSION_CODES.P
-        return App.transformApp({ app -> app.preferences.getBoolean(USES_COLORED_NAV_BAR, higherThanPie) }, higherThanPie)
-    }
+    fun usesColoredNav(): Boolean = coloredNavPreference.value
 
     fun restoreWallpaperChange() {
-        reInitializeWallpaperChange(DAY_WALLPAPER_PICK_CODE)
-        reInitializeWallpaperChange(NIGHT_WALLPAPER_PICK_CODE)
+        reInitializeWallpaperChange(WallPaperSelection.Day)
+        reInitializeWallpaperChange(WallPaperSelection.Night)
     }
 
-    fun setWallpaperChangeTime(@WallpaperSelection selection: Int, hourOfDay: Int, minute: Int) {
+    fun setWallpaperChangeTime(selection: WallPaperSelection, hourOfDay: Int, minute: Int) {
         setWallpaperChangeTime(selection, hourOfDay, minute, true)
     }
 
@@ -171,40 +162,33 @@ class BackgroundManager private constructor() {
         val alarmManager = App.transformApp { app -> app.getSystemService(AlarmManager::class.java) }
             ?: return
 
-        val day = getWallpaperPendingIntent(DAY_WALLPAPER_PICK_CODE)
-        val night = getWallpaperPendingIntent(NIGHT_WALLPAPER_PICK_CODE)
+        val day = getWallpaperPendingIntent(WallPaperSelection.Day)
+        val night = getWallpaperPendingIntent(WallPaperSelection.Night)
         if (day == null || night == null) return
 
-        val dayTimePair = getDefaultTime(DAY_WALLPAPER_PICK_CODE)
-        val nightTimePair = getDefaultTime(NIGHT_WALLPAPER_PICK_CODE)
+        val dayTimePair = getDefaultTime(WallPaperSelection.Day)
+        val nightTimePair = getDefaultTime(WallPaperSelection.Day)
 
-        setWallpaperChangeTime(NIGHT_WALLPAPER_PICK_CODE, nightTimePair.first, nightTimePair.second, false)
-        setWallpaperChangeTime(DAY_WALLPAPER_PICK_CODE, dayTimePair.first, dayTimePair.second, false)
+        setWallpaperChangeTime(WallPaperSelection.Night, nightTimePair.first, nightTimePair.second, false)
+        setWallpaperChangeTime(WallPaperSelection.Day, dayTimePair.first, dayTimePair.second, false)
         alarmManager.cancel(night)
         alarmManager.cancel(day)
         night.cancel()
         day.cancel()
     }
 
-    fun getMainWallpaperCalendar(@WallpaperSelection selection: Int): Calendar {
+    fun getMainWallpaperCalendar(selection: WallPaperSelection): Calendar {
         val timePair = getDefaultTime(selection)
         val preferences = App.transformApp { it.preferences } ?: return Calendar.getInstance()
 
-        val hour = preferences.getInt(
-            if (selection == DAY_WALLPAPER_PICK_CODE) DAY_WALLPAPER_HOUR
-            else NIGHT_WALLPAPER_HOUR, timePair.first
-        )
-        val minute = preferences.getInt(
-            if (selection == DAY_WALLPAPER_PICK_CODE) DAY_WALLPAPER_MINUTE
-            else NIGHT_WALLPAPER_MINUTE, timePair.second
-        )
+        val hour = preferences.getInt(selection.hour, timePair.first)
+        val minute = preferences.getInt(selection.minute, timePair.second)
 
         return calendarForTime(hour, minute)
     }
 
-    private fun getWallpaperPendingIntent(@WallpaperSelection selection: Int): PendingIntent? {
-        return App.transformApp { app -> PendingIntent.getBroadcast(app, selection, getWallPaperChangeIntent(app, selection), PendingIntent.FLAG_UPDATE_CURRENT) }
-    }
+    private fun getWallpaperPendingIntent(selection: WallPaperSelection): PendingIntent? =
+        App.transformApp { app -> PendingIntent.getBroadcast(app, selection.code, getWallPaperChangeIntent(app, selection), PendingIntent.FLAG_UPDATE_CURRENT) }
 
     private fun calendarForTime(hourOfDay: Int, minute: Int): Calendar {
         val calendar = Calendar.getInstance()
@@ -219,8 +203,7 @@ class BackgroundManager private constructor() {
     internal fun onIntentReceived(intent: Intent) {
         if (handledEditPick(intent)) return
 
-        val selection = selectionFromIntent(intent)
-        if (selection == INVALID_WALLPAPER_PICK_CODE) return
+        val selection = selectionFromIntent(intent) ?: return
 
         val wallpaperFile = App.transformApp { app -> getWallpaperFile(selection, app) }
             ?: return
@@ -237,39 +220,32 @@ class BackgroundManager private constructor() {
 
     }
 
-    @WallpaperSelection
-    private fun selectionFromIntent(intent: Intent): Int {
-        val action = intent.action
-        return if (action != null && action == ACTION_CHANGE_WALLPAPER)
-            intent.getIntExtra(EXTRA_CHANGE_WALLPAPER, INVALID_WALLPAPER_PICK_CODE)
-        else
-            INVALID_WALLPAPER_PICK_CODE
+    private fun selectionFromIntent(intent: Intent): WallPaperSelection? = when (intent.action) {
+        ACTION_CHANGE_WALLPAPER -> intent.changeWallpaperSelection
+        else -> null
     }
 
-    private fun reInitializeWallpaperChange(@WallpaperSelection selection: Int) = App.withApp { app ->
+    private fun reInitializeWallpaperChange(selection: WallPaperSelection) = App.withApp { app ->
         val preferences = app.preferences
-        val isDay = selection == DAY_WALLPAPER_PICK_CODE
-        val hasCalendar = preferences.getBoolean(if (isDay) DAY_WALLPAPER_SET else NIGHT_WALLPAPER_SET, false)
+        val hasCalendar = preferences.getBoolean(selection.set, false)
         if (!hasCalendar) return@withApp
 
         val calendar = getMainWallpaperCalendar(selection)
         setWallpaperChangeTime(selection, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
     }
 
-    private fun setWallpaperChangeTime(@WallpaperSelection selection: Int, hourOfDay: Int, minute: Int, adding: Boolean) {
+    private fun setWallpaperChangeTime(selection: WallPaperSelection, hourOfDay: Int, minute: Int, adding: Boolean) {
         val hour = when {
-            hourOfDay > 12 && selection == DAY_WALLPAPER_PICK_CODE -> hourOfDay - 12
-            hourOfDay < 12 && selection == NIGHT_WALLPAPER_PICK_CODE -> hourOfDay + 12
+            hourOfDay > 12 && selection == WallPaperSelection.Day -> hourOfDay - 12
+            hourOfDay < 12 && selection == WallPaperSelection.Night -> hourOfDay + 12
             else -> hourOfDay
         }
 
-        val isDayWallpaper = selection == DAY_WALLPAPER_PICK_CODE
-
         App.withApp { app ->
             app.preferences.edit()
-                .putInt(if (isDayWallpaper) DAY_WALLPAPER_HOUR else NIGHT_WALLPAPER_HOUR, hour)
-                .putInt(if (isDayWallpaper) DAY_WALLPAPER_MINUTE else NIGHT_WALLPAPER_MINUTE, minute)
-                .putBoolean(if (isDayWallpaper) DAY_WALLPAPER_SET else NIGHT_WALLPAPER_SET, adding)
+                .putInt(selection.hour, hour)
+                .putInt(selection.minute, minute)
+                .putBoolean(selection.set, adding)
                 .apply()
         }
 
@@ -304,19 +280,19 @@ class BackgroundManager private constructor() {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1 && wallpaperManager.wallpaperInfo != null
     }
 
-    fun willChangeWallpaper(@WallpaperSelection selection: Int): Boolean {
-        return App.transformApp({ app ->
-            val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
-            intent.action = ACTION_CHANGE_WALLPAPER
-            intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection)
+    fun willChangeWallpaper(selection: WallPaperSelection): Boolean = App.transformApp({ app ->
+        val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
+        intent.action = ACTION_CHANGE_WALLPAPER
+        intent.changeWallpaperSelection = selection
 
-            PendingIntent.getBroadcast(app, selection, getWallPaperChangeIntent(app, selection), PendingIntent.FLAG_NO_CREATE) != null
-        }, false)
-    }
+        PendingIntent.getBroadcast(app, selection.code, getWallPaperChangeIntent(app, selection), PendingIntent.FLAG_NO_CREATE) != null
+    }, false)
 
-    private fun getDefaultTime(@WallpaperSelection selection: Int): Pair<Int, Int> {
-        return Pair(if (selection == DAY_WALLPAPER_PICK_CODE) 7 else 19, 0)
-    }
+    private fun getDefaultTime(selection: WallPaperSelection): Pair<Int, Int> =
+        Pair(when (selection) {
+            WallPaperSelection.Day -> 7
+            WallPaperSelection.Night -> 19
+        }, 0)
 
     fun getWallpaperEditPendingIntent(context: Context): PendingIntent {
         val app = context.applicationContext
@@ -325,10 +301,10 @@ class BackgroundManager private constructor() {
         return PendingIntent.getBroadcast(app, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    private fun getWallPaperChangeIntent(app: Context, @WallpaperSelection selection: Int): Intent {
+    private fun getWallPaperChangeIntent(app: Context, selection: WallPaperSelection): Intent {
         val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
         intent.action = ACTION_CHANGE_WALLPAPER
-        intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection)
+        intent.changeWallpaperSelection = selection
 
         return intent
     }
@@ -364,28 +340,43 @@ class BackgroundManager private constructor() {
         private const val ERROR_NO_DRAWABLE_FOUND = "No Drawable found"
         private const val ERROR_NOT_A_BITMAP = "Not a Bitmap"
 
-        private const val DAY_WALLPAPER_NAME = "day"
-        private const val DAY_WALLPAPER_SET = "day wallpaper set"
-        private const val DAY_WALLPAPER_HOUR = "day wallpaper hour"
-        private const val DAY_WALLPAPER_MINUTE = "day wallpaper minute"
-
-        private const val NIGHT_WALLPAPER_NAME = "night"
-        private const val NIGHT_WALLPAPER_SET = "night wallpaper set"
-        private const val NIGHT_WALLPAPER_HOUR = "night wallpaper hour"
-        private const val NIGHT_WALLPAPER_MINUTE = "night wallpaper minute"
-
         private const val EXTRA_CHOSEN_COMPONENT = "android.intent.extra.CHOSEN_COMPONENT"
-        private const val EXTRA_CHANGE_WALLPAPER = "com.tunjid.fingergestures.extra.changeWallpaper"
         private const val ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper"
         const val ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper"
         const val ACTION_NAV_BAR_CHANGED = "com.tunjid.fingergestures.action.navBarChanged"
 
-        const val DAY_WALLPAPER_PICK_CODE = 0
-        const val NIGHT_WALLPAPER_PICK_CODE = 1
-        private const val INVALID_WALLPAPER_PICK_CODE = -1
-
         val instance: BackgroundManager by lazy { BackgroundManager() }
     }
+}
+
+private var Intent.changeWallpaperSelection by intentExtras<WallPaperSelection?>()
+
+@Parcelize
+enum class WallPaperSelection(
+    val code: Int,
+    val textRes: Int,
+    val fileName: String,
+    val set: String,
+    val minute: String,
+    val hour: String
+): Parcelable {
+    //    Invalid(code = -1),
+    Day(
+        code = 0,
+        textRes = R.string.day_wallpaper,
+        fileName = "day",
+        set = "day wallpaper set",
+        minute = "day wallpaper minute",
+        hour = "day wallpaper hour",
+    ),
+    Night(
+        code = 1,
+        textRes = R.string.night_wallpaper,
+        fileName = "night",
+        set = "night wallpaper set",
+        minute = "night wallpaper minute",
+        hour = "night wallpaper hour",
+    );
 }
 
 sealed class PaletteStatus {
