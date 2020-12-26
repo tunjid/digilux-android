@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import androidx.annotation.IntDef
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.tunjid.fingergestures.*
@@ -47,6 +48,21 @@ import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
+sealed class Input {
+    sealed class Permission(val code: Int) : Input() {
+        object Storage : Permission(STORAGE_CODE)
+        object Settings : Permission(SETTINGS_CODE)
+        object Accessibility : Permission(ACCESSIBILITY_CODE)
+        object DoNotDisturb : Permission(DO_NOT_DISTURB_CODE)
+    }
+    sealed class UiInteraction : Input() {
+        data class ShowSheet(val fragment: Fragment) : UiInteraction()
+        data class GoPremium(val description: Int) : UiInteraction()
+        data class Purchase(val sku: PurchasesManager.Sku) : UiInteraction()
+        data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
+    }
+    data class PermissionClicked(val permission: Permission): Input()
+}
 
 class AppViewModel(application: Application) : AndroidViewModel(application), Inputs {
 
@@ -94,29 +110,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
             .toLiveData()
     }
 
-    private val tabItems = listOf(
-        R.id.action_directions to intArrayOf(
-            PADDING, MAP_UP_ICON, MAP_DOWN_ICON, MAP_LEFT_ICON, MAP_RIGHT_ICON,
-            AD_FREE, SUPPORT, REVIEW, LOCKED_CONTENT
-        ),
-        R.id.action_slider to intArrayOf(
-            PADDING, SLIDER_DELTA, DISCRETE_BRIGHTNESS, SCREEN_DIMMER, USE_LOGARITHMIC_SCALE,
-            SHOW_SLIDER, ADAPTIVE_BRIGHTNESS, ANIMATES_SLIDER, ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
-            DOUBLE_SWIPE_SETTINGS
-        ),
-        R.id.action_audio to intArrayOf(
-            PADDING, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW
-        ),
-        R.id.action_accessibility_popup to intArrayOf(PADDING, ENABLE_ACCESSIBILITY_BUTTON, ACCESSIBILITY_SINGLE_CLICK,
-            ANIMATES_POPUP, ENABLE_WATCH_WINDOWS, POPUP_ACTION,
-            ROTATION_LOCK, EXCLUDED_ROTATION_LOCK, ROTATION_HISTORY
-        ),
-        R.id.action_wallpaper to intArrayOf(
-            PADDING, SLIDER_POSITION, SLIDER_DURATION, NAV_BAR_COLOR,
-            SLIDER_COLOR, WALLPAPER_PICKER, WALLPAPER_TRIGGER
-        )
-    ).toMap()
-
     private val quips = application.resources.getStringArray(R.array.upsell_text)
     private val quipCounter = AtomicInteger(-1)
 
@@ -139,6 +132,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
         is Input.UiInteraction.GoPremium -> interactionRelay.onNext(input)
         is Input.UiInteraction.Purchase -> interactionRelay.onNext(input)
         is Input.UiInteraction.WallpaperPick -> interactionRelay.onNext(input)
+        is Input.PermissionClicked -> TODO()
     }
 
     fun updateApps() {

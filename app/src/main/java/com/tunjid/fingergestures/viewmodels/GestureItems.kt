@@ -47,22 +47,6 @@ enum class Tab(val resource: Int) {
     }
 }
 
-sealed class Input {
-    sealed class Permission(val code: Int) : Input() {
-        object Storage : Permission(MainActivity.STORAGE_CODE)
-        object Settings : Permission(MainActivity.SETTINGS_CODE)
-        object Accessibility : Permission(MainActivity.ACCESSIBILITY_CODE)
-        object DoNotDisturb : Permission(MainActivity.DO_NOT_DISTURB_CODE)
-    }
-
-    sealed class UiInteraction : Input() {
-        data class ShowSheet(val fragment: Fragment) : UiInteraction()
-        data class GoPremium(val description: Int) : UiInteraction()
-        data class Purchase(val sku: PurchasesManager.Sku) : UiInteraction()
-        data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
-    }
-}
-
 interface Inputs {
 
     fun accept(input: Input)
