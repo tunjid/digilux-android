@@ -27,6 +27,10 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 
 class PopUpGestureConsumer private constructor() : GestureConsumer {
 
+    enum class Preferences(override val preferenceName: String) : ListPreference {
+        SavedActions(preferenceName = "accessibility button apps");
+    }
+
     val accessibilityButtonEnabledPreference: ReactivePreference<Boolean> = ReactivePreference(
         preferencesName = ACCESSIBILITY_BUTTON_ENABLED,
         default = false,
@@ -44,16 +48,17 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
         default = true
     )
 
-    private val setManager: SetManager<Int> = SetManager(
-            Comparator(Int::compareTo),
-            this::canAddToSet,
-            Integer::valueOf,
-            Any::toString)
+    private val setManager: SetManager<Preferences, Int> = SetManager(
+        keys = Preferences.values().toList(),
+        sorter = Comparator(Int::compareTo),
+        addFilter = this::canAddToSet,
+        stringMapper = Integer::valueOf,
+        objectMapper = Any::toString)
 
-    val popUpActions = setManager.itemsFlowable(SAVED_ACTIONS)
+    val popUpActions = setManager.itemsFlowable(Preferences.SavedActions)
 
     private val list: List<Int>
-        get() = setManager.getItems(SAVED_ACTIONS)
+        get() = setManager.getItems(Preferences.SavedActions)
 
     override fun onGestureActionTriggered(gestureAction: Int) {
         App.withApp { app -> app.broadcast(Intent(ACTION_SHOW_POPUP)) }
@@ -66,10 +71,10 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
     fun shouldAnimatePopup(): Boolean = animatePopUpPreference.value
 
     fun addToSet(@GestureConsumer.GestureAction action: Int): Boolean =
-            setManager.addToSet(action.toString(), SAVED_ACTIONS)
+            setManager.addToSet(Preferences.SavedActions, action.toString())
 
     fun removeFromSet(@GestureConsumer.GestureAction action: Int) =
-            setManager.removeFromSet(action.toString(), SAVED_ACTIONS)
+            setManager.removeFromSet(Preferences.SavedActions, action.toString())
 
     fun showPopup() = if (accessibilityButtonSingleClickPreference.value) list.stream()
             .findFirst()
@@ -80,7 +85,7 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
         app.startActivity(intent)
     }
 
-    private fun canAddToSet(preferenceName: String): Boolean =
+    private fun canAddToSet(preferenceName: Preferences): Boolean =
             setManager.getSet(preferenceName).size < 2 || PurchasesManager.instance.isPremiumNotTrial
 
     companion object {
@@ -90,7 +95,6 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
         const val EXTRA_SHOWS_ACCESSIBILITY_BUTTON = "extra shows accessibility button"
         private const val ACCESSIBILITY_BUTTON_ENABLED = "accessibility button enabled"
         private const val ACCESSIBILITY_BUTTON_SINGLE_CLICK = "accessibility button single click"
-        private const val SAVED_ACTIONS = "accessibility button apps"
         private const val ANIMATES_POPUP = "animates popup"
 
         val instance: PopUpGestureConsumer by lazy { PopUpGestureConsumer() }

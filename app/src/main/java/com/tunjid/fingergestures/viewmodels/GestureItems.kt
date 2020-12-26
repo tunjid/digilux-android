@@ -296,7 +296,7 @@ interface Inputs {
                 Item.Rotation(
                     tab = Tab.Shortcuts,
                     index = AppViewModel.ROTATION_LOCK,
-                    persistedSet = RotationGestureConsumer.ROTATION_APPS,
+                    preference = RotationGestureConsumer.Preference.RotatingApps,
                     titleRes = R.string.auto_rotate_apps,
                     infoRes = R.string.auto_rotate_description,
                     canAutoRotate = canAutoRotate,
@@ -306,7 +306,7 @@ interface Inputs {
                 Item.Rotation(
                     tab = Tab.Shortcuts,
                     index = AppViewModel.EXCLUDED_ROTATION_LOCK,
-                    persistedSet = RotationGestureConsumer.EXCLUDED_APPS,
+                    preference = RotationGestureConsumer.Preference.NonRotatingApps,
                     titleRes = R.string.auto_rotate_apps_excluded,
                     infoRes = R.string.auto_rotate_ignored_description,
                     canAutoRotate = canAutoRotate,
@@ -316,7 +316,7 @@ interface Inputs {
                 Item.Rotation(
                     tab = Tab.Shortcuts,
                     index = AppViewModel.ROTATION_HISTORY,
-                    persistedSet = null,
+                    preference = null,
                     titleRes = R.string.app_rotation_history_title,
                     infoRes = R.string.app_rotation_history_info,
                     canAutoRotate = canAutoRotate,

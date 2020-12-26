@@ -30,8 +30,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.core.delegates.fragmentArgs
-import com.tunjid.androidx.navigation.Navigator
-import com.tunjid.androidx.navigation.activityNavigatorController
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.androidx.view.util.inflate
@@ -49,7 +47,7 @@ import com.tunjid.fingergestures.viewmodels.AppViewModel
 class PackageFragment : Fragment(R.layout.fragment_packages) {
 
     private val viewModel by activityViewModels<AppViewModel>()
-    private var preferenceName by fragmentArgs<String>()
+    private var preferenceName by fragmentArgs<RotationGestureConsumer.Preference>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,14 +56,14 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_bar)
         view.findViewById<RecyclerView>(R.id.options_list).apply {
             val listAdapter = listAdapterOf(
-                    initialItems = viewModel.liveState.value?.installedApps ?: listOf(),
-                    viewHolderCreator = { viewGroup, _ ->
-                        PackageViewHolder(
-                                itemView = viewGroup.inflate(R.layout.viewholder_package_vertical),
-                                listener = ::onPackageClicked
-                        )
-                    },
-                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+                initialItems = viewModel.liveState.value?.installedApps ?: listOf(),
+                viewHolderCreator = { viewGroup, _ ->
+                    PackageViewHolder(
+                        itemView = viewGroup.inflate(R.layout.viewholder_package_vertical),
+                        listener = ::onPackageClicked
+                    )
+                },
+                viewHolderBinder = { holder, item, _ -> holder.bind(item) }
             )
 
             adapter = listAdapter
@@ -73,15 +71,15 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
             addItemDecoration(divider())
 
             viewModel.liveState
-                    .map(AppState::installedApps)
-                    .distinctUntilChanged()
-                    .observe(viewLifecycleOwner) {
-                        if (it.isEmpty()) listAdapter.submitList(it)
-                        else listAdapter.submitList(it) {
-                            progressBar.visibility = View.GONE
-                            TransitionManager.beginDelayedTransition(view as ViewGroup, AutoTransition().addTarget(progressBar))
-                        }
+                .map(AppState::installedApps)
+                .distinctUntilChanged()
+                .observe(viewLifecycleOwner) {
+                    if (it.isEmpty()) listAdapter.submitList(it)
+                    else listAdapter.submitList(it) {
+                        progressBar.visibility = View.GONE
+                        TransitionManager.beginDelayedTransition(view as ViewGroup, AutoTransition().addTarget(progressBar))
                     }
+                }
         }
 
         toolbar.title = RotationGestureConsumer.instance.getAddText(preferenceName)
@@ -89,16 +87,16 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
     }
 
     private fun onPackageClicked(packageName: String) {
-        val added = RotationGestureConsumer.instance.addToSet(packageName, preferenceName)
+        val added = RotationGestureConsumer.instance.addToSet(preferenceName, packageName)
 
         if (!added) {
             val context = requireContext()
             MaterialAlertDialogBuilder(context)
-                    .setTitle(R.string.go_premium_title)
-                    .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.auto_rotate_description)))
-                    .setPositiveButton(R.string.continue_text) { _, _ -> mainActivity.purchase(PurchasesManager.PREMIUM_SKU) }
-                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                    .show()
+                .setTitle(R.string.go_premium_title)
+                .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.auto_rotate_description)))
+                .setPositiveButton(R.string.continue_text) { _, _ -> mainActivity.purchase(PurchasesManager.PREMIUM_SKU) }
+                .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                .show()
             return
         }
 
@@ -107,8 +105,8 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
 
     companion object {
 
-        fun newInstance(@RotationGestureConsumer.PersistedSet preferenceName: String) =
-                PackageFragment().apply { this.preferenceName = preferenceName }
+        fun newInstance(preferenceName: RotationGestureConsumer.Preference) =
+            PackageFragment().apply { this.preferenceName = preferenceName }
     }
 }
 

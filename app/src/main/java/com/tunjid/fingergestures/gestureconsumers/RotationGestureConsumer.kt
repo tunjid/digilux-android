@@ -23,11 +23,7 @@ import android.content.pm.ApplicationInfo
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-import androidx.annotation.StringDef
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ReactivePreference
-import com.tunjid.fingergestures.SetManager
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ANDROID_SYSTEM_UI_PACKAGE
 import io.reactivex.Flowable
@@ -37,27 +33,35 @@ import java.util.*
 
 class RotationGestureConsumer private constructor() : GestureConsumer {
 
-    private val setManager: SetManager<ApplicationInfo> = SetManager(
-            Comparator(this::compareApplicationInfo),
-            this::canAddToSet,
-            this::fromPackageName,
-            this::fromApplicationInfo)
+    enum class Preference(override val preferenceName: String) : ListPreference {
+        RotatingApps(preferenceName = "rotation apps"),
+        NonRotatingApps(preferenceName = "excluded rotation apps"),
+        RecentlySeenApps(preferenceName = "watches window content");
+    }
+
+    private val setManager: SetManager<Preference, ApplicationInfo> = SetManager(
+        keys = Preference.values().asIterable(),
+        sorter = Comparator(this::compareApplicationInfo),
+        addFilter = this::canAddToSet,
+        stringMapper = this::fromPackageName,
+        objectMapper = ApplicationInfo::packageName
+    )
 
     val autoRotatePreference: ReactivePreference<Boolean> = ReactivePreference(
-        preferencesName = WATCHES_WINDOW_CONTENT,
+        preferencesName = Preference.RecentlySeenApps.preferenceName,
         default = false
     )
 
     val applicationInfoComparator: Comparator<ApplicationInfo>
         get() = Comparator { infoA, infoB -> this.compareApplicationInfo(infoA, infoB) }
 
-    val rotatingApps = setManager.itemsFlowable(ROTATION_APPS)
+    val rotatingApps = setManager.itemsFlowable(Preference.RotatingApps)
 
-    val excludedRotatingApps = setManager.itemsFlowable(EXCLUDED_APPS)
+    val excludedRotatingApps = setManager.itemsFlowable(Preference.NonRotatingApps)
 
     val lastSeenApps
         get() = shifter.flowable.map { it.mapNotNull(this::fromPackageName) }
-                .subscribeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
 
     private var lastPackageName: String? = null
     private val shifter = Shifter(9)
@@ -65,9 +69,9 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
     private var isAutoRotateOn: Boolean
         get() = App.transformApp({ app ->
             Settings.System.getInt(
-                    app.contentResolver,
-                    Settings.System.ACCELEROMETER_ROTATION,
-                    DISABLE_AUTO_ROTATION) == ENABLE_AUTO_ROTATION
+                app.contentResolver,
+                Settings.System.ACCELEROMETER_ROTATION,
+                DISABLE_AUTO_ROTATION) == ENABLE_AUTO_ROTATION
         }, false)
         set(isOn) {
             App.withApp { app ->
@@ -76,13 +80,9 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
             }
         }
 
-    @Retention(AnnotationRetention.SOURCE)
-    @StringDef(ROTATION_APPS, EXCLUDED_APPS)
-    annotation class PersistedSet
-
     init {
-        setManager.addToSet(ANDROID_SYSTEM_UI_PACKAGE, EXCLUDED_APPS)
-        App.withApp { app -> setManager.addToSet(app.packageName, EXCLUDED_APPS) }
+        setManager.addToSet(Preference.NonRotatingApps, ANDROID_SYSTEM_UI_PACKAGE)
+        App.withApp { app -> setManager.addToSet(Preference.NonRotatingApps, app.packageName) }
     }
 
     override fun onGestureActionTriggered(gestureAction: Int) {
@@ -100,8 +100,8 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         val packageName = sequence.toString()
         if (packageName == lastPackageName) return
 
-        val rotationApps = setManager.getSet(ROTATION_APPS)
-        if (rotationApps.isEmpty() || setManager.getSet(EXCLUDED_APPS).contains(packageName))
+        val rotationApps = setManager.getSet(Preference.RotatingApps)
+        if (rotationApps.isEmpty() || setManager.getSet(Preference.NonRotatingApps).contains(packageName))
             return
 
         lastPackageName = packageName
@@ -109,34 +109,34 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         isAutoRotateOn = rotationApps.contains(packageName)
     }
 
-    fun getAddText(@PersistedSet preferencesName: String): String = App.transformApp({ app ->
-        app.getString(R.string.auto_rotate_add, if (ROTATION_APPS == preferencesName)
+    fun getAddText(preferencesName: Preference): String = App.transformApp({ app ->
+        app.getString(R.string.auto_rotate_add, if (Preference.RotatingApps == preferencesName)
             app.getString(R.string.auto_rotate_apps)
         else
             app.getString(R.string.auto_rotate_apps_excluded))
     }, EMPTY_STRING)
 
-    fun getRemoveText(@PersistedSet preferencesName: String): String = App.transformApp({ app ->
-        app.getString(R.string.auto_rotate_remove, if (ROTATION_APPS == preferencesName)
+    fun getRemoveText(preferencesName: Preference): String = App.transformApp({ app ->
+        app.getString(R.string.auto_rotate_remove, if (Preference.RotatingApps == preferencesName)
             app.getString(R.string.auto_rotate_apps)
         else
             app.getString(R.string.auto_rotate_apps_excluded))
     }, EMPTY_STRING)
 
     fun isRemovable(packageName: String): Boolean =
-            App.transformApp({ app -> ANDROID_SYSTEM_UI_PACKAGE != packageName && app.packageName != packageName }, false)
+        App.transformApp({ app -> ANDROID_SYSTEM_UI_PACKAGE != packageName && app.packageName != packageName }, false)
 
-    fun addToSet(packageName: String, @PersistedSet preferencesName: String): Boolean =
-            setManager.addToSet(packageName, preferencesName)
+    fun addToSet(preferencesName: Preference, packageName: String): Boolean =
+        setManager.addToSet(preferencesName, packageName)
 
-    fun removeFromSet(packageName: String, @PersistedSet preferencesName: String) =
-            setManager.removeFromSet(packageName, preferencesName)
+    fun removeFromSet(preferencesName: Preference, packageName: String) =
+        setManager.removeFromSet(preferencesName, packageName)
 
     fun canAutoRotate(): Boolean = autoRotatePreference.value
 
     fun enableWindowContentWatching(enabled: Boolean) {
         App.withApp { app ->
-            app.preferences.edit().putBoolean(WATCHES_WINDOW_CONTENT, enabled).apply()
+            app.preferences.edit().putBoolean(Preference.RecentlySeenApps.preferenceName, enabled).apply()
 
             val intent = Intent(ACTION_WATCH_WINDOW_CHANGES)
             intent.putExtra(EXTRA_WATCHES_WINDOWS, enabled)
@@ -145,7 +145,7 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         }
     }
 
-    private fun canAddToSet(preferenceName: String): Boolean {
+    private fun canAddToSet(preferenceName: Preference): Boolean {
         val set = setManager.getSet(preferenceName)
         val count = set.filter(this::isRemovable).count()
         return count < 2 || PurchasesManager.instance.isPremiumNotTrial
@@ -157,8 +157,6 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
             packageManager.getApplicationLabel(infoA).toString().compareTo(packageManager.getApplicationLabel(infoB).toString())
         }, 0)
     }
-
-    private fun fromApplicationInfo(info: ApplicationInfo): String = info.packageName
 
     private fun fromPackageName(packageName: String): ApplicationInfo? = App.transformApp { app ->
         try {
@@ -175,9 +173,6 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
 
         const val ACTION_WATCH_WINDOW_CHANGES = "com.tunjid.fingergestures.watch_windows"
         const val EXTRA_WATCHES_WINDOWS = "extra watches window content"
-        const val EXCLUDED_APPS = "excluded rotation apps"
-        const val ROTATION_APPS = "rotation apps"
-        private const val WATCHES_WINDOW_CONTENT = "watches window content"
         private const val EMPTY_STRING = ""
 
         val instance: RotationGestureConsumer by lazy { RotationGestureConsumer() }

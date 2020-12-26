@@ -45,7 +45,7 @@ fun ViewGroup.rotation() = viewHolderFrom(ViewholderHorizontalListBinding::infla
         when {
             !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
             !item.canAutoRotate -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
-            item.persistedSet != null -> item.persistedSet
+            item.preference != null -> item.preference
                 ?.let(PackageFragment.Companion::newInstance)
                 ?.let(Input::ShowSheet)
                 ?.let(item.input::accept)
@@ -71,7 +71,7 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.Rotation)
     this@bind.item = item
 
     title.setText(item.titleRes)
-    add.isVisible = item.persistedSet != null
+    add.isVisible = item.preference != null
     listAdapter.submitList(item.items)
 
     if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
@@ -80,20 +80,20 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.Rotation)
 private fun BindingViewHolder<ViewholderHorizontalListBinding>.onPackageClicked(packageName: String) {
     val gestureConsumer = RotationGestureConsumer.instance
     val builder = MaterialAlertDialogBuilder(itemView.context)
-    val persistedSet = item.persistedSet
+    val preference = item.preference
 
     when {
         !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
         !gestureConsumer.canAutoRotate() -> builder.setMessage(R.string.auto_rotate_prompt)
         !gestureConsumer.isRemovable(packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
-        persistedSet != null -> builder.setTitle(gestureConsumer.getRemoveText(persistedSet))
+        preference != null -> builder.setTitle(gestureConsumer.getRemoveText(preference))
             .setPositiveButton(R.string.yes) { _, _ ->
-                gestureConsumer.removeFromSet(packageName, persistedSet)
+                gestureConsumer.removeFromSet(preference, packageName)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
         else -> builder.setTitle(R.string.app_rotation_exclude_title)
             .setPositiveButton(R.string.yes) { _, _ ->
-                gestureConsumer.addToSet(packageName, RotationGestureConsumer.EXCLUDED_APPS)
+                gestureConsumer.addToSet(RotationGestureConsumer.Preference.NonRotatingApps, packageName)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
     }

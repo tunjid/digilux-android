@@ -57,6 +57,10 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         val shouldAnimateSlider: Boolean,
     )
 
+    enum class Preferences(override val preferenceName: String) : ListPreference {
+        DiscreteBrightnesses(preferenceName = "discrete brightness values");
+    }
+
     val percentagePreference: ReactivePreference<Int> = ReactivePreference(
         preferencesName = INCREMENT_VALUE,
         default = DEF_INCREMENT_VALUE
@@ -90,11 +94,12 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         default = DEF_DIM_PERCENT
     )
 
-    private val discreteBrightnessManager: SetManager<Int> = SetManager(
-        Comparator(Int::compareTo),
-        { true },
-        Integer::valueOf,
-        Int::toString)
+    private val discreteBrightnessManager: SetManager<Preferences, Int> = SetManager(
+        keys = Preferences.values().toList(),
+        sorter = Comparator(Int::compareTo),
+        addFilter = { true },
+        stringMapper = Integer::valueOf,
+        objectMapper = Int::toString)
 
     var isDimmerEnabled: Boolean
         get() = (hasOverlayPermission()
@@ -106,7 +111,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         }
 
     val discreteBrightnesses: Flowable<List<String>> = discreteBrightnessManager
-        .itemsFlowable(DISCRETE_BRIGHTNESS_SET)
+        .itemsFlowable(Preferences.DiscreteBrightnesses)
         .map { it.map(Int::toString) }
         .replayingShare()
 
@@ -281,11 +286,11 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     fun shouldShowDimmer(): Boolean = screenDimmerPercentPreference.value != MIN_DIM_PERCENT
 
     fun addDiscreteBrightnessValue(discreteValue: String) {
-        discreteBrightnessManager.addToSet(discreteValue, DISCRETE_BRIGHTNESS_SET)
+        discreteBrightnessManager.addToSet(Preferences.DiscreteBrightnesses, discreteValue)
     }
 
     fun removeDiscreteBrightnessValue(discreteValue: String) =
-        discreteBrightnessManager.removeFromSet(discreteValue, DISCRETE_BRIGHTNESS_SET)
+        discreteBrightnessManager.removeFromSet(Preferences.DiscreteBrightnesses, discreteValue)
 
     fun getAdjustDeltaText(percentage: Int): String = App.transformApp({ app ->
         if (PurchasesManager.instance.isPremium && !noDiscreteBrightness())
@@ -342,7 +347,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         val comparator = if (increasing) naturalOrder() else reverseOrder<Int>()
         val filter = { integer: Int -> if (increasing) integer > evaluated else integer < evaluated }
 
-        return discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).stream()
+        return discreteBrightnessManager.getSet(Preferences.DiscreteBrightnesses).stream()
             .map { this.stringPercentageToBrightnessInt(it) }
             .filter(filter::invoke).min(comparator).orElse(alternative)
     }
@@ -373,7 +378,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
             || shouldShowDimmer() && PurchasesManager.instance.isNotPremium)
 
     private fun noDiscreteBrightness(): Boolean =
-        discreteBrightnessManager.getSet(DISCRETE_BRIGHTNESS_SET).isEmpty()
+        discreteBrightnessManager.getSet(Preferences.DiscreteBrightnesses).isEmpty()
 
     companion object {
 
@@ -399,7 +404,6 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         private const val SCREEN_DIMMER_ENABLED = "screen dimmer enabled"
         private const val SCREEN_DIMMER_DIM_PERCENT = "screen dimmer dim percent"
         private const val ANIMATES_SLIDER = "animates slider"
-        private const val DISCRETE_BRIGHTNESS_SET = "discrete brightness values"
         private const val EMPTY_STRING = ""
 
         val instance: BrightnessGestureConsumer by lazy { BrightnessGestureConsumer() }

@@ -18,48 +18,65 @@
 package com.tunjid.fingergestures
 
 import io.reactivex.Flowable
-import java.util.Comparator
+import java.util.*
+import kotlin.collections.HashSet
 
-class SetManager<T : Any>(private val sorter: Comparator<T>,
-    private val addFilter: (String) -> Boolean,
+interface ListPreferenceEditor<K : ListPreference> {
+    fun addToSet(key: K, value: String): Boolean
+
+    fun removeFromSet(key: K, packageName: String)
+}
+
+interface ListPreference {
+    val preferenceName: String
+}
+
+class SetManager<K : ListPreference, T : Any>(
+    keys: Iterable<K>,
+    private val sorter: Comparator<T>,
+    private val addFilter: (K) -> Boolean,
     private val stringMapper: (String) -> T?,
-    private val objectMapper: (T) -> String) {
+    private val objectMapper: (T) -> String
+) : ListPreferenceEditor<K> {
 
-    fun addToSet(value: String, preferencesName: String): Boolean {
-        if (!addFilter.invoke(preferencesName)) return false
+    private val reactivePreferenceMap = keys.map { key ->
+        key to ReactivePreference(key.preferenceName, emptySet<String>())
+            .monitor
+            .map { it.mapNotNull(stringMapper) }
+    }.toMap()
 
-        val set = getSet(preferencesName)
+    override fun addToSet(key: K, value: String): Boolean {
+        if (!addFilter.invoke(key)) return false
+
+        val set = getSet(key)
         set.add(value)
-        saveSet(set, preferencesName)
+        saveSet(set, key)
 
         return true
     }
 
-    fun removeFromSet(packageName: String, preferencesName: String) {
-        val set = getSet(preferencesName)
+    override fun removeFromSet(key: K, packageName: String) {
+        val set = getSet(key)
         set.remove(packageName)
-        saveSet(set, preferencesName)
+        saveSet(set, key)
     }
 
-    fun getList(preferenceName: String): List<String> = stream(preferenceName)
+    fun getList(key: K): List<String> = stream(key)
 
-    fun getItems(preferenceName: String): List<T> = stream(preferenceName).mapNotNull(stringMapper)
+    fun getItems(key: K): List<T> = stream(key).mapNotNull(stringMapper)
 
-    private fun stream(preferenceName: String): List<String> = getSet(preferenceName)
+    private fun stream(key: K): List<String> = getSet(key)
         .mapNotNull(stringMapper)
         .sortedWith(sorter)
         .map(objectMapper)
 
-    fun getSet(preferencesName: String): MutableSet<String> = HashSet<String>().apply {
-        val saved = App.transformApp { app -> app.preferences.getStringSet(preferencesName, emptySet())?.filterNotNull() }
+    fun getSet(key: K): MutableSet<String> = HashSet<String>().apply {
+        val saved = App.transformApp { app -> app.preferences.getStringSet(key.preferenceName, emptySet())?.filterNotNull() }
         if (saved != null) addAll(saved)
     }
 
-    private fun saveSet(set: Set<String>, preferencesName: String) =
-        App.withApp { app -> app.preferences.edit().putStringSet(preferencesName, set).apply() }
+    private fun saveSet(set: Set<String>, key: K) =
+        App.withApp { app -> app.preferences.edit().putStringSet(key.preferenceName, set).apply() }
 
-    fun itemsFlowable(preferencesName: String): Flowable<List<T>> =
-        ReactivePreference(preferencesName, emptySet<String>())
-            .monitor
-            .map { it.mapNotNull(stringMapper) }
+    fun itemsFlowable(key: K): Flowable<List<T>> = reactivePreferenceMap.getValue(key)
 }

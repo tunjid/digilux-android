@@ -122,8 +122,7 @@ sealed class Item(
     data class Rotation(
         override val tab: Tab,
         override val index: Int,
-        @param:RotationGestureConsumer.PersistedSet
-        val persistedSet: String?,
+        val preference: RotationGestureConsumer.Preference?,
         @StringRes val titleRes: Int,
         @StringRes val infoRes: Int,
         val canAutoRotate: Boolean,
