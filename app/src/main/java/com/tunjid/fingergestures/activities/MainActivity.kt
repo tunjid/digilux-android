@@ -136,6 +136,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        bottomSheetNavigator.pop()
+
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this::onOptionsItemSelected)
         binding.bottomNavigation.setOnApplyWindowInsetsListener { _: View?, windowInsets: WindowInsets? -> windowInsets }
         binding.bottomNavigation.background = bottomNavBackground
