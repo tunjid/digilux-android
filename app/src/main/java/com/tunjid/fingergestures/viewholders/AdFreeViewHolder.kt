@@ -29,7 +29,7 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.databinding.ViewholderSimpleTextBinding
-import com.tunjid.fingergestures.viewmodels.Input
+import com.tunjid.fingergestures.models.Input
 
 private var BindingViewHolder<ViewholderSimpleTextBinding>.item by viewHolderDelegate<Item.AdFree>()
 

@@ -36,7 +36,7 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderWallpaperPickBinding
-import com.tunjid.fingergestures.viewmodels.Input
+import com.tunjid.fingergestures.models.Input
 import java.io.File
 
 private var BindingViewHolder<ViewholderWallpaperPickBinding>.item by viewHolderDelegate<Item.WallpaperPick>()

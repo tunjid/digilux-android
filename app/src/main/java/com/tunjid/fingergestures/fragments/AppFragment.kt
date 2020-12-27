@@ -41,7 +41,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.databinding.FragmentHomeBinding
 import com.tunjid.fingergestures.models.InsetFlags
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.Input
+import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.viewmodels.Tab
 import kotlin.math.abs
 

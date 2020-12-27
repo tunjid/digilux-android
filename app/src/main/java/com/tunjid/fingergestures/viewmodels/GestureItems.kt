@@ -17,9 +17,7 @@
 
 package com.tunjid.fingergestures.viewmodels
 
-import androidx.fragment.app.Fragment
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
@@ -28,6 +26,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Brightness
+import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.viewholders.ReviewLinkItem
 import com.tunjid.fingergestures.viewholders.SupportLinkItem

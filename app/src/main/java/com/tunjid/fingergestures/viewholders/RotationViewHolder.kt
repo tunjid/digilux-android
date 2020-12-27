@@ -34,7 +34,7 @@ import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.fragments.PackageFragment
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Package
-import com.tunjid.fingergestures.viewmodels.Input
+import com.tunjid.fingergestures.models.Input
 
 private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.Rotation>()
 private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Package, PackageViewHolder> by viewHolderDelegate()

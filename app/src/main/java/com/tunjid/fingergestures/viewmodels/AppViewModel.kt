@@ -21,7 +21,6 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.tunjid.fingergestures.*
@@ -40,46 +39,6 @@ import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-
-sealed class Input {
-    sealed class Permission : Input() {
-        sealed class Request(val code: Int) : Permission() {
-            object Storage : Request(100)
-            object Settings : Request(200)
-            object Accessibility : Request(300)
-            object DoNotDisturb : Request(400)
-            companion object {
-                private val values get() = listOf(Storage, Settings, Accessibility, DoNotDisturb)
-                fun forCode(code: Int) = values.find { it.code == code }
-            }
-        }
-
-        sealed class Action : Permission() {
-            data class Clear(val time: Long = System.currentTimeMillis()) : Action()
-            data class Clicked(val time: Long = System.currentTimeMillis()) : Action()
-            data class Changed(val request: Request) : Action()
-        }
-    }
-
-    sealed class UiInteraction : Input() {
-        object Default: UiInteraction()
-        data class ShowSheet(val fragment: Fragment) : UiInteraction()
-        data class GoPremium(val description: Int) : UiInteraction()
-        data class Purchase(val sku: PurchasesManager.Sku) : UiInteraction()
-        data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
-    }
-}
-
-data class Unique<T>(
-    val item: T,
-    val time: Long = System.currentTimeMillis()
-)
-
-data class PermissionState(
-    val queue: List<Input.Permission.Request> = listOf(),
-    val active: Unique<Input.Permission.Request>? = null,
-    val prompt: Unique<Int>? = null,
-)
 
 class AppViewModel(application: Application) : AndroidViewModel(application), Inputs {
 

@@ -30,14 +30,11 @@ import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.androidx.uidrivers.uiState
 import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.androidx.view.util.inflate
-import com.tunjid.fingergestures.PopUpGestureConsumer
-import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.divider
 import com.tunjid.fingergestures.baseclasses.mainActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.distinctUntilChanged
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
@@ -69,8 +66,8 @@ class ActionFragment : Fragment(R.layout.fragment_actions) {
             addItemDecoration(divider())
 
             viewModel.liveState
-                    .map(AppState::availableActions)
-                    .distinctUntilChanged().observe(viewLifecycleOwner, listAdapter::submitList)
+                    .mapDistinct(AppState::availableActions)
+                    .observe(viewLifecycleOwner, listAdapter::submitList)
         }
     }
 

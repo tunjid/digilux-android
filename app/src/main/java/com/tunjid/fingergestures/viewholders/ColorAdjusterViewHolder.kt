@@ -39,7 +39,7 @@ import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderSliderColorBinding
-import com.tunjid.fingergestures.viewmodels.Input
+import com.tunjid.fingergestures.models.Input
 
 private var BindingViewHolder<ViewholderSliderColorBinding>.item by viewHolderDelegate<Item.ColorAdjuster>()
 private var BindingViewHolder<ViewholderSliderColorBinding>.targetOptions by viewHolderDelegate<List<String>>()

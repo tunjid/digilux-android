@@ -27,7 +27,7 @@ import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderScreenDimmerBinding
-import com.tunjid.fingergestures.viewmodels.Input
+import com.tunjid.fingergestures.models.Input
 
 private var BindingViewHolder<ViewholderScreenDimmerBinding>.item by viewHolderDelegate<Item.ScreenDimmer>()
 

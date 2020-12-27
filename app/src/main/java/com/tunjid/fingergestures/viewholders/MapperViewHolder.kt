@@ -33,7 +33,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_G
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
-import com.tunjid.fingergestures.viewmodels.Input
+import com.tunjid.fingergestures.models.Input
 
 private var BindingViewHolder<ViewholderMapperBinding>.item by viewHolderDelegate<Item.Mapper>()
 

@@ -18,13 +18,13 @@
 package com.tunjid.fingergestures.models
 
 import android.content.pm.ApplicationInfo
+import androidx.fragment.app.Fragment
 import com.tunjid.androidx.recyclerview.diff.Differentiable
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
-import com.tunjid.fingergestures.viewmodels.Input
-import com.tunjid.fingergestures.viewmodels.PermissionState
 
 data class AppState(
     val purchasesState: PurchasesManager.State,
@@ -35,6 +35,46 @@ data class AppState(
     val uiInteraction: Input.UiInteraction,
     val permissionState: PermissionState = PermissionState(),
     val items: List<Item> = listOf(),
+)
+
+sealed class Input {
+    sealed class Permission : Input() {
+        sealed class Request(val code: Int) : Permission() {
+            object Storage : Request(100)
+            object Settings : Request(200)
+            object Accessibility : Request(300)
+            object DoNotDisturb : Request(400)
+            companion object {
+                private val values get() = listOf(Storage, Settings, Accessibility, DoNotDisturb)
+                fun forCode(code: Int) = values.find { it.code == code }
+            }
+        }
+
+        sealed class Action : Permission() {
+            data class Clear(val time: Long = System.currentTimeMillis()) : Action()
+            data class Clicked(val time: Long = System.currentTimeMillis()) : Action()
+            data class Changed(val request: Request) : Action()
+        }
+    }
+
+    sealed class UiInteraction : Input() {
+        object Default: UiInteraction()
+        data class ShowSheet(val fragment: Fragment) : UiInteraction()
+        data class GoPremium(val description: Int) : UiInteraction()
+        data class Purchase(val sku: PurchasesManager.Sku) : UiInteraction()
+        data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
+    }
+}
+
+data class Unique<T>(
+    val item: T,
+    val time: Long = System.currentTimeMillis()
+)
+
+data class PermissionState(
+    val queue: List<Input.Permission.Request> = listOf(),
+    val active: Unique<Input.Permission.Request>? = null,
+    val prompt: Unique<Int>? = null,
 )
 
 data class Package(val app: ApplicationInfo) : Differentiable {
