@@ -33,9 +33,8 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.fragments.PackageFragment
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.models.Package
 
 private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.Rotation>()
 private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Package, PackageViewHolder> by viewHolderDelegate()
@@ -80,21 +79,17 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.Rotation)
 
 private fun BindingViewHolder<ViewholderHorizontalListBinding>.onPackageClicked(app: ApplicationInfo) {
     val builder = MaterialAlertDialogBuilder(itemView.context)
-    val preference = item.preference
+    val editor = item.editor
 
     when {
         !App.canWriteToSettings -> builder.setMessage(R.string.permission_required)
         !item.canAutoRotate -> builder.setMessage(R.string.auto_rotate_prompt)
         item.unRemovablePackages.contains(app.packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
-        preference != null -> builder.setTitle(item.removeText)
-            .setPositiveButton(R.string.yes) { _, _ ->
-                item.editor.removeFromSet(preference, app)
-            }
+        editor != null -> builder.setTitle(item.removeText)
+            .setPositiveButton(R.string.yes) { _, _ -> editor - app }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
         else -> builder.setTitle(R.string.app_rotation_exclude_title)
-            .setPositiveButton(R.string.yes) { _, _ ->
-                item.editor.addToSet(RotationGestureConsumer.Preference.NonRotatingApps, app)
-            }
+            .setPositiveButton(R.string.yes) { _, _ -> editor + app }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
     }
     builder.show()

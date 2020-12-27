@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.gestureconsumers
 
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.os.Parcelable
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
@@ -29,11 +30,13 @@ import com.tunjid.fingergestures.services.FingerGestureService.Companion.ANDROID
 import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.schedulers.Schedulers
+import kotlinx.parcelize.Parcelize
 import java.util.*
 
 class RotationGestureConsumer private constructor() : GestureConsumer {
 
-    enum class Preference(override val preferenceName: String) : ListPreference {
+    @Parcelize
+    enum class Preference(override val preferenceName: String) : SetPreference, Parcelable {
         RotatingApps(preferenceName = "rotation apps"),
         NonRotatingApps(preferenceName = "excluded rotation apps"),
     }
@@ -81,8 +84,12 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         }
 
     init {
-        setManager.addToSet(Preference.NonRotatingApps, ApplicationInfo().apply { packageName = ANDROID_SYSTEM_UI_PACKAGE })
-        App.withApp { app -> setManager.addToSet(Preference.NonRotatingApps, app.applicationInfo) }
+        App.withApp { app ->
+            setManager.editorFor(Preference.NonRotatingApps).apply {
+                plus(ApplicationInfo().apply { packageName = ANDROID_SYSTEM_UI_PACKAGE })
+                plus(app.applicationInfo)
+            }
+        }
     }
 
     override fun onGestureActionTriggered(gestureAction: GestureAction) {

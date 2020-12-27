@@ -88,7 +88,7 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
     }
 
     private fun onPackageClicked(app: ApplicationInfo) {
-        val added = RotationGestureConsumer.instance.setManager.addToSet(preferenceName, app)
+        val added = RotationGestureConsumer.instance.setManager.editorFor(preferenceName) + app
 
         if (!added) {
             val context = requireContext()

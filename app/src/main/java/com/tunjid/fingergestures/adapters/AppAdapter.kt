@@ -26,10 +26,7 @@ import com.tunjid.androidx.recyclerview.diff.Differentiable
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.viewbinding.typed
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
-import com.tunjid.fingergestures.ListPreferenceEditor
-import com.tunjid.fingergestures.PopUpGestureConsumer
-import com.tunjid.fingergestures.WallpaperSelection
-import com.tunjid.fingergestures.WallpaperStatus
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.databinding.*
 import com.tunjid.fingergestures.gestureconsumers.*
 import com.tunjid.fingergestures.models.Action
@@ -136,7 +133,7 @@ sealed class Item(
         @StringRes val infoRes: Int,
         val canAutoRotate: Boolean,
         val removeText: String?,
-        val editor: ListPreferenceEditor<RotationGestureConsumer.Preference, ApplicationInfo>,
+        val editor: SetPreferenceEditor<ApplicationInfo>?,
         val unRemovablePackages: List<String>,
         val items: List<Package>,
         val input: Inputs
@@ -191,7 +188,7 @@ sealed class Item(
         override val tab: Tab,
         override val sortKey: Int,
         val accessibilityButtonEnabled: Boolean,
-        val editor: ListPreferenceEditor<PopUpGestureConsumer.Preference, GestureAction>,
+        val editor: SetPreferenceEditor<GestureAction>,
         val items: List<Action>,
         val input: Inputs
     ) : Item("PopUp")
@@ -200,7 +197,7 @@ sealed class Item(
         override val tab: Tab,
         override val sortKey: Int,
         val brightnesses: List<Brightness>,
-        val editor: ListPreferenceEditor<BrightnessGestureConsumer.Preference, Int>,
+        val editor: SetPreferenceEditor<Int>,
         val input: Inputs
     ) : Item("DiscreteBrightness")
 

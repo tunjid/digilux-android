@@ -21,23 +21,30 @@ import io.reactivex.Flowable
 import java.util.*
 import kotlin.collections.HashSet
 
-interface ListPreferenceEditor<K : ListPreference, V : Any> {
-    fun addToSet(key: K, value: V): Boolean
+interface SetPreferenceEditor<V : Any> {
+    /**
+     * Adds an item to the set.
+     * Returns false if the item could not be added for whatever reason.
+     */
+    operator fun plus(value: V): Boolean
 
-    fun removeFromSet(key: K, value: V)
+    /**
+     * Removes an item from the set
+     */
+    operator fun minus(value: V)
 }
 
-interface ListPreference {
+interface SetPreference {
     val preferenceName: String
 }
 
-class SetManager<K : ListPreference, V : Any>(
+class SetManager<K : SetPreference, V : Any>(
     keys: Iterable<K>,
     private val sorter: Comparator<V>,
     private val addFilter: (K) -> Boolean,
     private val stringMapper: (String) -> V?,
     private val objectMapper: (V) -> String
-) : ListPreferenceEditor<K, V> {
+) {
 
     private val reactivePreferenceMap = keys.map { key ->
         key to ReactivePreference(key.preferenceName, emptySet<String>())
@@ -45,7 +52,17 @@ class SetManager<K : ListPreference, V : Any>(
             .map { it.mapNotNull(stringMapper) }
     }.toMap()
 
-    override fun addToSet(key: K, value: V): Boolean {
+    private val editorMap = keys.map { key ->
+        key to object : SetPreferenceEditor<V> {
+            override fun plus(value: V) = addToSet(key, value)
+
+            override fun minus(value: V) = removeFromSet(key, value)
+        }
+    }.toMap()
+
+    fun editorFor(key: K) = editorMap.getValue(key)
+
+    private fun addToSet(key: K, value: V): Boolean {
         if (!addFilter.invoke(key)) return false
 
         val set = getSet(key)
@@ -55,13 +72,11 @@ class SetManager<K : ListPreference, V : Any>(
         return true
     }
 
-    override fun removeFromSet(key: K, value: V) {
+    private fun removeFromSet(key: K, value: V) {
         val set = getSet(key)
         set.remove(objectMapper(value))
         saveSet(set, key)
     }
-
-    fun getList(key: K): List<String> = stream(key)
 
     fun getItems(key: K): List<V> = stream(key).mapNotNull(stringMapper)
 

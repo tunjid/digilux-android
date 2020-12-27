@@ -29,6 +29,9 @@ import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.rxkotlin.Flowables
 import java.util.concurrent.TimeUnit
 
+private object Purchases : SetPreference {
+    override val preferenceName get() = "purchases"
+}
 
 class PurchasesManager private constructor() : PurchasesUpdatedListener {
 
@@ -37,9 +40,6 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
         AdFree(id = "ad.free");
     }
 
-    private object SkuKey : ListPreference by object : ListPreference {
-        override val preferenceName get() = "purchases"
-    }
 
     data class State(
         val numTrials: Int,
@@ -79,13 +79,14 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
             App.withApp { app -> app.broadcast(Intent(ACTION_LOCKED_CONTENT_CHANGED)) }
         }
     )
-    private val setManager: SetManager<SkuKey, Sku> = SetManager(
-        keys = listOf(SkuKey),
+    private val setManager = SetManager<Purchases, Sku>(
+        keys = listOf(Purchases),
         sorter = compareBy(Sku::ordinal),
         addFilter = Sku.values().map(Sku::id)::contains,
         stringMapper = { kind -> Sku.values().find { it.id == kind } },
         objectMapper = Sku::id
     )
+    private val editor: SetPreferenceEditor<Sku> = setManager.editorFor(Purchases)
 
     private val trigger = BehaviorProcessor.createDefault(false)
 
@@ -104,7 +105,7 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
 
     val state: Flowable<State> = Flowables.combineLatest(
         lockedContentPreference.monitor,
-        setManager.itemsFlowable(SkuKey),
+        setManager.itemsFlowable(Purchases),
         trialStatus
     ) { lockedContent, ownedSkus, trialStatus ->
         State(
@@ -122,7 +123,7 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
         get() = when {
             !lockedContentPreference.value -> false
             isTrialRunning -> false
-            else -> !setManager.getItems(SkuKey).contains(Sku.Premium)
+            else -> !setManager.getItems(Purchases).contains(Sku.Premium)
         }
 
     val isPremium: Boolean
@@ -135,7 +136,7 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
     val isPremiumNotTrial: Boolean
         get() = when {
             !lockedContentPreference.value -> true
-            else -> setManager.getItems(SkuKey).contains(Sku.Premium)
+            else -> setManager.getItems(Purchases).contains(Sku.Premium)
         }
 
     val isTrialRunning: Boolean
@@ -153,19 +154,17 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
         purchases.filter(::filterPurchases)
             .map(Purchase::getSku)
             .mapNotNull { id -> Sku.values().firstOrNull { it.id == id } }
-            .forEach { setManager.addToSet(SkuKey, it) }
+            .forEach(editor::plus)
     }
 
     fun startTrial() = trigger.onNext(true)
 
     internal fun onPurchasesQueried(responseCode: Int, purchases: List<Purchase>?) {
-        Sku.values().forEach { setManager.removeFromSet(SkuKey, it) }
+        Sku.values().forEach(editor::minus)
         onPurchasesUpdated(responseCode, purchases)
     }
 
-    internal fun clearPurchases() {
-        Sku.values().forEach { setManager.removeFromSet(SkuKey, it) }
-    }
+    internal fun clearPurchases() = Sku.values().forEach(editor::minus)
 
     // App is open source, do a psuedo check.
     private fun filterPurchases(purchase: Purchase): Boolean {

@@ -58,7 +58,7 @@ val Inputs.popUpItems: Flowable<List<Item>>
                     tab = Tab.Shortcuts,
                     sortKey = AppViewModel.POPUP_ACTION,
                     items = savedActions,
-                    editor = setManager,
+                    editor = setManager.editorFor(PopUpGestureConsumer.Preference.SavedActions),
                     accessibilityButtonEnabled = accessibilityButtonEnabled,
                     input = this@popUpItems
                 )

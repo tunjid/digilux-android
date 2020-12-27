@@ -27,7 +27,6 @@ import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
@@ -86,7 +85,7 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(a
         !item.accessibilityButtonEnabled -> builder.setMessage(R.string.popup_prompt)
         else -> builder.setTitle(R.string.popup_remove)
             .setPositiveButton(R.string.yes) { _, _ ->
-                item.editor.removeFromSet(PopUpGestureConsumer.Preference.SavedActions, action.value)
+                item.editor - action.value
                 if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }

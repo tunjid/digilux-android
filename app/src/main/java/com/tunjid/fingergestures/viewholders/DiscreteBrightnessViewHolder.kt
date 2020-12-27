@@ -40,11 +40,10 @@ import com.tunjid.androidx.uidrivers.uiState
 import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.ListPreferenceEditor
+import com.tunjid.fingergestures.SetPreferenceEditor
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Input
 
@@ -68,7 +67,7 @@ fun ViewGroup.discreteBrightness() = viewHolderFrom(ViewholderHorizontalListBind
         initialItems = listOf(),
         viewHolderCreator = { viewGroup, _ ->
             DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
-                item.editor.removeFromSet(BrightnessGestureConsumer.Preference.DiscreteBrightnesses, it.value)
+                item.editor - it.value
             }
         },
         viewHolderBinder = { holder, item, _ -> holder.bind(item) }
@@ -120,11 +119,11 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.requestDiscreteVa
     alertDialog.show()
 }
 
-private fun EditText.onDiscreteValueEntered(dialogInterface: DialogInterface, editor: ListPreferenceEditor<BrightnessGestureConsumer.Preference, Int>) {
+private fun EditText.onDiscreteValueEntered(dialogInterface: DialogInterface, editor: SetPreferenceEditor<Int>) {
     text.toString()
         .toIntOrNull()
         ?.takeIf(::isValidValue)
-        ?.let { editor.addToSet(BrightnessGestureConsumer.Preference.DiscreteBrightnesses, it) }
+        ?.let(editor::plus)
 
     dialogInterface.dismiss()
 }

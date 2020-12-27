@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.viewmodels
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.models.Brightness
 import io.reactivex.Flowable
 
@@ -88,7 +89,7 @@ val Inputs.brightnessItems: Flowable<List<Item>>
                 Item.DiscreteBrightness(
                     tab = Tab.Brightness,
                     sortKey = AppViewModel.DISCRETE_BRIGHTNESS,
-                    editor = discreteBrightnessManager,
+                    editor = discreteBrightnessManager.editorFor(BrightnessGestureConsumer.Preference.DiscreteBrightnesses),
                     brightnesses = it.discreteBrightnesses
                         .sorted()
                         .map(::Brightness),

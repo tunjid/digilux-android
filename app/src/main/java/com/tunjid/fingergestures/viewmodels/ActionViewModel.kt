@@ -38,8 +38,10 @@ sealed class ActionInput {
 
 class ActionViewModel : ViewModel() {
 
-    private val popUpGestureConsumer = PopUpGestureConsumer.instance
     private val gestureMapper = GestureMapper.instance
+    private val editor = PopUpGestureConsumer.instance.setManager
+        .editorFor(PopUpGestureConsumer.Preference.SavedActions)
+
     private val processor = PublishProcessor.create<Boolean>()
 
     val state = Flowable.combineLatest(
@@ -50,8 +52,7 @@ class ActionViewModel : ViewModel() {
 
     fun accept(input: ActionInput) = when (input) {
         is ActionInput.Add -> {
-            val added = popUpGestureConsumer.setManager
-                .addToSet(PopUpGestureConsumer.Preference.SavedActions, input.action.value)
+            val added = editor + input.action.value
             if (!added) processor.onNext(true)
             else Unit
         }

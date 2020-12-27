@@ -65,7 +65,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         val discreteBrightnesses: List<Int>,
     )
 
-    enum class Preference(override val preferenceName: String) : ListPreference {
+    enum class Preference(override val preferenceName: String) : SetPreference {
         DiscreteBrightnesses(preferenceName = "discrete brightness values");
     }
 

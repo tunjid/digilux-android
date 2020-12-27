@@ -49,7 +49,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                     infoRes = R.string.auto_rotate_description,
                     unRemovablePackages = unRemovablePackages,
                     canAutoRotate = canAutoRotate,
-                    editor = setManager,
+                    editor = setManager.editorFor(RotationGestureConsumer.Preference.RotatingApps),
                     items = rotating.sortedWith(applicationInfoComparator).map(::Package),
                     input = this@rotationItems
                 ),
@@ -62,7 +62,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                     infoRes = R.string.auto_rotate_ignored_description,
                     unRemovablePackages = unRemovablePackages,
                     canAutoRotate = canAutoRotate,
-                    editor = setManager,
+                    editor = setManager.editorFor(RotationGestureConsumer.Preference.NonRotatingApps),
                     items = excluded.sortedWith(applicationInfoComparator).map(::Package),
                     input = this@rotationItems
                 ),
@@ -75,7 +75,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                     infoRes = R.string.app_rotation_history_info,
                     unRemovablePackages = unRemovablePackages,
                     canAutoRotate = canAutoRotate,
-                    editor = setManager,
+                    editor = null,
                     items = lastSeen,
                     input = this@rotationItems
                 )

@@ -28,7 +28,7 @@ import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 
 class PopUpGestureConsumer private constructor() : GestureConsumer {
 
-    enum class Preference(override val preferenceName: String) : ListPreference {
+    enum class Preference(override val preferenceName: String) : SetPreference {
         SavedActions(preferenceName = "accessibility button apps");
     }
 
