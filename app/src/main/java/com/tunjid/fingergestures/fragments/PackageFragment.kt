@@ -34,7 +34,7 @@ import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.divider
-import com.tunjid.fingergestures.baseclasses.mainActivity
+import com.tunjid.fingergestures.baseclasses.recursiveBottomSheetNavigator
 import com.tunjid.fingergestures.databinding.FragmentPackagesBinding
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Input
@@ -47,6 +47,7 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
     private val viewModel by viewModels<PackageViewModel>()
     private val appViewModel by activityViewModels<AppViewModel>()
     private var preferenceName by fragmentArgs<RotationGestureConsumer.Preference>()
+    private val bottomSheetNavigator by recursiveBottomSheetNavigator()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -95,7 +96,7 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
 
     private fun onPackageClicked(app: ApplicationInfo) {
         viewModel.accept(PackageInput.Add(preference = preferenceName, app = app))
-        mainActivity.toggleBottomSheet(false)
+        bottomSheetNavigator.pop()
     }
 
     companion object {

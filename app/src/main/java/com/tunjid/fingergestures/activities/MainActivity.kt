@@ -40,17 +40,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.component1
 import androidx.core.graphics.component2
 import androidx.core.graphics.component3
-import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import com.android.billingclient.api.BillingClient
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
-import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
@@ -62,12 +57,13 @@ import com.tunjid.androidx.navigation.doOnLifecycleEvent
 import com.tunjid.androidx.navigation.multiStackNavigationController
 import com.tunjid.androidx.uidrivers.UiState
 import com.tunjid.androidx.uidrivers.updatePartial
-import com.tunjid.androidx.view.util.marginLayoutParams
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_EDIT_WALLPAPER
 import com.tunjid.fingergestures.BackgroundManager.Companion.ACTION_NAV_BAR_CHANGED
+import com.tunjid.fingergestures.baseclasses.BottomSheetController
+import com.tunjid.fingergestures.baseclasses.BottomSheetNavigator
 import com.tunjid.fingergestures.billing.BillingManager
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKED_CONTENT_CHANGED
@@ -79,10 +75,12 @@ import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_S
 import com.tunjid.fingergestures.viewmodels.*
 import io.reactivex.disposables.CompositeDisposable
 
-class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Navigator.Controller {
+class MainActivity : AppCompatActivity(R.layout.activity_main),
+    GlobalUiHost,
+    Navigator.Controller,
+    BottomSheetController {
 
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
-    private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(binding.bottomSheet) }
 
     private var billingManager: BillingManager? = null
 
@@ -92,7 +90,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
     private val links get() = (viewModel.liveState.value?.links ?: listOf()).toTypedArray()
 
-    override val globalUiController: GlobalUiController by lazy { GlobalUiDriver(this, binding, navigator) }
+    private val bottomNavBackground by lazy {
+        val primary = colorAt(R.color.colorPrimary)
+        val (r, g, b) = Color.valueOf(primary)
+
+        GradientDrawable(
+            GradientDrawable.Orientation.BOTTOM_TOP,
+            intArrayOf(primary, Color.argb(0.5f, r, g, b))
+        )
+    }
+    override val globalUiController: GlobalUiController by lazy {
+        GlobalUiDriver(host = this, binding = binding, navigator = navigator)
+    }
+
+    override val bottomSheetNavigator: BottomSheetNavigator by lazy {
+        val primary = colorAt(R.color.colorPrimary)
+        val (r, g, b) = Color.valueOf(primary)
+
+        BottomSheetNavigator(host = this, binding = binding) { a ->
+            bottomNavBackground.colors = intArrayOf(primary, Color.argb((0.5f * a + 0.5f), r, g, b))
+            ::uiState.updatePartial { copy(statusBarColor = Color.argb(a, r, g, b)) }
+        }
+    }
 
     override val navigator: MultiStackNavigator by multiStackNavigationController(
         stackCount = 5,
@@ -117,14 +136,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        val primary = colorAt(R.color.colorPrimary)
-        val (r, g, b) = Color.valueOf(primary)
-
-        val bottomNavBackground = GradientDrawable(
-            GradientDrawable.Orientation.BOTTOM_TOP,
-            intArrayOf(primary, Color.argb(0.5f, r, g, b))
-        )
-
         binding.bottomNavigation.setOnNavigationItemSelectedListener(this::onOptionsItemSelected)
         binding.bottomNavigation.setOnApplyWindowInsetsListener { _: View?, windowInsets: WindowInsets? -> windowInsets }
         binding.bottomNavigation.background = bottomNavBackground
@@ -145,25 +156,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
             )
         }
         onBackPressedDispatcher.addCallback(this) { if (!navigator.pop()) finish() }
-
-        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                val a = (slideOffset + 1) / 2 // callback range is [-1, 1]
-                bottomNavBackground.colors = intArrayOf(primary, Color.argb((0.5f * a + 0.5f), r, g, b))
-                ::uiState.updatePartial { copy(statusBarColor = Color.argb(a, r, g, b)) }
-            }
-
-            override fun onStateChanged(bottomSheet: View, newState: Int) = Unit
-        })
-
-
-        binding.bottomSheet.doOnLayout { sheet ->
-            globalUiController.liveUiState
-                .map { it.systemUI.static.statusBarSize }
-                .distinctUntilChanged()
-                .observe(this) { sheet.marginLayoutParams.topMargin = it }
-        }
-        toggleBottomSheet(false)
 
         val startIntent = intent
         val isPickIntent = startIntent != null && ACTION_SEND == startIntent.action
@@ -258,10 +250,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onBackPressed() =
-        if (bottomSheetBehavior.state != STATE_HIDDEN) toggleBottomSheet(false)
-        else super.onBackPressed()
-
     override fun onPause() {
         billingManager?.destroy()
         billingManager = null
@@ -291,10 +279,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
-    }
-
-    fun toggleBottomSheet(show: Boolean) {
-        bottomSheetBehavior.state = if (show) STATE_COLLAPSED else STATE_HIDDEN
     }
 
     private fun handleIntent(intent: Intent) {
@@ -353,8 +337,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
     private fun onUiInteraction(it: Input.UiInteraction) {
         when (it) {
             is Input.UiInteraction.ShowSheet -> {
-                supportFragmentManager.beginTransaction().replace(R.id.bottom_sheet, it.fragment).commit()
-                toggleBottomSheet(true)
+                bottomSheetNavigator.push(it.fragment)
             }
             is Input.UiInteraction.GoPremium -> MaterialAlertDialogBuilder(this@MainActivity)
                 .setTitle(R.string.go_premium_title)
