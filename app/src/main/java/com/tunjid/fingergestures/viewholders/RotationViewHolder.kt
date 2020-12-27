@@ -40,17 +40,6 @@ private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolde
 private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Package, PackageViewHolder> by viewHolderDelegate()
 
 fun ViewGroup.rotation() = viewHolderFrom(ViewholderHorizontalListBinding::inflate).apply {
-    binding.root.setOnClickListener { MaterialAlertDialogBuilder(it.context).setMessage(item.infoRes).show() }
-    binding.add.setOnClickListener {
-        when {
-            !App.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
-            !item.canAutoRotate -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
-            item.preference != null -> item.preference
-                ?.let(PackageFragment.Companion::newInstance)
-                ?.let(Input.UiInteraction::ShowSheet)
-                ?.let(item.input::accept)
-        }
-    }
     listAdapter = listAdapterOf(
         initialItems = listOf(),
         viewHolderCreator = { viewGroup, _ ->
@@ -61,6 +50,17 @@ fun ViewGroup.rotation() = viewHolderFrom(ViewholderHorizontalListBinding::infla
         },
         viewHolderBinder = { holder, item, _ -> holder.bind(item) }
     )
+    binding.title.setOnClickListener { MaterialAlertDialogBuilder(it.context).setMessage(item.infoRes).show() }
+    binding.add.setOnClickListener {
+        when {
+            !App.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+            !item.canAutoRotate -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
+            item.preference != null -> item.preference
+                ?.let(PackageFragment.Companion::newInstance)
+                ?.let(Input.UiInteraction::ShowSheet)
+                ?.let(item.input::accept)
+        }
+    }
     binding.itemList.apply {
         adapter = listAdapter
         layoutManager = gridLayoutManager(3)

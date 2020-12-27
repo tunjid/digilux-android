@@ -38,13 +38,6 @@ private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolde
 private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Action, ActionViewHolder> by viewHolderDelegate()
 
 fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate).apply {
-    binding.add.setOnClickListener {
-        when {
-            !App.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
-            !item.accessibilityButtonEnabled -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
-            else -> item.input.accept(Input.UiInteraction.ShowSheet(ActionFragment.popUpInstance()))
-        }
-    }
     listAdapter = listAdapterOf(
         initialItems = listOf(),
         viewHolderCreator = { viewGroup, _ ->
@@ -56,14 +49,19 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
         },
         viewHolderBinder = { holder, item, _ -> holder.bind(item) }
     )
-
     binding.title.setText(R.string.popup_title)
     binding.title.setOnClickListener {
         MaterialAlertDialogBuilder(itemView.context)
             .setMessage(R.string.popup_description)
             .show()
     }
-
+    binding.add.setOnClickListener {
+        when {
+            !App.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+            !item.accessibilityButtonEnabled -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
+            else -> item.input.accept(Input.UiInteraction.ShowSheet(ActionFragment.popUpInstance()))
+        }
+    }
     binding.itemList.apply {
         layoutManager = gridLayoutManager(3)
         adapter = listAdapter

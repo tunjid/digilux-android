@@ -40,8 +40,8 @@ import com.tunjid.androidx.uidrivers.uiState
 import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.SetPreferenceEditor
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.SetPreferenceEditor
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.models.Brightness
@@ -51,6 +51,15 @@ private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolde
 private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Brightness, DiscreteItemViewHolder> by viewHolderDelegate()
 
 fun ViewGroup.discreteBrightness() = viewHolderFrom(ViewholderHorizontalListBinding::inflate).apply {
+    listAdapter = listAdapterOf(
+        initialItems = listOf(),
+        viewHolderCreator = { viewGroup, _ ->
+            DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
+                item.editor - it.value
+            }
+        },
+        viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+    )
     binding.title.setText(R.string.discrete_brightness_title)
     binding.title.setOnClickListener {
         MaterialAlertDialogBuilder(itemView.context)
@@ -63,15 +72,6 @@ fun ViewGroup.discreteBrightness() = viewHolderFrom(ViewholderHorizontalListBind
         if (App.canWriteToSettings) requestDiscreteValue(builder)
         else builder.setMessage(R.string.permission_required).show()
     }
-    listAdapter = listAdapterOf(
-        initialItems = listOf(),
-        viewHolderCreator = { viewGroup, _ ->
-            DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
-                item.editor - it.value
-            }
-        },
-        viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-    )
     binding.itemList.apply {
         adapter = listAdapter
         layoutManager = FlexboxLayoutManager(context).apply {
