@@ -48,7 +48,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import com.android.billingclient.api.BillingClient
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
@@ -118,9 +117,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNavigationView.setOnNavigationItemSelectedListener(this::onOptionsItemSelected)
-        bottomNavigationView.setOnApplyWindowInsetsListener { _: View?, windowInsets: WindowInsets? -> windowInsets }
+        val primary = colorAt(R.color.colorPrimary)
+        val (r, g, b) = Color.valueOf(primary)
+
+        val bottomNavBackground = GradientDrawable(
+            GradientDrawable.Orientation.BOTTOM_TOP,
+            intArrayOf(primary, Color.argb(0.5f, r, g, b))
+        )
+
+        binding.bottomNavigation.setOnNavigationItemSelectedListener(this::onOptionsItemSelected)
+        binding.bottomNavigation.setOnApplyWindowInsetsListener { _: View?, windowInsets: WindowInsets? -> windowInsets }
+        binding.bottomNavigation.background = bottomNavBackground
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
@@ -128,7 +135,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
             }
         }, true)
 
-        navigator.stackSelectedListener = { bottomNavigationView.menu.findItem(Tab.values()[it].resource)?.isChecked = true }
+        navigator.stackSelectedListener = { binding.bottomNavigation.menu.findItem(Tab.values()[it].resource)?.isChecked = true }
         navigator.stackTransactionModifier = {
             setCustomAnimations(
                 android.R.anim.fade_in,
@@ -138,15 +145,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
             )
         }
         onBackPressedDispatcher.addCallback(this) { if (!navigator.pop()) finish() }
-
-        val primary = colorAt(R.color.colorPrimary)
-        val (r, g, b) = Color.valueOf(primary)
-
-        val bottomNavBackground = GradientDrawable(
-            GradientDrawable.Orientation.BOTTOM_TOP,
-            intArrayOf(primary, Color.argb(0.5f, r, g, b)))
-
-        bottomNavigationView.background = bottomNavBackground
 
         bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
@@ -307,14 +305,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
         if (!hasStoragePermission) {
             showSnackbar(R.string.enable_storage_settings)
-            navigator.show(Tab.at(R.id.action_directions).ordinal)
+            navigator.show(Tab.Gestures.ordinal)
             return
         }
 
         val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM) ?: return
 
         navigator.performConsecutively(lifecycleScope) {
-            show(Tab.at(R.id.action_wallpaper).ordinal)
+            show(Tab.Display.ordinal)
             MaterialAlertDialogBuilder(this@MainActivity)
                 .setTitle(R.string.choose_target)
                 .setItems(

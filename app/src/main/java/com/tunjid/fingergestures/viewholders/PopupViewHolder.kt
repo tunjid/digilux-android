@@ -86,7 +86,7 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(a
         !item.accessibilityButtonEnabled -> builder.setMessage(R.string.popup_prompt)
         else -> builder.setTitle(R.string.popup_remove)
             .setPositiveButton(R.string.yes) { _, _ ->
-                item.editor.removeFromSet(PopUpGestureConsumer.Preference.SavedActions, action.value.toString())
+                item.editor.removeFromSet(PopUpGestureConsumer.Preference.SavedActions, action.value.serialized)
                 if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
