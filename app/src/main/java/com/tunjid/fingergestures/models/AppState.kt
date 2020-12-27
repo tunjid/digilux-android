@@ -17,6 +17,7 @@
 
 package com.tunjid.fingergestures.models
 
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import androidx.fragment.app.Fragment
 import com.tunjid.androidx.recyclerview.diff.Differentiable
@@ -32,6 +33,7 @@ data class AppState(
     val popUpActions: List<Action> = listOf(),
     val availableActions: List<Action> = listOf(),
     val installedApps: List<Package> = listOf(),
+    val broadcasts: Intent? = null,
     val uiInteraction: Input.UiInteraction,
     val permissionState: PermissionState = PermissionState(),
     val items: List<Item> = listOf(),
@@ -58,7 +60,7 @@ sealed class Input {
     }
 
     sealed class UiInteraction : Input() {
-        object Default: UiInteraction()
+        object Default : UiInteraction()
         data class ShowSheet(val fragment: Fragment) : UiInteraction()
         data class GoPremium(val description: Int) : UiInteraction()
         data class Purchase(val sku: PurchasesManager.Sku) : UiInteraction()

@@ -204,14 +204,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
             mapDistinct(AppState::uiInteraction)
                 .filterUnhandledEvents()
                 .observe(this@MainActivity, ::onUiInteraction)
+
+            mapDistinct(AppState::broadcasts)
+                .nonNull()
+                .filterUnhandledEvents()
+                .observe(this@MainActivity, ::onBroadcastReceived)
         }
 
         viewModel.shill.observe(this) {
             if (it is Shilling.Quip) binding.upgradePrompt.apply { setText(it.message); isVisible = true }
             else hideAds()
         }
-
-        viewModel.broadcasts.observe(this, EventObserver(this::onBroadcastReceived))
     }
 
     override fun onResume() {
