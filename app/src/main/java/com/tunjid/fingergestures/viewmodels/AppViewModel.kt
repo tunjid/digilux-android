@@ -93,6 +93,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
             popUpGestureConsumer.popUpActions.listMap(::Action),
             Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
             installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
+            inputProcessor.filterIsInstance<Input.UiInteraction>(),
             inputProcessor.filterIsInstance<Input.Permission>().permissionState,
             items,
             ::AppState
@@ -112,13 +113,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
                 else Flowable.just(Shilling.Calm)
             }
             .toLiveData()
-    }
-
-    val uiInteractions by lazy {
-        inputProcessor
-            .filterIsInstance<Input.UiInteraction>()
-            .toLiveData()
-            .filterUnhandledEvents()
     }
 
     val broadcasts by lazy {

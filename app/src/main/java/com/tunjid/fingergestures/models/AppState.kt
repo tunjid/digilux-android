@@ -32,6 +32,7 @@ data class AppState(
     val popUpActions: List<Action> = listOf(),
     val availableActions: List<Action> = listOf(),
     val installedApps: List<Package> = listOf(),
+    val uiInteraction: Input.UiInteraction,
     val permissionState: PermissionState = PermissionState(),
     val items: List<Item> = listOf(),
 )

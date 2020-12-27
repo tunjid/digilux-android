@@ -200,6 +200,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
                 .map(Unique<Int>::item)
                 .filterUnhandledEvents()
                 .observe(this@MainActivity, ::showSnackbar)
+
+            mapDistinct(AppState::uiInteraction)
+                .filterUnhandledEvents()
+                .observe(this@MainActivity, ::onUiInteraction)
         }
 
         viewModel.shill.observe(this) {
@@ -208,27 +212,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         }
 
         viewModel.broadcasts.observe(this, EventObserver(this::onBroadcastReceived))
-        viewModel.uiInteractions.observe(this) {
-            when (it) {
-                is Input.UiInteraction.ShowSheet -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.bottom_sheet, it.fragment).commit()
-                    toggleBottomSheet(true)
-                }
-                is Input.UiInteraction.GoPremium -> MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.go_premium_title)
-                    .setMessage(getString(R.string.go_premium_body, getString(it.description)))
-                    .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.Sku.Premium) }
-                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                    .show()
-                is Input.UiInteraction.Purchase -> purchase(it.sku)
-                is Input.UiInteraction.WallpaperPick -> when {
-                    App.hasStoragePermission -> startActivityForResult(Intent.createChooser(Intent()
-                        .setType(IMAGE_SELECTION)
-                        .setAction(Intent.ACTION_GET_CONTENT), ""), it.selection.code)
-                    else -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.enable_storage_settings)) }
-                }
-            }
-        }
     }
 
     override fun onResume() {
@@ -366,6 +349,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
             Input.Permission.Request.Storage -> showPermissionDialog(R.string.wallpaper_permission_request) { requestPermissions(STORAGE_PERMISSIONS, Input.Permission.Request.Storage.code) }
         }
 
+    private fun onUiInteraction(it: Input.UiInteraction) {
+        when (it) {
+            is Input.UiInteraction.ShowSheet -> {
+                supportFragmentManager.beginTransaction().replace(R.id.bottom_sheet, it.fragment).commit()
+                toggleBottomSheet(true)
+            }
+            is Input.UiInteraction.GoPremium -> MaterialAlertDialogBuilder(this@MainActivity)
+                .setTitle(R.string.go_premium_title)
+                .setMessage(getString(R.string.go_premium_body, getString(it.description)))
+                .setPositiveButton(R.string.continue_text) { _, _ -> purchase(PurchasesManager.Sku.Premium) }
+                .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                .show()
+            is Input.UiInteraction.Purchase -> purchase(it.sku)
+            is Input.UiInteraction.WallpaperPick -> when {
+                hasStoragePermission -> startActivityForResult(Intent.createChooser(Intent()
+                    .setType(IMAGE_SELECTION)
+                    .setAction(Intent.ACTION_GET_CONTENT), ""), it.selection.code)
+                else -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.enable_storage_settings)) }
+            }
+        }
+    }
+
     private fun showLink(textLink: TextLink) {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(textLink.link))
         startActivity(browserIntent)
@@ -403,7 +408,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
     fun showSnackbar(@StringRes resource: Int) = globalUiController::uiState.updatePartial {
         copy(snackbarText = getText(resource))
     }
-
 
     fun purchase(sku: PurchasesManager.Sku) = when (val billingManager = billingManager) {
         null -> showSnackbar(R.string.generic_error)
