@@ -43,7 +43,7 @@ fun ViewGroup.rotation() = viewHolderFrom(ViewholderHorizontalListBinding::infla
     binding.root.setOnClickListener { MaterialAlertDialogBuilder(it.context).setMessage(item.infoRes).show() }
     binding.add.setOnClickListener {
         when {
-            !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+            !App.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
             !item.canAutoRotate -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
             item.preference != null -> item.preference
                 ?.let(PackageFragment.Companion::newInstance)
@@ -74,7 +74,7 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.Rotation)
     add.isVisible = item.preference != null
     listAdapter.submitList(item.items)
 
-    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Request.Settings)
+    if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
 }
 
 private fun BindingViewHolder<ViewholderHorizontalListBinding>.onPackageClicked(packageName: String) {
@@ -82,7 +82,7 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onPackageClicked(
     val preference = item.preference
 
     when {
-        !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
+        !App.canWriteToSettings -> builder.setMessage(R.string.permission_required)
         !item.canAutoRotate -> builder.setMessage(R.string.auto_rotate_prompt)
         item.unRemovablePackages.contains(packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
         preference != null -> builder.setTitle(item.removeText)

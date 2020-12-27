@@ -49,7 +49,7 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
     )
 
     val canSetVolumeDelta: Boolean
-        get() = App.hasDoNotDisturbAccess() && streamTypePreference.value != Stream.Default.type
+        get() = App.hasDoNotDisturbAccess && streamTypePreference.value != Stream.Default.type
 
     private val flags: Int
         get() {
@@ -96,7 +96,7 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
 
     private fun adjustAudio(increase: Boolean) {
         requireAppAndAudioManager({ _, audioManager ->
-            if (!App.hasDoNotDisturbAccess()) return@requireAppAndAudioManager Void.TYPE
+            if (!App.hasDoNotDisturbAccess) return@requireAppAndAudioManager Void.TYPE
             when (val stream = Stream.forType(streamTypePreference.value)) {
                 Stream.Default -> audioManager.adjustSuggestedStreamVolume(if (increase) ADJUST_RAISE else ADJUST_LOWER, stream.type, flags)
                 Stream.Media, Stream.Alarm, Stream.Ring -> setStreamVolume(increase, audioManager, stream.type)
@@ -113,7 +113,7 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
 
     fun getChangeText(percentage: Int): String {
         return requireAppAndAudioManager({ app, audioManager ->
-            if (!App.hasDoNotDisturbAccess()) return@requireAppAndAudioManager app.getString(R.string.enable_do_not_disturb)
+            if (!App.hasDoNotDisturbAccess) return@requireAppAndAudioManager app.getString(R.string.enable_do_not_disturb)
 
             val normalized = normalizePercentageForStream(percentage, streamTypePreference.value, audioManager)
             val maxSteps = getMaxSteps(audioManager)

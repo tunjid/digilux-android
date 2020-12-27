@@ -48,7 +48,7 @@ sealed class Input {
             object Settings : Request(200)
             object Accessibility : Request(300)
             object DoNotDisturb : Request(400)
-            companion object  {
+            companion object {
                 private val values get() = listOf(Storage, Settings, Accessibility, DoNotDisturb)
                 fun forCode(code: Int) = values.find { it.code == code }
             }
@@ -247,29 +247,27 @@ private val Flowable<Input.Permission>.permissionState
                     queue = state.queue.dropLast(1)
                 )
                 is Input.Permission.Action.Changed -> {
-                    var shouldRemove = false
-                    val assigner = { value: Boolean -> shouldRemove = value; value }
-
-                    val prompt = when (permission.request) {
+                    val (prompt, shouldRemove) = when (permission.request) {
                         Input.Permission.Request.Storage ->
-                            if (assigner.invoke(App.hasStoragePermission)) R.string.storage_permission_granted
-                            else R.string.storage_permission_denied
+                            if (App.hasStoragePermission) R.string.storage_permission_granted to true
+                            else R.string.storage_permission_denied to false
                         Input.Permission.Request.Settings ->
-                            if (assigner.invoke(App.canWriteToSettings())) R.string.settings_permission_granted
-                            else R.string.settings_permission_denied
+                            if (App.canWriteToSettings) R.string.settings_permission_granted to true
+                            else R.string.settings_permission_denied to false
                         Input.Permission.Request.Accessibility ->
-                            if (assigner.invoke(App.accessibilityServiceEnabled())) R.string.accessibility_permission_granted
-                            else R.string.accessibility_permission_denied
+                            if (App.accessibilityServiceEnabled) R.string.accessibility_permission_granted to true
+                            else R.string.accessibility_permission_denied to false
                         Input.Permission.Request.DoNotDisturb ->
-                            if (assigner.invoke(App.hasDoNotDisturbAccess())) R.string.do_not_disturb_permission_granted
-                            else R.string.do_not_disturb_permission_denied
+                            if (App.hasDoNotDisturbAccess) R.string.do_not_disturb_permission_granted to true
+                            else R.string.do_not_disturb_permission_denied to false
                     }
 
                     state.copy(
                         prompt = Unique(prompt),
-                        queue =
-                        if (shouldRemove) state.queue - permission.request
-                        else state.queue
+                        queue = when {
+                            shouldRemove -> state.queue - permission.request
+                            else -> state.queue
+                        }
                     )
                 }
             }

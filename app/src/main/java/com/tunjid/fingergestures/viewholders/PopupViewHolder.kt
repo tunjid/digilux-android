@@ -41,7 +41,7 @@ private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: List
 fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate).apply {
     binding.add.setOnClickListener {
         when {
-            !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+            !App.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
             !item.accessibilityButtonEnabled -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
             else -> item.input.accept(Input.UiInteraction.ShowSheet(ActionFragment.popUpInstance()))
         }
@@ -74,7 +74,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
 fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.PopUp) = binding.run {
     this@bind.item = item
 
-    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Request.Settings)
+    if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
     listAdapter.submitList(item.items)
 }
 
@@ -82,12 +82,12 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(a
     val builder = MaterialAlertDialogBuilder(itemView.context)
 
     when {
-        !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
+        !App.canWriteToSettings -> builder.setMessage(R.string.permission_required)
         !item.accessibilityButtonEnabled -> builder.setMessage(R.string.popup_prompt)
         else -> builder.setTitle(R.string.popup_remove)
             .setPositiveButton(R.string.yes) { _, _ ->
                 item.editor.removeFromSet(PopUpGestureConsumer.Preference.SavedActions, action.value.toString())
-                if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Request.Settings)
+                if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
     }

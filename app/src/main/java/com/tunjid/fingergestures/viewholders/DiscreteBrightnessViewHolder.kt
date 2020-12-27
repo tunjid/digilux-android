@@ -61,7 +61,7 @@ fun ViewGroup.discreteBrightness() = viewHolderFrom(ViewholderHorizontalListBind
     binding.add.setOnClickListener {
         val builder = MaterialAlertDialogBuilder(itemView.context)
 
-        if (App.canWriteToSettings()) requestDiscreteValue(builder)
+        if (App.canWriteToSettings) requestDiscreteValue(builder)
         else builder.setMessage(R.string.permission_required).show()
     }
     listAdapter = listAdapterOf(
@@ -87,7 +87,7 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.DiscreteB
     this@bind.item = item
 
     listAdapter.submitList(item.brightnesses)
-    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Request.Settings)
+    if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
 }
 
 private fun BindingViewHolder<ViewholderHorizontalListBinding>.requestDiscreteValue(builder: MaterialAlertDialogBuilder) {

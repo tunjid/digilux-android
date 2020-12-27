@@ -410,7 +410,7 @@ interface Inputs {
                     tab = Tab.Audio,
                     sortKey = AppViewModel.AUDIO_STREAM_TYPE,
                     titleFunction = ::getStreamTitle,
-                    hasDoNotDisturbAccess = App.hasDoNotDisturbAccess(),
+                    hasDoNotDisturbAccess = App.hasDoNotDisturbAccess,
                     stream = AudioGestureConsumer.Stream
                         .values()
                         .first { it.type == streamType },

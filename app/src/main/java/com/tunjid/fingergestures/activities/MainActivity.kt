@@ -189,16 +189,16 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
             mapDistinct(AppState::permissionState)
                 .mapDistinct(PermissionState::active)
-                .filterUnhandledEvents()
                 .nonNull()
                 .map(Unique<Input.Permission.Request>::item)
+                .filterUnhandledEvents()
                 .observe(this@MainActivity, ::onPermissionClicked)
 
             mapDistinct(AppState::permissionState)
                 .mapDistinct(PermissionState::prompt)
-                .filterUnhandledEvents()
                 .nonNull()
                 .map(Unique<Int>::item)
+                .filterUnhandledEvents()
                 .observe(this@MainActivity, ::showSnackbar)
         }
 
@@ -235,7 +235,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         super.onResume()
         billingManager = BillingManager(applicationContext)
         uiState = uiState.copy(toolbarInvalidated = true)
-        if (!accessibilityServiceEnabled()) viewModel.accept(Input.Permission.Request.Accessibility)
+        if (!accessibilityServiceEnabled) viewModel.accept(Input.Permission.Request.Accessibility)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

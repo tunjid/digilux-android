@@ -30,17 +30,11 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK
 import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.DiffUtil
-import com.tunjid.androidx.recyclerview.diff.Diff
-import com.tunjid.androidx.recyclerview.diff.Differentiable
 import io.reactivex.Flowable
 import io.reactivex.Flowable.timer
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Function
 import io.reactivex.processors.PublishProcessor
-import io.reactivex.schedulers.Schedulers
 import org.reactivestreams.Publisher
 import java.util.concurrent.TimeUnit
 
@@ -60,7 +54,7 @@ class App : android.app.Application() {
     // Wrap the subject so if there's an error downstream, it doesn't propagate back up to it.
     // This way, the broadcast stream should never error or terminate
     fun broadcasts(): Flowable<Intent> =
-            Flowable.defer { broadcaster }.onErrorResumeNext(Function<Throwable, Publisher<out Intent>> { t -> this@App.logAndResume(t) })
+        Flowable.defer { broadcaster }.onErrorResumeNext(Function<Throwable, Publisher<out Intent>> { t -> this@App.logAndResume(t) })
 
     // Log the error, and re-wrap the broadcast processor
     private fun logAndResume(throwable: Throwable): Flowable<Intent> {
@@ -90,38 +84,34 @@ class App : android.app.Application() {
             return timer(interval, timeUnit).subscribe({ runnable.invoke() }, { it.printStackTrace() })
         }
 
-        fun canWriteToSettings(): Boolean {
-            return transformApp({ Settings.System.canWrite(it) }, false)
-        }
+        val canWriteToSettings: Boolean
+            get() = transformApp({ Settings.System.canWrite(it) }, false)
 
         val hasStoragePermission: Boolean
-            get() {
-                return transformApp({ app -> ContextCompat.checkSelfPermission(app, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED }, false)
-            }
+            get() =
+                transformApp({ app -> ContextCompat.checkSelfPermission(app, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED }, false)
 
         val isPieOrHigher: Boolean
             get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
 
-        fun hasDoNotDisturbAccess(): Boolean {
-            return transformApp({ app ->
+        val hasDoNotDisturbAccess: Boolean
+            get() = transformApp({ app ->
                 val notificationManager = app.getSystemService(NotificationManager::class.java)
                 notificationManager != null && notificationManager.isNotificationPolicyAccessGranted
             }, false)
-        }
 
-        fun accessibilityServiceEnabled(): Boolean {
-            return transformApp({ app ->
+        val accessibilityServiceEnabled: Boolean
+            get() = transformApp({ app ->
                 val key = app.packageName
 
                 val accessibilityManager = app.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
-                        ?: return@transformApp false
+                    ?: return@transformApp false
 
                 val list = accessibilityManager.getEnabledAccessibilityServiceList(TYPES_ALL_MASK)
 
                 for (info in list) if (info.id.contains(key)) return@transformApp true
                 false
             }, false)
-        }
 
         fun withApp(appConsumer: (App) -> Unit) {
             val app = instance ?: return

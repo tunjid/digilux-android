@@ -212,7 +212,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     }
 
     fun saveBrightness(byteValue: Int) {
-        if (!App.canWriteToSettings()) return
+        if (!App.canWriteToSettings) return
 
         val contentResolver = App.transformApp((App::getContentResolver)) ?: return
 
@@ -221,7 +221,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     }
 
     fun onScreenTurnedOn() {
-        if (!App.canWriteToSettings()) return
+        if (!App.canWriteToSettings) return
 
         val threshold = adaptiveThresholdToLux(adaptiveBrightnessThresholdPreference.value)
         val restoresAdaptiveBrightness = adaptiveBrightnessPreference.value
