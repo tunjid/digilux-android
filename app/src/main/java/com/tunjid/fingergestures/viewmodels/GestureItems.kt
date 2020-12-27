@@ -201,7 +201,10 @@ interface Inputs {
                     tab = Tab.Brightness,
                     sortKey = AppViewModel.DISCRETE_BRIGHTNESS,
                     editor = discreteBrightnessManager,
-                    brightnesses = it.discreteBrightnesses.map(Int::toString).map(::Brightness),
+                    brightnesses = it.discreteBrightnesses
+                        .sorted()
+                        .map(Int::toString)
+                        .map(::Brightness),
                     input = this@Inputs,
                 ),
                 Item.ScreenDimmer(
@@ -325,8 +328,8 @@ interface Inputs {
 
     private val RotationGestureConsumer.items: Flowable<List<Item>>
         get() = Flowables.combineLatest(
-            setManager.itemsFlowable(RotationGestureConsumer.Preference.RotatingApps).listMap(::Package),
-            setManager.itemsFlowable(RotationGestureConsumer.Preference.NonRotatingApps).listMap(::Package),
+            setManager.itemsFlowable(RotationGestureConsumer.Preference.RotatingApps),
+            setManager.itemsFlowable(RotationGestureConsumer.Preference.NonRotatingApps),
             lastSeenApps.listMap(::Package),
             autoRotatePreference.monitor,
         ) { rotating, excluded, lastSeen, canAutoRotate ->
@@ -348,7 +351,7 @@ interface Inputs {
                     unRemovablePackages = unRemovablePackages,
                     canAutoRotate = canAutoRotate,
                     editor = setManager,
-                    items = rotating,
+                    items = rotating.sortedWith(applicationInfoComparator).map(::Package),
                     input = this@Inputs
                 ),
                 Item.Rotation(
@@ -361,7 +364,7 @@ interface Inputs {
                     unRemovablePackages = unRemovablePackages,
                     canAutoRotate = canAutoRotate,
                     editor = setManager,
-                    items = excluded,
+                    items = excluded.sortedWith(applicationInfoComparator).map(::Package),
                     input = this@Inputs
                 ),
                 Item.Rotation(
