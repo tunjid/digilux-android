@@ -424,10 +424,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         consumer.invoke(snackbar)
     }
 
-    companion object {
-        const val DO_NOT_DISTURB_CODE = 400
-        private const val IMAGE_SELECTION = "image/*"
-
-        private val STORAGE_PERMISSIONS = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-    }
 }
+
+private const val IMAGE_SELECTION = "image/*"
+
+private val STORAGE_PERMISSIONS = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
