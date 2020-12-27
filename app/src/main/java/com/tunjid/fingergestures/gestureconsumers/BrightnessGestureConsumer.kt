@@ -69,49 +69,49 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     }
 
     val percentagePreference: ReactivePreference<Int> = ReactivePreference(
-        preferencesName = INCREMENT_VALUE,
+        preferencesName = "increment value",
         default = DEF_INCREMENT_VALUE
     )
     val positionPreference: ReactivePreference<Int> = ReactivePreference(
-        preferencesName = SLIDER_POSITION,
+        preferencesName = "slider position",
         default = DEF_POSITION_VALUE
     )
     val adaptiveBrightnessThresholdPreference: ReactivePreference<Int> = ReactivePreference(
-        preferencesName = ADAPTIVE_BRIGHTNESS_THRESHOLD,
+        preferencesName = "adaptive brightness threshold",
         default = DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD
     )
     val adaptiveBrightnessPreference: ReactivePreference<Boolean> = ReactivePreference(
-        preferencesName = ADAPTIVE_BRIGHTNESS,
+        preferencesName = "adaptive brightness",
         default = true
     )
     val logarithmicBrightnessPreference: ReactivePreference<Boolean> = ReactivePreference(
-        preferencesName = LOGARITHMIC_SCALE,
+        preferencesName = "logarithmic scale",
         default = App.isPieOrHigher
     )
     val showSliderPreference: ReactivePreference<Boolean> = ReactivePreference(
-        preferencesName = SLIDER_VISIBLE,
+        preferencesName = "slider visible",
         default = true
     )
     val animateSliderPreference: ReactivePreference<Boolean> = ReactivePreference(
-        preferencesName = ANIMATES_SLIDER,
+        preferencesName = "animates slider",
         default = true
     )
     val screenDimmerPercentPreference: ReactivePreference<Float> = ReactivePreference(
-        preferencesName = SCREEN_DIMMER_DIM_PERCENT,
+        preferencesName = "screen dimmer dim percent",
         default = DEF_DIM_PERCENT
     )
     val screenDimmerEnabledPreference: ReactivePreference<Boolean> = ReactivePreference(
-        preferencesName = SCREEN_DIMMER_ENABLED,
+        preferencesName = "screen dimmer enabled",
         default = false,
         onSet = { enabled -> if (!enabled) removeDimmer() }
     )
-
     val discreteBrightnessManager: SetManager<Preference, Int> = SetManager(
         keys = Preference.values().toList(),
         sorter = Comparator(Int::compareTo),
         addFilter = { true },
         stringMapper = Integer::valueOf,
-        objectMapper = Int::toString)
+        objectMapper = Int::toString
+    )
 
     var isDimmerEnabled: Boolean
         get() = (hasOverlayPermission()
@@ -408,15 +408,6 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
 
         const val CURRENT_BRIGHTNESS_BYTE = "brightness value"
         const val ACTION_SCREEN_DIMMER_CHANGED = "show screen dimmer"
-        private const val INCREMENT_VALUE = "increment value"
-        private const val SLIDER_POSITION = "slider position"
-        private const val SLIDER_VISIBLE = "slider visible"
-        private const val LOGARITHMIC_SCALE = "logarithmic scale"
-        private const val ADAPTIVE_BRIGHTNESS = "adaptive brightness"
-        private const val ADAPTIVE_BRIGHTNESS_THRESHOLD = "adaptive brightness threshold"
-        private const val SCREEN_DIMMER_ENABLED = "screen dimmer enabled"
-        private const val SCREEN_DIMMER_DIM_PERCENT = "screen dimmer dim percent"
-        private const val ANIMATES_SLIDER = "animates slider"
         private const val EMPTY_STRING = ""
 
         val instance: BrightnessGestureConsumer by lazy { BrightnessGestureConsumer() }
