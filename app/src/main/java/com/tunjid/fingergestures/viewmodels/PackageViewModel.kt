@@ -26,6 +26,7 @@ import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.toLiveData
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
+import io.reactivex.schedulers.Schedulers
 
 data class PackageState(
     val needsPremium: Unique<Boolean> = Unique(false),
@@ -43,9 +44,10 @@ sealed class PackageInput {
 class PackageViewModel(application: Application) : AndroidViewModel(application) {
 
     private val processor: PublishProcessor<PackageInput> = PublishProcessor.create()
+    private val pushes = processor.subscribeOn(Schedulers.io())
 
     val state = Flowable.combineLatest(
-        processor.filterIsInstance<PackageInput.Add>().map { add ->
+        pushes.filterIsInstance<PackageInput.Add>().map { add ->
             RotationGestureConsumer.instance.setManager
                 .editorFor(add.preference)
                 .plus(add.app)
@@ -53,12 +55,11 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
         }
             .startWith(false)
             .map(::Unique),
-        processor.filterIsInstance<PackageInput.FetchApps>().concatMap {
-            Flowable.fromCallable {
-                getApplication<Application>().packageManager.getInstalledApplications(0)
-                    .filter(ApplicationInfo::isUserInstalledApp)
-                    .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
-            }
+        pushes.filterIsInstance<PackageInput.FetchApps>().map {
+            getApplication<Application>().packageManager
+                .getInstalledApplications(0)
+                .filter(ApplicationInfo::isUserInstalledApp)
+                .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
         }
             .listMap(::Package)
             .startWith(listOf<Package>()),

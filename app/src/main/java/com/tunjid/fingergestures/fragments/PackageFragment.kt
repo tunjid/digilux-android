@@ -27,6 +27,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import com.tunjid.androidx.core.delegates.fragmentArgs
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
@@ -43,7 +44,7 @@ import com.tunjid.fingergestures.viewmodels.*
 
 class PackageFragment : Fragment(R.layout.fragment_packages) {
 
-    private val viewModel by activityViewModels<PackageViewModel>()
+    private val viewModel by viewModels<PackageViewModel>()
     private val appViewModel by activityViewModels<AppViewModel>()
     private var preferenceName by fragmentArgs<RotationGestureConsumer.Preference>()
 
