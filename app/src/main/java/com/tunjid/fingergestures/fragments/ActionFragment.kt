@@ -23,26 +23,30 @@ import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tunjid.androidx.core.delegates.fragmentArgs
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
-import com.tunjid.androidx.uidrivers.uiState
-import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.divider
 import com.tunjid.fingergestures.baseclasses.mainActivity
-import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.models.Action
-import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
+import com.tunjid.fingergestures.viewmodels.ActionInput
+import com.tunjid.fingergestures.viewmodels.ActionState
+import com.tunjid.fingergestures.viewmodels.ActionViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 
 class ActionFragment : Fragment(R.layout.fragment_actions) {
 
-    private val viewModel by activityViewModels<AppViewModel>()
+    private var direction by fragmentArgs<String?>()
+    private val viewModel by viewModels<ActionViewModel>()
+    private val appViewModel by activityViewModels<AppViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -50,59 +54,48 @@ class ActionFragment : Fragment(R.layout.fragment_actions) {
         view.findViewById<Toolbar>(R.id.title_bar).setTitle(R.string.pick_action)
         view.findViewById<RecyclerView>(R.id.options_list).apply {
             val listAdapter = listAdapterOf(
-                    initialItems = viewModel.liveState.value?.availableActions ?: listOf(),
-                    viewHolderCreator = { viewGroup, _ ->
-                        ActionViewHolder(
-                                showsText = true,
-                                itemView = viewGroup.inflate(R.layout.viewholder_action_vertical),
-                                clickListener = ::onActionClicked
-                        )
-                    },
-                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+                initialItems = viewModel.state.value?.availableActions ?: listOf(),
+                viewHolderCreator = { viewGroup, _ ->
+                    ActionViewHolder(
+                        showsText = true,
+                        itemView = viewGroup.inflate(R.layout.viewholder_action_vertical),
+                        clickListener = ::onActionClicked
+                    )
+                },
+                viewHolderBinder = { holder, item, _ -> holder.bind(item) }
             )
             layoutManager = verticalLayoutManager()
             adapter = listAdapter
 
             addItemDecoration(divider())
 
-            viewModel.liveState
-                    .mapDistinct(AppState::availableActions)
+            viewModel.state.apply {
+                mapDistinct(ActionState::availableActions)
                     .observe(viewLifecycleOwner, listAdapter::submitList)
+
+                mapDistinct(ActionState::needsPremium)
+                    .filter(Unique<Boolean>::item)
+                    .map(Unique<Boolean>::item)
+                    .filterUnhandledEvents()
+                    .observe(viewLifecycleOwner) { appViewModel.accept(Input.UiInteraction.GoPremium(R.string.popup_description)) }
+            }
         }
     }
 
     private fun onActionClicked(action: Action) {
-        val args = arguments
-                ?: return ::uiState.updatePartial { copy(snackbarText = getString(R.string.generic_error)) }
-
-        @GestureMapper.GestureDirection
-        val direction = args.getString(ARG_DIRECTION)
+        viewModel.accept(when (val direction = direction) {
+            null -> ActionInput.Add(action) // Pop up instance
+            else -> ActionInput.MapGesture(direction, action)
+        })
 
         mainActivity.toggleBottomSheet(false)
-
-        val mapper = GestureMapper.instance
-
-        if (direction == null) { // Pop up instance
-            val context = requireContext()
-            if (!PopUpGestureConsumer.instance
-                    .setManager
-                    .addToSet(PopUpGestureConsumer.Preference.SavedActions, action.value.toString())) MaterialAlertDialogBuilder(context)
-                    .setTitle(R.string.go_premium_title)
-                    .setMessage(context.getString(R.string.go_premium_body, context.getString(R.string.popup_description)))
-                    .setPositiveButton(R.string.continue_text) { _, _ -> mainActivity.purchase(PurchasesManager.Sku.Premium) }
-                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                    .show()
-        } else mapper.mapGestureToAction(direction, action.value)
     }
 
     companion object {
+        fun directionInstance(@GestureMapper.GestureDirection direction: String): ActionFragment =
+            ActionFragment().apply { this.direction = direction }
 
-        private const val ARG_DIRECTION = "DIRECTION"
-
-        fun directionInstance(@GestureMapper.GestureDirection direction: String): ActionFragment = ActionFragment().apply {
-            arguments = Bundle().apply { putString(ARG_DIRECTION, direction) }
-        }
-
-        fun popUpInstance(): ActionFragment = ActionFragment().apply { arguments = Bundle() }
+        fun popUpInstance(): ActionFragment =
+            ActionFragment().apply { arguments = Bundle() }
     }
 }

@@ -30,8 +30,6 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 data class AppState(
     val purchasesState: PurchasesManager.State,
     val links: List<TextLink> = listOf(),
-    val popUpActions: List<Action> = listOf(),
-    val availableActions: List<Action> = listOf(),
     val installedApps: List<Package> = listOf(),
     val broadcasts: Intent? = null,
     val uiInteraction: Input.UiInteraction,

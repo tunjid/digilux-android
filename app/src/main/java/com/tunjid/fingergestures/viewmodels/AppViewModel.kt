@@ -43,15 +43,11 @@ import java.util.concurrent.atomic.AtomicInteger
 class AppViewModel(application: Application) : AndroidViewModel(application), Inputs {
 
     val liveState: LiveData<AppState> by lazy {
-        val popUpGestureConsumer = PopUpGestureConsumer.instance
-        val gestureMapper = GestureMapper.instance
         val purchasesManager = PurchasesManager.instance
 
         Flowables.combineLatest(
             purchasesManager.state,
             Flowable.just(getApplication<Application>().links),
-            popUpGestureConsumer.popUpActions.listMap(::Action),
-            Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
             installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
             getApplication<App>().broadcasts().filter(::intentMatches).startWith(Intent()),
             inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
