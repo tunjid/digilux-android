@@ -62,6 +62,7 @@ sealed class Input {
     }
 
     sealed class UiInteraction : Input() {
+        object Default: UiInteraction()
         data class ShowSheet(val fragment: Fragment) : UiInteraction()
         data class GoPremium(val description: Int) : UiInteraction()
         data class Purchase(val sku: PurchasesManager.Sku) : UiInteraction()
@@ -93,7 +94,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
             popUpGestureConsumer.popUpActions.listMap(::Action),
             Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
             installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
-            inputProcessor.filterIsInstance<Input.UiInteraction>(),
+            inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
             inputProcessor.filterIsInstance<Input.Permission>().permissionState,
             items,
             ::AppState
