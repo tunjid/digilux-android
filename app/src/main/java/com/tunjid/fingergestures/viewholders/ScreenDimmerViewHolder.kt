@@ -32,7 +32,7 @@ import com.tunjid.fingergestures.models.Input
 private var BindingViewHolder<ViewholderScreenDimmerBinding>.item by viewHolderDelegate<Item.ScreenDimmer>()
 
 fun ViewGroup.screenDimmer() = viewHolderFrom(ViewholderScreenDimmerBinding::inflate).apply {
-    itemView.setOnClickListener {
+    binding.goToSettings.setOnClickListener {
         if (!item.dimmerState.visible) {
             if (item.dimmerState.enabled) it.context.startActivity(Intent(ACTION_MANAGE_OVERLAY_PERMISSION))
             else item.input.accept(Input.UiInteraction.GoPremium(R.string.premium_prompt_dimmer))
