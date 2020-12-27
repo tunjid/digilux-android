@@ -27,6 +27,7 @@ import android.hardware.SensorManager
 import android.provider.Settings
 import androidx.annotation.IntRange
 import com.jakewharton.rx.replayingShare
+import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.activities.BrightnessActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
@@ -113,14 +114,13 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         objectMapper = Int::toString
     )
 
-    var isDimmerEnabled: Boolean
-        get() = (hasOverlayPermission()
+    private val isDimmerEnabled: Boolean
+        get() = hasOverlayPermission
             && PurchasesManager.instance.isPremium
-            && App.transformApp({ app -> app.preferences.getBoolean(SCREEN_DIMMER_ENABLED, false) }, false))
-        set(enabled) {
-            App.withApp { app -> app.preferences.edit().putBoolean(SCREEN_DIMMER_ENABLED, enabled).apply() }
-            if (!enabled) removeDimmer()
-        }
+            && screenDimmerEnabledPreference.value
+
+    private val hasOverlayPermission: Boolean
+        get() = App.transformApp(Settings::canDrawOverlays, false)
 
     private val supportsAmbientThreshold = Flowables.combineLatest(
         PurchasesManager.instance.state,
@@ -153,7 +153,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
             DimmerState(
                 enabled = purchaseState.isPremium,
                 // TODO: Make reactive
-                visible = hasOverlayPermission(),
+                visible = hasOverlayPermission,
                 checked = dimmerEnabled
             )
         },
@@ -193,7 +193,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         if (engagedDimmer(gestureAction, originalValue)) {
             byteValue = originalValue
             intent.action = ACTION_SCREEN_DIMMER_CHANGED
-            intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, screenDimmerPercentPreference.value)
+            intent.screenDimmerPercent = screenDimmerPercentPreference.value
             app.broadcast(intent)
         } else if (shouldRemoveDimmerOnChange(gestureAction)) removeDimmer()
 
@@ -301,8 +301,6 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         return percentToByte(asPercentage)
     }
 
-    fun hasOverlayPermission(): Boolean = App.transformApp(Settings::canDrawOverlays, false)
-
     fun shouldShowDimmer(): Boolean = screenDimmerPercentPreference.value != MIN_DIM_PERCENT
 
     fun getAdjustDeltaText(percentage: Int): String = App.transformApp({ app ->
@@ -339,7 +337,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     fun removeDimmer() {
         screenDimmerPercentPreference.value = MIN_DIM_PERCENT
         val intent = Intent(ACTION_SCREEN_DIMMER_CHANGED)
-        intent.putExtra(SCREEN_DIMMER_DIM_PERCENT, screenDimmerPercentPreference.value)
+        intent.screenDimmerPercent = screenDimmerPercentPreference.value
         App.withApp { app -> app.broadcast(intent) }
     }
 
@@ -419,3 +417,5 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         }
     }
 }
+
+var Intent.screenDimmerPercent by intentExtras<Float?>()
