@@ -19,13 +19,14 @@ package com.tunjid.fingergestures
 
 import android.content.SharedPreferences
 import com.jakewharton.rx.replayingShare
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.processors.BehaviorProcessor
+import io.reactivex.rxkotlin.Flowables
 import io.reactivex.schedulers.Schedulers
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-class ReactivePreference<T>(
+class ReactivePreference<T : Any>(
     private val preferencesName: String,
     private val default: T,
     private val onSet: ((T) -> Unit)? = null
@@ -60,8 +61,6 @@ class ReactivePreference<T>(
             onSet?.invoke(value)
         }
 
-    val monitor: Flowable<T> = monitorPreferences().replayingShare()
-
     /**
      * A reference to the setter. Same as assigning to the value, but as a method reference for
      * being stable for reference equality checks
@@ -76,22 +75,21 @@ class ReactivePreference<T>(
         }
     }
 
-    private fun monitorPreferences(): Flowable<T> {
-        val processor = BehaviorProcessor.create<T>()
+    val monitor: Flowable<T> = Flowables.create<T>(BackpressureStrategy.BUFFER) { emitter ->
         val prefs = App.transformApp(App::preferences)!!
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == preferencesName) processor.onNext(value)
+            if (key == preferencesName) emitter.onNext(value)
         }
-
-        return processor.subscribeOn(Schedulers.io())
-            .startWith(value)
-            .doOnSubscribe {
-                listener.also(prefs::registerOnSharedPreferenceChangeListener)
-                    .let(listeners::add)
-            }
-            .doFinally {
-                listener.also(prefs::unregisterOnSharedPreferenceChangeListener)
-                    .let(listeners::remove)
-            }
+        listener
+            .also(prefs::registerOnSharedPreferenceChangeListener)
+            .let(listeners::add)
+        emitter.setCancellable {
+            listener
+                .also(prefs::unregisterOnSharedPreferenceChangeListener)
+                .let(listeners::remove)
+        }
     }
+        .subscribeOn(Schedulers.io())
+        .startWith(value)
+        .replayingShare()
 }
