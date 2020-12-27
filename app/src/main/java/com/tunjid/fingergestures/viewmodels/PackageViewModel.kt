@@ -18,6 +18,7 @@
 package com.tunjid.fingergestures.viewmodels
 
 import android.app.Application
+import android.content.Context
 import android.content.pm.ApplicationInfo
 import androidx.lifecycle.AndroidViewModel
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
@@ -41,13 +42,12 @@ sealed class PackageInput {
     ) : PackageInput()
 }
 
-class PackageViewModel(application: Application) : AndroidViewModel(application) {
+class PackageViewModel(private val app: Application) : AndroidViewModel(app) {
 
     private val processor: PublishProcessor<PackageInput> = PublishProcessor.create()
-    private val pushes = processor.subscribeOn(Schedulers.io())
 
     val state = Flowable.combineLatest(
-        pushes.filterIsInstance<PackageInput.Add>().map { add ->
+        processor.filterIsInstance<PackageInput.Add>().map { add ->
             RotationGestureConsumer.instance.setManager
                 .editorFor(add.preference)
                 .plus(add.app)
@@ -55,11 +55,8 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
         }
             .startWith(false)
             .map(::Unique),
-        pushes.filterIsInstance<PackageInput.FetchApps>().map {
-            getApplication<Application>().packageManager
-                .getInstalledApplications(0)
-                .filter(ApplicationInfo::isUserInstalledApp)
-                .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
+        processor.filterIsInstance<PackageInput.FetchApps>().concatMap {
+            Flowable.fromCallable(app::installedApps).subscribeOn(Schedulers.io())
         }
             .listMap(::Package)
             .startWith(listOf<Package>()),
@@ -70,6 +67,12 @@ class PackageViewModel(application: Application) : AndroidViewModel(application)
 
     fun accept(input: PackageInput) = processor.onNext(input)
 }
+
+private val Context.installedApps
+    get() = packageManager
+        .getInstalledApplications(0)
+        .filter(ApplicationInfo::isUserInstalledApp)
+        .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
 
 private val ApplicationInfo.isUserInstalledApp: Boolean
     get() = flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0 || flags and ApplicationInfo.FLAG_SYSTEM == 0
