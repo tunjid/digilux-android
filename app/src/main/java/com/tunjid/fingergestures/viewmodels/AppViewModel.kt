@@ -64,7 +64,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
         Flowables.combineLatest(
             purchasesManager.state,
             Flowable.just(getApplication<Application>().links),
-            installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
             getApplication<App>().broadcasts().filter(::intentMatches).startWith(Intent()),
             inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
             inputProcessor.filterIsInstance<Input.Permission>().permissionState,
@@ -93,7 +92,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
 
     private val shillProcessor: PublishProcessor<String> = PublishProcessor.create()
     private val inputProcessor: PublishProcessor<Input> = PublishProcessor.create()
-    private val installedAppsProcessor: PublishProcessor<List<ApplicationInfo>> = PublishProcessor.create()
 
     private val disposable: CompositeDisposable = CompositeDisposable()
 
@@ -101,26 +99,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
 
     override fun accept(input: Input): Unit = inputProcessor.onNext(input)
 
-    fun updateApps() {
-        Single.fromCallable {
-            getApplication<Application>().packageManager.getInstalledApplications(0)
-                .filter(this::isUserInstalledApp)
-                .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
-        }
-            .subscribeOn(Schedulers.io())
-            .subscribe(installedAppsProcessor::onNext, Throwable::printStackTrace)
-            .addTo(disposable)
-    }
-
     fun shillMoar() = shillProcessor.onNext(getNextQuip())
 
     private fun getNextQuip(): String {
         if (quipCounter.incrementAndGet() >= quips.size) quipCounter.set(0)
         return quips[quipCounter.get()]
     }
-
-    private fun isUserInstalledApp(info: ApplicationInfo): Boolean =
-        info.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0 || info.flags and ApplicationInfo.FLAG_SYSTEM == 0
 
     private fun intentMatches(intent: Intent): Boolean {
         val action = intent.action
