@@ -368,6 +368,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
                     .setAction(Intent.ACTION_GET_CONTENT), ""), it.selection.code)
                 else -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.enable_storage_settings)) }
             }
+            Input.UiInteraction.Default -> Unit
         }
     }
 
