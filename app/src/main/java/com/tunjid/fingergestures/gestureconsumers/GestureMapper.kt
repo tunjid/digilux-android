@@ -146,7 +146,8 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
             RotationGestureConsumer.instance,
             GlobalActionGestureConsumer.instance,
             PopUpGestureConsumer.instance,
-            AudioGestureConsumer.instance)
+            AudioGestureConsumer.instance
+    )
 
     private val directionReference: AtomicReference<String> = AtomicReference()
 

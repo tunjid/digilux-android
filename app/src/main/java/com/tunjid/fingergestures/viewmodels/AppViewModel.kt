@@ -25,8 +25,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.*
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.models.Shilling.Quip
 import com.tunjid.fingergestures.services.FingerGestureService
@@ -41,6 +40,23 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class AppViewModel(application: Application) : AndroidViewModel(application), Inputs {
+
+    override val dependencies: AppDependencies = AppDependencies(
+        backgroundManager = BackgroundManager.instance,
+        purchasesManager = PurchasesManager.instance,
+        gestureMapper = GestureMapper.instance,
+        gestureConsumers = GestureConsumers(
+            nothing = NothingGestureConsumer.instance,
+            brightness = BrightnessGestureConsumer.instance,
+            notification = NotificationGestureConsumer.instance,
+            flashlight = FlashlightGestureConsumer.instance,
+            docking = DockingGestureConsumer.instance,
+            rotation = RotationGestureConsumer.instance,
+            globalAction = GlobalActionGestureConsumer.instance,
+            popUp = PopUpGestureConsumer.instance,
+            audio = AudioGestureConsumer.instance,
+        )
+    )
 
     val liveState: LiveData<AppState> by lazy {
         val purchasesManager = PurchasesManager.instance
