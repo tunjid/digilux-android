@@ -17,6 +17,7 @@
 
 package com.tunjid.fingergestures.viewholders
 
+import android.content.pm.ApplicationInfo
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
@@ -77,22 +78,22 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.Rotation)
     if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
 }
 
-private fun BindingViewHolder<ViewholderHorizontalListBinding>.onPackageClicked(packageName: String) {
+private fun BindingViewHolder<ViewholderHorizontalListBinding>.onPackageClicked(app: ApplicationInfo) {
     val builder = MaterialAlertDialogBuilder(itemView.context)
     val preference = item.preference
 
     when {
         !App.canWriteToSettings -> builder.setMessage(R.string.permission_required)
         !item.canAutoRotate -> builder.setMessage(R.string.auto_rotate_prompt)
-        item.unRemovablePackages.contains(packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
+        item.unRemovablePackages.contains(app.packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
         preference != null -> builder.setTitle(item.removeText)
             .setPositiveButton(R.string.yes) { _, _ ->
-                item.editor.removeFromSet(preference, packageName)
+                item.editor.removeFromSet(preference, app)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
         else -> builder.setTitle(R.string.app_rotation_exclude_title)
             .setPositiveButton(R.string.yes) { _, _ ->
-                item.editor.addToSet(RotationGestureConsumer.Preference.NonRotatingApps, packageName)
+                item.editor.addToSet(RotationGestureConsumer.Preference.NonRotatingApps, app)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
     }

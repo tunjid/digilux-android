@@ -17,28 +17,27 @@
 
 package com.tunjid.fingergestures
 
-import android.util.Log
 import io.reactivex.Flowable
 import java.util.*
 import kotlin.collections.HashSet
 
-interface ListPreferenceEditor<K : ListPreference> {
-    fun addToSet(key: K, value: String): Boolean
+interface ListPreferenceEditor<K : ListPreference, V : Any> {
+    fun addToSet(key: K, value: V): Boolean
 
-    fun removeFromSet(key: K, packageName: String)
+    fun removeFromSet(key: K, value: V)
 }
 
 interface ListPreference {
     val preferenceName: String
 }
 
-class SetManager<K : ListPreference, T : Any>(
+class SetManager<K : ListPreference, V : Any>(
     keys: Iterable<K>,
-    private val sorter: Comparator<T>,
+    private val sorter: Comparator<V>,
     private val addFilter: (K) -> Boolean,
-    private val stringMapper: (String) -> T?,
-    private val objectMapper: (T) -> String
-) : ListPreferenceEditor<K> {
+    private val stringMapper: (String) -> V?,
+    private val objectMapper: (V) -> String
+) : ListPreferenceEditor<K, V> {
 
     private val reactivePreferenceMap = keys.map { key ->
         key to ReactivePreference(key.preferenceName, emptySet<String>())
@@ -46,25 +45,25 @@ class SetManager<K : ListPreference, T : Any>(
             .map { it.mapNotNull(stringMapper) }
     }.toMap()
 
-    override fun addToSet(key: K, value: String): Boolean {
+    override fun addToSet(key: K, value: V): Boolean {
         if (!addFilter.invoke(key)) return false
 
         val set = getSet(key)
-        set.add(value)
+        set.add(objectMapper(value))
         saveSet(set, key)
 
         return true
     }
 
-    override fun removeFromSet(key: K, packageName: String) {
+    override fun removeFromSet(key: K, value: V) {
         val set = getSet(key)
-        set.remove(packageName)
+        set.remove(objectMapper(value))
         saveSet(set, key)
     }
 
     fun getList(key: K): List<String> = stream(key)
 
-    fun getItems(key: K): List<T> = stream(key).mapNotNull(stringMapper)
+    fun getItems(key: K): List<V> = stream(key).mapNotNull(stringMapper)
 
     private fun stream(key: K): List<String> = getSet(key)
         .mapNotNull(stringMapper)
@@ -79,5 +78,5 @@ class SetManager<K : ListPreference, T : Any>(
     private fun saveSet(set: Set<String>, key: K) =
         App.withApp { app -> app.preferences.edit().putStringSet(key.preferenceName, set).apply() }
 
-    fun itemsFlowable(key: K): Flowable<List<T>> = reactivePreferenceMap.getValue(key)
+    fun itemsFlowable(key: K): Flowable<List<V>> = reactivePreferenceMap.getValue(key)
 }

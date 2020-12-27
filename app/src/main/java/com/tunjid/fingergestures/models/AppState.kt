@@ -90,8 +90,8 @@ data class Action(val value: GestureAction) : Differentiable {
         (other as? Action)?.let { it.value == value } ?: super.areContentsTheSame(other)
 }
 
-data class Brightness(val value: String) : Differentiable {
-    override val diffId: String get() = value
+data class Brightness(val value: Int) : Differentiable {
+    override val diffId: String get() = value.toString()
     override fun areContentsTheSame(other: Differentiable): Boolean =
         (other as? Brightness)?.let { it.value == value } ?: super.areContentsTheSame(other)
 }

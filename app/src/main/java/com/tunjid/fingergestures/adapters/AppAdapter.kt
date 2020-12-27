@@ -18,6 +18,7 @@
 package com.tunjid.fingergestures.adapters
 
 import android.app.PendingIntent
+import android.content.pm.ApplicationInfo
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import androidx.palette.graphics.Palette
@@ -30,10 +31,7 @@ import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.WallpaperStatus
 import com.tunjid.fingergestures.databinding.*
-import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.*
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Package
@@ -138,7 +136,7 @@ sealed class Item(
         @StringRes val infoRes: Int,
         val canAutoRotate: Boolean,
         val removeText: String?,
-        val editor: ListPreferenceEditor<RotationGestureConsumer.Preference>,
+        val editor: ListPreferenceEditor<RotationGestureConsumer.Preference, ApplicationInfo>,
         val unRemovablePackages: List<String>,
         val items: List<Package>,
         val input: Inputs
@@ -193,7 +191,7 @@ sealed class Item(
         override val tab: Tab,
         override val sortKey: Int,
         val accessibilityButtonEnabled: Boolean,
-        val editor: ListPreferenceEditor<PopUpGestureConsumer.Preference>,
+        val editor: ListPreferenceEditor<PopUpGestureConsumer.Preference, GestureAction>,
         val items: List<Action>,
         val input: Inputs
     ) : Item("PopUp")
@@ -202,7 +200,7 @@ sealed class Item(
         override val tab: Tab,
         override val sortKey: Int,
         val brightnesses: List<Brightness>,
-        val editor: ListPreferenceEditor<BrightnessGestureConsumer.Preference>,
+        val editor: ListPreferenceEditor<BrightnessGestureConsumer.Preference, Int>,
         val input: Inputs
     ) : Item("DiscreteBrightness")
 

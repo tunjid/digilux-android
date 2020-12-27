@@ -203,7 +203,6 @@ interface Inputs {
                     editor = discreteBrightnessManager,
                     brightnesses = it.discreteBrightnesses
                         .sorted()
-                        .map(Int::toString)
                         .map(::Brightness),
                     input = this@Inputs,
                 ),

@@ -77,7 +77,7 @@
     <string name="discrete_brightness_description">Allows you to set discrete values for brightness changes instead of choosing a fixed interval per swipe</string>
     <string name="discrete_brightness_error">Please enter a value between 1 and 99</string>
     <string name="discrete_brightness_hint">Enter a brightness percentage</string>
-    <string name="discrete_brightness_text">%1$s%%</string>
+    <string name="discrete_brightness_text">%1$d%%</string>
 
     <!-- Audio Stream ViewHolder-->
     <string name="audio_stream_media">Media (%1$d levels)</string>

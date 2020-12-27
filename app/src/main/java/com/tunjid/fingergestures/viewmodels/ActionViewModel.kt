@@ -51,7 +51,7 @@ class ActionViewModel : ViewModel() {
     fun accept(input: ActionInput) = when (input) {
         is ActionInput.Add -> {
             val added = popUpGestureConsumer.setManager
-                .addToSet(PopUpGestureConsumer.Preference.SavedActions, input.action.value.serialized)
+                .addToSet(PopUpGestureConsumer.Preference.SavedActions, input.action.value)
             if (!added) processor.onNext(true)
             else Unit
         }

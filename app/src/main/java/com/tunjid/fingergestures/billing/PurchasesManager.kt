@@ -152,19 +152,19 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
 
         purchases.filter(::filterPurchases)
             .map(Purchase::getSku)
-            .filter(Sku.values().map(Sku::id)::contains)
+            .mapNotNull { id -> Sku.values().firstOrNull { it.id == id } }
             .forEach { setManager.addToSet(SkuKey, it) }
     }
 
     fun startTrial() = trigger.onNext(true)
 
     internal fun onPurchasesQueried(responseCode: Int, purchases: List<Purchase>?) {
-        Sku.values().forEach { setManager.removeFromSet(SkuKey, it.id) }
+        Sku.values().forEach { setManager.removeFromSet(SkuKey, it) }
         onPurchasesUpdated(responseCode, purchases)
     }
 
     internal fun clearPurchases() {
-        Sku.values().forEach { setManager.removeFromSet(SkuKey, it.id) }
+        Sku.values().forEach { setManager.removeFromSet(SkuKey, it) }
     }
 
     // App is open source, do a psuedo check.

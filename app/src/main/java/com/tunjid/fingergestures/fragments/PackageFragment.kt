@@ -18,6 +18,7 @@
 package com.tunjid.fingergestures.fragments
 
 
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
@@ -86,8 +87,8 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
         viewModel.updateApps()
     }
 
-    private fun onPackageClicked(packageName: String) {
-        val added = RotationGestureConsumer.instance.setManager.addToSet(preferenceName, packageName)
+    private fun onPackageClicked(app: ApplicationInfo) {
+        val added = RotationGestureConsumer.instance.setManager.addToSet(preferenceName, app)
 
         if (!added) {
             val context = requireContext()

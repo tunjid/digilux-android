@@ -120,11 +120,11 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.requestDiscreteVa
     alertDialog.show()
 }
 
-private fun EditText.onDiscreteValueEntered(dialogInterface: DialogInterface, editor: ListPreferenceEditor<BrightnessGestureConsumer.Preference>) {
+private fun EditText.onDiscreteValueEntered(dialogInterface: DialogInterface, editor: ListPreferenceEditor<BrightnessGestureConsumer.Preference, Int>) {
     text.toString()
         .toIntOrNull()
         ?.takeIf(::isValidValue)
-        ?.let { editor.addToSet(BrightnessGestureConsumer.Preference.DiscreteBrightnesses, it.toString()) }
+        ?.let { editor.addToSet(BrightnessGestureConsumer.Preference.DiscreteBrightnesses, it) }
 
     dialogInterface.dismiss()
 }

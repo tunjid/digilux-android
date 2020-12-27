@@ -81,8 +81,8 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         }
 
     init {
-        setManager.addToSet(Preference.NonRotatingApps, ANDROID_SYSTEM_UI_PACKAGE)
-        App.withApp { app -> setManager.addToSet(Preference.NonRotatingApps, app.packageName) }
+        setManager.addToSet(Preference.NonRotatingApps, ApplicationInfo().apply { packageName = ANDROID_SYSTEM_UI_PACKAGE })
+        App.withApp { app -> setManager.addToSet(Preference.NonRotatingApps, app.applicationInfo) }
     }
 
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
