@@ -75,10 +75,10 @@ class ReactivePreference<T : Any>(
         }
     }
 
-    val monitor: Flowable<T> = Flowables.create<T>(BackpressureStrategy.BUFFER) { emitter ->
+    val monitor: Flowable<T> = Flowables.create<Unit>(BackpressureStrategy.BUFFER) { emitter ->
         val prefs = App.transformApp(App::preferences)!!
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == preferencesName) emitter.onNext(value)
+            if (key == preferencesName) emitter.onNext(Unit)
         }
         listener
             .also(prefs::registerOnSharedPreferenceChangeListener)
@@ -89,7 +89,10 @@ class ReactivePreference<T : Any>(
                 .let(listeners::remove)
         }
     }
-        .subscribeOn(Schedulers.io())
-        .startWith(value)
+        .concatMap { pull }
+        .startWith(pull)
+        .observeOn(Schedulers.io())
         .replayingShare()
+
+    private val pull get() = Flowable.fromCallable(::value).subscribeOn(Schedulers.io())
 }

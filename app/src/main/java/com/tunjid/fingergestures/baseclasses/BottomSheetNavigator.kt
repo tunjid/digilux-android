@@ -21,7 +21,6 @@ package com.tunjid.fingergestures.baseclasses
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -75,7 +74,7 @@ class BottomSheetNavigator(
     private val bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
 
     init {
-        binding.bottomSheet.setOnApplyWindowInsetsListener { _, insets ->  insets.consumeSystemWindowInsets()}
+        binding.bottomSheet.setOnApplyWindowInsetsListener { _, insets -> insets.consumeSystemWindowInsets() }
         bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) =
                 onSheetSlide((slideOffset + 1) / 2) // callback range is [-1, 1])
@@ -113,13 +112,11 @@ class BottomSheetNavigator(
     override fun push(fragment: Fragment, tag: String): Boolean {
         val same = tag == current?.tag
 
-        binding.bottomSheet.post {
-            if (!same) host.supportFragmentManager
-                .beginTransaction()
-                .replace(binding.bottomSheet.id, fragment, tag)
-                .commit()
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
+        if (!same) host.supportFragmentManager
+            .beginTransaction()
+            .replace(binding.bottomSheet.id, fragment, tag)
+            .commit()
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
         return !same
     }
