@@ -85,11 +85,11 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         App.withApp { app -> setManager.addToSet(Preference.NonRotatingApps, app.packageName) }
     }
 
-    override fun onGestureActionTriggered(gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         isAutoRotateOn = !isAutoRotateOn
     }
 
-    override fun accepts(gesture: Int): Boolean = gesture == GestureConsumer.TOGGLE_AUTO_ROTATE
+    override fun accepts(gesture: GestureAction): Boolean = gesture == GestureAction.TOGGLE_AUTO_ROTATE
 
     fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return

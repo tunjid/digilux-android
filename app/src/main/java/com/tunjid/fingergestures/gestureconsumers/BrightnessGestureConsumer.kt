@@ -30,7 +30,6 @@ import com.jakewharton.rx.replayingShare
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.activities.BrightnessActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.normalizePercentageToFraction
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 import java.math.BigDecimal
@@ -150,12 +149,14 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         Flowables.combineLatest(
             PurchasesManager.instance.state,
             screenDimmerEnabledPreference.monitor,
-        ) { purchaseState, dimmerEnabled -> DimmerState(
-            enabled = purchaseState.isPremium,
-            // TODO: Make reactive
-            visible = hasOverlayPermission(),
-            checked = dimmerEnabled
-        ) },
+        ) { purchaseState, dimmerEnabled ->
+            DimmerState(
+                enabled = purchaseState.isPremium,
+                // TODO: Make reactive
+                visible = hasOverlayPermission(),
+                checked = dimmerEnabled
+            )
+        },
         adaptiveBrightnessPreference.monitor,
         logarithmicBrightnessPreference.monitor,
         showSliderPreference.monitor,
@@ -164,7 +165,7 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         ::State,
     ).replayingShare()
 
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         var byteValue: Int
         val originalValue: Int
 
@@ -179,10 +180,11 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         originalValue = byteValue
 
         when (gestureAction) {
-            GestureConsumer.INCREASE_BRIGHTNESS -> byteValue = increase(byteValue)
-            GestureConsumer.REDUCE_BRIGHTNESS -> byteValue = reduce(byteValue)
-            GestureConsumer.MAXIMIZE_BRIGHTNESS -> byteValue = MAX_BRIGHTNESS.toInt()
-            GestureConsumer.MINIMIZE_BRIGHTNESS -> byteValue = MIN_BRIGHTNESS.toInt()
+            GestureAction.INCREASE_BRIGHTNESS -> byteValue = increase(byteValue)
+            GestureAction.REDUCE_BRIGHTNESS -> byteValue = reduce(byteValue)
+            GestureAction.MAXIMIZE_BRIGHTNESS -> byteValue = MAX_BRIGHTNESS.toInt()
+            GestureAction.MINIMIZE_BRIGHTNESS -> byteValue = MIN_BRIGHTNESS.toInt()
+            else -> Unit
         }
 
         val intent = Intent(app, BrightnessActivity::class.java)
@@ -203,11 +205,11 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean = when (gesture) {
-        GestureConsumer.INCREASE_BRIGHTNESS,
-        GestureConsumer.REDUCE_BRIGHTNESS,
-        GestureConsumer.MAXIMIZE_BRIGHTNESS,
-        GestureConsumer.MINIMIZE_BRIGHTNESS -> true
+    override fun accepts(gesture: GestureAction): Boolean = when (gesture) {
+        GestureAction.INCREASE_BRIGHTNESS,
+        GestureAction.REDUCE_BRIGHTNESS,
+        GestureAction.MAXIMIZE_BRIGHTNESS,
+        GestureAction.MINIMIZE_BRIGHTNESS -> true
         else -> false
     }
 
@@ -255,14 +257,14 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         }, lightSensor, SensorManager.SENSOR_DELAY_UI)
     }
 
-    private fun engagedDimmer(@GestureConsumer.GestureAction gestureAction: Int, byteValue: Int): Boolean =
+    private fun engagedDimmer(gestureAction: GestureAction, byteValue: Int): Boolean =
         when {
             !isDimmerEnabled -> false
-            byteValue == MIN_BRIGHTNESS.toInt() && gestureAction == GestureConsumer.REDUCE_BRIGHTNESS -> {
+            byteValue == MIN_BRIGHTNESS.toInt() && gestureAction == GestureAction.REDUCE_BRIGHTNESS -> {
                 increaseScreenDimmer()
                 true
             }
-            gestureAction == GestureConsumer.INCREASE_BRIGHTNESS && screenDimmerPercentPreference.value > MIN_DIM_PERCENT -> {
+            gestureAction == GestureAction.INCREASE_BRIGHTNESS && screenDimmerPercentPreference.value > MIN_DIM_PERCENT -> {
                 reduceScreenDimmer()
                 true
             }
@@ -271,13 +273,13 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
 
     private fun reduceScreenDimmer() {
         val current = screenDimmerPercentPreference.value
-        val changed = current - normalizePercentageToFraction(percentagePreference.value)
+        val changed = current - GestureConsumer.normalizePercentageToFraction(percentagePreference.value)
         screenDimmerPercentPreference.value = max(roundDown(changed), MIN_DIM_PERCENT)
     }
 
     private fun increaseScreenDimmer() {
         val current = screenDimmerPercentPreference.value
-        val changed = current + normalizePercentageToFraction(percentagePreference.value)
+        val changed = current + GestureConsumer.normalizePercentageToFraction(percentagePreference.value)
         screenDimmerPercentPreference.value = min(roundDown(changed), MAX_DIM_PERCENT)
     }
 
@@ -384,8 +386,8 @@ class BrightnessGestureConsumer private constructor() : GestureConsumer {
         return lightSensor != null
     }
 
-    private fun shouldRemoveDimmerOnChange(@GestureConsumer.GestureAction gestureAction: Int): Boolean =
-        (gestureAction == GestureConsumer.MINIMIZE_BRIGHTNESS || gestureAction == GestureConsumer.MAXIMIZE_BRIGHTNESS
+    private fun shouldRemoveDimmerOnChange(gestureAction: GestureAction): Boolean =
+        (gestureAction == GestureAction.MINIMIZE_BRIGHTNESS || gestureAction == GestureAction.MAXIMIZE_BRIGHTNESS
             || shouldShowDimmer() && PurchasesManager.instance.isNotPremium)
 
     private fun noDiscreteBrightness(): Boolean =

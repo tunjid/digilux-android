@@ -32,14 +32,14 @@ class FlashlightGestureConsumer private constructor() : GestureConsumer {
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
-        return gesture == GestureConsumer.TOGGLE_FLASHLIGHT
+    override fun accepts(gesture: GestureAction): Boolean {
+        return gesture == GestureAction.TOGGLE_FLASHLIGHT
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
-            GestureConsumer.TOGGLE_FLASHLIGHT -> {
+            GestureAction.TOGGLE_FLASHLIGHT -> {
                 val app = App.instance ?: return
                 if (!isCallbackRegistered) isCallbackRegistered = registerTorchCallback(app)
                 if (!isCallbackRegistered) return
@@ -51,7 +51,6 @@ class FlashlightGestureConsumer private constructor() : GestureConsumer {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-
             }
         }
     }

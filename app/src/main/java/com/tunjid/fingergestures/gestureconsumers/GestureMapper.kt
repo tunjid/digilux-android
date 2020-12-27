@@ -29,27 +29,27 @@ import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.DO_NOTHING
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_BACK
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_HOME
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_LOCK_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_POWER_DIALOG
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_RECENTS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_SPLIT_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.GLOBAL_TAKE_SCREENSHOT
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.INCREASE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.INCREASE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.MAXIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.MINIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.NOTIFICATION_DOWN
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.NOTIFICATION_TOGGLE
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.NOTIFICATION_UP
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.REDUCE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.REDUCE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.SHOW_POPUP
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_AUTO_ROTATE
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_DOCK
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.TOGGLE_FLASHLIGHT
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.DO_NOTHING
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_BACK
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_HOME
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_LOCK_SCREEN
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_POWER_DIALOG
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_RECENTS
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_SPLIT_SCREEN
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_TAKE_SCREENSHOT
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.INCREASE_AUDIO
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.INCREASE_BRIGHTNESS
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.MAXIMIZE_BRIGHTNESS
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.MINIMIZE_BRIGHTNESS
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.NOTIFICATION_DOWN
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.NOTIFICATION_TOGGLE
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.NOTIFICATION_UP
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.REDUCE_AUDIO
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.REDUCE_BRIGHTNESS
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.SHOW_POPUP
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.TOGGLE_AUTO_ROTATE
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.TOGGLE_DOCK
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.TOGGLE_FLASHLIGHT
 import io.reactivex.Flowable
 import io.reactivex.Flowable.timer
 import io.reactivex.disposables.Disposable
@@ -87,7 +87,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
                     LEFT_GESTURE -> REDUCE_BRIGHTNESS
                     RIGHT_GESTURE -> INCREASE_BRIGHTNESS
                     else -> DO_NOTHING
-                }
+                }.id
         )
     }
             .toMap()
@@ -100,7 +100,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
                             preference.monitor.map {
                                 val resource = resourceForAction(
                                         if (isDouble(gestureDirection) && PurchasesManager.instance.isNotPremium) DO_NOTHING
-                                        else it
+                                        else GestureAction.fromId(it)
                                 )
 
                                 gestureDirection to App.transformApp({ app -> app.getString(resource) }, "")
@@ -154,10 +154,9 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     private var doubleSwipeDisposable: Disposable? = null
     private var isOngoing: Boolean = false
 
-    val actions: IntArray
-        get() = actionIds.map(this::actionForResource)
-                .filter(this::isSupportedAction)
-                .toIntArray()
+    val actions: List<GestureAction>
+        get() = actionIds.map(::actionForResource)
+                .filter(::isSupportedAction)
 
     var doubleSwipeDelay: Int by doubleSwipePreference.delegate
 
@@ -169,12 +168,11 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
         actionIds = getActionIds()
     }
 
-    fun mapGestureToAction(@GestureDirection direction: String, @GestureConsumer.GestureAction action: Int) {
-        directionPreferencesMap.getValue(direction).value = action
+    fun mapGestureToAction(@GestureDirection direction: String, action: GestureAction) {
+        directionPreferencesMap.getValue(direction).value = action.id
     }
 
     fun getMappedAction(@GestureDirection gestureDirection: String): String {
-        @GestureConsumer.GestureAction
         val action = directionToAction(gestureDirection)
         val stringResource = resourceForAction(action)
         return App.transformApp({ app -> app.getString(stringResource) }, "")
@@ -247,18 +245,17 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
                 }, this::onError)
     }
 
-    fun performAction(@GestureConsumer.GestureAction action: Int) {
+    fun performAction(action: GestureAction) {
         val consumer = consumerForAction(action)
         consumer?.onGestureActionTriggered(action)
     }
 
     private fun performAction(@GestureDirection direction: String) {
-        @GestureConsumer.GestureAction
         val action = directionToAction(direction)
         performAction(action)
     }
 
-    private fun consumerForAction(@GestureConsumer.GestureAction action: Int): GestureConsumer? {
+    private fun consumerForAction(action: GestureAction): GestureConsumer? {
         for (consumer in consumers) if (consumer.accepts(action)) return consumer
         return null
     }
@@ -281,24 +278,14 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
         else -> UP_GESTURE
     }
 
-    private fun isSupportedAction(@GestureConsumer.GestureAction action: Int): Boolean =
+    private fun isSupportedAction(action: GestureAction): Boolean =
             if (action == GLOBAL_LOCK_SCREEN || action == GLOBAL_TAKE_SCREENSHOT) App.isPieOrHigher else true
 
-    @GestureConsumer.GestureAction
-    private fun directionToAction(@GestureDirection direction: String): Int {
+    private fun directionToAction(@GestureDirection direction: String): GestureAction {
         if (isDouble(direction) && PurchasesManager.instance.isNotPremium) return DO_NOTHING
 
-        val gesture = directionPreferencesMap.getValue(direction).value
-        if (gesture != UNASSIGNED_GESTURE) return gesture
-
-        // Defaults
-        return when (direction) {
-            UP_GESTURE -> NOTIFICATION_UP
-            DOWN_GESTURE -> NOTIFICATION_DOWN
-            LEFT_GESTURE -> REDUCE_BRIGHTNESS
-            RIGHT_GESTURE -> INCREASE_BRIGHTNESS
-            else -> DO_NOTHING
-        }
+        val id = directionPreferencesMap.getValue(direction).value
+        return GestureAction.fromId(id)
     }
 
     private fun match(@GestureDirection original: String?, @GestureDirection updated: String): String {
@@ -318,8 +305,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
         else -> false
     }
 
-    @GestureConsumer.GestureAction
-    private fun actionForResource(resource: Int): Int = when (resource) {
+    private fun actionForResource(resource: Int): GestureAction = when (resource) {
         R.string.do_nothing -> DO_NOTHING
         R.string.increase_brightness -> INCREASE_BRIGHTNESS
         R.string.reduce_brightness -> REDUCE_BRIGHTNESS
@@ -345,7 +331,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     }
 
     @StringRes
-    fun resourceForAction(@GestureConsumer.GestureAction action: Int): Int = when (action) {
+    fun resourceForAction(action: GestureAction): Int = when (action) {
         DO_NOTHING -> R.string.do_nothing
         INCREASE_BRIGHTNESS -> R.string.increase_brightness
         REDUCE_BRIGHTNESS -> R.string.reduce_brightness
@@ -367,7 +353,6 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
         GLOBAL_LOCK_SCREEN -> R.string.global_lock_screen
         GLOBAL_TAKE_SCREENSHOT -> R.string.global_take_screenshot
         SHOW_POPUP -> R.string.show_popup
-        else -> R.string.do_nothing
     }
 
     fun getDirectionName(@GestureDirection direction: String): String = when (direction) {

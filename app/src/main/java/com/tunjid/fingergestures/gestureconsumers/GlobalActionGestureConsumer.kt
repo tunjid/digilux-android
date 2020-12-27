@@ -31,34 +31,34 @@ import com.tunjid.fingergestures.App
 class GlobalActionGestureConsumer private constructor() : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean = when (gesture) {
-        GestureConsumer.GLOBAL_HOME,
-        GestureConsumer.GLOBAL_BACK,
-        GestureConsumer.GLOBAL_RECENTS,
-        GestureConsumer.GLOBAL_LOCK_SCREEN,
-        GestureConsumer.GLOBAL_SPLIT_SCREEN,
-        GestureConsumer.GLOBAL_POWER_DIALOG,
-        GestureConsumer.GLOBAL_TAKE_SCREENSHOT -> true
+    override fun accepts(gesture: GestureAction): Boolean = when (gesture) {
+        GestureAction.GLOBAL_HOME,
+        GestureAction.GLOBAL_BACK,
+        GestureAction.GLOBAL_RECENTS,
+        GestureAction.GLOBAL_LOCK_SCREEN,
+        GestureAction.GLOBAL_SPLIT_SCREEN,
+        GestureAction.GLOBAL_POWER_DIALOG,
+        GestureAction.GLOBAL_TAKE_SCREENSHOT -> true
         else -> false
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         val app = App.instance ?: return
 
         var action = -1
 
         when (gestureAction) {
-            GestureConsumer.GLOBAL_HOME -> action = GLOBAL_ACTION_HOME
-            GestureConsumer.GLOBAL_BACK -> action = GLOBAL_ACTION_BACK
-            GestureConsumer.GLOBAL_RECENTS -> action = GLOBAL_ACTION_RECENTS
-            GestureConsumer.GLOBAL_SPLIT_SCREEN -> action = GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
-            GestureConsumer.GLOBAL_POWER_DIALOG -> action = GLOBAL_ACTION_POWER_DIALOG
+            GestureAction.GLOBAL_HOME -> action = GLOBAL_ACTION_HOME
+            GestureAction.GLOBAL_BACK -> action = GLOBAL_ACTION_BACK
+            GestureAction.GLOBAL_RECENTS -> action = GLOBAL_ACTION_RECENTS
+            GestureAction.GLOBAL_SPLIT_SCREEN -> action = GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
+            GestureAction.GLOBAL_POWER_DIALOG -> action = GLOBAL_ACTION_POWER_DIALOG
         }
 
         if (App.isPieOrHigher) {
-            if (gestureAction == GestureConsumer.GLOBAL_TAKE_SCREENSHOT) action = GLOBAL_ACTION_TAKE_SCREENSHOT
-            else if (gestureAction == GestureConsumer.GLOBAL_LOCK_SCREEN) action = GLOBAL_ACTION_LOCK_SCREEN
+            if (gestureAction == GestureAction.GLOBAL_TAKE_SCREENSHOT) action = GLOBAL_ACTION_TAKE_SCREENSHOT
+            else if (gestureAction == GestureAction.GLOBAL_LOCK_SCREEN) action = GLOBAL_ACTION_LOCK_SCREEN
         }
 
         if (action == -1) return

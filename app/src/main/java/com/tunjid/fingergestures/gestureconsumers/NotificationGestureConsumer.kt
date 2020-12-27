@@ -25,22 +25,24 @@ import com.tunjid.fingergestures.App
 class NotificationGestureConsumer private constructor() : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
+    override fun accepts(gesture: GestureAction): Boolean {
         return when (gesture) {
-            GestureConsumer.NOTIFICATION_UP, GestureConsumer.NOTIFICATION_DOWN, GestureConsumer.NOTIFICATION_TOGGLE -> true
+            GestureAction.NOTIFICATION_UP,
+            GestureAction.NOTIFICATION_DOWN,
+            GestureAction.NOTIFICATION_TOGGLE -> true
             else -> false
         }
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
-            GestureConsumer.NOTIFICATION_UP,
-            GestureConsumer.NOTIFICATION_DOWN,
-            GestureConsumer.NOTIFICATION_TOGGLE -> App.withApp { app ->
+            GestureAction.NOTIFICATION_UP,
+            GestureAction.NOTIFICATION_DOWN,
+            GestureAction.NOTIFICATION_TOGGLE -> App.withApp { app ->
                 app.broadcast(Intent(when (gestureAction) {
-                    GestureConsumer.NOTIFICATION_UP -> ACTION_NOTIFICATION_UP
-                    GestureConsumer.NOTIFICATION_DOWN -> ACTION_NOTIFICATION_DOWN
+                    GestureAction.NOTIFICATION_UP -> ACTION_NOTIFICATION_UP
+                    GestureAction.NOTIFICATION_DOWN -> ACTION_NOTIFICATION_DOWN
                     else -> ACTION_NOTIFICATION_TOGGLE
                 }))
             }

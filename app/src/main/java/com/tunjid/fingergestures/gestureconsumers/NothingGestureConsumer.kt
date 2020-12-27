@@ -19,11 +19,11 @@ package com.tunjid.fingergestures.gestureconsumers
 
 class NothingGestureConsumer private constructor() : GestureConsumer {
 
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
-        return gesture == GestureConsumer.DO_NOTHING
+    override fun accepts(gesture: GestureAction): Boolean {
+        return gesture == GestureAction.DO_NOTHING
     }
 
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         // Do nothing
     }
 

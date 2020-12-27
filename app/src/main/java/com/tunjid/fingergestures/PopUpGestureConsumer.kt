@@ -21,8 +21,9 @@ package com.tunjid.fingergestures
 import android.content.Intent
 import com.tunjid.fingergestures.activities.PopupActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.gestureconsumers.GestureAction
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer.Companion.SHOW_POPUP
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.SHOW_POPUP
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 
 class PopUpGestureConsumer private constructor() : GestureConsumer {
@@ -48,35 +49,38 @@ class PopUpGestureConsumer private constructor() : GestureConsumer {
         default = true
     )
 
-    val setManager: SetManager<Preference, Int> = SetManager(
+    val setManager: SetManager<Preference, GestureAction> = SetManager(
         keys = Preference.values().toList(),
-        sorter = Comparator(Int::compareTo),
+        sorter = compareBy(GestureAction::id),
         addFilter = this::canAddToSet,
-        stringMapper = Integer::valueOf,
-        objectMapper = Any::toString)
+        stringMapper = GestureAction::deserialize,
+        objectMapper = GestureAction::serialized)
 
     val popUpActions = setManager.itemsFlowable(Preference.SavedActions)
 
-    private val list: List<Int>
+    private val list: List<GestureAction>
         get() = setManager.getItems(Preference.SavedActions)
 
-    override fun onGestureActionTriggered(gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         App.withApp { app -> app.broadcast(Intent(ACTION_SHOW_POPUP)) }
     }
 
-    override fun accepts(gesture: Int): Boolean = gesture == SHOW_POPUP
+    override fun accepts(gesture: GestureAction): Boolean = gesture == SHOW_POPUP
 
-    fun showPopup() = if (accessibilityButtonSingleClickPreference.value) list.stream()
-            .findFirst()
-            .ifPresent(GestureMapper.instance::performAction)
-    else App.withApp { app ->
-        val intent = Intent(app, PopupActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        app.startActivity(intent)
+    fun showPopup() = when {
+        accessibilityButtonSingleClickPreference.value -> list
+            .firstOrNull()
+            ?.let(GestureMapper.instance::performAction)
+            ?: Unit
+        else -> App.withApp { app ->
+            val intent = Intent(app, PopupActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            app.startActivity(intent)
+        }
     }
 
     private fun canAddToSet(preferenceName: Preference): Boolean =
-            setManager.getSet(preferenceName).size < 2 || PurchasesManager.instance.isPremiumNotTrial
+        setManager.getSet(preferenceName).size < 2 || PurchasesManager.instance.isPremiumNotTrial
 
     companion object {
 

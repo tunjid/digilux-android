@@ -26,14 +26,14 @@ import com.tunjid.fingergestures.activities.DockingActivity
 class DockingGestureConsumer private constructor() : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
-        return gesture == GestureConsumer.TOGGLE_DOCK
+    override fun accepts(gesture: GestureAction): Boolean {
+        return gesture == GestureAction.TOGGLE_DOCK
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
-            GestureConsumer.TOGGLE_DOCK -> {
+            GestureAction.TOGGLE_DOCK -> {
                 val app = App.instance ?: return
 
                 val intent = Intent(app, DockingActivity::class.java)

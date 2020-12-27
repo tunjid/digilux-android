@@ -44,7 +44,7 @@ class ActionViewModel : ViewModel() {
 
     val state = Flowable.combineLatest(
         processor.startWith(false).map(::Unique),
-        Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
+        Flowable.just(gestureMapper.actions).listMap(::Action),
         ::ActionState
     ).toLiveData()
 

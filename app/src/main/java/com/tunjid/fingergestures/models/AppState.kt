@@ -25,7 +25,7 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.GestureAction
 
 data class AppState(
     val purchasesState: PurchasesManager.State,
@@ -84,7 +84,7 @@ data class Package(val app: ApplicationInfo) : Differentiable {
         (other as? Package)?.let { it.diffId == diffId } ?: super.areContentsTheSame(other)
 }
 
-data class Action(@GestureConsumer.GestureAction val value: Int) : Differentiable {
+data class Action(val value: GestureAction) : Differentiable {
     override val diffId: String get() = value.toString()
     override fun areContentsTheSame(other: Differentiable): Boolean =
         (other as? Action)?.let { it.value == value } ?: super.areContentsTheSame(other)

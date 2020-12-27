@@ -17,39 +17,46 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import androidx.annotation.IntDef
+enum class GestureAction(val id: Int) {
+    INCREASE_BRIGHTNESS(0),
+    REDUCE_BRIGHTNESS(1),
+    MAXIMIZE_BRIGHTNESS(2),
+    MINIMIZE_BRIGHTNESS(3),
+
+    // int NIGHT_MODE_ON = 4; DO NOT REMOVE FOR LEGACY REASONS
+    // int NIGHT_MODE_OFF = 5; DO NOT REMOVE FOR LEGACY REASONS
+    NOTIFICATION_UP(6),
+    NOTIFICATION_DOWN(7),
+    DO_NOTHING(8),
+    TOGGLE_FLASHLIGHT(9),
+    TOGGLE_DOCK(10),
+    TOGGLE_AUTO_ROTATE(11),
+    NOTIFICATION_TOGGLE(12),
+    GLOBAL_HOME(13),
+    GLOBAL_BACK(14),
+    GLOBAL_RECENTS(15),
+    GLOBAL_SPLIT_SCREEN(16),
+    GLOBAL_POWER_DIALOG(17),
+    SHOW_POPUP(18),
+    INCREASE_AUDIO(19),
+    REDUCE_AUDIO(20),
+    GLOBAL_LOCK_SCREEN(21),
+    GLOBAL_TAKE_SCREENSHOT(22);
+
+    val serialized get() = id.toString()
+
+    companion object {
+        private val map = values().map { it.id to it }.toMap()
+        fun fromId(id: Int) = map.getValue(id)
+        fun deserialize(id: String) = fromId(id.toInt())
+    }
+}
 
 interface GestureConsumer {
 
-    @Retention(AnnotationRetention.SOURCE)
-    @IntDef(
-            INCREASE_BRIGHTNESS,
-            REDUCE_BRIGHTNESS,
-            MAXIMIZE_BRIGHTNESS,
-            MINIMIZE_BRIGHTNESS,
-            NOTIFICATION_DOWN,
-            NOTIFICATION_UP,
-            NOTIFICATION_TOGGLE,
-            DO_NOTHING,
-            TOGGLE_FLASHLIGHT,
-            TOGGLE_DOCK,
-            TOGGLE_AUTO_ROTATE,
-            GLOBAL_HOME,
-            GLOBAL_BACK,
-            GLOBAL_RECENTS,
-            GLOBAL_SPLIT_SCREEN,
-            GLOBAL_POWER_DIALOG,
-            SHOW_POPUP,
-            REDUCE_AUDIO,
-            INCREASE_AUDIO,
-            GLOBAL_LOCK_SCREEN,
-            GLOBAL_TAKE_SCREENSHOT
-    )
-    annotation class GestureAction
+    fun onGestureActionTriggered(gestureAction: GestureAction)
 
-    fun onGestureActionTriggered(@GestureAction gestureAction: Int)
-
-    fun accepts(@GestureAction gesture: Int): Boolean
+    fun accepts(gesture: GestureAction): Boolean
 
     companion object {
 
@@ -57,33 +64,6 @@ interface GestureConsumer {
         const val FIFTY_PERCENT = 50
         const val HUNDRED_PERCENT = 100
 
-        const val INCREASE_BRIGHTNESS = 0
-        const val REDUCE_BRIGHTNESS = 1
-        const val MAXIMIZE_BRIGHTNESS = 2
-        const val MINIMIZE_BRIGHTNESS = 3
-        // int NIGHT_MODE_ON = 4; DO NOT REMOVE FOR LEGACY REASONS
-        // int NIGHT_MODE_OFF = 5; DO NOT REMOVE FOR LEGACY REASONS
-        const val NOTIFICATION_UP = 6
-        const val NOTIFICATION_DOWN = 7
-        const val DO_NOTHING = 8
-        const val TOGGLE_FLASHLIGHT = 9
-        const val TOGGLE_DOCK = 10
-        const val TOGGLE_AUTO_ROTATE = 11
-        const val NOTIFICATION_TOGGLE = 12
-        const val GLOBAL_HOME = 13
-        const val GLOBAL_BACK = 14
-        const val GLOBAL_RECENTS = 15
-        const val GLOBAL_SPLIT_SCREEN = 16
-        const val GLOBAL_POWER_DIALOG = 17
-        const val SHOW_POPUP = 18
-        const val INCREASE_AUDIO = 19
-        const val REDUCE_AUDIO = 20
-        const val GLOBAL_LOCK_SCREEN = 21
-        const val GLOBAL_TAKE_SCREENSHOT = 22
-
-        fun normalizePercentageToFraction(percentage: Int): Float {
-            return percentage / 100f
-        }
+        fun normalizePercentageToFraction(percentage: Int): Float = percentage / 100f
     }
-
 }
