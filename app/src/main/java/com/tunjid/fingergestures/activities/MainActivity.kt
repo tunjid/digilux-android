@@ -287,18 +287,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Input.Permission.Request.forCode(requestCode)
-            ?.let(Input.Permission.Action::Changed)
-            ?.let(viewModel::accept)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == Input.Permission.Request.Storage.code && grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED) {
+        navigator.current?.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) {
             Input.Permission.Request.forCode(requestCode)
                 ?.let(Input.Permission.Action::Changed)
                 ?.let(viewModel::accept)
         }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == Input.Permission.Request.Storage.code && grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED)
+            navigator.current?.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) {
+                Input.Permission.Request.forCode(requestCode)
+                    ?.let(Input.Permission.Action::Changed)
+                    ?.let(viewModel::accept)
+            }
     }
 
     override fun onNewIntent(intent: Intent) {
