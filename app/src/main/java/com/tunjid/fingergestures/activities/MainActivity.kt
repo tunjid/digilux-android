@@ -35,7 +35,6 @@ import android.view.WindowInsets
 import android.view.animation.AnimationUtils.loadAnimation
 import androidx.activity.addCallback
 import androidx.activity.viewModels
-import androidx.annotation.IntDef
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.component1
@@ -78,9 +77,7 @@ import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
-import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.Input
-import com.tunjid.fingergestures.viewmodels.Tab
+import com.tunjid.fingergestures.viewmodels.*
 import io.reactivex.disposables.CompositeDisposable
 
 class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Navigator.Controller {
@@ -117,10 +114,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
             else R.color.black
         )
 
-    @Retention(AnnotationRetention.SOURCE)
-    @IntDef(STORAGE_CODE, SETTINGS_CODE, ACCESSIBILITY_CODE, DO_NOT_DISTURB_CODE)
-    annotation class PermissionRequest
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -131,7 +124,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
-                if (f is AppFragment) viewModel.onStartChangeDestination()
+                if (f is AppFragment) viewModel.accept(Input.Permission.Action.Clear())
             }
         }, true)
 
@@ -190,10 +183,24 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
             outAnimation = loadAnimation(context, android.R.anim.slide_out_right)
         }
 
-        viewModel.liveState
-            .map(AppState::uiUpdate)
-            .distinctUntilChanged()
-            .observe(this, this::onStateChanged)
+        viewModel.liveState.apply {
+            mapDistinct(AppState::uiUpdate)
+                .observe(this@MainActivity, ::onStateChanged)
+
+            mapDistinct(AppState::permissionState)
+                .mapDistinct(PermissionState::active)
+                .filterUnhandledEvents()
+                .nonNull()
+                .map(Unique<Input.Permission.Request>::item)
+                .observe(this@MainActivity, ::onPermissionClicked)
+
+            mapDistinct(AppState::permissionState)
+                .mapDistinct(PermissionState::prompt)
+                .filterUnhandledEvents()
+                .nonNull()
+                .map(Unique<Int>::item)
+                .observe(this@MainActivity, ::showSnackbar)
+        }
 
         viewModel.shill.observe(this) {
             if (it is Shilling.Quip) binding.upgradePrompt.apply { setText(it.message); isVisible = true }
@@ -226,12 +233,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
     override fun onResume() {
         super.onResume()
-
         billingManager = BillingManager(applicationContext)
-
-        if (!accessibilityServiceEnabled()) viewModel.requestPermission(ACCESSIBILITY_CODE)
-
         uiState = uiState.copy(toolbarInvalidated = true)
+        if (!accessibilityServiceEnabled()) viewModel.accept(Input.Permission.Request.Accessibility)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -283,15 +287,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        viewModel.onPermissionChange(requestCode)?.apply { showSnackbar(this) }
+        Input.Permission.Request.forCode(requestCode)
+            ?.let(Input.Permission.Action::Changed)
+            ?.let(viewModel::accept)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode != STORAGE_CODE || grantResults.isEmpty() || grantResults[0] != PERMISSION_GRANTED)
-            return
-
-        viewModel.onPermissionChange(requestCode)?.apply { showSnackbar(this) }
+        if (requestCode == Input.Permission.Request.Storage.code && grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED) {
+            Input.Permission.Request.forCode(requestCode)
+                ?.let(Input.Permission.Action::Changed)
+                ?.let(viewModel::accept)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -339,22 +346,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
         }
     }
 
-    private fun askForStorage() {
-        showPermissionDialog(R.string.wallpaper_permission_request) { requestPermissions(STORAGE_PERMISSIONS, STORAGE_CODE) }
-    }
-
-    private fun askForSettings() {
-        showPermissionDialog(R.string.settings_permission_request) { startActivityForResult(App.settingsIntent, SETTINGS_CODE) }
-    }
-
-    private fun askForAccessibility() {
-        showPermissionDialog(R.string.accessibility_permissions_request) { startActivityForResult(App.accessibilityIntent, ACCESSIBILITY_CODE) }
-    }
-
-    private fun askForDoNotDisturb() {
-        showPermissionDialog(R.string.do_not_disturb_permissions_request) { startActivityForResult(App.doNotDisturbIntent, DO_NOT_DISTURB_CODE) }
-    }
-
     private fun showPermissionDialog(@StringRes stringRes: Int, yesAction: () -> Unit) {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.permission_required)
@@ -364,14 +355,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
             .show()
     }
 
-    fun onPermissionClicked(permissionRequest: Int) {
+    private fun onPermissionClicked(permissionRequest: Input.Permission.Request) =
         when (permissionRequest) {
-            DO_NOT_DISTURB_CODE -> askForDoNotDisturb()
-            ACCESSIBILITY_CODE -> askForAccessibility()
-            SETTINGS_CODE -> askForSettings()
-            STORAGE_CODE -> askForStorage()
+            Input.Permission.Request.DoNotDisturb -> showPermissionDialog(R.string.do_not_disturb_permissions_request) { startActivityForResult(App.doNotDisturbIntent, Input.Permission.Request.DoNotDisturb.code) }
+            Input.Permission.Request.Accessibility -> showPermissionDialog(R.string.accessibility_permissions_request) { startActivityForResult(App.accessibilityIntent, Input.Permission.Request.Accessibility.code) }
+            Input.Permission.Request.Settings -> showPermissionDialog(R.string.settings_permission_request) { startActivityForResult(App.settingsIntent, Input.Permission.Request.Settings.code) }
+            Input.Permission.Request.Storage -> showPermissionDialog(R.string.wallpaper_permission_request) { requestPermissions(STORAGE_PERMISSIONS, Input.Permission.Request.Storage.code) }
         }
-    }
 
     private fun showLink(textLink: TextLink) {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(textLink.link))
@@ -432,10 +422,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), GlobalUiHost, Na
     }
 
     companion object {
-
-        const val STORAGE_CODE = 100
-        const val SETTINGS_CODE = 200
-        const val ACCESSIBILITY_CODE = 300
         const val DO_NOT_DISTURB_CODE = 400
         private const val IMAGE_SELECTION = "image/*"
 

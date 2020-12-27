@@ -63,7 +63,7 @@ fun BindingViewHolder<ViewholderWallpaperPickBinding>.bind(item: Item.WallpaperP
         currentWallpaper.setImageDrawable(wallpaperManager.drawable)
         wallpaperManager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)
         wallpaperManager.wallpaperInfo
-    } else item.input.accept(Input.Permission.Storage)
+    } else item.input.accept(Input.Permission.Request.Storage)
 
     item.dayFile?.let(mainWallpaper::loadImage)
     item.nightFile?.let(altWallpaper::loadImage)

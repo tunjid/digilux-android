@@ -21,16 +21,10 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
-import androidx.annotation.IntDef
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.activities.MainActivity.Companion.ACCESSIBILITY_CODE
-import com.tunjid.fingergestures.activities.MainActivity.Companion.DO_NOT_DISTURB_CODE
-import com.tunjid.fingergestures.activities.MainActivity.Companion.SETTINGS_CODE
-import com.tunjid.fingergestures.activities.MainActivity.Companion.STORAGE_CODE
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
@@ -40,7 +34,6 @@ import com.tunjid.fingergestures.services.FingerGestureService
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
 import io.reactivex.rxkotlin.addTo
@@ -49,24 +42,45 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 sealed class Input {
-    sealed class Permission(val code: Int) : Input() {
-        object Storage : Permission(STORAGE_CODE)
-        object Settings : Permission(SETTINGS_CODE)
-        object Accessibility : Permission(ACCESSIBILITY_CODE)
-        object DoNotDisturb : Permission(DO_NOT_DISTURB_CODE)
+    sealed class Permission : Input() {
+        sealed class Request(val code: Int) : Permission() {
+            object Storage : Request(100)
+            object Settings : Request(200)
+            object Accessibility : Request(300)
+            object DoNotDisturb : Request(400)
+            companion object  {
+                private val values get() = listOf(Storage, Settings, Accessibility, DoNotDisturb)
+                fun forCode(code: Int) = values.find { it.code == code }
+            }
+        }
+
+        sealed class Action : Permission() {
+            data class Clear(val time: Long = System.currentTimeMillis()) : Action()
+            data class Clicked(val time: Long = System.currentTimeMillis()) : Action()
+            data class Changed(val request: Request) : Action()
+        }
     }
+
     sealed class UiInteraction : Input() {
         data class ShowSheet(val fragment: Fragment) : UiInteraction()
         data class GoPremium(val description: Int) : UiInteraction()
         data class Purchase(val sku: PurchasesManager.Sku) : UiInteraction()
         data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
     }
-    data class PermissionClicked(val permission: Permission): Input()
 }
 
-class AppViewModel(application: Application) : AndroidViewModel(application), Inputs {
+data class Unique<T>(
+    val item: T,
+    val time: Long = System.currentTimeMillis()
+)
 
-    private val interactionRelay = BehaviorProcessor.create<Input.UiInteraction>()
+data class PermissionState(
+    val queue: List<Input.Permission.Request> = listOf(),
+    val active: Unique<Input.Permission.Request>? = null,
+    val prompt: Unique<Int>? = null,
+)
+
+class AppViewModel(application: Application) : AndroidViewModel(application), Inputs {
 
     val liveState: LiveData<AppState> by lazy {
         val popUpGestureConsumer = PopUpGestureConsumer.instance
@@ -79,10 +93,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
             popUpGestureConsumer.popUpActions.listMap(::Action),
             Flowable.just(gestureMapper.actions.asList()).listMap(::Action),
             installedAppsProcessor.startWith(listOf<ApplicationInfo>()).listMap(::Package),
-            permissionsProcessor.debounce(160, TimeUnit.MILLISECONDS).startWith(listOf<Int>()),
+            inputProcessor.filterIsInstance<Input.Permission>().permissionState,
             items,
             ::AppState
-        ).toLiveData()
+        )
+            .toLiveData()
     }
 
     val shill: LiveData<Shilling> by lazy {
@@ -99,9 +114,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
             .toLiveData()
     }
 
-    val uiInteractions = interactionRelay
-        .toLiveData()
-        .filterUnhandledEvents()
+    val uiInteractions by lazy {
+        inputProcessor
+            .filterIsInstance<Input.UiInteraction>()
+            .toLiveData()
+            .filterUnhandledEvents()
+    }
 
     val broadcasts by lazy {
         getApplication<App>().broadcasts()
@@ -114,26 +132,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
     private val quipCounter = AtomicInteger(-1)
 
     private val shillProcessor: PublishProcessor<String> = PublishProcessor.create()
-    private val permissionsProcessor: PublishProcessor<List<Int>> = PublishProcessor.create()
+    private val inputProcessor: PublishProcessor<Input> = PublishProcessor.create()
     private val installedAppsProcessor: PublishProcessor<List<ApplicationInfo>> = PublishProcessor.create()
-
-    private val permissionsQueue: List<Int> get() = liveState.value?.permissionsQueue ?: listOf()
 
     private val disposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCleared() = disposable.clear()
 
-    override fun accept(input: Input): Unit = when (input) {
-        is Input.Permission.Storage -> requestPermission(input.code)
-        is Input.Permission.Settings -> requestPermission(input.code)
-        is Input.Permission.Accessibility -> requestPermission(input.code)
-        is Input.Permission.DoNotDisturb -> requestPermission(input.code)
-        is Input.UiInteraction.ShowSheet -> interactionRelay.onNext(input)
-        is Input.UiInteraction.GoPremium -> interactionRelay.onNext(input)
-        is Input.UiInteraction.Purchase -> interactionRelay.onNext(input)
-        is Input.UiInteraction.WallpaperPick -> interactionRelay.onNext(input)
-        is Input.PermissionClicked -> TODO()
-    }
+    override fun accept(input: Input): Unit = inputProcessor.onNext(input)
 
     fun updateApps() {
         Single.fromCallable {
@@ -148,41 +154,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
 
     fun shillMoar() = shillProcessor.onNext(getNextQuip())
 
-    fun requestPermission(@MainActivity.PermissionRequest permission: Int) {
-        val queue = if (permissionsQueue.contains(permission)) permissionsQueue - permission else permissionsQueue
-        permissionsProcessor.onNext(queue + permission)
-    }
-
-    fun onPermissionClicked(consumer: (Int) -> Unit) {
-        permissionsQueue.lastOrNull()?.let(consumer)
-    }
-
-    fun onPermissionChange(requestCode: Int): Int? {
-        var shouldRemove = false
-        val assigner = { value: Boolean -> shouldRemove = value; value }
-
-        val result = when (requestCode) {
-            STORAGE_CODE ->
-                if (assigner.invoke(App.hasStoragePermission)) R.string.storage_permission_granted
-                else R.string.storage_permission_denied
-            SETTINGS_CODE ->
-                if (assigner.invoke(App.canWriteToSettings())) R.string.settings_permission_granted
-                else R.string.settings_permission_denied
-            ACCESSIBILITY_CODE ->
-                if (assigner.invoke(App.accessibilityServiceEnabled())) R.string.accessibility_permission_granted
-                else R.string.accessibility_permission_denied
-            DO_NOT_DISTURB_CODE ->
-                if (assigner.invoke(App.hasDoNotDisturbAccess())) R.string.do_not_disturb_permission_granted
-                else R.string.do_not_disturb_permission_denied
-            else -> return null
-        }
-
-        if (shouldRemove) removePermission(requestCode)
-        return result
-    }
-
-    fun onStartChangeDestination() = permissionsProcessor.onNext(listOf())
-
     private fun getNextQuip(): String {
         if (quipCounter.incrementAndGet() >= quips.size) quipCounter.set(0)
         return quips[quipCounter.get()]
@@ -191,10 +162,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
     private fun isUserInstalledApp(info: ApplicationInfo): Boolean =
         info.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0 || info.flags and ApplicationInfo.FLAG_SYSTEM == 0
 
-    private fun removePermission(permission: Int) {
-        permissionsProcessor.onNext(permissionsQueue - permission)
-    }
-
     private fun intentMatches(intent: Intent): Boolean {
         val action = intent.action
         return (BackgroundManager.ACTION_EDIT_WALLPAPER == action
@@ -202,18 +169,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
             || BackgroundManager.ACTION_NAV_BAR_CHANGED == action
             || PurchasesManager.ACTION_LOCKED_CONTENT_CHANGED == action)
     }
-
-    @Retention(AnnotationRetention.SOURCE)
-    @IntDef(SLIDER_DELTA, SLIDER_POSITION, SLIDER_DURATION, SLIDER_COLOR, SCREEN_DIMMER,
-        SHOW_SLIDER, USE_LOGARITHMIC_SCALE, ADAPTIVE_BRIGHTNESS,
-        ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS, DOUBLE_SWIPE_SETTINGS, MAP_UP_ICON, MAP_DOWN_ICON,
-        MAP_LEFT_ICON, MAP_RIGHT_ICON, AD_FREE, REVIEW, WALLPAPER_PICKER,
-        WALLPAPER_TRIGGER, ROTATION_LOCK, EXCLUDED_ROTATION_LOCK,
-        ENABLE_WATCH_WINDOWS, POPUP_ACTION, ENABLE_ACCESSIBILITY_BUTTON,
-        ACCESSIBILITY_SINGLE_CLICK, ANIMATES_SLIDER, ANIMATES_POPUP,
-        DISCRETE_BRIGHTNESS, AUDIO_DELTA, AUDIO_STREAM_TYPE, AUDIO_SLIDER_SHOW,
-        NAV_BAR_COLOR, LOCKED_CONTENT, SUPPORT, ROTATION_HISTORY)
-    annotation class AdapterIndex
 
     companion object {
         const val PADDING = -1
@@ -271,4 +226,55 @@ val Context.links
         TextLink(getString(R.string.android_bootstrap), AppViewModel.ANDROID_BOOTSTRAP_LINK)
     )
 
+private val Flowable<Input.Permission>.permissionState
+    get() = filterIsInstance<Input.Permission>()
+        .scan(PermissionState()) { state, permission ->
+            when (permission) {
+                Input.Permission.Request.Storage,
+                Input.Permission.Request.Settings,
+                Input.Permission.Request.Accessibility,
+                Input.Permission.Request.DoNotDisturb -> {
+                    if (permission is Input.Permission.Request) {
+                        val queue = if (state.queue.contains(permission)) state.queue - permission else state.queue
+                        state.copy(queue = queue + permission)
+                    } else state
+                }
+                is Input.Permission.Action.Clear -> state.copy(
+                    queue = listOf()
+                )
+                is Input.Permission.Action.Clicked -> state.copy(
+                    active = state.queue.lastOrNull()?.let(::Unique),
+                    queue = state.queue.dropLast(1)
+                )
+                is Input.Permission.Action.Changed -> {
+                    var shouldRemove = false
+                    val assigner = { value: Boolean -> shouldRemove = value; value }
+
+                    val prompt = when (permission.request) {
+                        Input.Permission.Request.Storage ->
+                            if (assigner.invoke(App.hasStoragePermission)) R.string.storage_permission_granted
+                            else R.string.storage_permission_denied
+                        Input.Permission.Request.Settings ->
+                            if (assigner.invoke(App.canWriteToSettings())) R.string.settings_permission_granted
+                            else R.string.settings_permission_denied
+                        Input.Permission.Request.Accessibility ->
+                            if (assigner.invoke(App.accessibilityServiceEnabled())) R.string.accessibility_permission_granted
+                            else R.string.accessibility_permission_denied
+                        Input.Permission.Request.DoNotDisturb ->
+                            if (assigner.invoke(App.hasDoNotDisturbAccess())) R.string.do_not_disturb_permission_granted
+                            else R.string.do_not_disturb_permission_denied
+                    }
+
+                    state.copy(
+                        prompt = Unique(prompt),
+                        queue =
+                        if (shouldRemove) state.queue - permission.request
+                        else state.queue
+                    )
+                }
+            }
+        }
+
 fun <T, R> Flowable<List<T>>.listMap(mapper: (T) -> R): Flowable<List<R>> = map { it.map(mapper) }
+
+inline fun <reified T> Flowable<*>.filterIsInstance(): Flowable<T> = filter { it is T }.cast(T::class.java)

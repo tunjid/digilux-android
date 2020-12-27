@@ -87,7 +87,7 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.DiscreteB
     this@bind.item = item
 
     listAdapter.submitList(item.brightnesses)
-    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
+    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Request.Settings)
 }
 
 private fun BindingViewHolder<ViewholderHorizontalListBinding>.requestDiscreteValue(builder: MaterialAlertDialogBuilder) {

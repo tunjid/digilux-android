@@ -20,10 +20,11 @@ package com.tunjid.fingergestures.models
 import android.content.pm.ApplicationInfo
 import com.tunjid.androidx.recyclerview.diff.Differentiable
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.MainActivity
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
+import com.tunjid.fingergestures.viewmodels.Input
+import com.tunjid.fingergestures.viewmodels.PermissionState
 
 data class AppState(
     val purchasesState: PurchasesManager.State,
@@ -31,7 +32,7 @@ data class AppState(
     val popUpActions: List<Action> = listOf(),
     val availableActions: List<Action> = listOf(),
     val installedApps: List<Package> = listOf(),
-    val permissionsQueue: List<Int> = listOf(),
+    val permissionState: PermissionState = PermissionState(),
     val items: List<Item> = listOf(),
 )
 
@@ -66,22 +67,22 @@ sealed class Shilling {
 }
 
 val AppState.uiUpdate
-    get() = when (permissionsQueue.lastOrNull()) {
-        MainActivity.DO_NOT_DISTURB_CODE -> UiUpdate(
+    get() = when (permissionState.queue.lastOrNull()) {
+        Input.Permission.Request.DoNotDisturb -> UiUpdate(
             titleRes = R.string.enable_do_not_disturb,
             iconRes = R.drawable.ic_volume_loud_24dp
         )
-        MainActivity.ACCESSIBILITY_CODE -> UiUpdate(
+        Input.Permission.Request.Accessibility -> UiUpdate(
             titleRes = R.string.enable_accessibility,
             iconRes = R.drawable.ic_human_24dp
         )
-        MainActivity.SETTINGS_CODE -> UiUpdate(
+        Input.Permission.Request.Settings -> UiUpdate(
             titleRes = R.string.enable_write_settings,
             iconRes = R.drawable.ic_settings_white_24dp
         )
-        MainActivity.STORAGE_CODE -> UiUpdate(
+        Input.Permission.Request.Storage -> UiUpdate(
             titleRes = R.string.enable_storage_settings,
             iconRes = R.drawable.ic_storage_24dp
         )
         else -> UiUpdate()
-    }.copy(fabVisible = permissionsQueue.isNotEmpty())
+    }.copy(fabVisible = permissionState.queue.isNotEmpty())

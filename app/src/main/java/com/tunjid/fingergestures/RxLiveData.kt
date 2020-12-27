@@ -27,13 +27,16 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 
 fun <T> Flowable<T>.toLiveData(errorHandler: ((Throwable) -> Unit)? = null): LiveData<T> =
-        MainThreadLiveData(this, errorHandler)
+    MainThreadLiveData(this, errorHandler)
 
 fun <T, R> LiveData<T>.map(mapper: (T) -> R): LiveData<R> =
-        Transformations.map(this, mapper)
+    Transformations.map(this, mapper)
 
 fun <T> LiveData<T>.distinctUntilChanged(): LiveData<T> =
-        Transformations.distinctUntilChanged(this)
+    Transformations.distinctUntilChanged(this)
+
+fun <T, R> LiveData<T>.mapDistinct(mapper: (T) -> R): LiveData<R> =
+    map(mapper).distinctUntilChanged()
 
 fun <T> LiveData<T>.filter(predicate: (T) -> Boolean): LiveData<T> {
     val mediator = MediatorLiveData<T>()
@@ -47,6 +50,9 @@ fun <T> LiveData<T>.filterUnhandledEvents(): LiveData<T> =
     map(::LiveDataEvent)
         .filter { !it.hasBeenHandled }
         .map(LiveDataEvent<T>::peekContent)
+
+fun <T> LiveData<T?>.nonNull(): LiveData<T> =
+    filter { it != null }.map { it!! }
 
 private data class LiveDataEvent<out T>(private val content: T) {
 
@@ -70,6 +76,7 @@ private data class LiveDataEvent<out T>(private val content: T) {
      */
     fun peekContent(): T = content
 }
+
 /**
  * [LiveDataReactiveStreams.fromPublisher] uses [LiveData.postValue] internally which swallows
  * emissions if the occur before it can publish them using it's main thread executor.
@@ -78,8 +85,8 @@ private data class LiveDataEvent<out T>(private val content: T) {
  * which does not swallow emissions.
  */
 private class MainThreadLiveData<T>(
-        val source: Flowable<T>,
-        val errorHandler: ((Throwable) -> Unit)? = null
+    val source: Flowable<T>,
+    val errorHandler: ((Throwable) -> Unit)? = null
 ) : LiveData<T>() {
 
     val disposeBag = CompositeDisposable()
@@ -87,12 +94,12 @@ private class MainThreadLiveData<T>(
     override fun onActive() {
         disposeBag.clear()
         source
-                .observeOn(AndroidSchedulers.mainThread())
-                .run {
-                    if (errorHandler == null) subscribe(this@MainThreadLiveData::setValue)
-                    else subscribe(this@MainThreadLiveData::setValue, errorHandler)
-                }
-                .addTo(disposeBag)
+            .observeOn(AndroidSchedulers.mainThread())
+            .run {
+                if (errorHandler == null) subscribe(this@MainThreadLiveData::setValue)
+                else subscribe(this@MainThreadLiveData::setValue, errorHandler)
+            }
+            .addTo(disposeBag)
     }
 
     override fun onInactive() = disposeBag.clear()

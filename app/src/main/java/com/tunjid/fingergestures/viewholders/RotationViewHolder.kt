@@ -74,7 +74,7 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.Rotation)
     add.isVisible = item.preference != null
     listAdapter.submitList(item.items)
 
-    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
+    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Request.Settings)
 }
 
 private fun BindingViewHolder<ViewholderHorizontalListBinding>.onPackageClicked(packageName: String) {

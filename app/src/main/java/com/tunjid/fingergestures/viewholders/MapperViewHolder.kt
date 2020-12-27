@@ -57,8 +57,8 @@ fun BindingViewHolder<ViewholderMapperBinding>.bind(item: Item.Mapper) = binding
         RIGHT_GESTURE -> icon.setImageResource(R.drawable.ic_chevron_right_white_24dp)
     }
 
-    if (!App.accessibilityServiceEnabled()) item.input.accept(Input.Permission.Accessibility)
-    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
+    if (!App.accessibilityServiceEnabled()) item.input.accept(Input.Permission.Request.Accessibility)
+    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Request.Settings)
 
     fun getFormattedText(directionName: String, text: String): CharSequence =
             itemView.context.getString(R.string.mapper_format).formatSpanned(

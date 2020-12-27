@@ -74,7 +74,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
 fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.PopUp) = binding.run {
     this@bind.item = item
 
-    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
+    if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Request.Settings)
     listAdapter.submitList(item.items)
 }
 
@@ -87,7 +87,7 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(a
         else -> builder.setTitle(R.string.popup_remove)
             .setPositiveButton(R.string.yes) { _, _ ->
                 item.editor.removeFromSet(PopUpGestureConsumer.Preference.SavedActions, action.value.toString())
-                if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Settings)
+                if (!App.canWriteToSettings()) item.input.accept(Input.Permission.Request.Settings)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
     }

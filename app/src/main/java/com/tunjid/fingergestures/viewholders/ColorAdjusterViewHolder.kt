@@ -79,7 +79,7 @@ fun BindingViewHolder<ViewholderSliderColorBinding>.bind(item: Item.ColorAdjuste
 
     item.palette?.let(::onPaletteExtracted)
 
-    if (!App.hasStoragePermission) item.input.accept(Input.Permission.Storage)
+    if (!App.hasStoragePermission) item.input.accept(Input.Permission.Request.Storage)
 }
 
 private fun BindingViewHolder<ViewholderSliderColorBinding>.onPaletteExtracted(palette: Palette) {

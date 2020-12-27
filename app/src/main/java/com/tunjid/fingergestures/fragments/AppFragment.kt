@@ -37,11 +37,11 @@ import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.adapters.appAdapter
 import com.tunjid.fingergestures.baseclasses.divider
-import com.tunjid.fingergestures.baseclasses.mainActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.databinding.FragmentHomeBinding
 import com.tunjid.fingergestures.models.InsetFlags
 import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.viewmodels.Input
 import com.tunjid.fingergestures.viewmodels.Tab
 import kotlin.math.abs
 
@@ -62,7 +62,7 @@ class AppFragment : Fragment(R.layout.fragment_home) {
             toolbarTitle = getString(R.string.app_name),
             showsBottomNav = true,
             insetFlags = InsetFlags.NO_BOTTOM,
-            fabClickListener = { viewModel.onPermissionClicked(mainActivity::onPermissionClicked) },
+            fabClickListener = { viewModel.accept(Input.Permission.Action.Clicked()) },
             navBarColor = requireContext().colorAt(
                 if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
                 else R.color.black

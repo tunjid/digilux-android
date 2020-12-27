@@ -39,7 +39,7 @@ fun ViewGroup.audioStream() = viewHolderFrom(ViewholderAudioStreamTypeBinding::i
 fun BindingViewHolder<ViewholderAudioStreamTypeBinding>.bind(item: Item.AudioStream) = binding.run {
     this@bind.item = item
 
-    if (!item.hasDoNotDisturbAccess) item.input.accept(Input.Permission.DoNotDisturb)
+    if (!item.hasDoNotDisturbAccess) item.input.accept(Input.Permission.Request.DoNotDisturb)
 
     radioGroup.check(item.stream.id)
 
