@@ -19,13 +19,16 @@ package com.tunjid.fingergestures.models
 
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.os.Parcelable
 import androidx.fragment.app.Fragment
+import com.android.billingclient.api.BillingClient
 import com.tunjid.androidx.recyclerview.diff.Differentiable
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureAction
+import kotlinx.parcelize.Parcelize
 
 data class AppState(
     val purchasesState: PurchasesManager.State,
@@ -33,20 +36,17 @@ data class AppState(
     val broadcasts: Intent? = null,
     val uiInteraction: Input.UiInteraction,
     val permissionState: PermissionState = PermissionState(),
+    val billingState: BillingState = BillingState(),
     val items: List<Item> = listOf(),
 )
 
 sealed class Input {
     sealed class Permission : Input() {
-        sealed class Request(val code: Int, val prompt: Int) : Permission() {
-            object Storage : Request(100, R.string.wallpaper_permission_request)
-            object Settings : Request(200, R.string.settings_permission_request)
-            object Accessibility : Request(300, R.string.accessibility_permissions_request)
-            object DoNotDisturb : Request(400, R.string.do_not_disturb_permissions_request)
-            companion object {
-                private val values get() = listOf(Storage, Settings, Accessibility, DoNotDisturb)
-                fun forCode(code: Int) = values.find { it.code == code }
-            }
+        sealed class Request(val prompt: Int) : Permission(), Parcelable {
+            @Parcelize object Storage : Request(R.string.wallpaper_permission_request)
+            @Parcelize object Settings : Request(R.string.settings_permission_request)
+            @Parcelize object Accessibility : Request(R.string.accessibility_permissions_request)
+            @Parcelize object DoNotDisturb : Request(R.string.do_not_disturb_permissions_request)
         }
 
         sealed class Action : Permission() {
@@ -60,8 +60,13 @@ sealed class Input {
         object Default : UiInteraction()
         data class ShowSheet(val fragment: Fragment) : UiInteraction()
         data class GoPremium(val description: Int) : UiInteraction()
-        data class Purchase(val sku: PurchasesManager.Sku) : UiInteraction()
+        data class PurchaseResult(val messageRes: Int) : UiInteraction()
         data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
+    }
+
+    sealed class Billing : Input() {
+        data class Client(val client: BillingClient?) : Billing()
+        data class Purchase(val sku: PurchasesManager.Sku) : Billing()
     }
 }
 
@@ -74,6 +79,12 @@ data class PermissionState(
     val queue: List<Input.Permission.Request> = listOf(),
     val active: Unique<Input.Permission.Request>? = null,
     val prompt: Unique<Int>? = null,
+)
+
+data class BillingState(
+    val client: BillingClient? = null,
+    val prompt: Unique<Int>? = null,
+    val cart: Unique<Pair<BillingClient, PurchasesManager.Sku>>? = null
 )
 
 data class Package(val app: ApplicationInfo) : Differentiable {

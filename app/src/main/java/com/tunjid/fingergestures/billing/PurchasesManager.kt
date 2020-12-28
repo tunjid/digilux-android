@@ -17,7 +17,6 @@
 
 package com.tunjid.fingergestures.billing
 
-import android.content.Intent
 import android.text.TextUtils
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
@@ -74,12 +73,9 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
 
     val lockedContentPreference: ReactivePreference<Boolean> = ReactivePreference(
         preferencesName = "has locked content",
-        default = false,
-        onSet = {
-            App.withApp { app -> app.broadcast(Intent(ACTION_LOCKED_CONTENT_CHANGED)) }
-        }
+        default = false
     )
-    private val setManager = SetManager<Purchases, Sku>(
+    private val setManager = SetManager(
         keys = listOf(Purchases),
         sorter = compareBy(Sku::ordinal),
         addFilter = Sku.values().map(Sku::id)::contains,
@@ -178,8 +174,6 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
         private const val FIRST_TRIAL_PERIOD = 60 * 10
         private const val SECOND_TRIAL_PERIOD = 60
         private const val FINAL_TRIAL_PERIOD = 10
-
-        const val ACTION_LOCKED_CONTENT_CHANGED = "com.tunjid.fingergestures.action.lockedContentChanged"
 
         var instance = PurchasesManager()
 

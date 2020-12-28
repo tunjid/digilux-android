@@ -22,15 +22,18 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.models.Input
 
-class PermissionRequestContract : ActivityResultContract<Input.Permission.Request, Input.Permission.Action.Changed?>() {
-    // Super hacky, but I really don't want to have 3 contracts in main activity
-    private var request: Input.Permission.Request? = null
+private var Intent.lastRequest by intentExtras<Input.Permission.Request>()
+
+class PermissionRequestContract(
+    private val cacheProvider: () -> Intent
+) : ActivityResultContract<Input.Permission.Request, Input.Permission.Action.Changed>() {
 
     override fun createIntent(context: Context, input: Input.Permission.Request): Intent {
-        request = input
+        cacheProvider().lastRequest = input
         return when (input) {
             Input.Permission.Request.DoNotDisturb ->
                 ActivityResultContracts.StartActivityForResult().createIntent(context, App.doNotDisturbIntent)
@@ -44,7 +47,6 @@ class PermissionRequestContract : ActivityResultContract<Input.Permission.Reques
         }
     }
 
-    override fun parseResult(resultCode: Int, intent: Intent?): Input.Permission.Action.Changed? {
-        return request?.let(Input.Permission.Action::Changed)
-    }
+    override fun parseResult(resultCode: Int, intent: Intent?): Input.Permission.Action.Changed =
+        Input.Permission.Action.Changed(cacheProvider().lastRequest)
 }

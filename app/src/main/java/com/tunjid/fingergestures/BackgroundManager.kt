@@ -62,9 +62,6 @@ class BackgroundManager private constructor() {
     val coloredNavPreference: ReactivePreference<Boolean> = ReactivePreference(
         preferencesName = "colored nav bar",
         default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P,
-        onSet = {
-            App.transformApp { it.broadcast(Intent(ACTION_NAV_BAR_CHANGED)) }
-        }
     )
 
     val dayWallpaperStatus = WallpaperSelection.Day.wallpaperStatus
@@ -282,7 +279,6 @@ class BackgroundManager private constructor() {
 
     companion object {
         const val ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper"
-        const val ACTION_NAV_BAR_CHANGED = "com.tunjid.fingergestures.action.navBarChanged"
         val instance: BackgroundManager by lazy { BackgroundManager() }
     }
 }

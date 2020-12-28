@@ -22,6 +22,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClientStateListener
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.*
@@ -32,10 +34,14 @@ import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
+import io.reactivex.rxkotlin.addTo
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class AppViewModel(application: Application) : AndroidViewModel(application), Inputs {
+class AppViewModel(
+    app: Application
+) : AndroidViewModel(app), Inputs {
 
     override val dependencies: AppDependencies = AppDependencies(
         backgroundManager = BackgroundManager.instance,
@@ -54,20 +60,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
         )
     )
 
-    val liveState: LiveData<AppState> by lazy {
+    private val backingState by lazy {
         val purchasesManager = PurchasesManager.instance
-
         Flowables.combineLatest(
             purchasesManager.state,
             Flowable.just(getApplication<Application>().links),
             getApplication<App>().broadcasts().filter(::intentMatches).startWith(Intent()),
             inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
-            inputProcessor.filterIsInstance<Input.Permission>().permissionState,
+            inputProcessor.permissionState,
+            inputProcessor.billingState,
             items,
             ::AppState
         )
-            .toLiveData()
     }
+
+    val state: LiveData<AppState> by lazy { backingState.toLiveData() }
 
     val shill: LiveData<Shilling> by lazy {
         PurchasesManager.instance.state
@@ -83,7 +90,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
             .toLiveData()
     }
 
-    private val quips = application.resources.getStringArray(R.array.upsell_text)
+    private val quips = app.resources.getStringArray(R.array.upsell_text)
     private val quipCounter = AtomicInteger(-1)
 
     private val shillProcessor: PublishProcessor<String> = PublishProcessor.create()
@@ -91,7 +98,34 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
 
     private val disposable: CompositeDisposable = CompositeDisposable()
 
-    override fun onCleared() = disposable.clear()
+    override fun onCleared() {
+        disposable.clear()
+        state.value?.billingState?.client?.endConnection()
+    }
+
+    init {
+        val client = BillingClient.newBuilder(app)
+            .setListener(PurchasesManager.instance)
+            .build()
+
+        client.startConnection(object : BillingClientStateListener {
+            override fun onBillingSetupFinished(@BillingClient.BillingResponse billingResponseCode: Int) =
+                accept(Input.Billing.Client(client = client.takeIf { billingResponseCode == BillingClient.BillingResponse.OK }))
+
+            override fun onBillingServiceDisconnected() = accept(Input.Billing.Client(client = null))
+        })
+
+        backingState
+            .map(AppState::billingState)
+            .mapNotNull(BillingState::client)
+            .distinctUntilChanged()
+            .subscribe {
+                val result = it.queryPurchases(BillingClient.SkuType.INAPP)
+                if (result.responseCode != BillingClient.BillingResponse.OK) return@subscribe
+                dependencies.purchasesManager.onPurchasesQueried(result.responseCode, result.purchasesList)
+            }
+            .addTo(disposable)
+    }
 
     override fun accept(input: Input): Unit = inputProcessor.onNext(input)
 
@@ -105,10 +139,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application), In
     private fun intentMatches(intent: Intent): Boolean {
         val action = intent.action
         return (BackgroundManager.ACTION_EDIT_WALLPAPER == action
-            || FingerGestureService.ACTION_SHOW_SNACK_BAR == action
-            || BackgroundManager.ACTION_NAV_BAR_CHANGED == action
-            || PurchasesManager.ACTION_LOCKED_CONTENT_CHANGED == action)
+            || FingerGestureService.ACTION_SHOW_SNACK_BAR == action)
     }
+
+//    private fun consume(purchaseToken: String) {
+//        billingClient.consumeAsync(purchaseToken) { _, _ -> }
+//    }
+//
+//    private fun consumeAll() {
+//        PurchasesManager.instance.clearPurchases()
+//        val result = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
+//        if (billingClient == null || result.responseCode != BillingClient.BillingResponse.OK) return
+//        for (item in result.purchasesList) consume(item.purchaseToken)
+//    }
 
     companion object {
         const val PADDING = -1
@@ -166,7 +209,7 @@ val Context.links
         TextLink(getString(R.string.android_bootstrap), AppViewModel.ANDROID_BOOTSTRAP_LINK)
     )
 
-private val Flowable<Input.Permission>.permissionState
+private val Flowable<Input>.permissionState
     get() = filterIsInstance<Input.Permission>()
         .scan(PermissionState()) { state, permission ->
             when (permission) {
@@ -213,6 +256,26 @@ private val Flowable<Input.Permission>.permissionState
             }
         }
 
-fun <T, R> Flowable<List<T>>.listMap(mapper: (T) -> R): Flowable<List<R>> = map { it.map(mapper) }
+private val Flowable<Input>.billingState
+    get() = filterIsInstance<Input.Billing>()
+        .scan(BillingState()) { state, item ->
+            when (item) {
+                is Input.Billing.Client -> state.copy(client = item.client)
+                is Input.Billing.Purchase -> when (val client = state.client) {
+                    null -> state.copy(prompt = Unique(R.string.billing_not_connected))
+                    else -> state.copy(cart = Unique(client to item.sku))
+                }
+            }
+        }
 
-inline fun <reified T> Flowable<*>.filterIsInstance(): Flowable<T> = filter { it is T }.cast(T::class.java)
+fun <T, R> Flowable<List<T>>.listMap(mapper: (T) -> R): Flowable<List<R>> =
+    map { it.map(mapper) }
+
+fun <T : Any, R> Flowable<T>.mapNotNull(mapper: (T) -> R?): Flowable<R> =
+    map { Optional.ofNullable(mapper(it)) }
+        .filter(Optional<R>::isPresent)
+        .map(Optional<R>::get)
+
+inline fun <reified T> Flowable<*>.filterIsInstance(): Flowable<T> =
+    filter { it is T }
+        .cast(T::class.java)

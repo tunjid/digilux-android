@@ -47,7 +47,7 @@ fun Fragment.divider(): RecyclerView.ItemDecoration {
 }
 
 interface BottomSheetController {
-    val bottomSheetNavigator: BottomSheetNavigator?
+    val bottomSheetNavigator: BottomSheetNavigator
 }
 
 /**
