@@ -209,16 +209,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val trialItem = menu.findItem(R.id.action_start_trial)
         val trialBinding = TrialViewBinding.bind(trialItem.actionView)
 
-        trialBinding.icon.setOnClickListener {
-            val purchaseState = viewModel.state.value?.purchasesState
-            val isTrialRunning = purchaseState?.isOnTrial == true
+        val purchaseState = viewModel.state.value?.purchasesState
+        val isTrialRunning = purchaseState?.isOnTrial == true
 
+        if (!isTrialRunning) trialBinding.icon.setOnClickListener {
             MaterialAlertDialogBuilder(this).apply {
                 setTitle(R.string.app_name)
                 setMessage(purchaseState?.trialPeriodText ?: "")
                 setItems(links) { _, index -> showLink(links[index]) }
-                if (!isTrialRunning)
-                    setPositiveButton(android.R.string.yes) { _, _ -> viewModel.accept(Input.StartTrial) }
+                setPositiveButton(android.R.string.yes) { _, _ -> viewModel.accept(Input.StartTrial) }
                 show()
             }
         }
@@ -233,7 +232,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             R.id.action_slider,
             R.id.action_audio,
             R.id.action_accessibility_popup,
-            R.id.action_wallpaper -> Tab.at(id).ordinal.let(navigator::show)
+            R.id.action_wallpaper -> Tab.values()
+                .firstOrNull { it.resource == id }
+                ?.ordinal
+                ?.let(navigator::show)
             R.id.info -> MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.open_source_libraries)
                 .setItems(links) { _, index -> showLink(links[index]) }

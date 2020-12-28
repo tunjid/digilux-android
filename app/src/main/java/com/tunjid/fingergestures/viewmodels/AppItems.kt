@@ -31,10 +31,6 @@ enum class Tab(val resource: Int) {
     Audio(R.id.action_audio),
     Shortcuts(R.id.action_accessibility_popup),
     Display(R.id.action_wallpaper);
-
-    companion object {
-        fun at(id: Int) = values().first { it.resource == id }
-    }
 }
 
 interface Inputs {

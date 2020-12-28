@@ -270,7 +270,7 @@
     <string name="appearance">Display</string>
 
     <!-- Trial-->
-    <string name="trial_text">Start trial for %1$s? Swipe to dismiss.</string>
+    <string name="trial_text">Start trial for %1$s?</string>
     <string name="trial_running">Trial is already running.</string>
 
     <!-- Upsell text-->
