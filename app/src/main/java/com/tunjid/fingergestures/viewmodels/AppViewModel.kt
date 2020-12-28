@@ -20,7 +20,6 @@ package com.tunjid.fingergestures.viewmodels
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.tunjid.fingergestures.*
@@ -30,12 +29,9 @@ import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.models.Shilling.Quip
 import com.tunjid.fingergestures.services.FingerGestureService
 import io.reactivex.Flowable
-import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
