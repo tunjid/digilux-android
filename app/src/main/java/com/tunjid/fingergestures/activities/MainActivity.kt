@@ -70,7 +70,6 @@ import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKE
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.*
-import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.viewmodels.*
@@ -330,11 +329,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun onPermissionClicked(permissionRequest: Input.Permission.Request) =
-        when (permissionRequest) {
-            Input.Permission.Request.DoNotDisturb -> showPermissionDialog(R.string.do_not_disturb_permissions_request) { startActivityForResult(App.doNotDisturbIntent, Input.Permission.Request.DoNotDisturb.code) }
-            Input.Permission.Request.Accessibility -> showPermissionDialog(R.string.accessibility_permissions_request) { startActivityForResult(App.accessibilityIntent, Input.Permission.Request.Accessibility.code) }
-            Input.Permission.Request.Settings -> showPermissionDialog(R.string.settings_permission_request) { startActivityForResult(App.settingsIntent, Input.Permission.Request.Settings.code) }
-            Input.Permission.Request.Storage -> showPermissionDialog(R.string.wallpaper_permission_request) { requestPermissions(STORAGE_PERMISSIONS, Input.Permission.Request.Storage.code) }
+        showPermissionDialog(permissionRequest.prompt) {
+            when (permissionRequest) {
+                Input.Permission.Request.DoNotDisturb -> startActivityForResult(App.doNotDisturbIntent, permissionRequest.code)
+                Input.Permission.Request.Accessibility -> startActivityForResult(App.accessibilityIntent, permissionRequest.code)
+                Input.Permission.Request.Settings -> startActivityForResult(App.settingsIntent, permissionRequest.code)
+                Input.Permission.Request.Storage -> requestPermissions(STORAGE_PERMISSIONS, permissionRequest.code)
+            }
         }
 
     private fun onUiInteraction(it: Input.UiInteraction) {

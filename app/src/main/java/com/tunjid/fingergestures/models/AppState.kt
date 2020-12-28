@@ -38,11 +38,11 @@ data class AppState(
 
 sealed class Input {
     sealed class Permission : Input() {
-        sealed class Request(val code: Int) : Permission() {
-            object Storage : Request(100)
-            object Settings : Request(200)
-            object Accessibility : Request(300)
-            object DoNotDisturb : Request(400)
+        sealed class Request(val code: Int, val prompt: Int) : Permission() {
+            object Storage : Request(100, R.string.wallpaper_permission_request)
+            object Settings : Request(200, R.string.settings_permission_request)
+            object Accessibility : Request(300, R.string.accessibility_permissions_request)
+            object DoNotDisturb : Request(400, R.string.do_not_disturb_permissions_request)
             companion object {
                 private val values get() = listOf(Storage, Settings, Accessibility, DoNotDisturb)
                 fun forCode(code: Int) = values.find { it.code == code }
