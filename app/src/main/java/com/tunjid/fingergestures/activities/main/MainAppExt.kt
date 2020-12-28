@@ -82,6 +82,12 @@ fun MainApp.observe(state: LiveData<AppState>) = with(state) {
         .map(Unique<Pair<BillingClient, PurchasesManager.Sku>>::item)
         .filterUnhandledEvents()
         .observe(this@observe, ::purchase)
+
+    mapDistinct(AppState::purchasesState)
+        .filterUnhandledEvents()
+        .observe(this@observe) {
+            ::uiState.updatePartial { copy(toolbarInvalidated = true) }
+        }
 }
 
 fun MainApp.cropImage(result: Pair<WallpaperSelection, Uri>) {

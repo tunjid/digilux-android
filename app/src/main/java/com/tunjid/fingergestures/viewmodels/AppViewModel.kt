@@ -61,9 +61,8 @@ class AppViewModel(
     )
 
     private val backingState by lazy {
-        val purchasesManager = PurchasesManager.instance
         Flowables.combineLatest(
-            purchasesManager.state,
+            dependencies.purchasesManager.state,
             Flowable.just(getApplication<Application>().links),
             getApplication<App>().broadcasts().filter(::intentMatches).startWith(Intent()),
             inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
@@ -77,7 +76,7 @@ class AppViewModel(
     val state: LiveData<AppState> by lazy { backingState.toLiveData() }
 
     val shill: LiveData<Shilling> by lazy {
-        PurchasesManager.instance.state
+        dependencies.purchasesManager.state
             .map(PurchasesManager.State::hasAds)
             .distinctUntilChanged()
             .switchMap {
@@ -124,6 +123,11 @@ class AppViewModel(
                 if (result.responseCode != BillingClient.BillingResponse.OK) return@subscribe
                 dependencies.purchasesManager.onPurchasesQueried(result.responseCode, result.purchasesList)
             }
+            .addTo(disposable)
+
+        inputProcessor
+            .filterIsInstance<Input.StartTrial>()
+            .subscribe { dependencies.purchasesManager.startTrial() }
             .addTo(disposable)
     }
 

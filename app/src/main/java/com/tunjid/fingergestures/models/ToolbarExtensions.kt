@@ -12,13 +12,9 @@ import androidx.core.view.forEach
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import com.tunjid.androidx.core.content.colorAt
-import com.tunjid.androidx.core.content.unwrapActivity
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.androidx.core.text.color
-import com.tunjid.androidx.navigation.MultiStackNavigator
-import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.models.GlobalUiController
 
 internal fun Toolbar.updatePartial(toolbarState: ToolbarState) {
     val (@MenuRes menu: Int, title: CharSequence, invalidatedAlone: Boolean) = toolbarState
@@ -29,8 +25,8 @@ internal fun Toolbar.updatePartial(toolbarState: ToolbarState) {
         // We only want to animate the title, but it's lazy initialized.
         // If it's there, use it, else fuzzy match to it's initialization
         val titleTextView = children.filterIsInstance<TextView>()
-                .filter { it.text?.toString() == currentTitle }
-                .firstOrNull()
+            .filter { it.text?.toString() == currentTitle }
+            .firstOrNull()
         if (titleTextView != null) addTarget(titleTextView) else addTarget(TextView::class.java)
     })
 
@@ -44,7 +40,7 @@ private fun Toolbar.refreshMenu(menu: Int? = null) {
         this.menu.clear()
         if (menu != 0) inflateMenu(menu)
     }
-    uiState?.toolbarMenuRefresher?.invoke(this.menu)
+    uiState.toolbarMenuRefresher.invoke(this.menu)
 }
 
 private fun Toolbar.updateIcons() {
@@ -63,18 +59,6 @@ private fun Toolbar.updateIcons() {
 private val Toolbar.titleTint: Int
     get() = (title as? Spanned)?.run {
         getSpans(0, title.length, ForegroundColorSpan::class.java)
-                .firstOrNull()
-                ?.foregroundColor
+            .firstOrNull()
+            ?.foregroundColor
     } ?: context.colorAt(R.color.toggle_text)
-
-private val Toolbar.navigator: Navigator?
-    get() {
-        val controller = context.unwrapActivity as? Navigator.Controller ?: return null
-        return (controller.navigator as? MultiStackNavigator)?.activeNavigator
-    }
-
-private val Toolbar.uiState: UiState?
-    get() {
-        val controller = context.unwrapActivity as? GlobalUiController ?: return null
-        return controller.uiState
-    }

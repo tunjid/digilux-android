@@ -68,6 +68,8 @@ sealed class Input {
         data class Client(val client: BillingClient?) : Billing()
         data class Purchase(val sku: PurchasesManager.Sku) : Billing()
     }
+
+    object StartTrial: Input()
 }
 
 data class Unique<T>(

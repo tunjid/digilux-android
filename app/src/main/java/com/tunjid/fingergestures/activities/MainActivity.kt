@@ -44,9 +44,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE
-import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
-import com.google.android.material.snackbar.Snackbar
 import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.navigation.MultiStackNavigator
 import com.tunjid.androidx.navigation.Navigator
@@ -56,14 +53,16 @@ import com.tunjid.androidx.uidrivers.updatePartial
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
 import com.tunjid.fingergestures.BackgroundManager
+import com.tunjid.fingergestures.CheatSheet
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.TrialView
 import com.tunjid.fingergestures.activities.main.MainApp
 import com.tunjid.fingergestures.activities.main.cropImage
 import com.tunjid.fingergestures.activities.main.observe
 import com.tunjid.fingergestures.baseclasses.BottomSheetNavigator
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.billing.TrialStatus
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
+import com.tunjid.fingergestures.databinding.TrialViewBinding
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
@@ -133,12 +132,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         )
     }
 
-    private val navBarColor: Int
-        get() = colorAt(
-            if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
-            else R.color.black
-        )
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -148,6 +141,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             toolbarOverlaps = true,
             toolbarMenuRes = R.menu.activity_main,
             toolbarMenuRefresher = ::refreshToolbarMenu,
+            toolbarMenuClickListener = ::onMenuItemSelected,
             toolbarTitle = getString(R.string.app_name),
             showsBottomNav = true,
             insetFlags = InsetFlags.NO_BOTTOM,
@@ -212,30 +206,29 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun refreshToolbarMenu(menu: Menu) {
-        val item = menu.findItem(R.id.action_start_trial)
-        val isTrialVisible = !PurchasesManager.instance.isPremiumNotTrial
+        val trialItem = menu.findItem(R.id.action_start_trial)
+        val trialBinding = TrialViewBinding.bind(trialItem.actionView)
 
-        if (item != null) item.isVisible = isTrialVisible
-        if (isTrialVisible && item != null) item.actionView = TrialView(this, item)
+        trialBinding.icon.setOnClickListener {
+            val purchaseState = viewModel.state.value?.purchasesState
+            val isTrialRunning = purchaseState?.isOnTrial == true
+
+            MaterialAlertDialogBuilder(this).apply {
+                setTitle(R.string.app_name)
+                setMessage(purchaseState?.trialPeriodText ?: "")
+                setItems(links) { _, index -> showLink(links[index]) }
+                if (!isTrialRunning)
+                    setPositiveButton(android.R.string.yes) { _, _ -> viewModel.accept(Input.StartTrial) }
+                show()
+            }
+        }
+
+        CheatSheet.setup(trialBinding.root, trialItem.title)
+        viewModel.state.value?.purchasesState?.let(trialBinding::bind)
     }
 
     private fun onMenuItemSelected(item: MenuItem) {
         when (val id = item.itemId) {
-            R.id.action_start_trial -> {
-                val purchasesManager = PurchasesManager.instance
-                val isTrialRunning = purchasesManager.isTrialRunning
-
-                withSnackbar { snackbar ->
-                    snackbar.setText(viewModel.state.value?.purchasesState?.trialPeriodText
-                        ?: "")
-                    snackbar.duration = if (isTrialRunning) LENGTH_SHORT else LENGTH_INDEFINITE
-
-                    if (!isTrialRunning)
-                        snackbar.setAction(android.R.string.yes) { purchasesManager.startTrial(); recreate() }
-
-                    snackbar.show()
-                }
-            }
             R.id.action_directions,
             R.id.action_slider,
             R.id.action_audio,
@@ -305,10 +298,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         })
         binding.upgradePrompt.visibility = View.GONE
     }
+}
 
-    private fun withSnackbar(consumer: (Snackbar) -> Unit) {
-        val snackbar = Snackbar.make(binding.root, R.string.app_name, Snackbar.LENGTH_SHORT)
-        snackbar.view.setOnApplyWindowInsetsListener { _, insets -> insets }
-        consumer.invoke(snackbar)
-    }
+private fun TrialViewBinding.bind(state: PurchasesManager.State) {
+    icon.isVisible = !state.isOnTrial
+    text.isVisible = state.isOnTrial
+
+    if (state.trialStatus is TrialStatus.Trial) text.text = state.trialStatus.countDown.toString()
 }
