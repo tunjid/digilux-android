@@ -48,8 +48,8 @@ import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.navigation.MultiStackNavigator
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.multiStackNavigationController
-import com.tunjid.androidx.uidrivers.UiState
-import com.tunjid.androidx.uidrivers.updatePartial
+import com.tunjid.fingergestures.models.UiState
+import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
 import com.tunjid.fingergestures.BackgroundManager

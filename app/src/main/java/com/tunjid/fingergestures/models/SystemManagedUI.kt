@@ -1,4 +1,4 @@
-package com.tunjid.androidx.uidrivers
+package com.tunjid.fingergestures.models
 
 import android.view.WindowInsets
 

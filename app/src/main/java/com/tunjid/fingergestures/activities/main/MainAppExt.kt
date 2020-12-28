@@ -30,8 +30,8 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
-import com.tunjid.androidx.uidrivers.UiState
-import com.tunjid.androidx.uidrivers.updatePartial
+import com.tunjid.fingergestures.models.UiState
+import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.BottomSheetController
 import com.tunjid.fingergestures.billing.PurchasesManager

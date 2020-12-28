@@ -25,8 +25,8 @@ import androidx.fragment.app.activityViewModels
 import com.tunjid.androidx.core.delegates.fragmentArgs
 import com.tunjid.androidx.recyclerview.addScrollListener
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
-import com.tunjid.androidx.uidrivers.uiState
-import com.tunjid.androidx.uidrivers.updatePartial
+import com.tunjid.fingergestures.models.uiState
+import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.appAdapter
 import com.tunjid.fingergestures.baseclasses.divider

@@ -1,4 +1,4 @@
-package com.tunjid.androidx.uidrivers
+package com.tunjid.fingergestures.models
 
 import android.content.res.ColorStateList
 import android.text.Spanned
@@ -14,6 +14,8 @@ import androidx.transition.TransitionManager
 import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.androidx.core.text.color
+import com.tunjid.fingergestures.models.ToolbarState
+import com.tunjid.fingergestures.models.uiState
 import com.tunjid.fingergestures.R
 
 internal fun Toolbar.updatePartial(toolbarState: ToolbarState) {

@@ -36,8 +36,8 @@ import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
-import com.tunjid.androidx.uidrivers.uiState
-import com.tunjid.androidx.uidrivers.updatePartial
+import com.tunjid.fingergestures.models.uiState
+import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R

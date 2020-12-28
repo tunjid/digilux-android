@@ -28,7 +28,7 @@ import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.tunjid.androidx.navigation.Navigator
-import com.tunjid.androidx.uidrivers.liveUiState
+import com.tunjid.fingergestures.models.liveUiState
 import com.tunjid.androidx.view.util.marginLayoutParams
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
