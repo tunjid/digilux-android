@@ -16,10 +16,10 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/seekbar_background"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/slider_background"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/single_margin"
@@ -38,22 +38,23 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_settings_white_24dp" />
 
-    <SeekBar
-        android:id="@+id/seekbar"
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slider"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:paddingBottom="@dimen/single_margin"
         android:paddingTop="@dimen/single_margin"
-        app:layout_constraintBottom_toTopOf="@+id/seekbar_text"
+        android:paddingBottom="@dimen/single_margin"
+        android:valueFrom="0.0"
+        android:valueTo="100.0"
         app:layout_constraintLeft_toRightOf="@+id/go_to_settings"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <TextView
-        android:id="@+id/seekbar_text"
+        android:id="@+id/slider_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -62,5 +63,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/seekbar" />
+        app:layout_constraintTop_toBottomOf="@+id/slider" />
 </androidx.constraintlayout.widget.ConstraintLayout>
