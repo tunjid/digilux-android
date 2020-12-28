@@ -70,6 +70,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKE
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.*
+import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.viewmodels.*

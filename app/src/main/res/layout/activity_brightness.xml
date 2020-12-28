@@ -27,6 +27,7 @@
     tools:context=".activities.BrightnessActivity">
 
     <include
+        android:id="@+id/controls"
         layout="@layout/brightness_slider"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

@@ -18,61 +18,96 @@
 package com.tunjid.fingergestures.activities
 
 import android.content.Intent
-import android.graphics.PorterDuff.Mode.SRC_IN
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.SeekBar
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.graphics.BlendModeColorFilterCompat
+import androidx.core.graphics.BlendModeCompat
+import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
+import com.tunjid.fingergestures.databinding.ActivityBrightnessBinding
+import com.tunjid.fingergestures.filter
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.CURRENT_BRIGHTNESS_BYTE
+import com.tunjid.fingergestures.mapDistinct
+import com.tunjid.fingergestures.viewmodels.BrightnessViewModel
+import com.tunjid.fingergestures.viewmodels.In
+import com.tunjid.fingergestures.viewmodels.State
 
-class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
-
-    private var brightnessByte: Int = 0
-
-    private lateinit var seekBar: SeekBar
-    private lateinit var seekBarText: TextView
-    private lateinit var seekBarBackground: ViewGroup
-
-    private lateinit var brightnessGestureConsumer: BrightnessGestureConsumer
+class BrightnessActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
+    private val viewModel by viewModels<BrightnessViewModel>()
+    private val binding by lazy { ActivityBrightnessBinding.inflate(layoutInflater) }
+    private val ownerAndRegistry = lifecycleOwnerAndRegistry()
+    private val dialogLifecycleOwner = ownerAndRegistry.first
+    private val dialogLifecycleRegistry = ownerAndRegistry.second
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_brightness)
+        setContentView(binding.root)
 
-        brightnessGestureConsumer = BrightnessGestureConsumer.instance
+        dialogLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
-        val sliderColor = backgroundManager.sliderColorPreference.value
-        val sliderBackgroundColor = backgroundManager.backgroundColorPreference.value
+        window.apply {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
 
-        val layout = findViewById<ConstraintLayout>(R.id.constraint_layout)
-        seekBarBackground = findViewById(R.id.seekbar_background)
-        seekBar = findViewById(R.id.seekbar)
-        seekBarText = findViewById(R.id.seekbar_text)
-        val settingsIcon = findViewById<ImageView>(R.id.go_to_settings)
+        val controls = binding.controls
+        controls.seekbar.setOnSeekBarChangeListener(this)
 
-        seekBarText.setTextColor(sliderColor)
-        seekBar.thumb.setColorFilter(sliderColor, SRC_IN)
-        seekBar.progressDrawable.setColorFilter(sliderColor, SRC_IN)
-        settingsIcon.setImageDrawable(drawableAt(R.drawable.ic_settings_white_24dp)?.withTint(sliderColor))
-        seekBarBackground.background = drawableAt(R.drawable.color_indicator)?.withTint(sliderBackgroundColor)
+        viewModel.state.apply {
+            mapDistinct(State::sliderColor)
+                .observe(dialogLifecycleOwner) { sliderColor ->
+                    controls.seekbarText.setTextColor(sliderColor)
+                    controls.seekbar.thumb.colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(sliderColor, BlendModeCompat.SRC_IN)
+                    controls.seekbar.progressDrawable.colorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(sliderColor, BlendModeCompat.SRC_IN)
+                    controls.goToSettings.setImageDrawable(drawableAt(R.drawable.ic_settings_white_24dp)
+                        ?.withTint(sliderColor))
+                }
+            mapDistinct(State::backgroundColor)
+                .observe(dialogLifecycleOwner) { backgroundColor ->
+                    controls.seekbarBackground.background = drawableAt(R.drawable.color_indicator)
+                        ?.withTint(backgroundColor)
+                }
+            mapDistinct(State::verticalBias)
+                .observe(dialogLifecycleOwner) { verticalBias ->
+                    val layout = binding.constraintLayout
 
-        val set = ConstraintSet()
-        set.clone(layout)
-        set.setVerticalBias(seekBarBackground.id, brightnessGestureConsumer.positionPreference.value / 100f)
-        set.applyTo(layout)
+                    val set = ConstraintSet()
+                    set.clone(layout)
+                    set.setVerticalBias(controls.seekbarBackground.id, verticalBias)
+                    set.applyTo(layout)
+                }
+            mapDistinct(State::showDimmerText)
+                .observe(dialogLifecycleOwner, controls.seekbarText::isVisible::set)
 
-        layout.setOnClickListener { finish() }
-        settingsIcon.setOnClickListener { startActivity(Intent(this, MainActivity::class.java)) }
+            filter(State::showDimmerText)
+                .mapDistinct(State::dimmerPercent)
+                .observe(dialogLifecycleOwner) {
+                    binding.controls.seekbarText.text = getString(R.string.screen_dimmer_value, it)
+                }
+            mapDistinct(State::initialProgress)
+                .observe(dialogLifecycleOwner) {
+                    binding.controls.seekbar.setProgress(it, true)
+                }
+            filter(State::completed)
+                .observe(dialogLifecycleOwner) { finish() }
+        }
+
+        binding.constraintLayout.setOnClickListener { finish() }
+        controls.goToSettings.setOnClickListener { startActivity(Intent(this, MainActivity::class.java)) }
 
         handleIntent(intent)
     }
@@ -84,59 +119,46 @@ class BrightnessActivity : TimedActivity(), SeekBar.OnSeekBarChangeListener {
 
     override fun onResume() {
         super.onResume()
-        if (brightnessGestureConsumer.animateSliderPreference.value)
+        if (viewModel.state.value?.animateSlide == true)
             overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_up)
+    }
+
+    override fun onDestroy() {
+        dialogLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        super.onDestroy()
     }
 
     override fun finish() {
         super.finish()
-
-        val animateSlide = brightnessGestureConsumer.animateSliderPreference.value
-        if (animateSlide)
-            overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_down)
-        else
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        when (viewModel.state.value?.animateSlide) {
+            true -> overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_down)
+            else -> overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
     }
 
     override fun onProgressChanged(seekBar: SeekBar, percentage: Int, fromUser: Boolean) {
-        var value = percentage
-        updateEndTime()
-
         if (!fromUser) return
-        if (value == 100) value--
 
-        brightnessByte = brightnessGestureConsumer.percentToByte(value)
-        brightnessGestureConsumer.saveBrightness(brightnessByte)
+        viewModel.accept(In.Change(percentage))
 
-        if (seekBarText.visibility != View.VISIBLE) return
+        if (binding.controls.seekbarText.visibility != View.VISIBLE) return
 
-        TransitionManager.beginDelayedTransition(seekBarBackground, AutoTransition())
-        seekBarText.visibility = View.GONE
+        TransitionManager.beginDelayedTransition(binding.controls.seekbarBackground, AutoTransition())
+        binding.controls.seekbarText.isVisible = false
     }
 
     private fun handleIntent(intent: Intent) {
-        TransitionManager.beginDelayedTransition(seekBarBackground, AutoTransition())
-
-        brightnessByte = intent.getIntExtra(CURRENT_BRIGHTNESS_BYTE, 0)
-        val percentage = brightnessGestureConsumer.byteToPercentage(brightnessByte)
-
-        seekBar.setProgress(percentage, true)
-        seekBar.setOnSeekBarChangeListener(this)
-
-        val showDimmer = brightnessGestureConsumer.shouldShowDimmer()
-        seekBarText.visibility = if (showDimmer) View.VISIBLE else View.GONE
-
-        if (showDimmer) {
-            val dimmerPercent = brightnessGestureConsumer.screenDimmerPercentPreference.value * 100f
-            seekBarText.text = getString(R.string.screen_dimmer_value, dimmerPercent)
-        }
-
-        waitToFinish()
+        TransitionManager.beginDelayedTransition(binding.controls.seekbarBackground, AutoTransition())
+        val brightnessByte = intent.getIntExtra(CURRENT_BRIGHTNESS_BYTE, 0)
+        viewModel.accept(In.Start(brightnessByte))
     }
 
-    override fun onStartTrackingTouch(seekBar: SeekBar) {
-        brightnessGestureConsumer.removeDimmer()
-    }
+    override fun onStartTrackingTouch(seekBar: SeekBar) = viewModel.accept(In.RemoveDimmer)
 
-    override fun onStopTrackingTouch(seekBar: SeekBar) {}
+    override fun onStopTrackingTouch(seekBar: SeekBar) = Unit
 }
+
+private fun lifecycleOwnerAndRegistry() = with(object : LifecycleOwner {
+    val registry = LifecycleRegistry(this)
+    override fun getLifecycle(): Lifecycle = registry
+}) { this to registry }
