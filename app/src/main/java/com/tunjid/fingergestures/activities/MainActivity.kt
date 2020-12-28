@@ -17,10 +17,8 @@
 
 package com.tunjid.fingergestures.activities
 
-import android.Manifest
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
-import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -34,6 +32,7 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.animation.AnimationUtils.loadAnimation
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -70,6 +69,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager.Companion.ACTION_LOCKE
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.*
+import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ACTION_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.EXTRA_SHOW_SNACK_BAR
 import com.tunjid.fingergestures.viewmodels.*
@@ -89,6 +89,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private val viewModel by viewModels<AppViewModel>()
 
     private val links get() = (viewModel.liveState.value?.links ?: listOf()).toTypedArray()
+
+    private val permissionContract = registerForActivityResult(PermissionRequestContract()) {
+        navigator.current?.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) {
+            it?.let(viewModel::accept)
+        }
+    }
+
+    private val wallpaperRequestContract = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        navigator.current?.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) {
+        }
+    }
 
     private val bottomNavBackground by lazy {
         val primary = colorAt(R.color.colorPrimary)
@@ -259,25 +270,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onPause()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        navigator.current?.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) {
-            Input.Permission.Request.forCode(requestCode)
-                ?.let(Input.Permission.Action::Changed)
-                ?.let(viewModel::accept)
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == Input.Permission.Request.Storage.code && grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED)
-            navigator.current?.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) {
-                Input.Permission.Request.forCode(requestCode)
-                    ?.let(Input.Permission.Action::Changed)
-                    ?.let(viewModel::accept)
-            }
-    }
-
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
@@ -330,12 +322,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private fun onPermissionClicked(permissionRequest: Input.Permission.Request) =
         showPermissionDialog(permissionRequest.prompt) {
-            when (permissionRequest) {
-                Input.Permission.Request.DoNotDisturb -> startActivityForResult(App.doNotDisturbIntent, permissionRequest.code)
-                Input.Permission.Request.Accessibility -> startActivityForResult(App.accessibilityIntent, permissionRequest.code)
-                Input.Permission.Request.Settings -> startActivityForResult(App.settingsIntent, permissionRequest.code)
-                Input.Permission.Request.Storage -> requestPermissions(STORAGE_PERMISSIONS, permissionRequest.code)
-            }
+            permissionContract.launch(permissionRequest)
         }
 
     private fun onUiInteraction(it: Input.UiInteraction) {
@@ -394,11 +381,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    fun showSnackbar(@StringRes resource: Int) = globalUiController::uiState.updatePartial {
+    private fun showSnackbar(@StringRes resource: Int) = globalUiController::uiState.updatePartial {
         copy(snackbarText = getText(resource))
     }
 
-    fun purchase(sku: PurchasesManager.Sku) = when (val billingManager = billingManager) {
+   private fun purchase(sku: PurchasesManager.Sku) = when (val billingManager = billingManager) {
         null -> showSnackbar(R.string.generic_error)
         else -> disposables.add(billingManager.initiatePurchaseFlow(this, sku)
             .subscribe({ launchStatus ->
@@ -420,5 +407,3 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 }
 
 private const val IMAGE_SELECTION = "image/*"
-
-private val STORAGE_PERMISSIONS = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
