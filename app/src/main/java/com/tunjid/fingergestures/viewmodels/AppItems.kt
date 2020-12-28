@@ -34,7 +34,6 @@ enum class Tab(val resource: Int) {
 }
 
 interface Inputs {
-
     val dependencies: AppDependencies
 
     fun accept(input: Input)

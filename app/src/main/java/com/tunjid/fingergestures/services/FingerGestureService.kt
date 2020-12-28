@@ -74,7 +74,7 @@ class FingerGestureService : AccessibilityService() {
 
     private val accessibilityButtonCallback = object : AccessibilityButtonCallback() {
         override fun onClicked(controller: AccessibilityButtonController) =
-                PopUpGestureConsumer.instance.showPopup()
+            PopUpGestureConsumer.instance.showPopup()
     }
 
     private val screenWakeReceiver = object : BroadcastReceiver() {
@@ -139,12 +139,13 @@ class FingerGestureService : AccessibilityService() {
 
     private fun expandAudioControls() {
         windows
-                .asSequence()
-                .map(AccessibilityWindowInfo::getRoot)
-                .filterNotNull()
-                .map { nodeInfo -> findNode(nodeInfo, getSystemUiString(RESOURCE_EXPAND_VOLUME_CONTROLS, DEFAULT_EXPAND_VOLUME)) }
-                .filterNotNull()
-                .firstOrNull()?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            .asSequence()
+            .map(AccessibilityWindowInfo::getRoot)
+            .filterNotNull()
+            .map { nodeInfo -> findNode(nodeInfo, getSystemUiString(RESOURCE_EXPAND_VOLUME_CONTROLS, DEFAULT_EXPAND_VOLUME)) }
+            .filterNotNull()
+            .firstOrNull()
+            ?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
     }
 
     private fun closeNotifications() {
@@ -176,8 +177,8 @@ class FingerGestureService : AccessibilityService() {
 
         if (brightnessGestureConsumer.shouldShowDimmer()) {
             val params: WindowManager.LayoutParams =
-                    if (overlayView == null) getLayoutParams(windowManager)
-                    else overlayView?.layoutParams as WindowManager.LayoutParams
+                if (overlayView == null) getLayoutParams(windowManager)
+                else overlayView?.layoutParams as WindowManager.LayoutParams
 
             params.alpha = 0.1f
             params.dimAmount = dimAmount
@@ -191,15 +192,15 @@ class FingerGestureService : AccessibilityService() {
     @SuppressLint("InflateParams")
     private fun getLayoutParams(windowManager: WindowManager): WindowManager.LayoutParams {
         val params = WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                        or WindowManager.LayoutParams.FLAG_DIM_BEHIND,
-                PixelFormat.TRANSLUCENT)
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                or WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+            PixelFormat.TRANSLUCENT)
 
         val inflater = getSystemService(LayoutInflater::class.java) ?: return params
 
@@ -219,10 +220,10 @@ class FingerGestureService : AccessibilityService() {
         val controller = accessibilityButtonController
         val info = serviceInfo
 
-        if (enabled)
-            info.flags = info.flags or FLAG_REQUEST_ACCESSIBILITY_BUTTON
-        else
-            info.flags = info.flags and FLAG_REQUEST_ACCESSIBILITY_BUTTON.inv()
+        info.flags = when {
+            enabled -> info.flags or FLAG_REQUEST_ACCESSIBILITY_BUTTON
+            else -> info.flags and FLAG_REQUEST_ACCESSIBILITY_BUTTON.inv()
+        }
 
         serviceInfo = info
         controller.registerAccessibilityButtonCallback(accessibilityButtonCallback)
@@ -231,11 +232,11 @@ class FingerGestureService : AccessibilityService() {
     private fun subscribeToBroadcasts() {
         App.withApp { app ->
             broadcastDisposable = app.broadcasts()
-                    .filter(this::intentMatches)
-                    .subscribe(this::onIntentReceived) { error ->
-                        error.printStackTrace()
-                        subscribeToBroadcasts() // Resubscribe on error
-                    }
+                .filter(this::intentMatches)
+                .subscribe(this::onIntentReceived) { error ->
+                    error.printStackTrace()
+                    subscribeToBroadcasts() // Resubscribe on error
+                }
         }
     }
 
