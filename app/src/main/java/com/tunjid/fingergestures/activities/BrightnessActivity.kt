@@ -107,7 +107,10 @@ class BrightnessActivity : AppCompatActivity() {
                     set.applyTo(layout)
                 }
             mapDistinct(State::showDimmerText)
-                .observe(dialogLifecycleOwner, controls.sliderText::isVisible::set)
+                .observe(dialogLifecycleOwner, {
+                    TransitionManager.beginDelayedTransition(binding.controls.sliderBackground, AutoTransition())
+                    controls.sliderText.isVisible = it
+                })
 
             filter(State::showDimmerText)
                 .mapDistinct(State::dimmerPercent)
@@ -153,7 +156,6 @@ class BrightnessActivity : AppCompatActivity() {
     }
 
     private fun handleIntent(intent: Intent) {
-        TransitionManager.beginDelayedTransition(binding.controls.sliderBackground, AutoTransition())
         val brightnessByte = intent.getIntExtra(CURRENT_BRIGHTNESS_BYTE, 0)
         viewModel.accept(In.Start(brightnessByte))
     }
