@@ -25,6 +25,7 @@ import androidx.annotation.StringDef
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference
+import com.tunjid.fingergestures.ReactivePreferences
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
@@ -45,6 +46,7 @@ import javax.inject.Singleton
 @Singleton
 class GestureMapper @Inject constructor(
     @AppContext private val context: Context,
+    reactivePreferences: ReactivePreferences,
     private val purchasesManager: PurchasesManager,
     private val consumers: GestureConsumers,
     broadcasts: AppBroadcasts
@@ -65,12 +67,14 @@ class GestureMapper @Inject constructor(
     )
 
     val doubleSwipePreference: ReactivePreference<Int> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = DOUBLE_SWIPE_DELAY,
         default = DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE
     )
 
     private val directionPreferencesMap = allGestures.map { gestureDirection ->
         gestureDirection to ReactivePreference(
+            reactivePreferences = reactivePreferences,
             preferencesName = gestureDirection,
             default = when (gestureDirection) {
                 UP_GESTURE -> NOTIFICATION_UP

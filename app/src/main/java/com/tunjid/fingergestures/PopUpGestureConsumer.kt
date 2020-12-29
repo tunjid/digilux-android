@@ -34,6 +34,7 @@ import javax.inject.Singleton
 @Singleton
 class PopUpGestureConsumer @Inject constructor(
     @AppContext private val context: Context,
+    reactivePreferences: ReactivePreferences,
     private val broadcaster: AppBroadcaster,
     private val purchasesManager: PurchasesManager
 ) : GestureConsumer {
@@ -43,6 +44,7 @@ class PopUpGestureConsumer @Inject constructor(
     }
 
     val accessibilityButtonEnabledPreference: ReactivePreference<Boolean> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = ACCESSIBILITY_BUTTON_ENABLED,
         default = false,
         onSet = { enabled ->
@@ -50,15 +52,18 @@ class PopUpGestureConsumer @Inject constructor(
         }
     )
     val accessibilityButtonSingleClickPreference: ReactivePreference<Boolean> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = ACCESSIBILITY_BUTTON_SINGLE_CLICK,
         default = false
     )
     val animatePopUpPreference: ReactivePreference<Boolean> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = ANIMATES_POPUP,
         default = true
     )
 
     val setManager: SetManager<Preference, GestureAction> = SetManager(
+        reactivePreferences = reactivePreferences,
         keys = Preference.values().toList(),
         sorter = compareBy(GestureAction::id),
         addFilter = this::canAddToSet,

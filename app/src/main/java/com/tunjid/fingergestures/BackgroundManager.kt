@@ -59,28 +59,33 @@ fun Context.getWallpaperFile(selection: WallpaperSelection): File =
 @Singleton
 class BackgroundManager @Inject constructor(
     @AppContext private val context: Context,
+    reactivePreferences: ReactivePreferences,
     private val broadcaster: AppBroadcaster
 ) {
 
     val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = "background color",
         default = context.colorAt(R.color.colorPrimary)
     )
     val sliderColorPreference: ReactivePreference<Int> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = "slider color",
         default = context.colorAt(R.color.colorAccent)
     )
     val sliderDurationPreference: ReactivePreference<Int> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = "slider duration",
         default = DEF_SLIDER_DURATION_PERCENT
     )
     val coloredNavPreference: ReactivePreference<Boolean> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = "colored nav bar",
         default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P,
     )
 
-    val dayWallpaperStatus = WallpaperSelection.Day.wallpaperStatus
-    val nightWallpaperStatus = WallpaperSelection.Night.wallpaperStatus
+    val dayWallpaperStatus = WallpaperSelection.Day.wallpaperStatus(reactivePreferences)
+    val nightWallpaperStatus = WallpaperSelection.Night.wallpaperStatus(reactivePreferences)
 
     // TODO: Improve this
     val paletteFlowable: Flowable<PaletteStatus> = Flowable.defer {
@@ -298,21 +303,20 @@ private const val ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.ch
 
 private var Intent.changeWallpaperSelection by intentExtras<WallpaperSelection?>()
 
-private val WallpaperSelection.wallpaperStatus: Flowable<WallpaperStatus>
-    get() {
-        val (defaultHour, defaultMinute) = this.defaultTime
-        return Flowables.combineLatest(
-            ReactivePreference(preferencesName = set, default = false).monitor,
-            ReactivePreference(preferencesName = hour, default = defaultHour).monitor,
-            ReactivePreference(preferencesName = minute, default = defaultMinute).monitor,
-        ) { willChange, hour, minute ->
-            WallpaperStatus(
-                selection = this,
-                willChange = willChange,
-                calendar = calendarForTime(hour to minute)
-            )
-        }
+private fun WallpaperSelection.wallpaperStatus(reactivePreferences: ReactivePreferences): Flowable<WallpaperStatus> {
+    val (defaultHour, defaultMinute) = this.defaultTime
+    return Flowables.combineLatest(
+        ReactivePreference(reactivePreferences = reactivePreferences, preferencesName = set, default = false).monitor,
+        ReactivePreference(reactivePreferences = reactivePreferences, preferencesName = hour, default = defaultHour).monitor,
+        ReactivePreference(reactivePreferences = reactivePreferences, preferencesName = minute, default = defaultMinute).monitor,
+    ) { willChange, hour, minute ->
+        WallpaperStatus(
+            selection = this,
+            willChange = willChange,
+            calendar = calendarForTime(hour to minute)
+        )
     }
+}
 
 private val WallpaperSelection.defaultTime: Pair<Int, Int>
     get() = Pair(when (this) {

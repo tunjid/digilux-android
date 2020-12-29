@@ -40,6 +40,7 @@ interface SetPreference {
 
 class SetManager<K : SetPreference, V : Any>(
     keys: Iterable<K>,
+    reactivePreferences: ReactivePreferences,
     private val sorter: Comparator<V>,
     private val addFilter: (K) -> Boolean,
     private val stringMapper: (String) -> V?,
@@ -47,7 +48,7 @@ class SetManager<K : SetPreference, V : Any>(
 ) {
 
     private val reactivePreferenceMap = keys.map { key ->
-        key to ReactivePreference(key.preferenceName, emptySet<String>())
+        key to ReactivePreference(reactivePreferences, key.preferenceName, emptySet<String>())
             .monitor
             .map { it.mapNotNull(stringMapper) }
     }.toMap()

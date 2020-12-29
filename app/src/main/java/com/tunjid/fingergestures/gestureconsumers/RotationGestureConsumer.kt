@@ -41,6 +41,7 @@ import javax.inject.Singleton
 @Singleton
 class RotationGestureConsumer @Inject constructor(
     @AppContext private val context: Context,
+    reactivePreferences: ReactivePreferences,
     private val broadcaster: AppBroadcaster,
     private val purchasesManager: PurchasesManager
 ) : GestureConsumer {
@@ -52,6 +53,7 @@ class RotationGestureConsumer @Inject constructor(
     }
 
     val setManager: SetManager<Preference, ApplicationInfo> = SetManager(
+        reactivePreferences = reactivePreferences,
         keys = Preference.values().asIterable(),
         sorter = Comparator(this::compareApplicationInfo),
         addFilter = this::canAddToSet,
@@ -60,6 +62,7 @@ class RotationGestureConsumer @Inject constructor(
     )
 
     val autoRotatePreference: ReactivePreference<Boolean> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = WATCHES_WINDOW_CONTENT,
         default = false,
         onSet = { broadcaster(Broadcast.Service.WatchesWindows(enabled = it)) }

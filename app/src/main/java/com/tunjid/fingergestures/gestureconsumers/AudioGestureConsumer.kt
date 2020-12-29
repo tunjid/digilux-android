@@ -30,6 +30,7 @@ import androidx.core.content.getSystemService
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference
+import com.tunjid.fingergestures.ReactivePreferences
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.models.Broadcast
@@ -42,18 +43,22 @@ import kotlin.math.min
 @Singleton
 class AudioGestureConsumer @Inject constructor(
     @AppContext private val context: Context,
+    reactivePreferences: ReactivePreferences,
     private val broadcaster: AppBroadcaster
 ) : GestureConsumer {
 
     val incrementPreference: ReactivePreference<Int> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = INCREMENT_VALUE,
         default = DEF_INCREMENT_VALUE
     )
     val sliderPreference: ReactivePreference<Boolean> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = SHOWS_AUDIO_SLIDER,
         default = true
     )
     val streamTypePreference: ReactivePreference<Int> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = AUDIO_STREAM_TYPE,
         default = Stream.Default.type
     )

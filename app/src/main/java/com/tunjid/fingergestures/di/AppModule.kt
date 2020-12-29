@@ -18,16 +18,17 @@
 package com.tunjid.fingergestures.di
 
 import android.content.Context
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.PopUpGestureConsumer
+import android.content.SharedPreferences
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.*
 import com.tunjid.fingergestures.models.Broadcast
 import dagger.Module
 import dagger.Provides
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
+import io.reactivex.rxkotlin.Flowables
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -45,6 +46,8 @@ class AppModule(private val app: App) {
     private val broadcasts = backingBroadcaster
     private val broadcaster = backingBroadcaster::onNext
 
+    private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf()
+
     @Provides
     @Singleton
     fun provideDagger(): Dagger = app.dagger
@@ -55,8 +58,32 @@ class AppModule(private val app: App) {
 
     @Provides
     @Singleton
-    fun providePurchasesManager(): PurchasesManager =
-        PurchasesManager(context = app)
+    fun provideReactivePreferences(): ReactivePreferences =
+        ReactivePreferences(
+            preferences = app.preferences,
+            monitor = Flowables.create(BackpressureStrategy.BUFFER) { emitter ->
+                val prefs = app.preferences
+                val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                    emitter.onNext(key)
+                }
+                listener
+                    .also(prefs::registerOnSharedPreferenceChangeListener)
+                    .let(listeners::add)
+                emitter.setCancellable {
+                    listener
+                        .also(prefs::unregisterOnSharedPreferenceChangeListener)
+                        .let(listeners::remove)
+                }
+            }
+        )
+
+    @Provides
+    @Singleton
+    fun providePurchasesManager(reactivePreferences: ReactivePreferences): PurchasesManager =
+        PurchasesManager(
+            context = app,
+            reactivePreferences = reactivePreferences,
+        )
 
     @Provides
     @Singleton
@@ -68,9 +95,10 @@ class AppModule(private val app: App) {
 
     @Provides
     @Singleton
-    fun provideBackgroundManager(): BackgroundManager =
+    fun provideBackgroundManager(reactivePreferences: ReactivePreferences): BackgroundManager =
         BackgroundManager(
             context = app,
+            reactivePreferences = reactivePreferences,
             broadcaster = broadcaster,
         )
 
@@ -81,10 +109,14 @@ class AppModule(private val app: App) {
 
     @Provides
     @Singleton
-    fun provideBrightnessGestureConsumer(purchasesManager: PurchasesManager): BrightnessGestureConsumer =
+    fun provideBrightnessGestureConsumer(
+        purchasesManager: PurchasesManager,
+        reactivePreferences: ReactivePreferences
+    ): BrightnessGestureConsumer =
         BrightnessGestureConsumer(
             context = app,
             broadcaster = broadcaster,
+            reactivePreferences = reactivePreferences,
             purchasesManager = purchasesManager
         )
 
@@ -107,10 +139,14 @@ class AppModule(private val app: App) {
 
     @Provides
     @Singleton
-    fun provideRotationGestureConsumer(purchasesManager: PurchasesManager): RotationGestureConsumer =
+    fun provideRotationGestureConsumer(
+        purchasesManager: PurchasesManager,
+        reactivePreferences: ReactivePreferences
+    ): RotationGestureConsumer =
         RotationGestureConsumer(
             context = app,
             broadcaster = broadcaster,
+            reactivePreferences = reactivePreferences,
             purchasesManager = purchasesManager
         )
 
@@ -124,31 +160,38 @@ class AppModule(private val app: App) {
     @Provides
     @Singleton
     fun providePopUpGestureConsumer(
-        purchasesManager: PurchasesManager
+        purchasesManager: PurchasesManager,
+        reactivePreferences: ReactivePreferences
     ): PopUpGestureConsumer =
         PopUpGestureConsumer(
             context = app,
             broadcaster = broadcaster,
+            reactivePreferences = reactivePreferences,
             purchasesManager = purchasesManager
         )
 
     @Provides
     @Singleton
-    fun provideAudioGestureConsumer(): AudioGestureConsumer =
+    fun provideAudioGestureConsumer(
+        reactivePreferences: ReactivePreferences
+    ): AudioGestureConsumer =
         AudioGestureConsumer(
             context = app,
+            reactivePreferences = reactivePreferences,
             broadcaster = broadcaster
         )
 
     @Provides
     @Singleton
     fun provideGestureMapper(
+        reactivePreferences: ReactivePreferences,
         purchasesManager: PurchasesManager,
         consumers: GestureConsumers
     ): GestureMapper =
         GestureMapper(
             context = app,
             purchasesManager = purchasesManager,
+            reactivePreferences = reactivePreferences,
             consumers = consumers,
             broadcasts = broadcasts,
         )

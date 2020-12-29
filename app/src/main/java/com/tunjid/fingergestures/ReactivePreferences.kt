@@ -19,23 +19,25 @@ package com.tunjid.fingergestures
 
 import android.content.SharedPreferences
 import com.jakewharton.rx.replayingShare
-import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.rxkotlin.Flowables
 import io.reactivex.schedulers.Schedulers
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
+data class ReactivePreferences(
+    val preferences: SharedPreferences,
+    val monitor: Flowable<String>
+)
 class ReactivePreference<T : Any>(
+    private val reactivePreferences: ReactivePreferences,
     private val preferencesName: String,
     private val default: T,
     private val onSet: ((T) -> Unit)? = null
 ) {
-    private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf()
 
     @Suppress("UNCHECKED_CAST")
     var value: T
-        get() = with(App.transformApp(App::preferences)!!) {
+        get() = with(reactivePreferences.preferences) {
             when (default) {
                 is String -> getString(preferencesName, default)
                 is Int -> getInt(preferencesName, default)
@@ -47,7 +49,7 @@ class ReactivePreference<T : Any>(
                 else -> throw IllegalArgumentException("Uhh what are you doing?")
             }
         } as T
-        set(value) = with(App.transformApp(App::preferences)!!.edit()) {
+        set(value) = with(reactivePreferences.preferences.edit()) {
             when (value) {
                 is String -> putString(preferencesName, value)
                 is Int -> putInt(preferencesName, value)
@@ -75,20 +77,8 @@ class ReactivePreference<T : Any>(
         }
     }
 
-    val monitor: Flowable<T> = Flowables.create<Unit>(BackpressureStrategy.BUFFER) { emitter ->
-        val prefs = App.transformApp(App::preferences)!!
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == preferencesName) emitter.onNext(Unit)
-        }
-        listener
-            .also(prefs::registerOnSharedPreferenceChangeListener)
-            .let(listeners::add)
-        emitter.setCancellable {
-            listener
-                .also(prefs::unregisterOnSharedPreferenceChangeListener)
-                .let(listeners::remove)
-        }
-    }
+    val monitor: Flowable<T> = reactivePreferences.monitor
+        .filter(preferencesName::equals)
         .concatMap { pull }
         .startWith(pull)
         .observeOn(Schedulers.io())

@@ -38,7 +38,8 @@ private object Purchases : SetPreference {
 
 @Singleton
 class PurchasesManager @Inject constructor(
-    @AppContext private val context: Context
+    @AppContext private val context: Context,
+    reactivePreferences: ReactivePreferences,
 ) : PurchasesUpdatedListener {
 
     enum class Sku(val id: String) {
@@ -69,10 +70,12 @@ class PurchasesManager @Inject constructor(
     }
 
     val lockedContentPreference: ReactivePreference<Boolean> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
         preferencesName = "has locked content",
         default = false
     )
     private val setManager = SetManager(
+        reactivePreferences = reactivePreferences,
         keys = listOf(Purchases),
         sorter = compareBy(Sku::ordinal),
         addFilter = Sku.values().map(Sku::id)::contains,
