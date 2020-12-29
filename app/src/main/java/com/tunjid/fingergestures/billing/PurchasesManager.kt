@@ -17,23 +17,29 @@
 
 package com.tunjid.fingergestures.billing
 
+import android.content.Context
 import android.text.TextUtils
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.jakewharton.rx.replayingShare
 import com.tunjid.fingergestures.*
+import com.tunjid.fingergestures.di.AppContext
 import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.rxkotlin.Flowables
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Singleton
 
 private object Purchases : SetPreference {
     override val preferenceName get() = "purchases"
 }
 
-class PurchasesManager @Inject constructor() : PurchasesUpdatedListener {
+@Singleton
+class PurchasesManager @Inject constructor(
+    @AppContext private val context: Context
+) : PurchasesUpdatedListener {
 
     enum class Sku(val id: String) {
         Premium(id = "premium"),
@@ -46,6 +52,7 @@ class PurchasesManager @Inject constructor() : PurchasesUpdatedListener {
         val hasLockedContent: Boolean,
         val ownedSkus: List<Sku>,
         val isPremium: Boolean,
+        val trialPeriodText: String
     ) {
         private val isTrialRunning get() = trialStatus is TrialStatus.Trial
 
@@ -59,16 +66,6 @@ class PurchasesManager @Inject constructor() : PurchasesUpdatedListener {
             }
 
         val hasAds get() = if (!hasLockedContent) false else !isPremium && notAdFree
-
-        val trialPeriodText: String
-            get() = App.transformApp({ app ->
-                if (isTrialRunning) app.getString(R.string.trial_running)
-                else app.getString(R.string.trial_text, when (trialPeriod(trialStatus.numTrials)) {
-                    FIRST_TRIAL_PERIOD -> "10m"
-                    SECOND_TRIAL_PERIOD -> "60s"
-                    else -> "10s"
-                })
-            }, App.EMPTY)
     }
 
     val lockedContentPreference: ReactivePreference<Boolean> = ReactivePreference(
@@ -109,7 +106,13 @@ class PurchasesManager @Inject constructor() : PurchasesUpdatedListener {
             isPremium = if (!lockedContent) true else ownedSkus.contains(Sku.Premium),
             trialStatus = trialStatus,
             hasLockedContent = lockedContent,
-            ownedSkus = ownedSkus
+            ownedSkus = ownedSkus,
+            trialPeriodText = if (isTrialRunning) context.getString(R.string.trial_running)
+            else context.getString(R.string.trial_text, when (trialPeriod(trialStatus.numTrials)) {
+                FIRST_TRIAL_PERIOD -> "10m"
+                SECOND_TRIAL_PERIOD -> "60s"
+                else -> "10s"
+            })
         )
     }
         .replayingShare()

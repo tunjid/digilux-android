@@ -18,7 +18,9 @@
 package com.tunjid.fingergestures.gestureconsumers
 
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class NothingGestureConsumer @Inject constructor() : GestureConsumer {
 
     override fun accepts(gesture: GestureAction): Boolean {

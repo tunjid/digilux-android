@@ -22,7 +22,9 @@ import android.hardware.camera2.CameraManager
 
 import com.tunjid.fingergestures.App
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FlashlightGestureConsumer @Inject constructor(
     private val app: App
 ) : GestureConsumer {
@@ -54,6 +56,7 @@ class FlashlightGestureConsumer @Inject constructor(
                     e.printStackTrace()
                 }
             }
+            else -> Unit
         }
     }
 

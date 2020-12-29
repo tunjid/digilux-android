@@ -39,12 +39,11 @@ import io.reactivex.processors.PublishProcessor
 import org.reactivestreams.Publisher
 import java.util.concurrent.TimeUnit
 
+val Context.preferences: SharedPreferences get() = getSharedPreferences(BRIGHTNESS_PREFS, Context.MODE_PRIVATE)
+
 class App : android.app.Application() {
 
     val dagger: Dagger by lazy { Dagger.make(this) }
-
-    val preferences: SharedPreferences
-        get() = getSharedPreferences(BRIGHTNESS_PREFS, Context.MODE_PRIVATE)
 
     override fun onCreate() {
         super.onCreate()
@@ -64,7 +63,6 @@ class App : android.app.Application() {
 
     companion object {
 
-        private const val BRIGHTNESS_PREFS = "brightness prefs"
         const val EMPTY = ""
 
         var instance: App? = null
@@ -119,7 +117,7 @@ class App : android.app.Application() {
             appConsumer.invoke(app)
         }
 
-        fun <T> transformApp(appTFunction: (App) -> T, defaultValue: T): T {
+        private fun <T> transformApp(appTFunction: (App) -> T, defaultValue: T): T {
             val app = instance
             return if (app != null) appTFunction.invoke(app) else defaultValue
         }
@@ -127,3 +125,5 @@ class App : android.app.Application() {
         fun <T> transformApp(appTFunction: (App) -> T?): T? = transformApp(appTFunction, null)
     }
 }
+
+private const val BRIGHTNESS_PREFS = "brightness prefs"

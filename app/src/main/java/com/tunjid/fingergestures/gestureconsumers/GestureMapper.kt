@@ -20,12 +20,14 @@ package com.tunjid.fingergestures.gestureconsumers
 import android.accessibilityservice.FingerprintGestureController
 import android.accessibilityservice.FingerprintGestureController.*
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.annotation.StringDef
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcasts
+import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.GestureConsumers
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.*
 import com.tunjid.fingergestures.models.Broadcast
@@ -37,9 +39,12 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
+import javax.inject.Singleton
 
 @SuppressLint("CheckResult")
+@Singleton
 class GestureMapper @Inject constructor(
+    @AppContext private val context: Context,
     private val purchasesManager: PurchasesManager,
     private val consumers: GestureConsumers,
     broadcasts: AppBroadcasts
@@ -87,7 +92,7 @@ class GestureMapper @Inject constructor(
                         val resource = (if (isDouble(gestureDirection) && purchasesManager.isNotPremium) DO_NOTHING
                         else GestureAction.fromId(it)).resource
 
-                        gestureDirection to App.transformApp({ app -> app.getString(resource) }, "")
+                        gestureDirection to context.getString(resource)
                     }
                 }) { items ->
             val map = (items.toList() as List<Pair<String, String>>).toMap()
@@ -152,7 +157,7 @@ class GestureMapper @Inject constructor(
     fun getMappedAction(@GestureDirection gestureDirection: String): String {
         val action = directionToAction(gestureDirection)
         val stringResource = action.resource
-        return App.transformApp({ app -> app.getString(stringResource) }, "")
+        return context.getString(stringResource)
     }
 
     @GestureDirection
@@ -160,14 +165,11 @@ class GestureMapper @Inject constructor(
         return match(direction, direction)
     }
 
-    fun getSwipeDelayText(percentage: Int): String {
-        return App.transformApp({ app ->
-            app.getString(if (purchasesManager.isNotPremium)
-                R.string.go_premium_text
-            else
-                R.string.double_swipe_delay, delayPercentageToMillis(percentage))
-        }, "")
-    }
+    fun getSwipeDelayText(percentage: Int): String =
+        context.getString(when {
+            purchasesManager.isNotPremium -> R.string.go_premium_text
+            else -> R.string.double_swipe_delay
+        }, delayPercentageToMillis(percentage))
 
     override fun onGestureDetected(raw: Int) {
         super.onGestureDetected(raw)
@@ -308,29 +310,27 @@ class GestureMapper @Inject constructor(
     }
 
     fun getDirectionName(@GestureDirection direction: String): String = when (direction) {
-        UP_GESTURE -> App.transformApp({ app -> app.getString(R.string.swipe_up) }, "")
-        DOWN_GESTURE -> App.transformApp({ app -> app.getString(R.string.swipe_down) }, "")
-        LEFT_GESTURE -> App.transformApp({ app -> app.getString(R.string.swipe_left) }, "")
-        RIGHT_GESTURE -> App.transformApp({ app -> app.getString(R.string.swipe_right) }, "")
-        DOUBLE_UP_GESTURE -> App.transformApp({ app -> app.getString(R.string.double_swipe_up) }, "")
-        DOUBLE_DOWN_GESTURE -> App.transformApp({ app -> app.getString(R.string.double_swipe_down) }, "")
-        DOUBLE_LEFT_GESTURE -> App.transformApp({ app -> app.getString(R.string.double_swipe_left) }, "")
-        DOUBLE_RIGHT_GESTURE -> App.transformApp({ app -> app.getString(R.string.double_swipe_right) }, "")
+        UP_GESTURE -> context.getString(R.string.swipe_up)
+        DOWN_GESTURE -> context.getString(R.string.swipe_down)
+        LEFT_GESTURE -> context.getString(R.string.swipe_left)
+        RIGHT_GESTURE -> context.getString(R.string.swipe_right)
+        DOUBLE_UP_GESTURE -> context.getString(R.string.double_swipe_up)
+        DOUBLE_DOWN_GESTURE -> context.getString(R.string.double_swipe_down)
+        DOUBLE_LEFT_GESTURE -> context.getString(R.string.double_swipe_left)
+        DOUBLE_RIGHT_GESTURE -> context.getString(R.string.double_swipe_right)
         else -> ""
     }
 
     private fun getActionIds(): IntArray {
-        return App.transformApp({ app ->
-            val array = app.resources.obtainTypedArray(R.array.action_resources)
-            val length = array.length()
+        val array = context.resources.obtainTypedArray(R.array.action_resources)
+        val length = array.length()
 
-            val ints = IntArray(length)
-            for (i in 0 until length) ints[i] = array.getResourceId(i, R.string.do_nothing)
+        val ints = IntArray(length)
+        for (i in 0 until length) ints[i] = array.getResourceId(i, R.string.do_nothing)
 
-            array.recycle()
+        array.recycle()
 
-            ints
-        }, IntArray(0))
+        return ints
     }
 
     companion object {

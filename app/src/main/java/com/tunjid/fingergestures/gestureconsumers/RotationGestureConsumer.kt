@@ -18,6 +18,7 @@
 package com.tunjid.fingergestures.gestureconsumers
 
 
+import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.Parcelable
 import android.provider.Settings
@@ -26,6 +27,7 @@ import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ANDROID_SYSTEM_UI_PACKAGE
 import io.reactivex.Flowable
@@ -34,9 +36,11 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.parcelize.Parcelize
 import java.util.*
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class RotationGestureConsumer @Inject constructor(
-    private val app: App,
+    @AppContext private val context: Context,
     private val broadcaster: AppBroadcaster,
     private val purchasesManager: PurchasesManager
 ) : GestureConsumer {
@@ -70,32 +74,26 @@ class RotationGestureConsumer @Inject constructor(
 
     val unRemovablePackages = listOf(
         ANDROID_SYSTEM_UI_PACKAGE,
-        app.packageName
+        context.packageName
     )
 
     private var lastPackageName: String? = null
     private val shifter = Shifter(9)
 
     private var isAutoRotateOn: Boolean
-        get() = App.transformApp({ app ->
-            Settings.System.getInt(
-                app.contentResolver,
-                Settings.System.ACCELEROMETER_ROTATION,
-                DISABLE_AUTO_ROTATION) == ENABLE_AUTO_ROTATION
-        }, false)
+        get() = Settings.System.getInt(
+            context.contentResolver,
+            Settings.System.ACCELEROMETER_ROTATION,
+            DISABLE_AUTO_ROTATION) == ENABLE_AUTO_ROTATION
         set(isOn) {
-            App.withApp { app ->
-                val enabled = if (isOn) ENABLE_AUTO_ROTATION else DISABLE_AUTO_ROTATION
-                Settings.System.putInt(app.contentResolver, Settings.System.ACCELEROMETER_ROTATION, enabled)
-            }
+            val enabled = if (isOn) ENABLE_AUTO_ROTATION else DISABLE_AUTO_ROTATION
+            Settings.System.putInt(context.contentResolver, Settings.System.ACCELEROMETER_ROTATION, enabled)
         }
 
     init {
-        App.withApp { app ->
-            setManager.editorFor(Preference.NonRotatingApps).apply {
-                plus(ApplicationInfo().apply { packageName = ANDROID_SYSTEM_UI_PACKAGE })
-                plus(app.applicationInfo)
-            }
+        setManager.editorFor(Preference.NonRotatingApps).apply {
+            plus(ApplicationInfo().apply { packageName = ANDROID_SYSTEM_UI_PACKAGE })
+            plus(context.applicationInfo)
         }
     }
 
@@ -123,19 +121,17 @@ class RotationGestureConsumer @Inject constructor(
         isAutoRotateOn = rotationApps.contains(packageName)
     }
 
-    fun getAddText(preferencesName: Preference): String = App.transformApp({ app ->
-        app.getString(R.string.auto_rotate_add, if (Preference.RotatingApps == preferencesName)
-            app.getString(R.string.auto_rotate_apps)
-        else
-            app.getString(R.string.auto_rotate_apps_excluded))
-    }, EMPTY_STRING)
+    fun getAddText(preferencesName: Preference): String =
+        context.getString(R.string.auto_rotate_add, when (Preference.RotatingApps) {
+            preferencesName -> context.getString(R.string.auto_rotate_apps)
+            else -> context.getString(R.string.auto_rotate_apps_excluded)
+        })
 
-    fun getRemoveText(preferencesName: Preference): String = App.transformApp({ app ->
-        app.getString(R.string.auto_rotate_remove, if (Preference.RotatingApps == preferencesName)
-            app.getString(R.string.auto_rotate_apps)
-        else
-            app.getString(R.string.auto_rotate_apps_excluded))
-    }, EMPTY_STRING)
+    fun getRemoveText(preferencesName: Preference): String =
+        context.getString(R.string.auto_rotate_remove, when (Preference.RotatingApps) {
+            preferencesName -> context.getString(R.string.auto_rotate_apps)
+            else -> context.getString(R.string.auto_rotate_apps_excluded)
+        })
 
     private fun canAddToSet(preferenceName: Preference): Boolean {
         val set = setManager.getSet(preferenceName)
@@ -144,19 +140,18 @@ class RotationGestureConsumer @Inject constructor(
     }
 
     private fun compareApplicationInfo(infoA: ApplicationInfo, infoB: ApplicationInfo): Int {
-        val packageManager = app.packageManager
+        val packageManager = context.packageManager
         return packageManager.getApplicationLabel(infoA).toString()
             .compareTo(packageManager.getApplicationLabel(infoB).toString())
     }
 
-    private fun fromPackageName(packageName: String): ApplicationInfo? = App.transformApp { app ->
+    private fun fromPackageName(packageName: String): ApplicationInfo? =
         try {
-            app.packageManager.getApplicationInfo(packageName, 0)
+            context.packageManager.getApplicationInfo(packageName, 0)
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
-    }
 
     companion object {
         private const val ENABLE_AUTO_ROTATION = 1

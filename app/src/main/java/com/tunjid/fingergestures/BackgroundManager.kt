@@ -28,7 +28,6 @@ import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Parcelable
@@ -37,6 +36,7 @@ import androidx.palette.graphics.Palette
 import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
@@ -46,27 +46,29 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 import javax.inject.Inject
+import javax.inject.Singleton
 
 val Context.screenAspectRatio: IntArray
-    get() = with (resources.displayMetrics) {
+    get() = with(resources.displayMetrics) {
         intArrayOf(widthPixels, heightPixels)
     }
 
 fun Context.getWallpaperFile(selection: WallpaperSelection): File =
     File(applicationContext.filesDir, selection.fileName)
 
+@Singleton
 class BackgroundManager @Inject constructor(
-   private val app: App,
-   private val broadcaster: AppBroadcaster
+    @AppContext private val context: Context,
+    private val broadcaster: AppBroadcaster
 ) {
 
     val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
         preferencesName = "background color",
-        default = App.transformApp { it.colorAt(R.color.colorPrimary) } ?: Color.LTGRAY
+        default = context.colorAt(R.color.colorPrimary)
     )
     val sliderColorPreference: ReactivePreference<Int> = ReactivePreference(
         preferencesName = "slider color",
-        default = App.transformApp { it.colorAt(R.color.colorAccent) } ?: Color.WHITE
+        default = context.colorAt(R.color.colorAccent)
     )
     val sliderDurationPreference: ReactivePreference<Int> = ReactivePreference(
         preferencesName = "slider duration",
@@ -84,7 +86,7 @@ class BackgroundManager @Inject constructor(
     val paletteFlowable: Flowable<PaletteStatus> = Flowable.defer {
         if (!App.hasStoragePermission) return@defer Flowable.just(PaletteStatus.Unavailable("Need permission"))
 
-        val wallpaperManager = App.transformApp { app -> app.getSystemService(WallpaperManager::class.java) }
+        val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
             ?: return@defer Flowable.just(PaletteStatus.Unavailable("No Wallpaper manager"))
 
         if (isLiveWallpaper(wallpaperManager)) {
@@ -110,9 +112,8 @@ class BackgroundManager @Inject constructor(
         get() = durationPercentageToMillis(sliderDurationPreference.value)
 
     val screenDimensionRatio: String
-        get() = when (val dimensions = app.screenAspectRatio) {
-            null -> "H, 16:9"
-            else -> "H," + dimensions[0] + ":" + dimensions[1]
+        get() = context.screenAspectRatio.let { dimensions ->
+            "H," + dimensions[0] + ":" + dimensions[1]
         }
 
     val setWallpaperChangeTime = { selection: WallpaperSelection, hourOfDay: Int, minute: Int ->
@@ -120,7 +121,7 @@ class BackgroundManager @Inject constructor(
     }
 
     val cancelAutoWallpaper = cancel@{
-        val alarmManager = App.transformApp { app -> app.getSystemService(AlarmManager::class.java) }
+        val alarmManager = context.getSystemService(AlarmManager::class.java)
             ?: return@cancel
 
         val day = getWallpaperPendingIntent(WallpaperSelection.Day)
@@ -140,19 +141,19 @@ class BackgroundManager @Inject constructor(
 
     val wallpaperEditPendingIntent: PendingIntent
         get() {
-            val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
+            val intent = Intent(context, WallpaperBroadcastReceiver::class.java)
             intent.action = ACTION_EDIT_WALLPAPER
-            return PendingIntent.getBroadcast(app, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
 
     fun getSliderDurationText(@IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
                               duration: Int): String {
         val millis = durationPercentageToMillis(duration)
         val seconds = millis / 1000f
-        return App.transformApp({ app -> app.getString(R.string.duration_value, seconds) }, App.EMPTY)
+        return context.getString(R.string.duration_value, seconds)
     }
 
-    fun getWallpaperFile(selection: WallpaperSelection): File = app.getWallpaperFile(selection)
+    fun getWallpaperFile(selection: WallpaperSelection): File = context.getWallpaperFile(selection)
 
     fun usesColoredNav(): Boolean = coloredNavPreference.value
 
@@ -163,7 +164,7 @@ class BackgroundManager @Inject constructor(
 
     fun getMainWallpaperCalendar(selection: WallpaperSelection): Calendar {
         val timePair = selection.defaultTime
-        val preferences = App.transformApp { it.preferences } ?: return Calendar.getInstance()
+        val preferences = context.preferences ?: return Calendar.getInstance()
 
         val hour = preferences.getInt(selection.hour, timePair.first)
         val minute = preferences.getInt(selection.minute, timePair.second)
@@ -172,15 +173,20 @@ class BackgroundManager @Inject constructor(
     }
 
     private fun getWallpaperPendingIntent(selection: WallpaperSelection): PendingIntent? =
-        App.transformApp { app -> PendingIntent.getBroadcast(app, selection.code, getWallPaperChangeIntent(app, selection), PendingIntent.FLAG_UPDATE_CURRENT) }
+        PendingIntent.getBroadcast(
+            context,
+            selection.code,
+            getWallPaperChangeIntent(context, selection),
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
     internal fun onIntentReceived(intent: Intent) {
         if (handledEditPick(intent)) return
 
         val selection = selectionFromIntent(intent) ?: return
-        val wallpaperFile = app.getWallpaperFile(selection)
+        val wallpaperFile = context.getWallpaperFile(selection)
 
-        val wallpaperManager = App.transformApp { app -> app.getSystemService(WallpaperManager::class.java) }
+        val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
         if (wallpaperManager == null || !wallpaperFile.exists()) return
 
         if (!App.hasStoragePermission) return
@@ -196,10 +202,10 @@ class BackgroundManager @Inject constructor(
         else -> null
     }
 
-    private fun reInitializeWallpaperChange(selection: WallpaperSelection) = App.withApp { app ->
-        val preferences = app.preferences
+    private fun reInitializeWallpaperChange(selection: WallpaperSelection) {
+        val preferences = context.preferences
         val hasCalendar = preferences.getBoolean(selection.set, false)
-        if (!hasCalendar) return@withApp
+        if (!hasCalendar) return
 
         val calendar = getMainWallpaperCalendar(selection)
         setWallpaperChangeTime(selection, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
@@ -212,18 +218,15 @@ class BackgroundManager @Inject constructor(
             else -> hourOfDay
         }
 
-        App.withApp { app ->
-            app.preferences.edit()
-                .putInt(selection.hour, hour)
-                .putInt(selection.minute, minute)
-                .putBoolean(selection.set, adding)
-                .apply()
-        }
+        context.preferences.edit()
+            .putInt(selection.hour, hour)
+            .putInt(selection.minute, minute)
+            .putBoolean(selection.set, adding)
+            .apply()
 
         val calendar = calendarForTime(hourOfDay to minute)
 
-        val alarmManager = App.transformApp { app -> app.getSystemService(AlarmManager::class.java) }
-            ?: return
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
 
         val alarmIntent = getWallpaperPendingIntent(selection)
         alarmManager.setRepeating(RTC_WAKEUP, calendar.timeInMillis, INTERVAL_DAY, alarmIntent)
@@ -251,13 +254,13 @@ class BackgroundManager @Inject constructor(
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1 && wallpaperManager.wallpaperInfo != null
     }
 
-    fun willChangeWallpaper(selection: WallpaperSelection): Boolean = App.transformApp({ app ->
-        val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
+    fun willChangeWallpaper(selection: WallpaperSelection): Boolean {
+        val intent = Intent(context, WallpaperBroadcastReceiver::class.java)
         intent.action = ACTION_CHANGE_WALLPAPER
         intent.changeWallpaperSelection = selection
 
-        PendingIntent.getBroadcast(app, selection.code, getWallPaperChangeIntent(app, selection), PendingIntent.FLAG_NO_CREATE) != null
-    }, false)
+        return PendingIntent.getBroadcast(context, selection.code, getWallPaperChangeIntent(context, selection), PendingIntent.FLAG_NO_CREATE) != null
+    }
 
     private fun getWallPaperChangeIntent(app: Context, selection: WallpaperSelection): Intent {
         val intent = Intent(app, WallpaperBroadcastReceiver::class.java)

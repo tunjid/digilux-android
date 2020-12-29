@@ -23,7 +23,9 @@ import android.content.Intent
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.activities.DockingActivity
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class DockingGestureConsumer @Inject constructor(
     private val app: App
 ) : GestureConsumer {

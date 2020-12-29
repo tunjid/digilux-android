@@ -56,7 +56,7 @@ class AppModule(private val app: App) {
     @Provides
     @Singleton
     fun providePurchasesManager(): PurchasesManager =
-        PurchasesManager()
+        PurchasesManager(context = app)
 
     @Provides
     @Singleton
@@ -70,7 +70,7 @@ class AppModule(private val app: App) {
     @Singleton
     fun provideBackgroundManager(): BackgroundManager =
         BackgroundManager(
-            app = app,
+            context = app,
             broadcaster = broadcaster,
         )
 
@@ -83,7 +83,7 @@ class AppModule(private val app: App) {
     @Singleton
     fun provideBrightnessGestureConsumer(purchasesManager: PurchasesManager): BrightnessGestureConsumer =
         BrightnessGestureConsumer(
-            app = app,
+            context = app,
             broadcaster = broadcaster,
             purchasesManager = purchasesManager
         )
@@ -109,7 +109,7 @@ class AppModule(private val app: App) {
     @Singleton
     fun provideRotationGestureConsumer(purchasesManager: PurchasesManager): RotationGestureConsumer =
         RotationGestureConsumer(
-            app = app,
+            context = app,
             broadcaster = broadcaster,
             purchasesManager = purchasesManager
         )
@@ -135,7 +135,10 @@ class AppModule(private val app: App) {
     @Provides
     @Singleton
     fun provideAudioGestureConsumer(): AudioGestureConsumer =
-        AudioGestureConsumer(broadcaster = broadcaster)
+        AudioGestureConsumer(
+            context = app,
+            broadcaster = broadcaster
+        )
 
     @Provides
     @Singleton
@@ -144,6 +147,7 @@ class AppModule(private val app: App) {
         consumers: GestureConsumers
     ): GestureMapper =
         GestureMapper(
+            context = app,
             purchasesManager = purchasesManager,
             consumers = consumers,
             broadcasts = broadcasts,

@@ -29,7 +29,9 @@ import com.tunjid.fingergestures.gestureconsumers.GestureAction.SHOW_POPUP
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.models.Broadcast
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class PopUpGestureConsumer @Inject constructor(
     @AppContext private val context: Context,
     private val broadcaster: AppBroadcaster,

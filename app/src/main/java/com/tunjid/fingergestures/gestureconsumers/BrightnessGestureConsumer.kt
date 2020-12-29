@@ -32,6 +32,7 @@ import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.activities.BrightnessActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.models.Broadcast
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
@@ -40,11 +41,13 @@ import java.util.*
 import java.util.Comparator.naturalOrder
 import java.util.Comparator.reverseOrder
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.max
 import kotlin.math.min
 
+@Singleton
 class BrightnessGestureConsumer @Inject constructor(
-    private val app: App,
+    @AppContext  private val context: Context,
     private val broadcaster: AppBroadcaster,
     private val purchasesManager: PurchasesManager
 ) : GestureConsumer {
@@ -127,7 +130,7 @@ class BrightnessGestureConsumer @Inject constructor(
             && screenDimmerEnabledPreference.value
 
     private val hasOverlayPermission: Boolean
-        get() = Settings.canDrawOverlays(app)
+        get() = Settings.canDrawOverlays(context)
 
     private val supportsAmbientThreshold = Flowables.combineLatest(
         purchasesManager.state,
@@ -177,7 +180,7 @@ class BrightnessGestureConsumer @Inject constructor(
         val originalValue: Int
 
         byteValue = try {
-            Settings.System.getInt(app.contentResolver, Settings.System.SCREEN_BRIGHTNESS)
+            Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS)
         } catch (e: Exception) {
             MAX_BRIGHTNESS.toInt()
         }
@@ -192,7 +195,7 @@ class BrightnessGestureConsumer @Inject constructor(
             else -> Unit
         }
 
-        val intent = Intent(app, BrightnessActivity::class.java)
+        val intent = Intent(context, BrightnessActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
         if (engagedDimmer(gestureAction, originalValue)) {
@@ -207,7 +210,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
         intent.putExtra(CURRENT_BRIGHTNESS_BYTE, byteValue)
 
-        if (showSliderPreference.value) app.startActivity(intent)
+        if (showSliderPreference.value) context.startActivity(intent)
     }
 
     @SuppressLint("SwitchIntDef")
@@ -222,7 +225,7 @@ class BrightnessGestureConsumer @Inject constructor(
     fun saveBrightness(byteValue: Int) {
         if (!App.canWriteToSettings) return
 
-        val contentResolver = app.contentResolver ?: return
+        val contentResolver = context.contentResolver ?: return
 
         Settings.System.putInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
         Settings.System.putInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS, byteValue)
@@ -242,7 +245,7 @@ class BrightnessGestureConsumer @Inject constructor(
             return
         }
 
-        val sensorManager = app.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
             ?: return
 
         val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) ?: return
@@ -309,7 +312,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
     fun shouldShowDimmer(): Boolean = screenDimmerPercentPreference.value != MIN_DIM_PERCENT
 
-    fun getAdjustDeltaText(percentage: Int): String = app.let { app ->
+    fun getAdjustDeltaText(percentage: Int): String = context.let { app ->
         if (purchasesManager.isPremium && !noDiscreteBrightness())
             app.getString(R.string.delta_percent_premium, percentage)
         else
@@ -319,22 +322,22 @@ class BrightnessGestureConsumer @Inject constructor(
     fun getAdaptiveBrightnessThresholdText(@IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
                                            percent: Int): String {
         if (!hasBrightnessSensor())
-            return app.getString(R.string.unavailable_brightness_sensor)
+            return context.getString(R.string.unavailable_brightness_sensor)
 
         if (purchasesManager.isNotPremium)
-            return app.getString(R.string.go_premium_text)
+            return context.getString(R.string.go_premium_text)
 
         if (!adaptiveBrightnessPreference.value)
-            return app.getString(R.string.adjust_adaptive_threshold_prompt)
+            return context.getString(R.string.adjust_adaptive_threshold_prompt)
 
         val lux = adaptiveThresholdToLux(percent)
-        val descriptor = app.getString(when {
+        val descriptor = context.getString(when {
             lux < 50 -> R.string.adaptive_threshold_low
             lux < 1000 -> R.string.adaptive_threshold_medium
             else -> R.string.adaptive_threshold_high
         })
 
-        return app.getString(R.string.adaptive_threshold, lux, descriptor)
+        return context.getString(R.string.adaptive_threshold, lux, descriptor)
     }
 
     fun removeDimmer() {
@@ -369,7 +372,7 @@ class BrightnessGestureConsumer @Inject constructor(
             if (on) Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
             else Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
 
-        App.withApp { app -> Settings.System.putInt(app.contentResolver, Settings.System.SCREEN_BRIGHTNESS_MODE, brightnessMode) }
+        Settings.System.putInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS_MODE, brightnessMode)
     }
 
     private fun stringPercentageToBrightnessInt(stringPercent: String): Int {
@@ -378,7 +381,7 @@ class BrightnessGestureConsumer @Inject constructor(
     }
 
     private fun hasBrightnessSensor(): Boolean {
-        val sensorManager = app.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
             ?: return false
 
         val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)

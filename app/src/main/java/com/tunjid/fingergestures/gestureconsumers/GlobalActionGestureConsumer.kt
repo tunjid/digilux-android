@@ -29,7 +29,9 @@ import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.models.Broadcast
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class GlobalActionGestureConsumer @Inject constructor(
    private val broadcaster: AppBroadcaster
 ) : GestureConsumer {
