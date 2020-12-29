@@ -63,6 +63,19 @@ enum class GestureDirection(
 
 private val GestureDirection.isDouble get() = kind == Kind.Double
 
+private val GestureDirection.doubleDirection: GestureDirection
+    get() = this.match(this)
+
+private fun GestureDirection.match(updated: GestureDirection): GestureDirection =
+    if (updated != this) updated
+    else when (updated) {
+        GestureDirection.Up -> GestureDirection.DoubleUp
+        GestureDirection.Down -> GestureDirection.DoubleDown
+        GestureDirection.Left -> GestureDirection.DoubleLeft
+        GestureDirection.Right -> GestureDirection.DoubleRight
+        else -> updated
+    }
+
 @SuppressLint("CheckResult")
 @Singleton
 class GestureMapper @Inject constructor(
@@ -169,18 +182,8 @@ class GestureMapper @Inject constructor(
             .subscribe(this@GestureMapper::performAction)
     }
 
-    fun mapGestureToAction( direction: GestureDirection, action: GestureAction) {
+    fun mapGestureToAction(direction: GestureDirection, action: GestureAction) {
         directionPreferencesMap.getValue(direction).value = action.id
-    }
-
-    fun getMappedAction( gestureDirection: GestureDirection): String {
-        val action = directionToAction(gestureDirection)
-        val stringResource = action.resource
-        return context.getString(stringResource)
-    }
-
-    fun doubleDirection(direction: GestureDirection): GestureDirection {
-        return match(direction, direction)
     }
 
     fun getSwipeDelayText(percentage: Int): String =
@@ -197,7 +200,7 @@ class GestureMapper @Inject constructor(
 
         val hasPreviousSwipe = originalDirection != null
         val hasPendingAction = doubleSwipeDisposable != null && !doubleSwipeDisposable!!.isDisposed
-        val hasNoDoubleSwipe = directionToAction(doubleDirection(newDirection)) == DO_NOTHING
+        val hasNoDoubleSwipe = directionToAction(newDirection.doubleDirection) == DO_NOTHING
 
         // Keep responsiveness if user has not mapped gesture to a double swipe
         if (!hasPreviousSwipe && hasNoDoubleSwipe) {
@@ -231,7 +234,7 @@ class GestureMapper @Inject constructor(
             return
         }
 
-        directionReference.set(match(originalDirection, newDirection))
+        directionReference.set(originalDirection.match(newDirection))
 
         if (hasPendingAction) doubleSwipeDisposable!!.dispose()
 
@@ -277,23 +280,11 @@ class GestureMapper @Inject constructor(
     private fun isSupportedAction(action: GestureAction): Boolean =
         if (action == GLOBAL_LOCK_SCREEN || action == GLOBAL_TAKE_SCREENSHOT) App.isPieOrHigher else true
 
-    private fun directionToAction( direction: GestureDirection): GestureAction {
+    private fun directionToAction(direction: GestureDirection): GestureAction {
         if (direction.isDouble && purchasesManager.isNotPremium) return DO_NOTHING
 
         val id = directionPreferencesMap.getValue(direction).value
         return GestureAction.fromId(id)
-    }
-
-    private fun match(original: GestureDirection, updated: GestureDirection): GestureDirection {
-        if (updated != original) return updated
-
-        return when (updated) {
-            GestureDirection.Up -> GestureDirection.DoubleUp
-            GestureDirection.Down -> GestureDirection.DoubleDown
-            GestureDirection.Left -> GestureDirection.DoubleLeft
-            GestureDirection.Right -> GestureDirection.DoubleRight
-            else -> updated
-        }
     }
 
     private fun actionForResource(resource: Int): GestureAction = when (resource) {
