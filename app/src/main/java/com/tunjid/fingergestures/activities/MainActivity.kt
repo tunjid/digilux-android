@@ -65,7 +65,7 @@ import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
 import com.tunjid.fingergestures.resultcontracts.WallpaperPickContract
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.Tab
+import com.tunjid.fingergestures.viewmodels.main.Tab
 
 class MainActivity : AppCompatActivity(R.layout.activity_main),
     MainApp,

@@ -34,7 +34,7 @@ import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.BottomSheetController
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.models.*
-import com.tunjid.fingergestures.viewmodels.Inputs
+import com.tunjid.fingergestures.viewmodels.main.Inputs
 import java.util.*
 
 interface MainApp : LifecycleOwner, ActivityResultCaller, BottomSheetController {

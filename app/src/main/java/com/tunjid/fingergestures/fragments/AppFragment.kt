@@ -21,7 +21,6 @@ package com.tunjid.fingergestures.fragments
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import com.tunjid.androidx.core.delegates.fragmentArgs
 import com.tunjid.androidx.recyclerview.addScrollListener
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
@@ -35,7 +34,7 @@ import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.viewmodels.Tab
+import com.tunjid.fingergestures.viewmodels.main.Tab
 import kotlin.math.abs
 
 private var AppFragment.tab by fragmentArgs<Tab>()

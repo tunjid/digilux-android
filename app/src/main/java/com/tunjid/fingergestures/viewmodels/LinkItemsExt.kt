@@ -20,6 +20,8 @@ package com.tunjid.fingergestures.viewmodels
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.viewholders.ReviewLinkItem
 import com.tunjid.fingergestures.viewholders.SupportLinkItem
+import com.tunjid.fingergestures.viewmodels.main.Inputs
+import com.tunjid.fingergestures.viewmodels.main.Tab
 import io.reactivex.Flowable
 
 val Inputs.linkItems: Flowable<List<Item>>

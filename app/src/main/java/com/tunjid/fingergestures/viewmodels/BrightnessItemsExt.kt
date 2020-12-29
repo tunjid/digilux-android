@@ -22,6 +22,8 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.models.Brightness
+import com.tunjid.fingergestures.viewmodels.main.Inputs
+import com.tunjid.fingergestures.viewmodels.main.Tab
 import io.reactivex.Flowable
 
 val Inputs.brightnessItems: Flowable<List<Item>>
