@@ -84,9 +84,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
     override val wallpaperPickContract = registerForActivityResult(WallpaperPickContract(::getIntent)) {
         lifecycleScope.launchWhenResumed {
-            it?.let(::cropImage) ?: ::uiState.updatePartial {
-                copy(snackbarText = getString(R.string.cancel_wallpaper))
-            }
+            it?.let(::cropImage) ?: ::uiState.updatePartial { copy(snackbarText = getString(R.string.cancel_wallpaper)) }
         }
     }
     override val cropWallpaperContract = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -217,7 +215,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             MaterialAlertDialogBuilder(this).apply {
                 setTitle(R.string.app_name)
                 setMessage(purchaseState?.trialPeriodText ?: "")
-                setItems(links) { _, index -> showLink(links[index]) }
                 setPositiveButton(android.R.string.yes) { _, _ -> viewModel.accept(Input.StartTrial) }
                 show()
             }
