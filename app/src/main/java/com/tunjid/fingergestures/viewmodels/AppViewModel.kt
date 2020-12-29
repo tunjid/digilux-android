@@ -29,7 +29,7 @@ import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.gestureconsumers.*
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.models.Shilling.Quip
-import com.tunjid.fingergestures.viewmodels.main.Inputs
+import com.tunjid.fingergestures.main.ext.Inputs
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor

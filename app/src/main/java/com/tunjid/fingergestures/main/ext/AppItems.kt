@@ -15,13 +15,14 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.viewmodels.main
+package com.tunjid.fingergestures.main.ext
 
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.viewmodels.*
+import com.tunjid.fingergestures.viewmodels.main.*
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 import java.util.*

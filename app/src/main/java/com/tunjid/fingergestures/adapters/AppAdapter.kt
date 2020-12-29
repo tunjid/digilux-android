@@ -33,8 +33,8 @@ import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.viewholders.*
-import com.tunjid.fingergestures.viewmodels.main.Inputs
-import com.tunjid.fingergestures.viewmodels.main.Tab
+import com.tunjid.fingergestures.main.ext.Inputs
+import com.tunjid.fingergestures.main.ext.Tab
 import java.io.File
 
 fun appAdapter(items: List<Item>?) = listAdapterOf(

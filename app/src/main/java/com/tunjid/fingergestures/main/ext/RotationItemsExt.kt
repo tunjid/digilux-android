@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.viewmodels.main
+package com.tunjid.fingergestures.main.ext
 
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
