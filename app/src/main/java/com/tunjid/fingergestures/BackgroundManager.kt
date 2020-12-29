@@ -65,22 +65,22 @@ class BackgroundManager @Inject constructor(
 
     val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "background color",
+        key = "background color",
         default = context.colorAt(R.color.colorPrimary)
     )
     val sliderColorPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "slider color",
+        key = "slider color",
         default = context.colorAt(R.color.colorAccent)
     )
     val sliderDurationPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "slider duration",
+        key = "slider duration",
         default = DEF_SLIDER_DURATION_PERCENT
     )
     val coloredNavPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "colored nav bar",
+        key = "colored nav bar",
         default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P,
     )
 
@@ -306,9 +306,9 @@ private var Intent.changeWallpaperSelection by intentExtras<WallpaperSelection?>
 private fun WallpaperSelection.wallpaperStatus(reactivePreferences: ReactivePreferences): Flowable<WallpaperStatus> {
     val (defaultHour, defaultMinute) = this.defaultTime
     return Flowables.combineLatest(
-        ReactivePreference(reactivePreferences = reactivePreferences, preferencesName = set, default = false).monitor,
-        ReactivePreference(reactivePreferences = reactivePreferences, preferencesName = hour, default = defaultHour).monitor,
-        ReactivePreference(reactivePreferences = reactivePreferences, preferencesName = minute, default = defaultMinute).monitor,
+        ReactivePreference(reactivePreferences = reactivePreferences, key = set, default = false).monitor,
+        ReactivePreference(reactivePreferences = reactivePreferences, key = hour, default = defaultHour).monitor,
+        ReactivePreference(reactivePreferences = reactivePreferences, key = minute, default = defaultMinute).monitor,
     ) { willChange, hour, minute ->
         WallpaperStatus(
             selection = this,

@@ -68,14 +68,14 @@ class GestureMapper @Inject constructor(
 
     val doubleSwipePreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = DOUBLE_SWIPE_DELAY,
+        key = DOUBLE_SWIPE_DELAY,
         default = DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE
     )
 
     private val directionPreferencesMap = allGestures.map { gestureDirection ->
         gestureDirection to ReactivePreference(
             reactivePreferences = reactivePreferences,
-            preferencesName = gestureDirection,
+            key = gestureDirection,
             default = when (gestureDirection) {
                 UP_GESTURE -> NOTIFICATION_UP
                 DOWN_GESTURE -> NOTIFICATION_DOWN
@@ -140,8 +140,6 @@ class GestureMapper @Inject constructor(
     val actions: List<GestureAction>
         get() = actionIds.map(::actionForResource)
             .filter(::isSupportedAction)
-
-    var doubleSwipeDelay: Int by doubleSwipePreference.delegate
 
     @Retention(AnnotationRetention.SOURCE)
     @StringDef(UP_GESTURE, DOWN_GESTURE, LEFT_GESTURE, RIGHT_GESTURE, DOUBLE_UP_GESTURE, DOUBLE_DOWN_GESTURE, DOUBLE_LEFT_GESTURE, DOUBLE_RIGHT_GESTURE)
@@ -221,7 +219,7 @@ class GestureMapper @Inject constructor(
 
         if (hasPendingAction) doubleSwipeDisposable!!.dispose()
 
-        doubleSwipeDisposable = timer(delayPercentageToMillis(doubleSwipeDelay).toLong(), MILLISECONDS)
+        doubleSwipeDisposable = timer(delayPercentageToMillis(doubleSwipePreference.value).toLong(), MILLISECONDS)
             .subscribe({
                 val direction = directionReference.getAndSet(null) ?: return@subscribe
                 performAction(direction)

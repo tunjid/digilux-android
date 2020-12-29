@@ -45,7 +45,7 @@ class PopUpGestureConsumer @Inject constructor(
 
     val accessibilityButtonEnabledPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = ACCESSIBILITY_BUTTON_ENABLED,
+        key = ACCESSIBILITY_BUTTON_ENABLED,
         default = false,
         onSet = { enabled ->
             broadcaster(Broadcast.Service.AccessibilityButtonChanged(enabled))
@@ -53,12 +53,12 @@ class PopUpGestureConsumer @Inject constructor(
     )
     val accessibilityButtonSingleClickPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = ACCESSIBILITY_BUTTON_SINGLE_CLICK,
+        key = ACCESSIBILITY_BUTTON_SINGLE_CLICK,
         default = false
     )
     val animatePopUpPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = ANIMATES_POPUP,
+        key = ANIMATES_POPUP,
         default = true
     )
 

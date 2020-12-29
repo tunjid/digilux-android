@@ -21,16 +21,15 @@ import android.content.SharedPreferences
 import com.jakewharton.rx.replayingShare
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
 
 data class ReactivePreferences(
     val preferences: SharedPreferences,
     val monitor: Flowable<String>
 )
+
 class ReactivePreference<T : Any>(
     private val reactivePreferences: ReactivePreferences,
-    private val preferencesName: String,
+    private val key: String,
     private val default: T,
     private val onSet: ((T) -> Unit)? = null
 ) {
@@ -39,24 +38,24 @@ class ReactivePreference<T : Any>(
     var value: T
         get() = with(reactivePreferences.preferences) {
             when (default) {
-                is String -> getString(preferencesName, default)
-                is Int -> getInt(preferencesName, default)
-                is Long -> getLong(preferencesName, default)
-                is Float -> getFloat(preferencesName, default)
-                is Boolean -> getBoolean(preferencesName, default)
-                is Set<*> -> HashSet(getStringSet(preferencesName, emptySet())?.filterNotNull()
+                is String -> getString(key, default)
+                is Int -> getInt(key, default)
+                is Long -> getLong(key, default)
+                is Float -> getFloat(key, default)
+                is Boolean -> getBoolean(key, default)
+                is Set<*> -> HashSet(getStringSet(key, emptySet())?.filterNotNull()
                     ?: emptySet<String>())
                 else -> throw IllegalArgumentException("Uhh what are you doing?")
             }
         } as T
         set(value) = with(reactivePreferences.preferences.edit()) {
             when (value) {
-                is String -> putString(preferencesName, value)
-                is Int -> putInt(preferencesName, value)
-                is Long -> putLong(preferencesName, value)
-                is Float -> putFloat(preferencesName, value)
-                is Boolean -> putBoolean(preferencesName, value)
-                is Set<*> -> putStringSet(preferencesName, value.map(Any?::toString).toSet())
+                is String -> putString(key, value)
+                is Int -> putInt(key, value)
+                is Long -> putLong(key, value)
+                is Float -> putFloat(key, value)
+                is Boolean -> putBoolean(key, value)
+                is Set<*> -> putStringSet(key, value.map(Any?::toString).toSet())
                 else -> throw IllegalArgumentException("Uhh what are you doing?")
             }
             apply()
@@ -69,16 +68,8 @@ class ReactivePreference<T : Any>(
      */
     val setter = ::value::set
 
-    val delegate: ReadWriteProperty<Any, T> = object : ReadWriteProperty<Any, T> {
-        override fun getValue(thisRef: Any, property: KProperty<*>): T = value
-
-        override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
-            this@ReactivePreference.value = value
-        }
-    }
-
     val monitor: Flowable<T> = reactivePreferences.monitor
-        .filter(preferencesName::equals)
+        .filter(key::equals)
         .concatMap { pull }
         .startWith(pull)
         .observeOn(Schedulers.io())

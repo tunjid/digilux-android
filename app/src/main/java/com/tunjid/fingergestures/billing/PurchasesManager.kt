@@ -71,7 +71,7 @@ class PurchasesManager @Inject constructor(
 
     val lockedContentPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "has locked content",
+        key = "has locked content",
         default = false
     )
     private val setManager = SetManager(

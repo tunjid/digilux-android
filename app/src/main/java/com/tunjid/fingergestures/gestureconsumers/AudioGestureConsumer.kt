@@ -49,17 +49,17 @@ class AudioGestureConsumer @Inject constructor(
 
     val incrementPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = INCREMENT_VALUE,
+        key = INCREMENT_VALUE,
         default = DEF_INCREMENT_VALUE
     )
     val sliderPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = SHOWS_AUDIO_SLIDER,
+        key = SHOWS_AUDIO_SLIDER,
         default = true
     )
     val streamTypePreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = AUDIO_STREAM_TYPE,
+        key = AUDIO_STREAM_TYPE,
         default = Stream.Default.type
     )
 

@@ -63,7 +63,7 @@ class RotationGestureConsumer @Inject constructor(
 
     val autoRotatePreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = WATCHES_WINDOW_CONTENT,
+        key = WATCHES_WINDOW_CONTENT,
         default = false,
         onSet = { broadcaster(Broadcast.Service.WatchesWindows(enabled = it)) }
     )

@@ -82,47 +82,47 @@ class BrightnessGestureConsumer @Inject constructor(
 
     val percentagePreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "increment value",
+        key = "increment value",
         default = DEF_INCREMENT_VALUE
     )
     val positionPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "slider position",
+        key = "slider position",
         default = DEF_POSITION_VALUE
     )
     val adaptiveBrightnessThresholdPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "adaptive brightness threshold",
+        key = "adaptive brightness threshold",
         default = DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD
     )
     val adaptiveBrightnessPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "adaptive brightness",
+        key = "adaptive brightness",
         default = true
     )
     val logarithmicBrightnessPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "logarithmic scale",
+        key = "logarithmic scale",
         default = App.isPieOrHigher
     )
     val showSliderPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "slider visible",
+        key = "slider visible",
         default = true
     )
     val animateSliderPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "animates slider",
+        key = "animates slider",
         default = true
     )
     val screenDimmerPercentPreference: ReactivePreference<Float> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "screen dimmer dim percent",
+        key = "screen dimmer dim percent",
         default = DEF_DIM_PERCENT
     )
     val screenDimmerEnabledPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        preferencesName = "screen dimmer enabled",
+        key = "screen dimmer enabled",
         default = false,
         onSet = { enabled -> if (!enabled) removeDimmer() }
     )
