@@ -52,14 +52,6 @@ enum class GestureAction(val id: Int) {
     }
 }
 
-fun interface GestureCommunicator {
-    fun accept(action: Communication)
-}
-
-sealed class Communication {
-    data class PerformGesture(val action: GestureAction) : Communication()
-}
-
 interface GestureConsumer {
 
     fun onGestureActionTriggered(gestureAction: GestureAction)

@@ -274,7 +274,7 @@ class BackgroundManager @Inject constructor(
             ?: return false
 
         val handled = componentName.packageName == "com.google.android.apps.photos"
-        if (handled) broadcaster(intent)
+//        if (handled) broadcaster(intent)
 
         return handled
     }

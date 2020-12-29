@@ -43,21 +43,11 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK
 import android.view.accessibility.AccessibilityWindowInfo
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.ACTION_ACCESSIBILITY_BUTTON
-import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.ACTION_SHOW_POPUP
-import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.EXTRA_SHOWS_ACCESSIBILITY_BUTTON
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.di.dagger
-import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer.Companion.ACTION_EXPAND_VOLUME_CONTROLS
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.ACTION_SCREEN_DIMMER_CHANGED
-import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.Companion.ACTION_TOGGLE_DOCK
-import com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.Companion.ACTION_GLOBAL_ACTION
-import com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.Companion.EXTRA_GLOBAL_ACTION
-import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_DOWN
-import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_TOGGLE
-import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_UP
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ACTION_WATCH_WINDOW_CHANGES
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.EXTRA_WATCHES_WINDOWS
+import com.tunjid.fingergestures.models.Broadcast
+import com.tunjid.fingergestures.models.ignore
+import com.tunjid.fingergestures.viewmodels.filterIsInstance
 import io.reactivex.disposables.Disposable
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
@@ -78,7 +68,7 @@ class FingerGestureService : AccessibilityService() {
     }
 
     private val screenWakeReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) = onIntentReceived(intent)
+        override fun onReceive(context: Context, intent: Intent) = gestureConsumers.brightness.onScreenTurnedOn()
     }
 
     private val isQuickSettingsShowing: Boolean
@@ -168,11 +158,11 @@ class FingerGestureService : AccessibilityService() {
         }, null)
     }
 
-    private fun adjustDimmer() {
+    private fun adjustDimmer(broadcast: Broadcast.Service.ScreenDimmerChanged) {
         val windowManager = getSystemService(WindowManager::class.java) ?: return
 
         val brightnessGestureConsumer = gestureConsumers.brightness
-        val dimAmount = brightnessGestureConsumer.screenDimmerPercentPreference.value
+        val dimAmount = broadcast.percent
 
         if (brightnessGestureConsumer.shouldShowDimmer()) {
             val params: WindowManager.LayoutParams =
@@ -230,57 +220,40 @@ class FingerGestureService : AccessibilityService() {
 
     private fun subscribeToBroadcasts() {
         broadcastDisposable = dagger.appComponent.broadcasts()
-            .filter(this::intentMatches)
-            .subscribe(this::onIntentReceived) { error ->
+            .filterIsInstance<Broadcast.Service>()
+            .subscribe(::onBroadcastReceived) { error ->
                 error.printStackTrace()
                 subscribeToBroadcasts() // Resubscribe on error
             }
     }
 
-    private fun onIntentReceived(intent: Intent) {
-        when (intent.action ?: return) {
-            ACTION_SCREEN_ON -> gestureConsumers.brightness.onScreenTurnedOn()
-            ACTION_NOTIFICATION_DOWN -> if (notificationsShowing())
-                expandQuickSettings()
-            else
-                performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
-            ACTION_NOTIFICATION_UP -> closeNotifications()
-            ACTION_NOTIFICATION_TOGGLE -> when {
-                isQuickSettingsShowing -> closeNotifications()
-                notificationsShowing() -> expandQuickSettings()
-                else -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
-            }
-            ACTION_EXPAND_VOLUME_CONTROLS -> expandAudioControls()
-            ACTION_SCREEN_DIMMER_CHANGED -> adjustDimmer()
-            ACTION_TOGGLE_DOCK -> {
-                performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
-                App.delay(DELAY.toLong(), MILLISECONDS) { performGlobalAction(GLOBAL_ACTION_RECENTS) }
-            }
-            ACTION_WATCH_WINDOW_CHANGES -> setWatchesWindows(intent.getBooleanExtra(EXTRA_WATCHES_WINDOWS, false))
-            ACTION_ACCESSIBILITY_BUTTON -> setShowsAccessibilityButton(intent.getBooleanExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, false))
-            ACTION_GLOBAL_ACTION -> {
-                val globalAction = intent.getIntExtra(EXTRA_GLOBAL_ACTION, -1)
-                if (globalAction != -1) performGlobalAction(globalAction)
-            }
-            ACTION_SHOW_POPUP -> gestureConsumers.popUp.showPopup()
+    private fun onBroadcastReceived(broadcast: Broadcast.Service) = when (broadcast) {
+        Broadcast.Service.ExpandVolumeControls -> expandAudioControls()
+        Broadcast.Service.ShowPopUp -> gestureConsumers.popUp.showPopup()
+        Broadcast.Service.ToggleDock -> {
+            performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
+            App.delay(DELAY.toLong(), MILLISECONDS) { performGlobalAction(GLOBAL_ACTION_RECENTS) }
+            Unit
         }
+        Broadcast.Service.ShadeDown -> when {
+            notificationsShowing() -> expandQuickSettings()
+            else -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS).ignore
+        }
+        Broadcast.Service.ShadeUp -> closeNotifications()
+        Broadcast.Service.ShadeToggle -> when {
+            isQuickSettingsShowing -> closeNotifications()
+            notificationsShowing() -> expandQuickSettings()
+            else -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS).ignore
+        }
+        is Broadcast.Service.AccessibilityButtonChanged -> setShowsAccessibilityButton(broadcast.enabled)
+        is Broadcast.Service.ScreenDimmerChanged -> adjustDimmer(broadcast)
+        is Broadcast.Service.GlobalAction -> {
+            val globalAction = broadcast.action
+            if (globalAction != -1) performGlobalAction(globalAction).ignore
+            else Unit
+        }
+        is Broadcast.Service.WatchesWindows -> setWatchesWindows(broadcast.enabled)
     }
-
-    private fun intentMatches(intent: Intent): Boolean = when (intent.action) {
-        ACTION_SCREEN_DIMMER_CHANGED,
-        ACTION_EXPAND_VOLUME_CONTROLS,
-        ACTION_ACCESSIBILITY_BUTTON,
-        ACTION_WATCH_WINDOW_CHANGES,
-        ACTION_NOTIFICATION_TOGGLE,
-        ACTION_NOTIFICATION_DOWN,
-        ACTION_NOTIFICATION_UP,
-        ACTION_GLOBAL_ACTION,
-        ACTION_TOGGLE_DOCK,
-        ACTION_SHOW_POPUP,
-        ACTION_SCREEN_ON -> true
-        else -> false
-    }
-
 
     private fun getSystemUiString(resourceID: String, defaultValue: String): String {
         val resources = systemUiResources ?: return defaultValue

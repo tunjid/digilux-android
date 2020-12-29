@@ -19,13 +19,17 @@ package com.tunjid.fingergestures.gestureconsumers
 
 import android.accessibilityservice.FingerprintGestureController
 import android.accessibilityservice.FingerprintGestureController.*
+import android.annotation.SuppressLint
 import androidx.annotation.StringDef
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.GestureConsumers
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.*
+import com.tunjid.fingergestures.models.Broadcast
+import com.tunjid.fingergestures.viewmodels.filterIsInstance
 import io.reactivex.Flowable
 import io.reactivex.Flowable.timer
 import io.reactivex.disposables.Disposable
@@ -34,9 +38,11 @@ import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
+@SuppressLint("CheckResult")
 class GestureMapper @Inject constructor(
     private val purchasesManager: PurchasesManager,
-    private val consumers: GestureConsumers
+    private val consumers: GestureConsumers,
+    broadcasts: AppBroadcasts
 ) : FingerprintGestureController.FingerprintGestureCallback() {
 
     data class GesturePair(
@@ -134,6 +140,9 @@ class GestureMapper @Inject constructor(
 
     init {
         actionIds = getActionIds()
+        broadcasts.filterIsInstance<Broadcast.Gesture>()
+            .map(Broadcast.Gesture::gesture)
+            .subscribe(this@GestureMapper::performAction)
     }
 
     fun mapGestureToAction(@GestureDirection direction: String, action: GestureAction) {

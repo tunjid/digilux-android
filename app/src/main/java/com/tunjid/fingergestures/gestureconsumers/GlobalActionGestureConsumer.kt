@@ -25,13 +25,12 @@ import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_RECENTS
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_TAKE_SCREENSHOT
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
 import android.annotation.SuppressLint
-import android.content.Intent
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.models.Broadcast
 import javax.inject.Inject
 
 class GlobalActionGestureConsumer @Inject constructor(
-   private val app: App,
    private val broadcaster: AppBroadcaster
 ) : GestureConsumer {
 
@@ -66,15 +65,7 @@ class GlobalActionGestureConsumer @Inject constructor(
 
         if (action == -1) return
 
-        val intent = Intent(ACTION_GLOBAL_ACTION)
-        intent.putExtra(EXTRA_GLOBAL_ACTION, action)
-
-        broadcaster(intent)
-    }
-
-    companion object {
-        const val ACTION_GLOBAL_ACTION = "GlobalActionConsumer action"
-        const val EXTRA_GLOBAL_ACTION = "GlobalActionConsumer action extra"
+        broadcaster(Broadcast.Service.GlobalAction(action))
     }
 }
 

@@ -32,6 +32,7 @@ import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.activities.BrightnessActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.models.Broadcast
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 import java.math.BigDecimal
@@ -196,9 +197,10 @@ class BrightnessGestureConsumer @Inject constructor(
 
         if (engagedDimmer(gestureAction, originalValue)) {
             byteValue = originalValue
+            val percent = screenDimmerPercentPreference.value
             intent.action = ACTION_SCREEN_DIMMER_CHANGED
-            intent.screenDimmerPercent = screenDimmerPercentPreference.value
-            broadcaster(intent)
+            intent.screenDimmerPercent = percent
+            broadcaster(Broadcast.Service.ScreenDimmerChanged(percent))
         } else if (shouldRemoveDimmerOnChange(gestureAction)) removeDimmer()
 
         saveBrightness(byteValue)
@@ -337,9 +339,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
     fun removeDimmer() {
         screenDimmerPercentPreference.value = MIN_DIM_PERCENT
-        val intent = Intent(ACTION_SCREEN_DIMMER_CHANGED)
-        intent.screenDimmerPercent = screenDimmerPercentPreference.value
-        broadcaster(intent)
+        broadcaster(Broadcast.Service.ScreenDimmerChanged(MIN_DIM_PERCENT))
     }
 
     fun percentToByte(percentage: Int): Int =
@@ -407,7 +407,6 @@ class BrightnessGestureConsumer @Inject constructor(
 
         const val CURRENT_BRIGHTNESS_BYTE = "brightness value"
         const val ACTION_SCREEN_DIMMER_CHANGED = "show screen dimmer"
-        private const val EMPTY_STRING = ""
 
         private fun roundDown(d: Float): Float {
             var bd = BigDecimal(d.toString())

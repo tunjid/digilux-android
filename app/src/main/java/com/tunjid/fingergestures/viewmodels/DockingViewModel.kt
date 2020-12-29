@@ -17,11 +17,10 @@
 
 package com.tunjid.fingergestures.viewmodels
 
-import android.content.Intent
 import androidx.lifecycle.ViewModel
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.di.AppBroadcaster
-import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer
+import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.toLiveData
 import javax.inject.Inject
 
@@ -38,5 +37,5 @@ class DockingViewModel @Inject constructor(
         .map(::DockingState)
         .toLiveData()
 
-    fun toggleDock() = broadcaster(Intent(DockingGestureConsumer.ACTION_TOGGLE_DOCK))
+    fun toggleDock() = broadcaster(Broadcast.Service.ToggleDock)
 }

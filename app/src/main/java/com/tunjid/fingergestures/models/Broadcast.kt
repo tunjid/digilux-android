@@ -17,6 +17,21 @@
 
 package com.tunjid.fingergestures.models
 
-sealed class Broadcast {
+import com.tunjid.fingergestures.gestureconsumers.GestureAction
 
+sealed class Broadcast {
+    sealed class Service: Broadcast() {
+        object ExpandVolumeControls : Service()
+        object ShowPopUp : Service()
+        object ToggleDock : Service()
+        data class AccessibilityButtonChanged(val enabled: Boolean) : Service()
+        data class ScreenDimmerChanged(val percent: Float) : Service()
+        data class GlobalAction(val action: Int) : Service()
+        data class WatchesWindows(val enabled: Boolean) : Service()
+        object ShadeDown : Service()
+        object ShadeUp : Service()
+        object ShadeToggle : Service()
+    }
+    data class Prompt(val message: String): Broadcast()
+    data class Gesture(val gesture: GestureAction): Broadcast()
 }

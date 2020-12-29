@@ -18,7 +18,6 @@
 package com.tunjid.fingergestures.di
 
 import android.content.Context
-import android.content.Intent
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.PopUpGestureConsumer
@@ -33,8 +32,8 @@ import javax.inject.Qualifier
 import javax.inject.Singleton
 
 
-typealias AppBroadcaster = (Intent) -> Unit
-typealias AppBroadcasts = Flowable<Intent>
+typealias AppBroadcaster = (Broadcast) -> Unit
+typealias AppBroadcasts = Flowable<Broadcast>
 
 @Qualifier
 annotation class AppContext
@@ -42,8 +41,7 @@ annotation class AppContext
 @Module
 class AppModule(private val app: App) {
 
-    private val processor = PublishProcessor.create<Communication>()
-    private val backingBroadcaster = PublishProcessor.create<Intent>()
+    private val backingBroadcaster = PublishProcessor.create<Broadcast>()
     private val broadcasts = backingBroadcaster
     private val broadcaster = backingBroadcaster::onNext
 
@@ -54,10 +52,6 @@ class AppModule(private val app: App) {
     @Provides
     @AppContext
     fun provideAppContext(): Context = app
-
-    @Provides
-    @Singleton
-    fun provideGestureCommunicator(): GestureCommunicator = GestureCommunicator(processor::onNext)
 
     @Provides
     @Singleton
@@ -98,7 +92,6 @@ class AppModule(private val app: App) {
     @Singleton
     fun provideNotificationGestureConsumer(): NotificationGestureConsumer =
         NotificationGestureConsumer(
-            app = app,
             broadcaster = broadcaster,
         )
 
@@ -125,20 +118,17 @@ class AppModule(private val app: App) {
     @Singleton
     fun provideGlobalActionGestureConsumer(): GlobalActionGestureConsumer =
         GlobalActionGestureConsumer(
-            app = app,
             broadcaster = broadcaster,
         )
 
     @Provides
     @Singleton
     fun providePopUpGestureConsumer(
-        communicator: GestureCommunicator,
         purchasesManager: PurchasesManager
     ): PopUpGestureConsumer =
         PopUpGestureConsumer(
             context = app,
             broadcaster = broadcaster,
-            communicator = communicator,
             purchasesManager = purchasesManager
         )
 
@@ -155,7 +145,8 @@ class AppModule(private val app: App) {
     ): GestureMapper =
         GestureMapper(
             purchasesManager = purchasesManager,
-            consumers = consumers
+            consumers = consumers,
+            broadcasts = broadcasts,
         )
 
     @Provides

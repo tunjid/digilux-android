@@ -17,7 +17,6 @@
 
 package com.tunjid.fingergestures.models
 
-import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
@@ -31,11 +30,12 @@ import com.tunjid.fingergestures.gestureconsumers.GestureAction
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 import kotlinx.parcelize.Parcelize
+import java.util.*
 
 data class AppState(
     val purchasesState: PurchasesManager.State,
     val links: List<TextLink> = listOf(),
-    val broadcasts: Intent? = null,
+    val broadcasts: Optional<Broadcast.Prompt> = Optional.empty(),
     val uiInteraction: Input.UiInteraction,
     val permissionState: PermissionState = PermissionState(),
     val billingState: BillingState = BillingState(),
@@ -122,6 +122,10 @@ data class UiUpdate(
     val iconRes: Int = R.drawable.ic_add_24dp,
     val fabVisible: Boolean = false
 )
+
+@Suppress("unused")
+val Any?.ignore
+    get() = Unit
 
 sealed class Shilling {
     object Calm : Shilling()

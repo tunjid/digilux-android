@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.di
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.ViewModelProvider
+import com.tunjid.fingergestures.models.Broadcast
 import dagger.Component
 import io.reactivex.Flowable
 import javax.inject.Singleton
@@ -33,7 +34,7 @@ interface AppComponent {
     @AppContext
     fun appContext(): Context
 
-    fun broadcasts(): Flowable<Intent>
+    fun broadcasts(): Flowable<Broadcast>
 
     fun dependencies(): AppDependencies
 

@@ -45,9 +45,5 @@ class DockingGestureConsumer @Inject constructor(
             else -> Unit
         }
     }
-
-    companion object {
-        const val ACTION_TOGGLE_DOCK = "DockingGestureConsumer toggle dock"
-    }
 }
 

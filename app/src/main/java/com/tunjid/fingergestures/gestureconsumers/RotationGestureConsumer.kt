@@ -18,7 +18,6 @@
 package com.tunjid.fingergestures.gestureconsumers
 
 
-import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.Parcelable
 import android.provider.Settings
@@ -27,6 +26,7 @@ import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ANDROID_SYSTEM_UI_PACKAGE
 import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor
@@ -57,7 +57,8 @@ class RotationGestureConsumer @Inject constructor(
 
     val autoRotatePreference: ReactivePreference<Boolean> = ReactivePreference(
         preferencesName = WATCHES_WINDOW_CONTENT,
-        default = false
+        default = false,
+        onSet = { broadcaster(Broadcast.Service.WatchesWindows(enabled = it)) }
     )
 
     val applicationInfoComparator: Comparator<ApplicationInfo>
@@ -136,17 +137,6 @@ class RotationGestureConsumer @Inject constructor(
             app.getString(R.string.auto_rotate_apps_excluded))
     }, EMPTY_STRING)
 
-    fun enableWindowContentWatching(enabled: Boolean) {
-        App.withApp { app ->
-            app.preferences.edit().putBoolean(WATCHES_WINDOW_CONTENT, enabled).apply()
-
-            val intent = Intent(ACTION_WATCH_WINDOW_CHANGES)
-            intent.putExtra(EXTRA_WATCHES_WINDOWS, enabled)
-
-            broadcaster(intent)
-        }
-    }
-
     private fun canAddToSet(preferenceName: Preference): Boolean {
         val set = setManager.getSet(preferenceName)
         val count = set.filterNot(unRemovablePackages::contains).count()
@@ -171,9 +161,6 @@ class RotationGestureConsumer @Inject constructor(
     companion object {
         private const val ENABLE_AUTO_ROTATION = 1
         private const val DISABLE_AUTO_ROTATION = 0
-
-        const val ACTION_WATCH_WINDOW_CHANGES = "com.tunjid.fingergestures.watch_windows"
-        const val EXTRA_WATCHES_WINDOWS = "extra watches window content"
         private const val WATCHES_WINDOW_CONTENT = "watches window content"
         private const val EMPTY_STRING = ""
     }

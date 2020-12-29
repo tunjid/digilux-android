@@ -30,14 +30,12 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
-import com.tunjid.fingergestures.models.UiState
-import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.BottomSheetController
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.models.*
-import com.tunjid.fingergestures.services.FingerGestureService
 import com.tunjid.fingergestures.viewmodels.Inputs
+import java.util.*
 
 interface MainApp : LifecycleOwner, ActivityResultCaller, BottomSheetController {
     val permissionContract: ActivityResultLauncher<Input.Permission.Request>
@@ -72,7 +70,8 @@ fun MainApp.observe(state: LiveData<AppState>) = with(state) {
         .observe(this@observe, ::onUiInteraction)
 
     mapDistinct(AppState::broadcasts)
-        .nonNull()
+        .filter(Optional<Broadcast.Prompt>::isPresent)
+        .map(Optional<Broadcast.Prompt>::get)
         .filterUnhandledEvents()
         .observe(this@observe, ::onBroadcastReceived)
 
@@ -143,11 +142,8 @@ private fun MainApp.onStateChanged(uiUpdate: UiUpdate) {
     )
 }
 
-private fun MainApp.onBroadcastReceived(intent: Intent) {
-    when (intent.action) {
-        BackgroundManager.ACTION_EDIT_WALLPAPER -> showSnackbar(R.string.error_wallpaper_google_photos)
-        FingerGestureService.ACTION_SHOW_SNACK_BAR -> showSnackbar(intent.getIntExtra(FingerGestureService.EXTRA_SHOW_SNACK_BAR, R.string.generic_error))
-    }
+private fun MainApp.onBroadcastReceived(broadcast: Broadcast.Prompt) {
+    ::uiState.updatePartial { copy(snackbarText = broadcast.message) }
 }
 
 private fun MainApp.showSnackbar(@StringRes resource: Int) = ::uiState.updatePartial {

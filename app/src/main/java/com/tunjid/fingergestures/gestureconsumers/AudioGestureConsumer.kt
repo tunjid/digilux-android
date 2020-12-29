@@ -21,7 +21,6 @@ import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.NotificationManager.INTERRUPTION_FILTER_ALARMS
 import android.app.NotificationManager.INTERRUPTION_FILTER_ALL
-import android.content.Intent
 import android.media.AudioManager
 import android.media.AudioManager.ADJUST_LOWER
 import android.media.AudioManager.ADJUST_RAISE
@@ -30,6 +29,7 @@ import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.models.Broadcast
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 import kotlin.math.max
@@ -149,8 +149,7 @@ class AudioGestureConsumer @Inject constructor(
     }
 
     private fun broadcastExpandVolumeIntent() {
-        val expandVolumeIntent = Intent(ACTION_EXPAND_VOLUME_CONTROLS)
-        App.delay(EXPAND_VOLUME_DELAY, MILLISECONDS) { broadcaster(expandVolumeIntent) }
+        App.delay(EXPAND_VOLUME_DELAY, MILLISECONDS) { broadcaster(Broadcast.Service.ExpandVolumeControls) }
     }
 
     private fun getStreamWithLargestMax(audioManager: AudioManager): Int {
@@ -215,7 +214,6 @@ class AudioGestureConsumer @Inject constructor(
 //        private const val STREAM_TYPE_ALL = Integer.MAX_VALUE
         private const val MANAGED_BY_SYSTEM = -1
 
-        const val ACTION_EXPAND_VOLUME_CONTROLS = "AudioGestureConsumer expand volume"
         private const val INCREMENT_VALUE = "audio increment value"
         private const val AUDIO_STREAM_TYPE = "audio stream type"
         private const val SHOWS_AUDIO_SLIDER = "audio slider show"

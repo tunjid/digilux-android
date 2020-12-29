@@ -24,17 +24,15 @@ import com.tunjid.fingergestures.activities.PopupActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
-import com.tunjid.fingergestures.gestureconsumers.Communication
 import com.tunjid.fingergestures.gestureconsumers.GestureAction
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.SHOW_POPUP
-import com.tunjid.fingergestures.gestureconsumers.GestureCommunicator
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
+import com.tunjid.fingergestures.models.Broadcast
 import javax.inject.Inject
 
 class PopUpGestureConsumer @Inject constructor(
     @AppContext private val context: Context,
     private val broadcaster: AppBroadcaster,
-    private val communicator: GestureCommunicator,
     private val purchasesManager: PurchasesManager
 ) : GestureConsumer {
 
@@ -46,8 +44,7 @@ class PopUpGestureConsumer @Inject constructor(
         preferencesName = ACCESSIBILITY_BUTTON_ENABLED,
         default = false,
         onSet = { enabled ->
-            broadcaster(Intent(ACTION_ACCESSIBILITY_BUTTON)
-                .putExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, enabled))
+            broadcaster(Broadcast.Service.AccessibilityButtonChanged(enabled))
         }
     )
     val accessibilityButtonSingleClickPreference: ReactivePreference<Boolean> = ReactivePreference(
@@ -72,7 +69,7 @@ class PopUpGestureConsumer @Inject constructor(
         get() = setManager.getItems(Preference.SavedActions)
 
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
-        broadcaster(Intent(ACTION_SHOW_POPUP))
+        broadcaster(Broadcast.Service.ShowPopUp)
     }
 
     override fun accepts(gesture: GestureAction): Boolean = gesture == SHOW_POPUP
@@ -80,8 +77,8 @@ class PopUpGestureConsumer @Inject constructor(
     fun showPopup() = when {
         accessibilityButtonSingleClickPreference.value -> list
             .firstOrNull()
-            ?.let(Communication::PerformGesture)
-            ?.let(communicator::accept)
+            ?.let(Broadcast::Gesture)
+            ?.let(broadcaster)
             ?: Unit
         else -> context.startActivity(Intent(context, PopupActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -92,10 +89,6 @@ class PopUpGestureConsumer @Inject constructor(
         setManager.getSet(preferenceName).size < 2 || purchasesManager.isPremiumNotTrial
 
     companion object {
-
-        const val ACTION_ACCESSIBILITY_BUTTON = "com.tunjid.fingergestures.action.accessibilityButton"
-        const val ACTION_SHOW_POPUP = "PopUpGestureConsumer shows popup"
-        const val EXTRA_SHOWS_ACCESSIBILITY_BUTTON = "extra shows accessibility button"
         private const val ACCESSIBILITY_BUTTON_ENABLED = "accessibility button enabled"
         private const val ACCESSIBILITY_BUTTON_SINGLE_CLICK = "accessibility button single click"
         private const val ANIMATES_POPUP = "animates popup"

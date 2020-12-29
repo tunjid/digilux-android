@@ -43,7 +43,7 @@ import javax.inject.Inject
 
 class AppViewModel @Inject constructor(
     @AppContext app: Context,
-    private val broadcasts: Flowable<Intent>,
+    private val broadcasts: Flowable<Broadcast>,
     override val dependencies: AppDependencies
 ) : ViewModel(), Inputs {
 
@@ -51,7 +51,7 @@ class AppViewModel @Inject constructor(
         Flowables.combineLatest(
             dependencies.purchasesManager.state,
             Flowable.just(app.links),
-            broadcasts.filter(::intentMatches).startWith(Intent()),
+            broadcasts.filterIsInstance<Broadcast.Prompt>().map { Optional.of(it) }.startWith(Optional.empty()),
             inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
             inputProcessor.permissionState,
             inputProcessor.billingState,
