@@ -15,18 +15,27 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.gestureconsumers
+package com.tunjid.fingergestures.di
 
-import javax.inject.Inject
+import android.app.Activity
+import android.app.Service
+import android.content.Context
+import androidx.fragment.app.Fragment
+import com.tunjid.fingergestures.App
 
-class NothingGestureConsumer @Inject constructor() : GestureConsumer {
+val Context.dagger: Dagger get() = (applicationContext as App).dagger
+val Service.dagger: Dagger get() = (application as App).dagger
+val Activity.dagger: Dagger get() = (application as App).dagger
+val Fragment.dagger: Dagger get() = requireActivity().dagger
 
-    override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.DO_NOTHING
-    }
+class Dagger(
+    val appComponent: AppComponent
+) {
 
-    override fun onGestureActionTriggered(gestureAction: GestureAction) {
-        // Do nothing
+    companion object {
+        fun make(app: App): Dagger = DaggerAppComponent.builder()
+            .appModule(AppModule(app))
+            .build()
+            .let(::Dagger)
     }
 }
-

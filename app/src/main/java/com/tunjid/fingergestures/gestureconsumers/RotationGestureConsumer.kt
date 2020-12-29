@@ -26,14 +26,20 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.services.FingerGestureService.Companion.ANDROID_SYSTEM_UI_PACKAGE
 import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.schedulers.Schedulers
 import kotlinx.parcelize.Parcelize
 import java.util.*
+import javax.inject.Inject
 
-class RotationGestureConsumer private constructor() : GestureConsumer {
+class RotationGestureConsumer @Inject constructor(
+    private val app: App,
+    private val broadcaster: AppBroadcaster,
+    private val purchasesManager: PurchasesManager
+) : GestureConsumer {
 
     @Parcelize
     enum class Preference(override val preferenceName: String) : SetPreference, Parcelable {
@@ -61,9 +67,9 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         get() = shifter.flowable.map { it.mapNotNull(this::fromPackageName) }
             .subscribeOn(Schedulers.io())
 
-    val unRemovablePackages = listOfNotNull(
+    val unRemovablePackages = listOf(
         ANDROID_SYSTEM_UI_PACKAGE,
-        App.instance?.packageName
+        app.packageName
     )
 
     private var lastPackageName: String? = null
@@ -137,21 +143,20 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
             val intent = Intent(ACTION_WATCH_WINDOW_CHANGES)
             intent.putExtra(EXTRA_WATCHES_WINDOWS, enabled)
 
-            app.broadcast(intent)
+            broadcaster(intent)
         }
     }
 
     private fun canAddToSet(preferenceName: Preference): Boolean {
         val set = setManager.getSet(preferenceName)
         val count = set.filterNot(unRemovablePackages::contains).count()
-        return count < 2 || PurchasesManager.instance.isPremiumNotTrial
+        return count < 2 || purchasesManager.isPremiumNotTrial
     }
 
     private fun compareApplicationInfo(infoA: ApplicationInfo, infoB: ApplicationInfo): Int {
-        return App.transformApp({ app ->
-            val packageManager = app.packageManager
-            packageManager.getApplicationLabel(infoA).toString().compareTo(packageManager.getApplicationLabel(infoB).toString())
-        }, 0)
+        val packageManager = app.packageManager
+        return packageManager.getApplicationLabel(infoA).toString()
+            .compareTo(packageManager.getApplicationLabel(infoB).toString())
     }
 
     private fun fromPackageName(packageName: String): ApplicationInfo? = App.transformApp { app ->
@@ -171,8 +176,6 @@ class RotationGestureConsumer private constructor() : GestureConsumer {
         const val EXTRA_WATCHES_WINDOWS = "extra watches window content"
         private const val WATCHES_WINDOW_CONTENT = "watches window content"
         private const val EMPTY_STRING = ""
-
-        val instance: RotationGestureConsumer by lazy { RotationGestureConsumer() }
     }
 }
 

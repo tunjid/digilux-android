@@ -29,11 +29,15 @@ import androidx.annotation.IdRes
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference
+import com.tunjid.fingergestures.di.AppBroadcaster
 import java.util.concurrent.TimeUnit.MILLISECONDS
+import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 
-class AudioGestureConsumer private constructor() : GestureConsumer {
+class AudioGestureConsumer @Inject constructor(
+    private val broadcaster: AppBroadcaster
+) : GestureConsumer {
 
     val incrementPreference: ReactivePreference<Int> = ReactivePreference(
         preferencesName = INCREMENT_VALUE,
@@ -146,7 +150,7 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
 
     private fun broadcastExpandVolumeIntent() {
         val expandVolumeIntent = Intent(ACTION_EXPAND_VOLUME_CONTROLS)
-        App.delay(EXPAND_VOLUME_DELAY, MILLISECONDS) { App.withApp { app -> app.broadcast(expandVolumeIntent) } }
+        App.delay(EXPAND_VOLUME_DELAY, MILLISECONDS) { broadcaster(expandVolumeIntent) }
     }
 
     private fun getStreamWithLargestMax(audioManager: AudioManager): Int {
@@ -216,9 +220,6 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
         private const val AUDIO_STREAM_TYPE = "audio stream type"
         private const val SHOWS_AUDIO_SLIDER = "audio slider show"
         private const val EMPTY_STRING = ""
-
-        val instance: AudioGestureConsumer by lazy { AudioGestureConsumer() }
-
     }
 }
 

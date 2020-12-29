@@ -15,18 +15,8 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.gestureconsumers
+package com.tunjid.fingergestures.models
 
-import javax.inject.Inject
+sealed class Broadcast {
 
-class NothingGestureConsumer @Inject constructor() : GestureConsumer {
-
-    override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.DO_NOTHING
-    }
-
-    override fun onGestureActionTriggered(gestureAction: GestureAction) {
-        // Do nothing
-    }
 }
-

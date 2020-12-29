@@ -17,10 +17,10 @@
 
 package com.tunjid.fingergestures.viewmodels
 
-import android.app.Application
 import android.content.Context
 import android.content.pm.ApplicationInfo
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.models.Unique
@@ -28,35 +28,43 @@ import com.tunjid.fingergestures.toLiveData
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 
 data class PackageState(
+    val title: String = "",
     val needsPremium: Unique<Boolean> = Unique(false),
     val installedApps: List<Package> = listOf(),
 )
 
 sealed class PackageInput {
-    data class FetchApps(val time: Long = System.currentTimeMillis()) : PackageInput()
+    data class Fetch(val preference: RotationGestureConsumer.Preference) : PackageInput()
     data class Add(
         val preference: RotationGestureConsumer.Preference,
         val app: ApplicationInfo
     ) : PackageInput()
 }
 
-class PackageViewModel(private val app: Application) : AndroidViewModel(app) {
+class PackageViewModel @Inject constructor(
+    @AppContext private val app: Context,
+    private val rotationGestureConsumer: RotationGestureConsumer
+) : ViewModel() {
 
     private val processor: PublishProcessor<PackageInput> = PublishProcessor.create()
 
     val state = Flowable.combineLatest(
+        processor.filterIsInstance<PackageInput.Fetch>()
+            .map(PackageInput.Fetch::preference)
+            .map(rotationGestureConsumer::getAddText),
         processor.filterIsInstance<PackageInput.Add>().map { add ->
-            RotationGestureConsumer.instance.setManager
+            rotationGestureConsumer.setManager
                 .editorFor(add.preference)
                 .plus(add.app)
                 .not()
         }
             .startWith(false)
             .map(::Unique),
-        processor.filterIsInstance<PackageInput.FetchApps>().concatMap {
-            Flowable.fromCallable(app::installedApps).subscribeOn(Schedulers.io())
+        processor.filterIsInstance<PackageInput.Fetch>().concatMap {
+            Flowable.fromCallable(::installedApps).subscribeOn(Schedulers.io())
         }
             .listMap(::Package)
             .startWith(listOf<Package>()),
@@ -64,15 +72,13 @@ class PackageViewModel(private val app: Application) : AndroidViewModel(app) {
     )
         .toLiveData()
 
-
     fun accept(input: PackageInput) = processor.onNext(input)
-}
 
-private val Context.installedApps
-    get() = packageManager
+    private fun installedApps() = app.packageManager
         .getInstalledApplications(0)
         .filter(ApplicationInfo::isUserInstalledApp)
-        .sortedWith(RotationGestureConsumer.instance.applicationInfoComparator)
+        .sortedWith(rotationGestureConsumer.applicationInfoComparator)
+}
 
 private val ApplicationInfo.isUserInstalledApp: Boolean
     get() = flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0 || flags and ApplicationInfo.FLAG_SYSTEM == 0

@@ -36,6 +36,7 @@ import androidx.annotation.IntRange
 import androidx.palette.graphics.Palette
 import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.core.delegates.intentExtras
+import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
@@ -44,8 +45,20 @@ import kotlinx.parcelize.Parcelize
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
+import javax.inject.Inject
 
-class BackgroundManager private constructor() {
+val Context.screenAspectRatio: IntArray
+    get() = with (resources.displayMetrics) {
+        intArrayOf(widthPixels, heightPixels)
+    }
+
+fun Context.getWallpaperFile(selection: WallpaperSelection): File =
+    File(applicationContext.filesDir, selection.fileName)
+
+class BackgroundManager @Inject constructor(
+   private val app: App,
+   private val broadcaster: AppBroadcaster
+) {
 
     val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
         preferencesName = "background color",
@@ -96,14 +109,8 @@ class BackgroundManager private constructor() {
     val sliderDurationMillis: Int
         get() = durationPercentageToMillis(sliderDurationPreference.value)
 
-    val screenAspectRatio: IntArray?
-        get() = when (val displayMetrics = App.transformApp { app -> app.resources.displayMetrics }) {
-            null -> null
-            else -> intArrayOf(displayMetrics.widthPixels, displayMetrics.heightPixels)
-        }
-
     val screenDimensionRatio: String
-        get() = when (val dimensions = screenAspectRatio) {
+        get() = when (val dimensions = app.screenAspectRatio) {
             null -> "H, 16:9"
             else -> "H," + dimensions[0] + ":" + dimensions[1]
         }
@@ -133,7 +140,6 @@ class BackgroundManager private constructor() {
 
     val wallpaperEditPendingIntent: PendingIntent
         get() {
-            val app = App.instance!!
             val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
             intent.action = ACTION_EDIT_WALLPAPER
             return PendingIntent.getBroadcast(app, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -146,8 +152,7 @@ class BackgroundManager private constructor() {
         return App.transformApp({ app -> app.getString(R.string.duration_value, seconds) }, App.EMPTY)
     }
 
-    fun getWallpaperFile(selection: WallpaperSelection): File? =
-        App.transformApp { File(it.applicationContext.filesDir, selection.fileName) }
+    fun getWallpaperFile(selection: WallpaperSelection): File = app.getWallpaperFile(selection)
 
     fun usesColoredNav(): Boolean = coloredNavPreference.value
 
@@ -173,7 +178,7 @@ class BackgroundManager private constructor() {
         if (handledEditPick(intent)) return
 
         val selection = selectionFromIntent(intent) ?: return
-        val wallpaperFile = getWallpaperFile(selection) ?: return
+        val wallpaperFile = app.getWallpaperFile(selection)
 
         val wallpaperManager = App.transformApp { app -> app.getSystemService(WallpaperManager::class.java) }
         if (wallpaperManager == null || !wallpaperFile.exists()) return
@@ -269,7 +274,7 @@ class BackgroundManager private constructor() {
             ?: return false
 
         val handled = componentName.packageName == "com.google.android.apps.photos"
-        if (handled) App.withApp { app -> app.broadcast(intent) }
+        if (handled) broadcaster(intent)
 
         return handled
     }
@@ -279,7 +284,6 @@ class BackgroundManager private constructor() {
 
     companion object {
         const val ACTION_EDIT_WALLPAPER = "com.tunjid.fingergestures.action.editWallpaper"
-        val instance: BackgroundManager by lazy { BackgroundManager() }
     }
 }
 

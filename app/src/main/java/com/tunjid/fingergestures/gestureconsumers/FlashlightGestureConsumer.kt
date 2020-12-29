@@ -21,14 +21,17 @@ import android.annotation.SuppressLint
 import android.hardware.camera2.CameraManager
 
 import com.tunjid.fingergestures.App
+import javax.inject.Inject
 
-class FlashlightGestureConsumer private constructor() : GestureConsumer {
+class FlashlightGestureConsumer @Inject constructor(
+    private val app: App
+) : GestureConsumer {
 
     private var isCallbackRegistered: Boolean = false
     private var isTorchOn: Boolean = false
 
     init {
-        isCallbackRegistered = registerTorchCallback(App.instance)
+        isCallbackRegistered = registerTorchCallback(app)
     }
 
     @SuppressLint("SwitchIntDef")
@@ -40,7 +43,6 @@ class FlashlightGestureConsumer private constructor() : GestureConsumer {
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
             GestureAction.TOGGLE_FLASHLIGHT -> {
-                val app = App.instance ?: return
                 if (!isCallbackRegistered) isCallbackRegistered = registerTorchCallback(app)
                 if (!isCallbackRegistered) return
 
@@ -67,12 +69,6 @@ class FlashlightGestureConsumer private constructor() : GestureConsumer {
         }, null)
 
         return true
-    }
-
-    companion object {
-
-        val instance: FlashlightGestureConsumer by lazy { FlashlightGestureConsumer() }
-
     }
 
     //     try {

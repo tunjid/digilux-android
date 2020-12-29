@@ -92,10 +92,10 @@ fun MainApp.observe(state: LiveData<AppState>) = with(state) {
 
 fun MainApp.cropImage(result: Pair<WallpaperSelection, Uri>) {
     val (selection, source) = result
-    val backgroundManager = BackgroundManager.instance
-    val aspectRatio = backgroundManager.screenAspectRatio ?: return
 
-    val file = backgroundManager.getWallpaperFile(selection) ?: return
+    val aspectRatio = activity.screenAspectRatio
+    val file = activity.getWallpaperFile(selection)
+
     val destination = Uri.fromFile(file)
 
     cropWallpaperContract.launch(CropImage.activity(source)

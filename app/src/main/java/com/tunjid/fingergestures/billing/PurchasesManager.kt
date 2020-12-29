@@ -27,18 +27,18 @@ import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.rxkotlin.Flowables
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 private object Purchases : SetPreference {
     override val preferenceName get() = "purchases"
 }
 
-class PurchasesManager private constructor() : PurchasesUpdatedListener {
+class PurchasesManager @Inject constructor() : PurchasesUpdatedListener {
 
     enum class Sku(val id: String) {
         Premium(id = "premium"),
         AdFree(id = "ad.free");
     }
-
 
     data class State(
         val numTrials: Int,
@@ -174,8 +174,6 @@ class PurchasesManager private constructor() : PurchasesUpdatedListener {
         private const val FIRST_TRIAL_PERIOD = 60 * 10
         private const val SECOND_TRIAL_PERIOD = 60
         private const val FINAL_TRIAL_PERIOD = 10
-
-        var instance = PurchasesManager()
 
         private fun trialPeriod(numTrials: Int) = when (numTrials) {
             0 -> FIRST_TRIAL_PERIOD

@@ -25,21 +25,19 @@ import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
 import android.view.ViewGroup
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.isVisible
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.dynamicanimation.animation.springAnimationOf
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.activities.main.activeOnCreateLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityBrightnessBinding
+import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.filter
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.CURRENT_BRIGHTNESS_BYTE
 import com.tunjid.fingergestures.map
@@ -49,17 +47,13 @@ import com.tunjid.fingergestures.viewmodels.In
 import com.tunjid.fingergestures.viewmodels.State
 
 class BrightnessActivity : AppCompatActivity() {
-    private val viewModel by viewModels<BrightnessViewModel>()
+    private val viewModel by viewModelFactory<BrightnessViewModel>()
     private val binding by lazy { ActivityBrightnessBinding.inflate(layoutInflater) }
-    private val ownerAndRegistry = lifecycleOwnerAndRegistry()
-    private val dialogLifecycleOwner = ownerAndRegistry.first
-    private val dialogLifecycleRegistry = ownerAndRegistry.second
+    private val dialogLifecycleOwner = activeOnCreateLifecycleOwner()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
-        dialogLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
         window.apply {
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -142,11 +136,6 @@ class BrightnessActivity : AppCompatActivity() {
             overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_up)
     }
 
-    override fun onDestroy() {
-        dialogLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        super.onDestroy()
-    }
-
     override fun finish() {
         super.finish()
         when (viewModel.state.value?.animateSlide) {
@@ -160,8 +149,3 @@ class BrightnessActivity : AppCompatActivity() {
         viewModel.accept(In.Start(brightnessByte))
     }
 }
-
-private fun lifecycleOwnerAndRegistry() = with(object : LifecycleOwner {
-    val registry = LifecycleRegistry(this)
-    override fun getLifecycle(): Lifecycle = registry
-}) { this to registry }

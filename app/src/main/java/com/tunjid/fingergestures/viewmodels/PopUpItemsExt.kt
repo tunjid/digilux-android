@@ -20,14 +20,15 @@ package com.tunjid.fingergestures.viewmodels
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.toPopUpActions
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
 val Inputs.popUpItems: Flowable<List<Item>>
     get() = with(dependencies.gestureConsumers.popUp) {
         Flowables.combineLatest(
-            setManager.itemsFlowable(PopUpGestureConsumer.Preference.SavedActions).listMap(::Action),
+            setManager.itemsFlowable(PopUpGestureConsumer.Preference.SavedActions)
+                .toPopUpActions(dependencies.backgroundManager.sliderColorPreference.monitor),
             accessibilityButtonSingleClickPreference.monitor,
             accessibilityButtonEnabledPreference.monitor,
             animatePopUpPreference.monitor,

@@ -20,9 +20,14 @@ package com.tunjid.fingergestures.gestureconsumers
 import android.annotation.SuppressLint
 import android.content.Intent
 import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.di.AppBroadcaster
+import javax.inject.Inject
 
 
-class NotificationGestureConsumer private constructor() : GestureConsumer {
+class NotificationGestureConsumer @Inject constructor(
+    private val app: App,
+    private val broadcaster: AppBroadcaster
+) : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean {
@@ -39,24 +44,18 @@ class NotificationGestureConsumer private constructor() : GestureConsumer {
         when (gestureAction) {
             GestureAction.NOTIFICATION_UP,
             GestureAction.NOTIFICATION_DOWN,
-            GestureAction.NOTIFICATION_TOGGLE -> App.withApp { app ->
-                app.broadcast(Intent(when (gestureAction) {
-                    GestureAction.NOTIFICATION_UP -> ACTION_NOTIFICATION_UP
-                    GestureAction.NOTIFICATION_DOWN -> ACTION_NOTIFICATION_DOWN
-                    else -> ACTION_NOTIFICATION_TOGGLE
-                }))
-            }
+            GestureAction.NOTIFICATION_TOGGLE -> broadcaster(Intent(when (gestureAction) {
+                GestureAction.NOTIFICATION_UP -> ACTION_NOTIFICATION_UP
+                GestureAction.NOTIFICATION_DOWN -> ACTION_NOTIFICATION_DOWN
+                else -> ACTION_NOTIFICATION_TOGGLE
+            }))
         }
     }
 
     companion object {
-
         const val ACTION_NOTIFICATION_UP = "NotificationGestureConsumer up"
         const val ACTION_NOTIFICATION_DOWN = "NotificationGestureConsumer down"
         const val ACTION_NOTIFICATION_TOGGLE = "NotificationGestureConsumer toggle"
-
-        val instance: NotificationGestureConsumer by lazy { NotificationGestureConsumer() }
-
     }
 }
 

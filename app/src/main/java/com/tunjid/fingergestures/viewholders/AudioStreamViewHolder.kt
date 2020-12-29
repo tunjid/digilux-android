@@ -32,7 +32,7 @@ private var BindingViewHolder<ViewholderAudioStreamTypeBinding>.item by viewHold
 
 fun ViewGroup.audioStream() = viewHolderFrom(ViewholderAudioStreamTypeBinding::inflate).apply {
     binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
-        AudioGestureConsumer.instance.streamTypePreference.value = AudioGestureConsumer.Stream.forId(checkedId).type
+        item.consumer(AudioGestureConsumer.Stream.forId(checkedId).type)
     }
 }
 

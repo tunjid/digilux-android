@@ -18,13 +18,16 @@
 package com.tunjid.fingergestures.viewmodels
 
 import androidx.lifecycle.ViewModel
+import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Unique
+import com.tunjid.fingergestures.models.toPopUpActions
 import com.tunjid.fingergestures.toLiveData
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
+import javax.inject.Inject
 
 data class ActionState(
     val needsPremium: Unique<Boolean> = Unique(false),
@@ -36,17 +39,20 @@ sealed class ActionInput {
     data class MapGesture(val direction: String, val action: Action) : ActionInput()
 }
 
-class ActionViewModel : ViewModel() {
+class ActionViewModel @Inject constructor(
+    private val gestureMapper: GestureMapper,
+    backgroundManager: BackgroundManager,
+    popUpGestureConsumer: PopUpGestureConsumer,
+) : ViewModel() {
 
-    private val gestureMapper = GestureMapper.instance
-    private val editor = PopUpGestureConsumer.instance.setManager
+    private val editor = popUpGestureConsumer.setManager
         .editorFor(PopUpGestureConsumer.Preference.SavedActions)
 
     private val processor = PublishProcessor.create<Boolean>()
 
     val state = Flowable.combineLatest(
         processor.startWith(false).map(::Unique),
-        Flowable.just(gestureMapper.actions).listMap(::Action),
+        Flowable.just(gestureMapper.actions).toPopUpActions(backgroundManager.sliderColorPreference.monitor),
         ::ActionState
     ).toLiveData()
 

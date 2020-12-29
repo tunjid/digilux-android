@@ -15,18 +15,28 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.gestureconsumers
+package com.tunjid.fingergestures.viewmodels
 
+import android.content.Intent
+import androidx.lifecycle.ViewModel
+import com.tunjid.fingergestures.BackgroundManager
+import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer
+import com.tunjid.fingergestures.toLiveData
 import javax.inject.Inject
 
-class NothingGestureConsumer @Inject constructor() : GestureConsumer {
+data class DockingState(
+    val backgroundColor: Int
+)
 
-    override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.DO_NOTHING
-    }
+class DockingViewModel @Inject constructor(
+    backgroundManager: BackgroundManager,
+    private val broadcaster: AppBroadcaster,
+) : ViewModel() {
 
-    override fun onGestureActionTriggered(gestureAction: GestureAction) {
-        // Do nothing
-    }
+    val state = backgroundManager.backgroundColorPreference.monitor
+        .map(::DockingState)
+        .toLiveData()
+
+    fun toggleDock() = broadcaster(Intent(DockingGestureConsumer.ACTION_TOGGLE_DOCK))
 }
-

@@ -27,8 +27,13 @@ import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_TOGGLE_SP
 import android.annotation.SuppressLint
 import android.content.Intent
 import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.di.AppBroadcaster
+import javax.inject.Inject
 
-class GlobalActionGestureConsumer private constructor() : GestureConsumer {
+class GlobalActionGestureConsumer @Inject constructor(
+   private val app: App,
+   private val broadcaster: AppBroadcaster
+) : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean = when (gesture) {
@@ -44,8 +49,6 @@ class GlobalActionGestureConsumer private constructor() : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
-        val app = App.instance ?: return
-
         var action = -1
 
         when (gestureAction) {
@@ -66,16 +69,12 @@ class GlobalActionGestureConsumer private constructor() : GestureConsumer {
         val intent = Intent(ACTION_GLOBAL_ACTION)
         intent.putExtra(EXTRA_GLOBAL_ACTION, action)
 
-        app.broadcast(intent)
+        broadcaster(intent)
     }
 
     companion object {
-
         const val ACTION_GLOBAL_ACTION = "GlobalActionConsumer action"
         const val EXTRA_GLOBAL_ACTION = "GlobalActionConsumer action extra"
-
-        val instance: GlobalActionGestureConsumer by lazy { GlobalActionGestureConsumer() }
-
     }
 }
 

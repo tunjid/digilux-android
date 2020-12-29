@@ -20,39 +20,19 @@ package com.tunjid.fingergestures.viewholders
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
-import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.DO_NOTHING
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_BACK
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_HOME
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_LOCK_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_POWER_DIALOG
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_RECENTS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_SPLIT_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_TAKE_SCREENSHOT
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.INCREASE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.INCREASE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.MAXIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.MINIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.NOTIFICATION_DOWN
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.NOTIFICATION_TOGGLE
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.NOTIFICATION_UP
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.REDUCE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.REDUCE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.SHOW_POPUP
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.TOGGLE_AUTO_ROTATE
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.TOGGLE_DOCK
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.TOGGLE_FLASHLIGHT
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.*
+import com.tunjid.fingergestures.gestureconsumers.resource
 import com.tunjid.fingergestures.models.Action
 
 class ActionViewHolder(
-        private val showsText: Boolean,
-        itemView: View,
-        private val clickListener: (Action) -> Unit
+    private val showsText: Boolean,
+    itemView: View,
+    private val clickListener: (Action) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
     private var action: Action? = null
@@ -66,16 +46,13 @@ class ActionViewHolder(
     fun bind(action: Action) {
         this.action = action
 
-        val backgroundManager = BackgroundManager.instance
-
-        textView.visibility = if (showsText) View.VISIBLE else View.GONE
-        textView.setText(GestureMapper.instance.resourceForAction(action.value))
+        textView.isVisible = showsText
+        textView.setText(action.value.resource)
 
         val iconRes = actionToIcon(action)
-        val iconColor = backgroundManager.sliderColorPreference.value
 
         if (showsText) imageView.setImageResource(iconRes)
-        else imageView.setImageDrawable(imageView.context.drawableAt(iconRes)?.withTint(iconColor))
+        else imageView.setImageDrawable(imageView.context.drawableAt(iconRes)?.withTint(action.iconColor))
     }
 
     private fun actionToIcon(action: Action): Int = when (action.value) {

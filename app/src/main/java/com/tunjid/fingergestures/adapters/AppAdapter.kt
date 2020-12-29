@@ -122,6 +122,7 @@ sealed class Item(
         @field:GestureMapper.GestureDirection
         val doubleDirection: String,
         val gesturePair: GestureMapper.GesturePair,
+        val canUseDoubleSwipes: Boolean,
         val input: Inputs
     ) : Item(direction)
 
@@ -152,6 +153,7 @@ sealed class Item(
         val stream: AudioGestureConsumer.Stream,
         val hasDoNotDisturbAccess: Boolean,
         val titleFunction: (Int) -> String,
+        val consumer: (Int) -> Unit,
         val input: Inputs
     ) : Item("AudioStreamType")
 

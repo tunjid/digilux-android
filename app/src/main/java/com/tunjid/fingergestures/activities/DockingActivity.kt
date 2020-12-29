@@ -19,17 +19,24 @@ package com.tunjid.fingergestures.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.App.Companion.withApp
-import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.Companion.ACTION_TOGGLE_DOCK
+import com.tunjid.fingergestures.activities.main.activeOnCreateLifecycleOwner
+import com.tunjid.fingergestures.databinding.ActivityDockingBinding
+import com.tunjid.fingergestures.di.viewModelFactory
+import com.tunjid.fingergestures.mapDistinct
+import com.tunjid.fingergestures.viewmodels.DockingState
+import com.tunjid.fingergestures.viewmodels.DockingViewModel
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class DockingActivity : AppCompatActivity() {
     private var wasMultiWindowMode: Boolean = false
+
+    private val binding by lazy { ActivityDockingBinding.inflate(layoutInflater) }
+    private val viewModel by viewModelFactory<DockingViewModel>()
+    private val dialogLifecycleOwner = activeOnCreateLifecycleOwner()
 
     private val dockingAnimationDuration: Int
         get() = resources.getInteger(R.integer.docking_animation_duration)
@@ -37,9 +44,15 @@ class DockingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wasMultiWindowMode = savedInstanceState != null && savedInstanceState.getBoolean(CONFIGURATION_CHANGE_KEY)
-        setContentView(R.layout.activity_docking)
-        findViewById<View>(R.id.logo).visibility = if (isInMultiWindowMode) View.VISIBLE else View.GONE
-        findViewById<View>(R.id.constraint_layout).setBackgroundColor(BackgroundManager.instance.backgroundColorPreference.value)
+        setContentView(binding.root)
+
+        binding.logo.isVisible = isInMultiWindowMode
+
+        viewModel.state.apply {
+            mapDistinct(DockingState::backgroundColor)
+                .observe(dialogLifecycleOwner, binding.constraintLayout::setBackgroundColor)
+        }
+
         handleIntent(false)
     }
 
@@ -63,10 +76,8 @@ class DockingActivity : AppCompatActivity() {
         if (wasMultiWindowMode)
             finish()
         else
-            App.delay(dockingAnimationDuration.toLong(), MILLISECONDS, this::toggleDock)
+            App.delay(dockingAnimationDuration.toLong(), MILLISECONDS, viewModel::toggleDock)
     }
-
-    private fun toggleDock() = withApp { app -> app.broadcast(Intent(ACTION_TOGGLE_DOCK)) }
 
     companion object {
 

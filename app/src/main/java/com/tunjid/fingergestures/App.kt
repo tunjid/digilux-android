@@ -30,6 +30,7 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK
 import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
+import com.tunjid.fingergestures.di.Dagger
 import io.reactivex.Flowable
 import io.reactivex.Flowable.timer
 import io.reactivex.disposables.Disposable
@@ -39,7 +40,8 @@ import org.reactivestreams.Publisher
 import java.util.concurrent.TimeUnit
 
 class App : android.app.Application() {
-    private val broadcaster = PublishProcessor.create<Intent>()
+
+    val dagger: Dagger by lazy { Dagger.make(this) }
 
     val preferences: SharedPreferences
         get() = getSharedPreferences(BRIGHTNESS_PREFS, Context.MODE_PRIVATE)
@@ -49,18 +51,16 @@ class App : android.app.Application() {
         instance = this
     }
 
-    fun broadcast(intent: Intent) = broadcaster.onNext(intent)
-
-    // Wrap the subject so if there's an error downstream, it doesn't propagate back up to it.
-    // This way, the broadcast stream should never error or terminate
-    fun broadcasts(): Flowable<Intent> =
-        Flowable.defer { broadcaster }.onErrorResumeNext(Function<Throwable, Publisher<out Intent>> { t -> this@App.logAndResume(t) })
-
-    // Log the error, and re-wrap the broadcast processor
-    private fun logAndResume(throwable: Throwable): Flowable<Intent> {
-        Log.e("App Broadcasts", "Error in broadcast stream", throwable)
-        return broadcasts()
-    }
+//    // Wrap the subject so if there's an error downstream, it doesn't propagate back up to it.
+//    // This way, the broadcast stream should never error or terminate
+//    fun broadcasts(): Flowable<Intent> =
+//        Flowable.defer { broadcaster }.onErrorResumeNext(Function<Throwable, Publisher<out Intent>> { t -> this@App.logAndResume(t) })
+//
+//    // Log the error, and re-wrap the broadcast processor
+//    private fun logAndResume(throwable: Throwable): Flowable<Intent> {
+//        Log.e("App Broadcasts", "Error in broadcast stream", throwable)
+//        return broadcasts()
+//    }
 
     companion object {
 

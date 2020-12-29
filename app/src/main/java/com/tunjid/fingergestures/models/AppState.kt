@@ -28,6 +28,8 @@ import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureAction
+import io.reactivex.Flowable
+import io.reactivex.rxkotlin.Flowables
 import kotlinx.parcelize.Parcelize
 
 data class AppState(
@@ -43,10 +45,17 @@ data class AppState(
 sealed class Input {
     sealed class Permission : Input() {
         sealed class Request(val prompt: Int) : Permission(), Parcelable {
-            @Parcelize object Storage : Request(R.string.wallpaper_permission_request)
-            @Parcelize object Settings : Request(R.string.settings_permission_request)
-            @Parcelize object Accessibility : Request(R.string.accessibility_permissions_request)
-            @Parcelize object DoNotDisturb : Request(R.string.do_not_disturb_permissions_request)
+            @Parcelize
+            object Storage : Request(R.string.wallpaper_permission_request)
+
+            @Parcelize
+            object Settings : Request(R.string.settings_permission_request)
+
+            @Parcelize
+            object Accessibility : Request(R.string.accessibility_permissions_request)
+
+            @Parcelize
+            object DoNotDisturb : Request(R.string.do_not_disturb_permissions_request)
         }
 
         sealed class Action : Permission() {
@@ -69,7 +78,7 @@ sealed class Input {
         data class Purchase(val sku: PurchasesManager.Sku) : Billing()
     }
 
-    object StartTrial: Input()
+    object StartTrial : Input()
 }
 
 data class Unique<T>(
@@ -96,7 +105,7 @@ data class Package(val app: ApplicationInfo) : Differentiable {
         (other as? Package)?.let { it.diffId == diffId } ?: super.areContentsTheSame(other)
 }
 
-data class Action(val value: GestureAction) : Differentiable {
+data class Action(val value: GestureAction, val iconColor: Int) : Differentiable {
     override val diffId: String get() = value.toString()
     override fun areContentsTheSame(other: Differentiable): Boolean =
         (other as? Action)?.let { it.value == value } ?: super.areContentsTheSame(other)
@@ -139,3 +148,8 @@ val AppState.uiUpdate
         )
         else -> UiUpdate()
     }.copy(fabVisible = permissionState.queue.isNotEmpty())
+
+fun Flowable<List<GestureAction>>.toPopUpActions(colorSource: Flowable<Int>) = Flowables.combineLatest(
+    this,
+    colorSource
+) { gestures, color -> gestures.map { Action(it, color) } }

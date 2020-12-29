@@ -15,18 +15,27 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.gestureconsumers
+package com.tunjid.fingergestures.di
 
-import javax.inject.Inject
+import android.content.Context
+import android.content.Intent
+import androidx.lifecycle.ViewModelProvider
+import dagger.Component
+import io.reactivex.Flowable
+import javax.inject.Singleton
 
-class NothingGestureConsumer @Inject constructor() : GestureConsumer {
+@Singleton
+@Component(modules = [
+    AppModule::class,
+    AppViewModelModule::class,
+])
+interface AppComponent {
+    @AppContext
+    fun appContext(): Context
 
-    override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.DO_NOTHING
-    }
+    fun broadcasts(): Flowable<Intent>
 
-    override fun onGestureActionTriggered(gestureAction: GestureAction) {
-        // Do nothing
-    }
+    fun dependencies(): AppDependencies
+
+    fun viewModelFactory(): ViewModelProvider.Factory
 }
-

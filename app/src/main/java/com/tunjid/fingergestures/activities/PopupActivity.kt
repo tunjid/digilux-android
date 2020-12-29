@@ -27,20 +27,23 @@ import androidx.core.view.isVisible
 import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
-import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.activities.main.activeOnCreateLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityPopupBinding
-import com.tunjid.fingergestures.map
+import com.tunjid.fingergestures.di.viewModelFactory
+import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
-import com.tunjid.fingergestures.viewmodels.*
+import com.tunjid.fingergestures.viewmodels.PopUpInput
+import com.tunjid.fingergestures.viewmodels.PopUpState
+import com.tunjid.fingergestures.viewmodels.PopUpViewModel
 import java.util.concurrent.atomic.AtomicInteger
 
 class PopupActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityPopupBinding.inflate(layoutInflater) }
-    private val viewModel by viewModels<PopUpViewModel>()
+    private val viewModel by viewModelFactory<PopUpViewModel>()
+    private val dialogLifecycleOwner = activeOnCreateLifecycleOwner()
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -56,7 +59,6 @@ class PopupActivity : AppCompatActivity() {
         window.setLayout(MATCH_PARENT, MATCH_PARENT)
 
         val spanSizer = AtomicInteger(0)
-        val backgroundManager = BackgroundManager.instance
 
         val listAdapter = listAdapterOf(
             initialItems = listOf<Action>(),
@@ -70,8 +72,6 @@ class PopupActivity : AppCompatActivity() {
             viewHolderBinder = { holder, item, _ -> holder.bind(item) }
         )
 
-        binding.text.setTextColor(backgroundManager.sliderColorPreference.value)
-        binding.card.setCardBackgroundColor(backgroundManager.backgroundColorPreference.value)
         binding.itemList.apply {
             layoutManager = gridLayoutManager(6) { spanSizer.get() }
             adapter = listAdapter
@@ -81,19 +81,28 @@ class PopupActivity : AppCompatActivity() {
             true
         }
 
-        viewModel.state.map(PopUpState::popUpActions).observe(this@PopupActivity) { items ->
-            val size = items.size
-            spanSizer.set(if (size == 1) 6 else if (size == 2) 3 else 2)
-            binding.text.isVisible = size == 0
-            listAdapter.submitList(items)
+        viewModel.state.apply {
+            mapDistinct(PopUpState::sliderColor)
+                .observe(dialogLifecycleOwner, binding.text::setTextColor)
+
+            mapDistinct(PopUpState::backgroundColor)
+                .observe(dialogLifecycleOwner, binding.card::setCardBackgroundColor)
+
+            mapDistinct(PopUpState::popUpActions)
+                .observe(dialogLifecycleOwner) { items ->
+                    val size = items.size
+                    spanSizer.set(if (size == 1) 6 else if (size == 2) 3 else 2)
+                    binding.text.isVisible = size == 0
+                    listAdapter.submitList(items)
+                }
         }
     }
 
     override fun onResume() {
         super.onResume()
-
-        if (PopUpGestureConsumer.instance.animatePopUpPreference.value)
-            overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
+        when (viewModel.state.value?.animatesPopUp) {
+            true -> overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
+        }
     }
 
     override fun onStop() {
@@ -103,9 +112,10 @@ class PopupActivity : AppCompatActivity() {
 
     override fun finish() {
         super.finish()
-        val shouldAnimate = PopUpGestureConsumer.instance.animatePopUpPreference.value
-        if (shouldAnimate) overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
-        else overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        when (viewModel.state.value?.animatesPopUp) {
+            true -> overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
+            else -> overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
     }
 
     private fun onActionClicked(action: Action) {

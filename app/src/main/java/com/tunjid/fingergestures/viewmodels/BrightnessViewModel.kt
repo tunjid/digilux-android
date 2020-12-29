@@ -18,13 +18,14 @@
 package com.tunjid.fingergestures.viewmodels
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.toLiveData
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
+import com.tunjid.fingergestures.toLiveData
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 data class State(
     val completed: Boolean,
@@ -43,17 +44,18 @@ sealed class In {
     object RemoveDimmer : In()
 }
 
-class BrightnessViewModel : ViewModel() {
-    private var brightnessByte: Int = 0
+class BrightnessViewModel @Inject constructor(
+    private val brightnessGestureConsumer: BrightnessGestureConsumer,
+    private val backgroundManager: BackgroundManager
+) : ViewModel() {
 
-    private val brightnessGestureConsumer = BrightnessGestureConsumer.instance
-    private val backgroundManager = BackgroundManager.instance
+    private var brightnessByte: Int = 0
 
     private val processor = PublishProcessor.create<In>()
 
     val state = Flowables.combineLatest(
         processor.switchMap {
-            Flowable.timer(BackgroundManager.instance.sliderDurationMillis.toLong(), TimeUnit.MILLISECONDS)
+            Flowable.timer(backgroundManager.sliderDurationMillis.toLong(), TimeUnit.MILLISECONDS)
         }
             .map { true }
             .startWith(false),

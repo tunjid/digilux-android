@@ -21,7 +21,6 @@ import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
@@ -56,6 +55,7 @@ val Inputs.audioItems: Flowable<List<Item>>
                     sortKey = AppViewModel.AUDIO_STREAM_TYPE,
                     titleFunction = ::getStreamTitle,
                     hasDoNotDisturbAccess = App.hasDoNotDisturbAccess,
+                    consumer = streamTypePreference.setter,
                     stream = AudioGestureConsumer.Stream
                         .values()
                         .first { it.type == streamType },

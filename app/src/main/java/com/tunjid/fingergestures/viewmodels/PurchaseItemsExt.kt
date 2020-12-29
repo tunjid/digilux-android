@@ -19,14 +19,13 @@ package com.tunjid.fingergestures.viewmodels
 
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
 val Inputs.purchaseItems: Flowable<List<Item>>
     get() = with(dependencies.purchasesManager) {
         Flowables.combineLatest(
-            GestureMapper.instance.doubleSwipePreference.monitor,
+            dependencies.gestureMapper.doubleSwipePreference.monitor,
             state
         ) { doubleSwipe, state ->
             listOf(
@@ -52,8 +51,8 @@ val Inputs.purchaseItems: Flowable<List<Item>>
                     infoRes = 0,
                     isEnabled = state.isPremium,
                     value = doubleSwipe,
-                    consumer = GestureMapper.instance.doubleSwipePreference.setter,
-                    function = GestureMapper.instance::getSwipeDelayText
+                    consumer = dependencies.gestureMapper.doubleSwipePreference.setter,
+                    function = dependencies.gestureMapper::getSwipeDelayText
                 ),
             )
         }

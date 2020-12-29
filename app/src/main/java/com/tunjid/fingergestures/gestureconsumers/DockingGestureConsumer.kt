@@ -22,8 +22,11 @@ import android.content.Intent
 
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.activities.DockingActivity
+import javax.inject.Inject
 
-class DockingGestureConsumer private constructor() : GestureConsumer {
+class DockingGestureConsumer @Inject constructor(
+    private val app: App
+) : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean {
@@ -34,21 +37,17 @@ class DockingGestureConsumer private constructor() : GestureConsumer {
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
             GestureAction.TOGGLE_DOCK -> {
-                val app = App.instance ?: return
-
                 val intent = Intent(app, DockingActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
                 app.startActivity(intent)
             }
+            else -> Unit
         }
     }
 
     companion object {
-
         const val ACTION_TOGGLE_DOCK = "DockingGestureConsumer toggle dock"
-
-        val instance: DockingGestureConsumer by lazy { DockingGestureConsumer() }
     }
 }
 

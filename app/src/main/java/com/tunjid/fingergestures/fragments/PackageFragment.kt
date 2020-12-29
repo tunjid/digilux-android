@@ -26,8 +26,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import com.tunjid.androidx.core.delegates.fragmentArgs
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
@@ -36,6 +34,8 @@ import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.divider
 import com.tunjid.fingergestures.baseclasses.recursiveBottomSheetNavigator
 import com.tunjid.fingergestures.databinding.FragmentPackagesBinding
+import com.tunjid.fingergestures.di.activityViewModelFactory
+import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.models.Unique
@@ -44,9 +44,9 @@ import com.tunjid.fingergestures.viewmodels.*
 
 class PackageFragment : Fragment(R.layout.fragment_packages) {
 
-    private val viewModel by viewModels<PackageViewModel>()
-    private val appViewModel by activityViewModels<AppViewModel>()
-    private var preferenceName by fragmentArgs<RotationGestureConsumer.Preference>()
+    private val viewModel by viewModelFactory<PackageViewModel>()
+    private val appViewModel by activityViewModelFactory<AppViewModel>()
+    private var preference by fragmentArgs<RotationGestureConsumer.Preference>()
     private val bottomSheetNavigator by recursiveBottomSheetNavigator()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -64,7 +64,6 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
             viewHolderBinder = { holder, item, _ -> holder.bind(item) }
         )
 
-        binding.titleBar.title = RotationGestureConsumer.instance.getAddText(preferenceName)
         binding.optionsList.apply {
             adapter = listAdapter
             layoutManager = verticalLayoutManager()
@@ -72,6 +71,9 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
         }
 
         viewModel.state.apply {
+            mapDistinct(PackageState::title)
+                .observe(viewLifecycleOwner, binding.titleBar::setTitle)
+
             mapDistinct(PackageState::installedApps)
                 .observe(viewLifecycleOwner) {
                     if (it.isEmpty()) listAdapter.submitList(it)
@@ -91,18 +93,18 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
 
     override fun onResume() {
         super.onResume()
-        viewModel.accept(PackageInput.FetchApps())
+        viewModel.accept(PackageInput.Fetch(preference))
     }
 
     private fun onPackageClicked(app: ApplicationInfo) {
-        viewModel.accept(PackageInput.Add(preference = preferenceName, app = app))
+        viewModel.accept(PackageInput.Add(preference = preference, app = app))
         bottomSheetNavigator.pop()
     }
 
     companion object {
 
         fun newInstance(preferenceName: RotationGestureConsumer.Preference) =
-            PackageFragment().apply { this.preferenceName = preferenceName }
+            PackageFragment().apply { this.preference = preferenceName }
     }
 }
 

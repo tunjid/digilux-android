@@ -26,7 +26,6 @@ import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.databinding.ViewholderMapperBinding
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_GESTURE
@@ -41,8 +40,8 @@ fun ViewGroup.mapper() = viewHolderFrom(ViewholderMapperBinding::inflate).apply 
     binding.title.setOnClickListener { item.input.accept(Input.UiInteraction.ShowSheet(ActionFragment.directionInstance(item.direction))) }
     binding.subTitle.setOnClickListener {
         item.input.accept(
-                if (PurchasesManager.instance.isNotPremium) Input.UiInteraction.GoPremium(R.string.premium_prompt_double_swipe)
-                else Input.UiInteraction.ShowSheet(ActionFragment.directionInstance(item.doubleDirection))
+            if (item.canUseDoubleSwipes) Input.UiInteraction.ShowSheet(ActionFragment.directionInstance(item.doubleDirection))
+            else Input.UiInteraction.GoPremium(R.string.premium_prompt_double_swipe)
         )
     }
 }
@@ -61,10 +60,10 @@ fun BindingViewHolder<ViewholderMapperBinding>.bind(item: Item.Mapper) = binding
     if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
 
     fun getFormattedText(directionName: String, text: String): CharSequence =
-            itemView.context.getString(R.string.mapper_format).formatSpanned(
-                    directionName.bold(),
-                    text
-            )
+        itemView.context.getString(R.string.mapper_format).formatSpanned(
+            directionName.bold(),
+            text
+        )
 
     title.text = getFormattedText(item.gesturePair.singleGestureName, item.gesturePair.singleActionName)
     subTitle.text = getFormattedText(item.gesturePair.doubleGestureName, item.gesturePair.doubleActionName)

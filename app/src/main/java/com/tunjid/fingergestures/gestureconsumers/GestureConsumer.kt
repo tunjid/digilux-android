@@ -17,10 +17,6 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.PopUpGestureConsumer
-import com.tunjid.fingergestures.billing.PurchasesManager
-
 enum class GestureAction(val id: Int) {
     INCREASE_BRIGHTNESS(0),
     REDUCE_BRIGHTNESS(1),
@@ -56,24 +52,13 @@ enum class GestureAction(val id: Int) {
     }
 }
 
-data class AppDependencies(
-    val gestureMapper: GestureMapper,
-    val purchasesManager: PurchasesManager,
-    val backgroundManager: BackgroundManager,
-    val gestureConsumers: GestureConsumers,
-)
+fun interface GestureCommunicator {
+    fun accept(action: Communication)
+}
 
-data class GestureConsumers(
-    val nothing: NothingGestureConsumer,
-    val brightness: BrightnessGestureConsumer,
-    val notification: NotificationGestureConsumer,
-    val flashlight: FlashlightGestureConsumer,
-    val docking: DockingGestureConsumer,
-    val rotation: RotationGestureConsumer,
-    val globalAction: GlobalActionGestureConsumer,
-    val popUp: PopUpGestureConsumer,
-    val audio: AudioGestureConsumer
-)
+sealed class Communication {
+    data class PerformGesture(val action: GestureAction) : Communication()
+}
 
 interface GestureConsumer {
 

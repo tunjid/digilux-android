@@ -17,15 +17,16 @@
 
 package com.tunjid.fingergestures.viewmodels
 
-import android.app.Application
 import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.di.AppContext
+import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.gestureconsumers.*
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.models.Shilling.Quip
@@ -38,33 +39,19 @@ import io.reactivex.rxkotlin.addTo
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import javax.inject.Inject
 
-class AppViewModel(
-    app: Application
-) : AndroidViewModel(app), Inputs {
-
-    override val dependencies: AppDependencies = AppDependencies(
-        backgroundManager = BackgroundManager.instance,
-        purchasesManager = PurchasesManager.instance,
-        gestureMapper = GestureMapper.instance,
-        gestureConsumers = GestureConsumers(
-            nothing = NothingGestureConsumer.instance,
-            brightness = BrightnessGestureConsumer.instance,
-            notification = NotificationGestureConsumer.instance,
-            flashlight = FlashlightGestureConsumer.instance,
-            docking = DockingGestureConsumer.instance,
-            rotation = RotationGestureConsumer.instance,
-            globalAction = GlobalActionGestureConsumer.instance,
-            popUp = PopUpGestureConsumer.instance,
-            audio = AudioGestureConsumer.instance,
-        )
-    )
+class AppViewModel @Inject constructor(
+    @AppContext app: Context,
+    private val broadcasts: Flowable<Intent>,
+    override val dependencies: AppDependencies
+) : ViewModel(), Inputs {
 
     private val backingState by lazy {
         Flowables.combineLatest(
             dependencies.purchasesManager.state,
-            Flowable.just(getApplication<Application>().links),
-            getApplication<App>().broadcasts().filter(::intentMatches).startWith(Intent()),
+            Flowable.just(app.links),
+            broadcasts.filter(::intentMatches).startWith(Intent()),
             inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
             inputProcessor.permissionState,
             inputProcessor.billingState,
@@ -104,7 +91,7 @@ class AppViewModel(
 
     init {
         val client = BillingClient.newBuilder(app)
-            .setListener(PurchasesManager.instance)
+            .setListener(dependencies.purchasesManager)
             .build()
 
         client.startConnection(object : BillingClientStateListener {

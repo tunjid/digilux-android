@@ -34,7 +34,6 @@ import android.view.WindowInsets
 import android.view.animation.AnimationUtils.loadAnimation
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.component1
 import androidx.core.graphics.component2
@@ -48,11 +47,8 @@ import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.navigation.MultiStackNavigator
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.multiStackNavigationController
-import com.tunjid.fingergestures.models.UiState
-import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
 import com.tunjid.fingergestures.App.Companion.hasStoragePermission
-import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.CheatSheet
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.activities.main.MainApp
@@ -63,6 +59,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.TrialStatus
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.databinding.TrialViewBinding
+import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
@@ -77,7 +74,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
-    private val viewModel by viewModels<AppViewModel>()
+    private val viewModel by viewModelFactory<AppViewModel>()
 
     private val links get() = (viewModel.state.value?.links ?: listOf()).toTypedArray()
 
@@ -146,10 +143,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             showsBottomNav = true,
             insetFlags = InsetFlags.NO_BOTTOM,
             fabClickListener = { viewModel.accept(Input.Permission.Action.Clicked()) },
-            navBarColor = colorAt(
-                if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
-                else R.color.black
-            ),
+//            navBarColor = colorAt(
+//                if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
+//                else R.color.black
+//            ),
+            navBarColor = colorAt(R.color.colorPrimary),
         )
 
         // TODO: Back press dispatcher for bottom sheet

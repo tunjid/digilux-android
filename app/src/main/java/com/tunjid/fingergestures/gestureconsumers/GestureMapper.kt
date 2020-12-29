@@ -18,136 +18,103 @@
 package com.tunjid.fingergestures.gestureconsumers
 
 import android.accessibilityservice.FingerprintGestureController
-import android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_DOWN
-import android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_LEFT
-import android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_RIGHT
-import android.accessibilityservice.FingerprintGestureController.FINGERPRINT_GESTURE_SWIPE_UP
+import android.accessibilityservice.FingerprintGestureController.*
 import androidx.annotation.StringDef
-import androidx.annotation.StringRes
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.DO_NOTHING
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_BACK
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_HOME
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_LOCK_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_POWER_DIALOG
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_RECENTS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_SPLIT_SCREEN
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.GLOBAL_TAKE_SCREENSHOT
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.INCREASE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.INCREASE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.MAXIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.MINIMIZE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.NOTIFICATION_DOWN
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.NOTIFICATION_TOGGLE
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.NOTIFICATION_UP
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.REDUCE_AUDIO
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.REDUCE_BRIGHTNESS
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.SHOW_POPUP
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.TOGGLE_AUTO_ROTATE
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.TOGGLE_DOCK
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.TOGGLE_FLASHLIGHT
+import com.tunjid.fingergestures.di.GestureConsumers
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.*
 import io.reactivex.Flowable
 import io.reactivex.Flowable.timer
 import io.reactivex.disposables.Disposable
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicReference
+import javax.inject.Inject
 
-class GestureMapper private constructor() : FingerprintGestureController.FingerprintGestureCallback() {
+class GestureMapper @Inject constructor(
+    private val purchasesManager: PurchasesManager,
+    private val consumers: GestureConsumers
+) : FingerprintGestureController.FingerprintGestureCallback() {
 
     data class GesturePair(
-            val singleGestureName: String,
-            val doubleGestureName: String,
-            val singleActionName: String,
-            val doubleActionName: String,
+        val singleGestureName: String,
+        val doubleGestureName: String,
+        val singleActionName: String,
+        val doubleActionName: String,
     )
 
     data class State(
-            val left: GesturePair,
-            val up: GesturePair,
-            val right: GesturePair,
-            val down: GesturePair,
+        val left: GesturePair,
+        val up: GesturePair,
+        val right: GesturePair,
+        val down: GesturePair,
     )
 
     val doubleSwipePreference: ReactivePreference<Int> = ReactivePreference(
-            preferencesName = DOUBLE_SWIPE_DELAY,
-            default = DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE
+        preferencesName = DOUBLE_SWIPE_DELAY,
+        default = DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE
     )
 
     private val directionPreferencesMap = allGestures.map { gestureDirection ->
         gestureDirection to ReactivePreference(
-                preferencesName = gestureDirection,
-                default = when (gestureDirection) {
-                    UP_GESTURE -> NOTIFICATION_UP
-                    DOWN_GESTURE -> NOTIFICATION_DOWN
-                    LEFT_GESTURE -> REDUCE_BRIGHTNESS
-                    RIGHT_GESTURE -> INCREASE_BRIGHTNESS
-                    else -> DO_NOTHING
-                }.id
+            preferencesName = gestureDirection,
+            default = when (gestureDirection) {
+                UP_GESTURE -> NOTIFICATION_UP
+                DOWN_GESTURE -> NOTIFICATION_DOWN
+                LEFT_GESTURE -> REDUCE_BRIGHTNESS
+                RIGHT_GESTURE -> INCREASE_BRIGHTNESS
+                else -> DO_NOTHING
+            }.id
         )
     }
-            .toMap()
+        .toMap()
 
     val directionPreferencesFlowable: Flowable<State>
         get() = Flowable.combineLatest(
-                directionPreferencesMap
-                        .entries
-                        .map { (gestureDirection, preference) ->
-                            preference.monitor.map {
-                                val resource = resourceForAction(
-                                        if (isDouble(gestureDirection) && PurchasesManager.instance.isNotPremium) DO_NOTHING
-                                        else GestureAction.fromId(it)
-                                )
+            directionPreferencesMap
+                .entries
+                .map { (gestureDirection, preference) ->
+                    preference.monitor.map {
+                        val resource = (if (isDouble(gestureDirection) && purchasesManager.isNotPremium) DO_NOTHING
+                        else GestureAction.fromId(it)).resource
 
-                                gestureDirection to App.transformApp({ app -> app.getString(resource) }, "")
-                            }
-                        }) { items ->
+                        gestureDirection to App.transformApp({ app -> app.getString(resource) }, "")
+                    }
+                }) { items ->
             val map = (items.toList() as List<Pair<String, String>>).toMap()
             State(
-                    left = GesturePair(
-                            singleGestureName = getDirectionName(LEFT_GESTURE),
-                            doubleGestureName = getDirectionName(DOUBLE_LEFT_GESTURE),
-                            singleActionName = map.getValue(LEFT_GESTURE),
-                            doubleActionName = map.getValue(DOUBLE_LEFT_GESTURE)
-                    ),
-                    up = GesturePair(
-                            singleGestureName = getDirectionName(UP_GESTURE),
-                            doubleGestureName = getDirectionName(DOUBLE_UP_GESTURE),
-                            singleActionName = map.getValue(UP_GESTURE),
-                            doubleActionName = map.getValue(DOUBLE_UP_GESTURE)
-                    ),
-                    right = GesturePair(
-                            singleGestureName = getDirectionName(RIGHT_GESTURE),
-                            doubleGestureName = getDirectionName(DOUBLE_RIGHT_GESTURE),
-                            singleActionName = map.getValue(RIGHT_GESTURE),
-                            doubleActionName = map.getValue(DOUBLE_RIGHT_GESTURE)
-                    ),
-                    down = GesturePair(
-                            singleGestureName = getDirectionName(DOWN_GESTURE),
-                            doubleGestureName = getDirectionName(DOUBLE_DOWN_GESTURE),
-                            singleActionName = map.getValue(DOWN_GESTURE),
-                            doubleActionName = map.getValue(DOUBLE_DOWN_GESTURE)
-                    ),
+                left = GesturePair(
+                    singleGestureName = getDirectionName(LEFT_GESTURE),
+                    doubleGestureName = getDirectionName(DOUBLE_LEFT_GESTURE),
+                    singleActionName = map.getValue(LEFT_GESTURE),
+                    doubleActionName = map.getValue(DOUBLE_LEFT_GESTURE)
+                ),
+                up = GesturePair(
+                    singleGestureName = getDirectionName(UP_GESTURE),
+                    doubleGestureName = getDirectionName(DOUBLE_UP_GESTURE),
+                    singleActionName = map.getValue(UP_GESTURE),
+                    doubleActionName = map.getValue(DOUBLE_UP_GESTURE)
+                ),
+                right = GesturePair(
+                    singleGestureName = getDirectionName(RIGHT_GESTURE),
+                    doubleGestureName = getDirectionName(DOUBLE_RIGHT_GESTURE),
+                    singleActionName = map.getValue(RIGHT_GESTURE),
+                    doubleActionName = map.getValue(DOUBLE_RIGHT_GESTURE)
+                ),
+                down = GesturePair(
+                    singleGestureName = getDirectionName(DOWN_GESTURE),
+                    doubleGestureName = getDirectionName(DOUBLE_DOWN_GESTURE),
+                    singleActionName = map.getValue(DOWN_GESTURE),
+                    doubleActionName = map.getValue(DOUBLE_DOWN_GESTURE)
+                ),
             )
         }
 
 
     private val actionIds: IntArray
-    private val consumers: Array<GestureConsumer> = arrayOf(
-            NothingGestureConsumer.instance,
-            BrightnessGestureConsumer.instance,
-            NotificationGestureConsumer.instance,
-            FlashlightGestureConsumer.instance,
-            DockingGestureConsumer.instance,
-            RotationGestureConsumer.instance,
-            GlobalActionGestureConsumer.instance,
-            PopUpGestureConsumer.instance,
-            AudioGestureConsumer.instance
-    )
 
     private val directionReference: AtomicReference<String> = AtomicReference()
 
@@ -157,7 +124,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
 
     val actions: List<GestureAction>
         get() = actionIds.map(::actionForResource)
-                .filter(::isSupportedAction)
+            .filter(::isSupportedAction)
 
     var doubleSwipeDelay: Int by doubleSwipePreference.delegate
 
@@ -175,7 +142,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
 
     fun getMappedAction(@GestureDirection gestureDirection: String): String {
         val action = directionToAction(gestureDirection)
-        val stringResource = resourceForAction(action)
+        val stringResource = action.resource
         return App.transformApp({ app -> app.getString(stringResource) }, "")
     }
 
@@ -186,7 +153,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
 
     fun getSwipeDelayText(percentage: Int): String {
         return App.transformApp({ app ->
-            app.getString(if (PurchasesManager.instance.isNotPremium)
+            app.getString(if (purchasesManager.isNotPremium)
                 R.string.go_premium_text
             else
                 R.string.double_swipe_delay, delayPercentageToMillis(percentage))
@@ -240,10 +207,10 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
         if (hasPendingAction) doubleSwipeDisposable!!.dispose()
 
         doubleSwipeDisposable = timer(delayPercentageToMillis(doubleSwipeDelay).toLong(), MILLISECONDS)
-                .subscribe({
-                    val direction = directionReference.getAndSet(null) ?: return@subscribe
-                    performAction(direction)
-                }, this::onError)
+            .subscribe({
+                val direction = directionReference.getAndSet(null) ?: return@subscribe
+                performAction(direction)
+            }, this::onError)
     }
 
     fun performAction(action: GestureAction) {
@@ -257,7 +224,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     }
 
     private fun consumerForAction(action: GestureAction): GestureConsumer? {
-        for (consumer in consumers) if (consumer.accepts(action)) return consumer
+        for (consumer in consumers.all) if (consumer.accepts(action)) return consumer
         return null
     }
 
@@ -268,7 +235,7 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     }
 
     private fun delayPercentageToMillis(percentage: Int): Int =
-            (percentage * MAX_DOUBLE_SWIPE_DELAY / 100f).toInt()
+        (percentage * MAX_DOUBLE_SWIPE_DELAY / 100f).toInt()
 
     @GestureDirection
     private fun rawToDirection(raw: Int): String = when (raw) {
@@ -280,10 +247,10 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
     }
 
     private fun isSupportedAction(action: GestureAction): Boolean =
-            if (action == GLOBAL_LOCK_SCREEN || action == GLOBAL_TAKE_SCREENSHOT) App.isPieOrHigher else true
+        if (action == GLOBAL_LOCK_SCREEN || action == GLOBAL_TAKE_SCREENSHOT) App.isPieOrHigher else true
 
     private fun directionToAction(@GestureDirection direction: String): GestureAction {
-        if (isDouble(direction) && PurchasesManager.instance.isNotPremium) return DO_NOTHING
+        if (isDouble(direction) && purchasesManager.isNotPremium) return DO_NOTHING
 
         val id = directionPreferencesMap.getValue(direction).value
         return GestureAction.fromId(id)
@@ -331,31 +298,6 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
         else -> DO_NOTHING
     }
 
-    @StringRes
-    fun resourceForAction(action: GestureAction): Int = when (action) {
-        DO_NOTHING -> R.string.do_nothing
-        INCREASE_BRIGHTNESS -> R.string.increase_brightness
-        REDUCE_BRIGHTNESS -> R.string.reduce_brightness
-        MAXIMIZE_BRIGHTNESS -> R.string.maximize_brightness
-        MINIMIZE_BRIGHTNESS -> R.string.minimize_brightness
-        INCREASE_AUDIO -> R.string.increase_audio
-        REDUCE_AUDIO -> R.string.reduce_audio
-        NOTIFICATION_UP -> R.string.notification_up
-        NOTIFICATION_DOWN -> R.string.notification_down
-        NOTIFICATION_TOGGLE -> R.string.toggle_notifications
-        TOGGLE_FLASHLIGHT -> R.string.toggle_flashlight
-        TOGGLE_DOCK -> R.string.toggle_dock
-        TOGGLE_AUTO_ROTATE -> R.string.toggle_auto_rotate
-        GLOBAL_HOME -> R.string.global_home
-        GLOBAL_BACK -> R.string.global_back
-        GLOBAL_RECENTS -> R.string.global_recents
-        GLOBAL_SPLIT_SCREEN -> R.string.global_split_screen
-        GLOBAL_POWER_DIALOG -> R.string.global_power_dialog
-        GLOBAL_LOCK_SCREEN -> R.string.global_lock_screen
-        GLOBAL_TAKE_SCREENSHOT -> R.string.global_take_screenshot
-        SHOW_POPUP -> R.string.show_popup
-    }
-
     fun getDirectionName(@GestureDirection direction: String): String = when (direction) {
         UP_GESTURE -> App.transformApp({ app -> app.getString(R.string.swipe_up) }, "")
         DOWN_GESTURE -> App.transformApp({ app -> app.getString(R.string.swipe_down) }, "")
@@ -398,19 +340,41 @@ class GestureMapper private constructor() : FingerprintGestureController.Fingerp
         const val DOUBLE_LEFT_GESTURE = "double left gesture"
         const val DOUBLE_RIGHT_GESTURE = "double right gesture"
         private const val DOUBLE_SWIPE_DELAY = "double swipe delay"
-
-        val instance: GestureMapper by lazy { GestureMapper() }
-
     }
 }
 
 private val allGestures = listOf(
-        GestureMapper.UP_GESTURE,
-        GestureMapper.DOWN_GESTURE,
-        GestureMapper.LEFT_GESTURE,
-        GestureMapper.RIGHT_GESTURE,
-        GestureMapper.DOUBLE_UP_GESTURE,
-        GestureMapper.DOUBLE_DOWN_GESTURE,
-        GestureMapper.DOUBLE_LEFT_GESTURE,
-        GestureMapper.DOUBLE_RIGHT_GESTURE
+    GestureMapper.UP_GESTURE,
+    GestureMapper.DOWN_GESTURE,
+    GestureMapper.LEFT_GESTURE,
+    GestureMapper.RIGHT_GESTURE,
+    GestureMapper.DOUBLE_UP_GESTURE,
+    GestureMapper.DOUBLE_DOWN_GESTURE,
+    GestureMapper.DOUBLE_LEFT_GESTURE,
+    GestureMapper.DOUBLE_RIGHT_GESTURE
 )
+
+val GestureAction.resource: Int
+    get() = when (this) {
+        DO_NOTHING -> R.string.do_nothing
+        INCREASE_BRIGHTNESS -> R.string.increase_brightness
+        REDUCE_BRIGHTNESS -> R.string.reduce_brightness
+        MAXIMIZE_BRIGHTNESS -> R.string.maximize_brightness
+        MINIMIZE_BRIGHTNESS -> R.string.minimize_brightness
+        INCREASE_AUDIO -> R.string.increase_audio
+        REDUCE_AUDIO -> R.string.reduce_audio
+        NOTIFICATION_UP -> R.string.notification_up
+        NOTIFICATION_DOWN -> R.string.notification_down
+        NOTIFICATION_TOGGLE -> R.string.toggle_notifications
+        TOGGLE_FLASHLIGHT -> R.string.toggle_flashlight
+        TOGGLE_DOCK -> R.string.toggle_dock
+        TOGGLE_AUTO_ROTATE -> R.string.toggle_auto_rotate
+        GLOBAL_HOME -> R.string.global_home
+        GLOBAL_BACK -> R.string.global_back
+        GLOBAL_RECENTS -> R.string.global_recents
+        GLOBAL_SPLIT_SCREEN -> R.string.global_split_screen
+        GLOBAL_POWER_DIALOG -> R.string.global_power_dialog
+        GLOBAL_LOCK_SCREEN -> R.string.global_lock_screen
+        GLOBAL_TAKE_SCREENSHOT -> R.string.global_take_screenshot
+        SHOW_POPUP -> R.string.show_popup
+    }

@@ -22,8 +22,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.androidx.core.delegates.fragmentArgs
 import com.tunjid.androidx.recyclerview.listAdapterOf
@@ -32,6 +30,8 @@ import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.divider
 import com.tunjid.fingergestures.baseclasses.recursiveBottomSheetNavigator
+import com.tunjid.fingergestures.di.activityViewModelFactory
+import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Input
@@ -45,8 +45,8 @@ import com.tunjid.fingergestures.viewmodels.AppViewModel
 class ActionFragment : Fragment(R.layout.fragment_actions) {
 
     private var direction by fragmentArgs<String?>()
-    private val viewModel by viewModels<ActionViewModel>()
-    private val appViewModel by activityViewModels<AppViewModel>()
+    private val viewModel by viewModelFactory<ActionViewModel>()
+    private val appViewModel by activityViewModelFactory<AppViewModel>()
     private val bottomSheetNavigator by recursiveBottomSheetNavigator()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -21,14 +21,13 @@ import com.tunjid.fingergestures.PaletteStatus
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.billing.PurchasesManager
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
 val Inputs.backgroundItems: Flowable<List<Item>>
     get() = with(dependencies.backgroundManager) {
         Flowables.combineLatest(
-            PurchasesManager.instance.state,
+            dependencies.purchasesManager.state,
             sliderDurationPreference.monitor,
             backgroundColorPreference.monitor,
             sliderColorPreference.monitor,

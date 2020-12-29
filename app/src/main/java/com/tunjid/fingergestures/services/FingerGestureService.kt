@@ -43,29 +43,29 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK
 import android.view.accessibility.AccessibilityWindowInfo
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.ACTION_ACCESSIBILITY_BUTTON
 import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.ACTION_SHOW_POPUP
 import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.EXTRA_SHOWS_ACCESSIBILITY_BUTTON
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.di.dagger
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer.Companion.ACTION_EXPAND_VOLUME_CONTROLS
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.ACTION_SCREEN_DIMMER_CHANGED
 import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.Companion.ACTION_TOGGLE_DOCK
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.Companion.ACTION_GLOBAL_ACTION
 import com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.Companion.EXTRA_GLOBAL_ACTION
 import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_DOWN
 import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_TOGGLE
 import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_UP
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ACTION_WATCH_WINDOW_CHANGES
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.EXTRA_WATCHES_WINDOWS
 import io.reactivex.disposables.Disposable
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class FingerGestureService : AccessibilityService() {
+
+    private val dependencies get() = dagger.appComponent.dependencies()
+    private val gestureConsumers get() = dependencies.gestureConsumers
+    private val gestureMapper get() = dependencies.gestureMapper
 
     private var overlayView: View? = null
 
@@ -74,7 +74,7 @@ class FingerGestureService : AccessibilityService() {
 
     private val accessibilityButtonCallback = object : AccessibilityButtonCallback() {
         override fun onClicked(controller: AccessibilityButtonController) =
-            PopUpGestureConsumer.instance.showPopup()
+            gestureConsumers.popUp.showPopup()
     }
 
     private val screenWakeReceiver = object : BroadcastReceiver() {
@@ -98,20 +98,20 @@ class FingerGestureService : AccessibilityService() {
 
         gestureThread = HandlerThread("GestureThread").apply {
             start()
-            fingerprintGestureController.registerFingerprintGestureCallback(GestureMapper.instance, Handler(looper))
+            fingerprintGestureController.registerFingerprintGestureCallback(gestureMapper, Handler(looper))
         }
 
-        BackgroundManager.instance.restoreWallpaperChange()
+        dependencies.backgroundManager.restoreWallpaperChange()
 
         subscribeToBroadcasts()
         registerReceiver(screenWakeReceiver, IntentFilter(ACTION_SCREEN_ON))
-        setWatchesWindows(RotationGestureConsumer.instance.autoRotatePreference.value)
-        setShowsAccessibilityButton(PopUpGestureConsumer.instance.accessibilityButtonEnabledPreference.value)
+        setWatchesWindows(gestureConsumers.rotation.autoRotatePreference.value)
+        setShowsAccessibilityButton(gestureConsumers.popUp.accessibilityButtonEnabledPreference.value)
     }
 
     override fun onDestroy() {
         unregisterReceiver(screenWakeReceiver)
-        fingerprintGestureController.unregisterFingerprintGestureCallback(GestureMapper.instance)
+        fingerprintGestureController.unregisterFingerprintGestureCallback(gestureMapper)
         accessibilityButtonController.unregisterAccessibilityButtonCallback(accessibilityButtonCallback)
 
         if (broadcastDisposable != null) broadcastDisposable!!.dispose()
@@ -121,9 +121,8 @@ class FingerGestureService : AccessibilityService() {
         super.onDestroy()
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        RotationGestureConsumer.instance.onAccessibilityEvent(event)
-    }
+    override fun onAccessibilityEvent(event: AccessibilityEvent) =
+        gestureConsumers.rotation.onAccessibilityEvent(event)
 
     override fun onInterrupt() {}
 
@@ -172,7 +171,7 @@ class FingerGestureService : AccessibilityService() {
     private fun adjustDimmer() {
         val windowManager = getSystemService(WindowManager::class.java) ?: return
 
-        val brightnessGestureConsumer = BrightnessGestureConsumer.instance
+        val brightnessGestureConsumer = gestureConsumers.brightness
         val dimAmount = brightnessGestureConsumer.screenDimmerPercentPreference.value
 
         if (brightnessGestureConsumer.shouldShowDimmer()) {
@@ -230,19 +229,17 @@ class FingerGestureService : AccessibilityService() {
     }
 
     private fun subscribeToBroadcasts() {
-        App.withApp { app ->
-            broadcastDisposable = app.broadcasts()
-                .filter(this::intentMatches)
-                .subscribe(this::onIntentReceived) { error ->
-                    error.printStackTrace()
-                    subscribeToBroadcasts() // Resubscribe on error
-                }
-        }
+        broadcastDisposable = dagger.appComponent.broadcasts()
+            .filter(this::intentMatches)
+            .subscribe(this::onIntentReceived) { error ->
+                error.printStackTrace()
+                subscribeToBroadcasts() // Resubscribe on error
+            }
     }
 
     private fun onIntentReceived(intent: Intent) {
         when (intent.action ?: return) {
-            ACTION_SCREEN_ON -> BrightnessGestureConsumer.instance.onScreenTurnedOn()
+            ACTION_SCREEN_ON -> gestureConsumers.brightness.onScreenTurnedOn()
             ACTION_NOTIFICATION_DOWN -> if (notificationsShowing())
                 expandQuickSettings()
             else
@@ -265,7 +262,7 @@ class FingerGestureService : AccessibilityService() {
                 val globalAction = intent.getIntExtra(EXTRA_GLOBAL_ACTION, -1)
                 if (globalAction != -1) performGlobalAction(globalAction)
             }
-            ACTION_SHOW_POPUP -> PopUpGestureConsumer.instance.showPopup()
+            ACTION_SHOW_POPUP -> gestureConsumers.popUp.showPopup()
         }
     }
 

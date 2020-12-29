@@ -19,7 +19,7 @@ package com.tunjid.fingergestures.viewmodels
 
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.gestureconsumers.AppDependencies
+import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.models.Input
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables

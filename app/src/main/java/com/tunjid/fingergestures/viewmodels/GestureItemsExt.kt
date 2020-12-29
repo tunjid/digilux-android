@@ -18,45 +18,52 @@
 package com.tunjid.fingergestures.viewmodels
 
 import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import io.reactivex.Flowable
+import io.reactivex.rxkotlin.Flowables
 
 val Inputs.gestureItems: Flowable<List<Item>>
-    get() = with(dependencies.gestureMapper) {
-        directionPreferencesFlowable.map { state ->
-            listOf(
-                Item.Mapper(
-                    sortKey = AppViewModel.MAP_UP_ICON,
-                    tab = Tab.Gestures,
-                    direction = GestureMapper.UP_GESTURE,
-                    doubleDirection = GestureMapper.DOUBLE_UP_GESTURE,
-                    gesturePair = state.up,
-                    input = this@gestureItems
-                ),
-                Item.Mapper(
-                    sortKey = AppViewModel.MAP_DOWN_ICON,
-                    tab = Tab.Gestures,
-                    direction = GestureMapper.DOWN_GESTURE,
-                    doubleDirection = GestureMapper.DOUBLE_DOWN_GESTURE,
-                    gesturePair = state.down,
-                    input = this@gestureItems
-                ),
-                Item.Mapper(
-                    sortKey = AppViewModel.MAP_LEFT_ICON,
-                    tab = Tab.Gestures,
-                    direction = GestureMapper.LEFT_GESTURE,
-                    doubleDirection = GestureMapper.DOUBLE_LEFT_GESTURE,
-                    gesturePair = state.left,
-                    input = this@gestureItems
-                ),
-                Item.Mapper(
-                    sortKey = AppViewModel.MAP_RIGHT_ICON,
-                    tab = Tab.Gestures,
-                    direction = GestureMapper.RIGHT_GESTURE,
-                    doubleDirection = GestureMapper.DOUBLE_RIGHT_GESTURE,
-                    gesturePair = state.right,
-                    input = this@gestureItems
-                ),
-            )
-        }
+    get() = Flowables.combineLatest(
+        dependencies.gestureMapper.directionPreferencesFlowable,
+        dependencies.purchasesManager.state.map(PurchasesManager.State::isPremium)
+    ) { state, isPremium ->
+        listOf(
+            Item.Mapper(
+                sortKey = AppViewModel.MAP_UP_ICON,
+                tab = Tab.Gestures,
+                direction = GestureMapper.UP_GESTURE,
+                doubleDirection = GestureMapper.DOUBLE_UP_GESTURE,
+                gesturePair = state.up,
+                canUseDoubleSwipes = isPremium,
+                input = this@gestureItems
+            ),
+            Item.Mapper(
+                sortKey = AppViewModel.MAP_DOWN_ICON,
+                tab = Tab.Gestures,
+                direction = GestureMapper.DOWN_GESTURE,
+                doubleDirection = GestureMapper.DOUBLE_DOWN_GESTURE,
+                gesturePair = state.down,
+                canUseDoubleSwipes = isPremium,
+                input = this@gestureItems
+            ),
+            Item.Mapper(
+                sortKey = AppViewModel.MAP_LEFT_ICON,
+                tab = Tab.Gestures,
+                direction = GestureMapper.LEFT_GESTURE,
+                doubleDirection = GestureMapper.DOUBLE_LEFT_GESTURE,
+                gesturePair = state.left,
+                canUseDoubleSwipes = isPremium,
+                input = this@gestureItems
+            ),
+            Item.Mapper(
+                sortKey = AppViewModel.MAP_RIGHT_ICON,
+                tab = Tab.Gestures,
+                direction = GestureMapper.RIGHT_GESTURE,
+                doubleDirection = GestureMapper.DOUBLE_RIGHT_GESTURE,
+                gesturePair = state.right,
+                canUseDoubleSwipes = isPremium,
+                input = this@gestureItems
+            ),
+        )
     }
