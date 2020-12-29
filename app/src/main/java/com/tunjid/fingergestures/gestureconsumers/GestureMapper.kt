@@ -364,28 +364,3 @@ private val allGestures = listOf(
     GestureMapper.DOUBLE_LEFT_GESTURE,
     GestureMapper.DOUBLE_RIGHT_GESTURE
 )
-
-val GestureAction.resource: Int
-    get() = when (this) {
-        DO_NOTHING -> R.string.do_nothing
-        INCREASE_BRIGHTNESS -> R.string.increase_brightness
-        REDUCE_BRIGHTNESS -> R.string.reduce_brightness
-        MAXIMIZE_BRIGHTNESS -> R.string.maximize_brightness
-        MINIMIZE_BRIGHTNESS -> R.string.minimize_brightness
-        INCREASE_AUDIO -> R.string.increase_audio
-        REDUCE_AUDIO -> R.string.reduce_audio
-        NOTIFICATION_UP -> R.string.notification_up
-        NOTIFICATION_DOWN -> R.string.notification_down
-        NOTIFICATION_TOGGLE -> R.string.toggle_notifications
-        TOGGLE_FLASHLIGHT -> R.string.toggle_flashlight
-        TOGGLE_DOCK -> R.string.toggle_dock
-        TOGGLE_AUTO_ROTATE -> R.string.toggle_auto_rotate
-        GLOBAL_HOME -> R.string.global_home
-        GLOBAL_BACK -> R.string.global_back
-        GLOBAL_RECENTS -> R.string.global_recents
-        GLOBAL_SPLIT_SCREEN -> R.string.global_split_screen
-        GLOBAL_POWER_DIALOG -> R.string.global_power_dialog
-        GLOBAL_LOCK_SCREEN -> R.string.global_lock_screen
-        GLOBAL_TAKE_SCREENSHOT -> R.string.global_take_screenshot
-        SHOW_POPUP -> R.string.show_popup
-    }

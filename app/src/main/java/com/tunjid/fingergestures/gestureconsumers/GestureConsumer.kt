@@ -17,6 +17,8 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
+import com.tunjid.fingergestures.R
+
 enum class GestureAction(val id: Int) {
     INCREASE_BRIGHTNESS(0),
     REDUCE_BRIGHTNESS(1),
@@ -67,3 +69,28 @@ interface GestureConsumer {
         fun normalizePercentageToFraction(percentage: Int): Float = percentage / 100f
     }
 }
+
+val GestureAction.resource: Int
+    get() = when (this) {
+        GestureAction.DO_NOTHING -> R.string.do_nothing
+        GestureAction.INCREASE_BRIGHTNESS -> R.string.increase_brightness
+        GestureAction.REDUCE_BRIGHTNESS -> R.string.reduce_brightness
+        GestureAction.MAXIMIZE_BRIGHTNESS -> R.string.maximize_brightness
+        GestureAction.MINIMIZE_BRIGHTNESS -> R.string.minimize_brightness
+        GestureAction.INCREASE_AUDIO -> R.string.increase_audio
+        GestureAction.REDUCE_AUDIO -> R.string.reduce_audio
+        GestureAction.NOTIFICATION_UP -> R.string.notification_up
+        GestureAction.NOTIFICATION_DOWN -> R.string.notification_down
+        GestureAction.NOTIFICATION_TOGGLE -> R.string.toggle_notifications
+        GestureAction.TOGGLE_FLASHLIGHT -> R.string.toggle_flashlight
+        GestureAction.TOGGLE_DOCK -> R.string.toggle_dock
+        GestureAction.TOGGLE_AUTO_ROTATE -> R.string.toggle_auto_rotate
+        GestureAction.GLOBAL_HOME -> R.string.global_home
+        GestureAction.GLOBAL_BACK -> R.string.global_back
+        GestureAction.GLOBAL_RECENTS -> R.string.global_recents
+        GestureAction.GLOBAL_SPLIT_SCREEN -> R.string.global_split_screen
+        GestureAction.GLOBAL_POWER_DIALOG -> R.string.global_power_dialog
+        GestureAction.GLOBAL_LOCK_SCREEN -> R.string.global_lock_screen
+        GestureAction.GLOBAL_TAKE_SCREENSHOT -> R.string.global_take_screenshot
+        GestureAction.SHOW_POPUP -> R.string.show_popup
+    }
