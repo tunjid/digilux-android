@@ -19,9 +19,7 @@ package com.tunjid.fingergestures.main.ext
 
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.main.ext.Inputs
-import com.tunjid.fingergestures.main.ext.Tab
+import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
@@ -35,8 +33,8 @@ val Inputs.gestureItems: Flowable<List<Item>>
             Item.Mapper(
                 sortKey = AppViewModel.MAP_UP_ICON,
                 tab = Tab.Gestures,
-                direction = GestureMapper.UP_GESTURE,
-                doubleDirection = GestureMapper.DOUBLE_UP_GESTURE,
+                direction = GestureDirection.Up,
+                doubleDirection = GestureDirection.DoubleUp,
                 gesturePair = state.up,
                 canUseDoubleSwipes = isPremium,
                 input = this@gestureItems
@@ -44,8 +42,8 @@ val Inputs.gestureItems: Flowable<List<Item>>
             Item.Mapper(
                 sortKey = AppViewModel.MAP_DOWN_ICON,
                 tab = Tab.Gestures,
-                direction = GestureMapper.DOWN_GESTURE,
-                doubleDirection = GestureMapper.DOUBLE_DOWN_GESTURE,
+                direction = GestureDirection.Down,
+                doubleDirection = GestureDirection.DoubleDown,
                 gesturePair = state.down,
                 canUseDoubleSwipes = isPremium,
                 input = this@gestureItems
@@ -53,8 +51,8 @@ val Inputs.gestureItems: Flowable<List<Item>>
             Item.Mapper(
                 sortKey = AppViewModel.MAP_LEFT_ICON,
                 tab = Tab.Gestures,
-                direction = GestureMapper.LEFT_GESTURE,
-                doubleDirection = GestureMapper.DOUBLE_LEFT_GESTURE,
+                direction = GestureDirection.Left,
+                doubleDirection = GestureDirection.DoubleLeft,
                 gesturePair = state.left,
                 canUseDoubleSwipes = isPremium,
                 input = this@gestureItems
@@ -62,8 +60,8 @@ val Inputs.gestureItems: Flowable<List<Item>>
             Item.Mapper(
                 sortKey = AppViewModel.MAP_RIGHT_ICON,
                 tab = Tab.Gestures,
-                direction = GestureMapper.RIGHT_GESTURE,
-                doubleDirection = GestureMapper.DOUBLE_RIGHT_GESTURE,
+                direction = GestureDirection.Right,
+                doubleDirection = GestureDirection.DoubleRight,
                 gesturePair = state.right,
                 canUseDoubleSwipes = isPremium,
                 input = this@gestureItems

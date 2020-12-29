@@ -21,7 +21,6 @@ import android.accessibilityservice.FingerprintGestureController
 import android.accessibilityservice.FingerprintGestureController.*
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.annotation.StringDef
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ReactivePreference
@@ -41,6 +40,28 @@ import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
+
+enum class Kind {
+    Single,
+    Double
+}
+
+enum class GestureDirection(
+    val direction: String,
+    val kind: Kind,
+    val stringRes: Int
+) {
+    Up(direction = "up gesture", kind = Kind.Single, stringRes = R.string.swipe_up),
+    Down(direction = "down gesture", kind = Kind.Single, stringRes = R.string.swipe_down),
+    Left(direction = "left gesture", kind = Kind.Single, stringRes = R.string.swipe_left),
+    Right(direction = "right gesture", kind = Kind.Single, stringRes = R.string.swipe_right),
+    DoubleUp(direction = "double up gesture", kind = Kind.Double, stringRes = R.string.double_swipe_up),
+    DoubleDown(direction = "double down gesture", kind = Kind.Double, stringRes = R.string.double_swipe_down),
+    DoubleLeft(direction = "double left gesture", kind = Kind.Double, stringRes = R.string.double_swipe_left),
+    DoubleRight(direction = "double right gesture", kind = Kind.Double, stringRes = R.string.double_swipe_right);
+}
+
+private val GestureDirection.isDouble get() = kind == Kind.Double
 
 @SuppressLint("CheckResult")
 @Singleton
@@ -72,15 +93,15 @@ class GestureMapper @Inject constructor(
         default = DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE
     )
 
-    private val directionPreferencesMap = allGestures.map { gestureDirection ->
+    private val directionPreferencesMap = GestureDirection.values().map { gestureDirection ->
         gestureDirection to ReactivePreference(
             reactivePreferences = reactivePreferences,
-            key = gestureDirection,
+            key = gestureDirection.direction,
             default = when (gestureDirection) {
-                UP_GESTURE -> NOTIFICATION_UP
-                DOWN_GESTURE -> NOTIFICATION_DOWN
-                LEFT_GESTURE -> REDUCE_BRIGHTNESS
-                RIGHT_GESTURE -> INCREASE_BRIGHTNESS
+                GestureDirection.Up -> NOTIFICATION_UP
+                GestureDirection.Down -> NOTIFICATION_DOWN
+                GestureDirection.Left -> REDUCE_BRIGHTNESS
+                GestureDirection.Right -> INCREASE_BRIGHTNESS
                 else -> DO_NOTHING
             }.id
         )
@@ -93,37 +114,37 @@ class GestureMapper @Inject constructor(
                 .entries
                 .map { (gestureDirection, preference) ->
                     preference.monitor.map {
-                        val resource = (if (isDouble(gestureDirection) && purchasesManager.isNotPremium) DO_NOTHING
+                        val resource = (if (gestureDirection.isDouble && purchasesManager.isNotPremium) DO_NOTHING
                         else GestureAction.fromId(it)).resource
 
                         gestureDirection to context.getString(resource)
                     }
                 }) { items ->
-            val map = (items.toList() as List<Pair<String, String>>).toMap()
+            val map = (items.toList() as List<Pair<GestureDirection, String>>).toMap()
             State(
                 left = GesturePair(
-                    singleGestureName = getDirectionName(LEFT_GESTURE),
-                    doubleGestureName = getDirectionName(DOUBLE_LEFT_GESTURE),
-                    singleActionName = map.getValue(LEFT_GESTURE),
-                    doubleActionName = map.getValue(DOUBLE_LEFT_GESTURE)
+                    singleGestureName = context.getString(GestureDirection.Left.stringRes),
+                    doubleGestureName = context.getString(GestureDirection.DoubleLeft.stringRes),
+                    singleActionName = map.getValue(GestureDirection.Left),
+                    doubleActionName = map.getValue(GestureDirection.DoubleLeft)
                 ),
                 up = GesturePair(
-                    singleGestureName = getDirectionName(UP_GESTURE),
-                    doubleGestureName = getDirectionName(DOUBLE_UP_GESTURE),
-                    singleActionName = map.getValue(UP_GESTURE),
-                    doubleActionName = map.getValue(DOUBLE_UP_GESTURE)
+                    singleGestureName = context.getString(GestureDirection.Up.stringRes),
+                    doubleGestureName = context.getString(GestureDirection.DoubleUp.stringRes),
+                    singleActionName = map.getValue(GestureDirection.Up),
+                    doubleActionName = map.getValue(GestureDirection.DoubleUp)
                 ),
                 right = GesturePair(
-                    singleGestureName = getDirectionName(RIGHT_GESTURE),
-                    doubleGestureName = getDirectionName(DOUBLE_RIGHT_GESTURE),
-                    singleActionName = map.getValue(RIGHT_GESTURE),
-                    doubleActionName = map.getValue(DOUBLE_RIGHT_GESTURE)
+                    singleGestureName = context.getString(GestureDirection.Right.stringRes),
+                    doubleGestureName = context.getString(GestureDirection.DoubleRight.stringRes),
+                    singleActionName = map.getValue(GestureDirection.Right),
+                    doubleActionName = map.getValue(GestureDirection.DoubleRight)
                 ),
                 down = GesturePair(
-                    singleGestureName = getDirectionName(DOWN_GESTURE),
-                    doubleGestureName = getDirectionName(DOUBLE_DOWN_GESTURE),
-                    singleActionName = map.getValue(DOWN_GESTURE),
-                    doubleActionName = map.getValue(DOUBLE_DOWN_GESTURE)
+                    singleGestureName = context.getString(GestureDirection.Down.stringRes),
+                    doubleGestureName = context.getString(GestureDirection.DoubleDown.stringRes),
+                    singleActionName = map.getValue(GestureDirection.Down),
+                    doubleActionName = map.getValue(GestureDirection.DoubleDown)
                 ),
             )
         }
@@ -131,7 +152,7 @@ class GestureMapper @Inject constructor(
 
     private val actionIds: IntArray
 
-    private val directionReference: AtomicReference<String> = AtomicReference()
+    private val directionReference: AtomicReference<GestureDirection> = AtomicReference()
 
     private var isSwipingDisposable: Disposable? = null
     private var doubleSwipeDisposable: Disposable? = null
@@ -141,10 +162,6 @@ class GestureMapper @Inject constructor(
         get() = actionIds.map(::actionForResource)
             .filter(::isSupportedAction)
 
-    @Retention(AnnotationRetention.SOURCE)
-    @StringDef(UP_GESTURE, DOWN_GESTURE, LEFT_GESTURE, RIGHT_GESTURE, DOUBLE_UP_GESTURE, DOUBLE_DOWN_GESTURE, DOUBLE_LEFT_GESTURE, DOUBLE_RIGHT_GESTURE)
-    annotation class GestureDirection
-
     init {
         actionIds = getActionIds()
         broadcasts.filterIsInstance<Broadcast.Gesture>()
@@ -152,18 +169,17 @@ class GestureMapper @Inject constructor(
             .subscribe(this@GestureMapper::performAction)
     }
 
-    fun mapGestureToAction(@GestureDirection direction: String, action: GestureAction) {
+    fun mapGestureToAction( direction: GestureDirection, action: GestureAction) {
         directionPreferencesMap.getValue(direction).value = action.id
     }
 
-    fun getMappedAction(@GestureDirection gestureDirection: String): String {
+    fun getMappedAction( gestureDirection: GestureDirection): String {
         val action = directionToAction(gestureDirection)
         val stringResource = action.resource
         return context.getString(stringResource)
     }
 
-    @GestureDirection
-    fun doubleDirection(@GestureDirection direction: String): String {
+    fun doubleDirection(direction: GestureDirection): GestureDirection {
         return match(direction, direction)
     }
 
@@ -198,7 +214,7 @@ class GestureMapper @Inject constructor(
         }
 
         // Is canceling an existing double gesture to continue a single gesture
-        if (hasPreviousSwipe && hasPendingAction && isDouble(originalDirection!!)) {
+        if (hasPreviousSwipe && hasPendingAction && originalDirection!!.isDouble) {
             doubleSwipeDisposable!!.dispose()
             directionReference.set(null)
             isOngoing = true
@@ -231,7 +247,7 @@ class GestureMapper @Inject constructor(
         consumer?.onGestureActionTriggered(action)
     }
 
-    private fun performAction(@GestureDirection direction: String) {
+    private fun performAction(direction: GestureDirection) {
         val action = directionToAction(direction)
         performAction(action)
     }
@@ -250,40 +266,34 @@ class GestureMapper @Inject constructor(
     private fun delayPercentageToMillis(percentage: Int): Int =
         (percentage * MAX_DOUBLE_SWIPE_DELAY / 100f).toInt()
 
-    @GestureDirection
-    private fun rawToDirection(raw: Int): String = when (raw) {
-        FINGERPRINT_GESTURE_SWIPE_UP -> UP_GESTURE
-        FINGERPRINT_GESTURE_SWIPE_DOWN -> DOWN_GESTURE
-        FINGERPRINT_GESTURE_SWIPE_LEFT -> LEFT_GESTURE
-        FINGERPRINT_GESTURE_SWIPE_RIGHT -> RIGHT_GESTURE
-        else -> UP_GESTURE
+    private fun rawToDirection(raw: Int): GestureDirection = when (raw) {
+        FINGERPRINT_GESTURE_SWIPE_UP -> GestureDirection.Up
+        FINGERPRINT_GESTURE_SWIPE_DOWN -> GestureDirection.Down
+        FINGERPRINT_GESTURE_SWIPE_LEFT -> GestureDirection.Left
+        FINGERPRINT_GESTURE_SWIPE_RIGHT -> GestureDirection.Right
+        else -> GestureDirection.Up
     }
 
     private fun isSupportedAction(action: GestureAction): Boolean =
         if (action == GLOBAL_LOCK_SCREEN || action == GLOBAL_TAKE_SCREENSHOT) App.isPieOrHigher else true
 
-    private fun directionToAction(@GestureDirection direction: String): GestureAction {
-        if (isDouble(direction) && purchasesManager.isNotPremium) return DO_NOTHING
+    private fun directionToAction( direction: GestureDirection): GestureAction {
+        if (direction.isDouble && purchasesManager.isNotPremium) return DO_NOTHING
 
         val id = directionPreferencesMap.getValue(direction).value
         return GestureAction.fromId(id)
     }
 
-    private fun match(@GestureDirection original: String?, @GestureDirection updated: String): String {
+    private fun match(original: GestureDirection, updated: GestureDirection): GestureDirection {
         if (updated != original) return updated
 
         return when (updated) {
-            UP_GESTURE -> DOUBLE_UP_GESTURE
-            DOWN_GESTURE -> DOUBLE_DOWN_GESTURE
-            LEFT_GESTURE -> DOUBLE_LEFT_GESTURE
-            RIGHT_GESTURE -> DOUBLE_RIGHT_GESTURE
+            GestureDirection.Up -> GestureDirection.DoubleUp
+            GestureDirection.Down -> GestureDirection.DoubleDown
+            GestureDirection.Left -> GestureDirection.DoubleLeft
+            GestureDirection.Right -> GestureDirection.DoubleRight
             else -> updated
         }
-    }
-
-    private fun isDouble(direction: String): Boolean = when (direction) {
-        DOUBLE_UP_GESTURE, DOUBLE_DOWN_GESTURE, DOUBLE_LEFT_GESTURE, DOUBLE_RIGHT_GESTURE -> true
-        else -> false
     }
 
     private fun actionForResource(resource: Int): GestureAction = when (resource) {
@@ -311,18 +321,6 @@ class GestureMapper @Inject constructor(
         else -> DO_NOTHING
     }
 
-    fun getDirectionName(@GestureDirection direction: String): String = when (direction) {
-        UP_GESTURE -> context.getString(R.string.swipe_up)
-        DOWN_GESTURE -> context.getString(R.string.swipe_down)
-        LEFT_GESTURE -> context.getString(R.string.swipe_left)
-        RIGHT_GESTURE -> context.getString(R.string.swipe_right)
-        DOUBLE_UP_GESTURE -> context.getString(R.string.double_swipe_up)
-        DOUBLE_DOWN_GESTURE -> context.getString(R.string.double_swipe_down)
-        DOUBLE_LEFT_GESTURE -> context.getString(R.string.double_swipe_left)
-        DOUBLE_RIGHT_GESTURE -> context.getString(R.string.double_swipe_right)
-        else -> ""
-    }
-
     private fun getActionIds(): IntArray {
         val array = context.resources.obtainTypedArray(R.array.action_resources)
         val length = array.length()
@@ -336,31 +334,9 @@ class GestureMapper @Inject constructor(
     }
 
     companion object {
-
-        private const val UNASSIGNED_GESTURE = -1
         private const val ONGOING_RESET_DELAY = 1
         private const val MAX_DOUBLE_SWIPE_DELAY = 1000
         private const val DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE = 50
-
-        const val UP_GESTURE = "up gesture"
-        const val DOWN_GESTURE = "down gesture"
-        const val LEFT_GESTURE = "left gesture"
-        const val RIGHT_GESTURE = "right gesture"
-        const val DOUBLE_UP_GESTURE = "double up gesture"
-        const val DOUBLE_DOWN_GESTURE = "double down gesture"
-        const val DOUBLE_LEFT_GESTURE = "double left gesture"
-        const val DOUBLE_RIGHT_GESTURE = "double right gesture"
         private const val DOUBLE_SWIPE_DELAY = "double swipe delay"
     }
 }
-
-private val allGestures = listOf(
-    GestureMapper.UP_GESTURE,
-    GestureMapper.DOWN_GESTURE,
-    GestureMapper.LEFT_GESTURE,
-    GestureMapper.RIGHT_GESTURE,
-    GestureMapper.DOUBLE_UP_GESTURE,
-    GestureMapper.DOUBLE_DOWN_GESTURE,
-    GestureMapper.DOUBLE_LEFT_GESTURE,
-    GestureMapper.DOUBLE_RIGHT_GESTURE
-)

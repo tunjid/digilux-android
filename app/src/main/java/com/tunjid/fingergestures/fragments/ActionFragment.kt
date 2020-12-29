@@ -32,6 +32,7 @@ import com.tunjid.fingergestures.baseclasses.divider
 import com.tunjid.fingergestures.baseclasses.recursiveBottomSheetNavigator
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.di.viewModelFactory
+import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Input
@@ -44,7 +45,7 @@ import com.tunjid.fingergestures.viewmodels.AppViewModel
 
 class ActionFragment : Fragment(R.layout.fragment_actions) {
 
-    private var direction by fragmentArgs<String?>()
+    private var direction by fragmentArgs<GestureDirection?>()
     private val viewModel by viewModelFactory<ActionViewModel>()
     private val appViewModel by activityViewModelFactory<AppViewModel>()
     private val bottomSheetNavigator by recursiveBottomSheetNavigator()
@@ -93,7 +94,7 @@ class ActionFragment : Fragment(R.layout.fragment_actions) {
     }
 
     companion object {
-        fun directionInstance(@GestureMapper.GestureDirection direction: String): ActionFragment =
+        fun directionInstance(direction: GestureDirection): ActionFragment =
             ActionFragment().apply { this.direction = direction }
 
         fun popUpInstance(): ActionFragment =

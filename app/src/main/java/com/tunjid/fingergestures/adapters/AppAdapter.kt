@@ -115,16 +115,12 @@ sealed class Item(
     data class Mapper(
         override val tab: Tab,
         override val sortKey: Int,
-        @param:GestureMapper.GestureDirection
-        @field:GestureMapper.GestureDirection
-        val direction: String,
-        @param:GestureMapper.GestureDirection
-        @field:GestureMapper.GestureDirection
-        val doubleDirection: String,
+        val direction: GestureDirection,
+        val doubleDirection: GestureDirection,
         val gesturePair: GestureMapper.GesturePair,
         val canUseDoubleSwipes: Boolean,
         val input: Inputs
-    ) : Item(direction)
+    ) : Item(direction.toString())
 
     data class Rotation(
         override val tab: Tab,

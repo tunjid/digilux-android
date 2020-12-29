@@ -28,10 +28,7 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderMapperBinding
 import com.tunjid.fingergestures.fragments.ActionFragment
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.DOWN_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.LEFT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.RIGHT_GESTURE
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper.Companion.UP_GESTURE
+import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.models.Input
 
 private var BindingViewHolder<ViewholderMapperBinding>.item by viewHolderDelegate<Item.Mapper>()
@@ -49,12 +46,16 @@ fun ViewGroup.mapper() = viewHolderFrom(ViewholderMapperBinding::inflate).apply 
 fun BindingViewHolder<ViewholderMapperBinding>.bind(item: Item.Mapper) = binding.run {
     this@bind.item = item
 
-    when (item.direction) {
-        UP_GESTURE -> icon.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp)
-        DOWN_GESTURE -> icon.setImageResource(R.drawable.ic_app_dock_24dp)
-        LEFT_GESTURE -> icon.setImageResource(R.drawable.ic_chevron_left_white_24dp)
-        RIGHT_GESTURE -> icon.setImageResource(R.drawable.ic_chevron_right_white_24dp)
-    }
+    icon.setImageResource(when (item.direction) {
+        GestureDirection.Up,
+        GestureDirection.DoubleUp -> R.drawable.ic_keyboard_arrow_up_white_24dp
+        GestureDirection.Down,
+        GestureDirection.DoubleDown -> R.drawable.ic_app_dock_24dp
+        GestureDirection.Left,
+        GestureDirection.DoubleLeft -> R.drawable.ic_chevron_left_white_24dp
+        GestureDirection.Right,
+        GestureDirection.DoubleRight -> R.drawable.ic_chevron_right_white_24dp
+    })
 
     if (!App.accessibilityServiceEnabled) item.input.accept(Input.Permission.Request.Accessibility)
     if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)

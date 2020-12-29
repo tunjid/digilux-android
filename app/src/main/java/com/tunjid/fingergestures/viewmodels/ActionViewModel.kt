@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.viewmodels
 import androidx.lifecycle.ViewModel
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.PopUpGestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Unique
@@ -36,7 +37,7 @@ data class ActionState(
 
 sealed class ActionInput {
     data class Add(val action: Action) : ActionInput()
-    data class MapGesture(val direction: String, val action: Action) : ActionInput()
+    data class MapGesture(val direction: GestureDirection, val action: Action) : ActionInput()
 }
 
 class ActionViewModel @Inject constructor(
