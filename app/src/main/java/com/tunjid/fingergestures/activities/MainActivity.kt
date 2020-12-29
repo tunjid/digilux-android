@@ -61,11 +61,12 @@ import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.databinding.TrialViewBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.fragments.AppFragment
+import com.tunjid.fingergestures.main.ext.Tab
+import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
 import com.tunjid.fingergestures.resultcontracts.WallpaperPickContract
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.main.ext.Tab
 
 class MainActivity : AppCompatActivity(R.layout.activity_main),
     MainApp,
@@ -183,7 +184,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         binding.upgradePrompt.apply {
             setFactory {
                 val view = layoutInflater.inflate(R.layout.text_switch, this, false)
-                view.setOnClickListener { viewModel.shillMoar() }
+                view.setOnClickListener { viewModel.accept(Input.Shill) }
                 view
             }
 
@@ -191,10 +192,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             outAnimation = loadAnimation(context, android.R.anim.slide_out_right)
         }
 
-        viewModel.shill.observe(this) {
-            if (it is Shilling.Quip) binding.upgradePrompt.apply { setText(it.message); isVisible = true }
-            else hideAds()
-        }
+        viewModel.state
+            .mapDistinct(AppState::shilling)
+            .observe(this) {
+                if (it is Shilling.Quip) binding.upgradePrompt.apply { setText(it.message); isVisible = true }
+                else hideAds()
+            }
         observe(viewModel.state)
     }
 

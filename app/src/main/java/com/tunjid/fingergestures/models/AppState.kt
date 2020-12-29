@@ -33,6 +33,7 @@ import kotlinx.parcelize.Parcelize
 import java.util.*
 
 data class AppState(
+    val shilling: Shilling,
     val purchasesState: PurchasesManager.State,
     val links: List<TextLink> = listOf(),
     val broadcasts: Optional<Broadcast.Prompt> = Optional.empty(),
@@ -79,6 +80,7 @@ sealed class Input {
     }
 
     object StartTrial : Input()
+    object Shill : Input()
 }
 
 data class Unique<T>(

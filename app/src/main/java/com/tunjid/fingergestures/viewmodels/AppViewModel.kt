@@ -27,9 +27,8 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.gestureconsumers.*
-import com.tunjid.fingergestures.models.*
-import com.tunjid.fingergestures.models.Shilling.Quip
 import com.tunjid.fingergestures.main.ext.Inputs
+import com.tunjid.fingergestures.models.*
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
@@ -37,51 +36,31 @@ import io.reactivex.rxkotlin.Flowables
 import io.reactivex.rxkotlin.addTo
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 class AppViewModel @Inject constructor(
     @AppContext app: Context,
-    private val broadcasts: Flowable<Broadcast>,
+    broadcasts: Flowable<Broadcast>,
     override val dependencies: AppDependencies
 ) : ViewModel(), Inputs {
 
-    private val backingState by lazy {
-        Flowables.combineLatest(
-            dependencies.purchasesManager.state,
-            Flowable.just(app.links),
-            broadcasts.filterIsInstance<Broadcast.Prompt>().map { Optional.of(it) }.startWith(Optional.empty()),
-            inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
-            inputProcessor.permissionState,
-            inputProcessor.billingState,
-            items,
-            ::AppState
-        )
-    }
-
-    val state: LiveData<AppState> by lazy { backingState.toLiveData() }
-
-    val shill: LiveData<Shilling> by lazy {
-        dependencies.purchasesManager.state
-            .map(PurchasesManager.State::hasAds)
-            .distinctUntilChanged()
-            .switchMap {
-                if (it) Flowable.merge(
-                    shillProcessor.map(::Quip),
-                    Flowable.interval(10, TimeUnit.SECONDS).map { Quip(getNextQuip()) }
-                )
-                else Flowable.just(Shilling.Calm)
-            }
-            .toLiveData()
-    }
-
     private val quips = app.resources.getStringArray(R.array.upsell_text)
-    private val quipCounter = AtomicInteger(-1)
-
-    private val shillProcessor: PublishProcessor<String> = PublishProcessor.create()
     private val inputProcessor: PublishProcessor<Input> = PublishProcessor.create()
-
     private val disposable: CompositeDisposable = CompositeDisposable()
+
+    private val backingState = Flowables.combineLatest(
+        dependencies.purchasesManager.shill(),
+        dependencies.purchasesManager.state,
+        Flowable.just(app.links),
+        broadcasts.filterIsInstance<Broadcast.Prompt>().map { Optional.of(it) }.startWith(Optional.empty()),
+        inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
+        inputProcessor.permissionState,
+        inputProcessor.billingState,
+        items,
+        ::AppState
+    )
+
+    val state: LiveData<AppState> = backingState.toLiveData()
 
     override fun onCleared() {
         disposable.clear()
@@ -119,12 +98,19 @@ class AppViewModel @Inject constructor(
 
     override fun accept(input: Input): Unit = inputProcessor.onNext(input)
 
-    fun shillMoar() = shillProcessor.onNext(getNextQuip())
+    private fun PurchasesManager.shill() = state
+        .map(PurchasesManager.State::hasAds)
+        .distinctUntilChanged()
+        .switchMap {
+            if (it) Flowable.merge(
+                inputProcessor.filterIsInstance<Input.Shill>(),
+                Flowable.interval(10, TimeUnit.SECONDS)
+            ).scan(0) { index, _ -> (index + 1) % quips.size }
+                .map(quips::get)
+                .map(Shilling::Quip)
+            else Flowable.just(Shilling.Calm)
+        }
 
-    private fun getNextQuip(): String {
-        if (quipCounter.incrementAndGet() >= quips.size) quipCounter.set(0)
-        return quips[quipCounter.get()]
-    }
 //    private fun consume(purchaseToken: String) {
 //        billingClient.consumeAsync(purchaseToken) { _, _ -> }
 //    }
