@@ -35,7 +35,7 @@ import com.google.android.material.slider.Slider
 import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.main.activeOnCreateLifecycleOwner
+import com.tunjid.fingergestures.activities.main.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityBrightnessBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.filter
@@ -49,7 +49,7 @@ import com.tunjid.fingergestures.viewmodels.State
 class BrightnessActivity : AppCompatActivity() {
     private val viewModel by viewModelFactory<BrightnessViewModel>()
     private val binding by lazy { ActivityBrightnessBinding.inflate(layoutInflater) }
-    private val dialogLifecycleOwner = activeOnCreateLifecycleOwner()
+    private val dialogLifecycleOwner by lazy { dialogLifecycleOwner() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -21,14 +21,13 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.main.activeOnCreateLifecycleOwner
+import com.tunjid.fingergestures.activities.main.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityPopupBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct
@@ -43,7 +42,7 @@ class PopupActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityPopupBinding.inflate(layoutInflater) }
     private val viewModel by viewModelFactory<PopUpViewModel>()
-    private val dialogLifecycleOwner = activeOnCreateLifecycleOwner()
+    private val dialogLifecycleOwner by lazy { dialogLifecycleOwner() }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

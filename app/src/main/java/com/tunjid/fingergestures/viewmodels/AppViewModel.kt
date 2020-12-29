@@ -18,7 +18,6 @@
 package com.tunjid.fingergestures.viewmodels
 
 import android.content.Context
-import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.android.billingclient.api.BillingClient
@@ -30,7 +29,6 @@ import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.gestureconsumers.*
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.models.Shilling.Quip
-import com.tunjid.fingergestures.services.FingerGestureService
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
@@ -126,13 +124,6 @@ class AppViewModel @Inject constructor(
         if (quipCounter.incrementAndGet() >= quips.size) quipCounter.set(0)
         return quips[quipCounter.get()]
     }
-
-    private fun intentMatches(intent: Intent): Boolean {
-        val action = intent.action
-        return (BackgroundManager.ACTION_EDIT_WALLPAPER == action
-            || FingerGestureService.ACTION_SHOW_SNACK_BAR == action)
-    }
-
 //    private fun consume(purchaseToken: String) {
 //        billingClient.consumeAsync(purchaseToken) { _, _ -> }
 //    }

@@ -23,7 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.main.activeOnCreateLifecycleOwner
+import com.tunjid.fingergestures.activities.main.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityDockingBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct
@@ -36,7 +36,7 @@ class DockingActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityDockingBinding.inflate(layoutInflater) }
     private val viewModel by viewModelFactory<DockingViewModel>()
-    private val dialogLifecycleOwner = activeOnCreateLifecycleOwner()
+    private val dialogLifecycleOwner by lazy { dialogLifecycleOwner() }
 
     private val dockingAnimationDuration: Int
         get() = resources.getInteger(R.integer.docking_animation_duration)

@@ -284,9 +284,6 @@ class FingerGestureService : AccessibilityService() {
     }
 
     companion object {
-
-        const val ACTION_SHOW_SNACK_BAR = "action show snack bar"
-        const val EXTRA_SHOW_SNACK_BAR = " extra show snack bar"
         const val ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui"
 
         private const val RESOURCE_EXPAND_VOLUME_CONTROLS = "accessibility_volume_expand"

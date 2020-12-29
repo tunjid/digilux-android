@@ -23,16 +23,17 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 
-internal fun AppCompatActivity.activeOnCreateLifecycleOwner(): LifecycleOwner {
+internal fun AppCompatActivity.dialogLifecycleOwner(): LifecycleOwner {
     val (owner, registry) = with(object : LifecycleOwner {
         val registry = LifecycleRegistry(this)
         override fun getLifecycle(): Lifecycle = registry
     }) { this to registry }
 
+    registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+
     lifecycle.addObserver(object : LifecycleEventObserver {
         override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
             when (event) {
-                Lifecycle.Event.ON_CREATE -> registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
                 Lifecycle.Event.ON_DESTROY -> {
                     registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
                     source.lifecycle.removeObserver(this)
