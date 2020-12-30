@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.gestureconsumers.ext
+package com.tunjid.fingergestures.gestureconsumers
 
 import com.tunjid.fingergestures.gestureconsumers.*
 import io.reactivex.Flowable

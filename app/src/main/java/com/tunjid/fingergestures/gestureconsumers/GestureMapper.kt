@@ -26,8 +26,6 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.GestureConsumers
-import com.tunjid.fingergestures.gestureconsumers.ext.GestureProcessor
-import com.tunjid.fingergestures.gestureconsumers.ext.double
 import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.viewmodels.filterIsInstance
 import io.reactivex.Flowable

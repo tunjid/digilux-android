@@ -15,9 +15,10 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.gestureconsumers.ext
+package com.tunjid.fingergestures.gestureconsumers
 
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
+import com.tunjid.fingergestures.gestureconsumers.GestureProcessor
 import io.reactivex.Flowable
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subscribers.TestSubscriber
