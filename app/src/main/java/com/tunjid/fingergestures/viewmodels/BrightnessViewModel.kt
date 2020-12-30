@@ -46,7 +46,7 @@ sealed class In {
 
 class BrightnessViewModel @Inject constructor(
     private val brightnessGestureConsumer: BrightnessGestureConsumer,
-    private val backgroundManager: BackgroundManager
+    private val backgroundManager: BackgroundManager,
 ) : ViewModel() {
 
     private var brightnessByte: Int = 0

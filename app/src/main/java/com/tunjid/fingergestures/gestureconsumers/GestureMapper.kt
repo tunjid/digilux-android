@@ -19,7 +19,6 @@ package com.tunjid.fingergestures.gestureconsumers
 
 import android.accessibilityservice.FingerprintGestureController
 import android.accessibilityservice.FingerprintGestureController.*
-import android.annotation.SuppressLint
 import android.content.Context
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
@@ -30,14 +29,17 @@ import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.GestureConsumers
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.*
+import com.tunjid.fingergestures.gestureconsumers.ext.GestureProcessor
+import com.tunjid.fingergestures.gestureconsumers.ext.double
+import com.tunjid.fingergestures.gestureconsumers.ext.isDouble
 import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.viewmodels.filterIsInstance
 import io.reactivex.Flowable
-import io.reactivex.Flowable.timer
-import io.reactivex.disposables.Disposable
-import java.util.concurrent.TimeUnit.MILLISECONDS
-import java.util.concurrent.TimeUnit.SECONDS
-import java.util.concurrent.atomic.AtomicReference
+import io.reactivex.Scheduler
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.processors.PublishProcessor
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -61,22 +63,6 @@ enum class GestureDirection(
     DoubleRight(direction = "double right gesture", kind = Kind.Double, stringRes = R.string.double_swipe_right);
 }
 
-private val GestureDirection.isDouble get() = kind == Kind.Double
-
-private val GestureDirection.doubleDirection: GestureDirection
-    get() = this.match(this)
-
-private fun GestureDirection.match(updated: GestureDirection): GestureDirection =
-    if (updated != this) updated
-    else when (updated) {
-        GestureDirection.Up -> GestureDirection.DoubleUp
-        GestureDirection.Down -> GestureDirection.DoubleDown
-        GestureDirection.Left -> GestureDirection.DoubleLeft
-        GestureDirection.Right -> GestureDirection.DoubleRight
-        else -> updated
-    }
-
-@SuppressLint("CheckResult")
 @Singleton
 class GestureMapper @Inject constructor(
     @AppContext private val context: Context,
@@ -84,7 +70,7 @@ class GestureMapper @Inject constructor(
     private val purchasesManager: PurchasesManager,
     private val consumers: GestureConsumers,
     broadcasts: AppBroadcasts
-) : FingerprintGestureController.FingerprintGestureCallback() {
+) : FingerprintGestureController.FingerprintGestureCallback(), GestureProcessor {
 
     data class GesturePair(
         val singleGestureName: String,
@@ -102,7 +88,7 @@ class GestureMapper @Inject constructor(
 
     val doubleSwipePreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        key = DOUBLE_SWIPE_DELAY,
+        key = "double swipe delay",
         default = DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE
     )
 
@@ -164,22 +150,32 @@ class GestureMapper @Inject constructor(
 
 
     private val actionIds: IntArray
-
-    private val directionReference: AtomicReference<GestureDirection> = AtomicReference()
-
-    private var isSwipingDisposable: Disposable? = null
-    private var doubleSwipeDisposable: Disposable? = null
-    private var isOngoing: Boolean = false
+    private val gestureProcessor = PublishProcessor.create<GestureDirection>()
+    private val disposables = CompositeDisposable()
 
     val actions: List<GestureAction>
         get() = actionIds.map(::actionForResource)
             .filter(::isSupportedAction)
+
+    override val scheduler: Scheduler
+        get() = Schedulers.io()
+
+    override val delayMillis: Long
+        get() = delayPercentageToMillis(doubleSwipePreference.value).toLong()
+
+    override val GestureDirection.hasDoubleAction: Boolean
+        get() = directionToAction(this.double) != DO_NOTHING
 
     init {
         actionIds = getActionIds()
         broadcasts.filterIsInstance<Broadcast.Gesture>()
             .map(Broadcast.Gesture::gesture)
             .subscribe(this@GestureMapper::performAction)
+            .addTo(disposables)
+
+        gestureProcessor.processed
+            .subscribe(::performAction)
+            .addTo(disposables)
     }
 
     fun mapGestureToAction(direction: GestureDirection, action: GestureAction) {
@@ -192,79 +188,21 @@ class GestureMapper @Inject constructor(
             else -> R.string.double_swipe_delay
         }, delayPercentageToMillis(percentage))
 
+    fun clear() = disposables.clear()
+
     override fun onGestureDetected(raw: Int) {
         super.onGestureDetected(raw)
-
-        val newDirection = rawToDirection(raw)
-        val originalDirection = directionReference.get()
-
-        val hasPreviousSwipe = originalDirection != null
-        val hasPendingAction = doubleSwipeDisposable != null && !doubleSwipeDisposable!!.isDisposed
-        val hasNoDoubleSwipe = directionToAction(newDirection.doubleDirection) == DO_NOTHING
-
-        // Keep responsiveness if user has not mapped gesture to a double swipe
-        if (!hasPreviousSwipe && hasNoDoubleSwipe) {
-            performAction(newDirection)
-            return
-        }
-
-        // User has been swiping repeatedly in a certain direction
-        if (isOngoing) {
-            if (isSwipingDisposable != null) isSwipingDisposable!!.dispose()
-            resetIsOngoing()
-            performAction(newDirection)
-            return
-        }
-
-        // Is canceling an existing double gesture to continue a single gesture
-        if (hasPreviousSwipe && hasPendingAction && originalDirection!!.isDouble) {
-            doubleSwipeDisposable!!.dispose()
-            directionReference.set(null)
-            isOngoing = true
-            resetIsOngoing()
-            performAction(newDirection)
-            return
-        }
-
-        // Never completed a double gesture
-        if (hasPreviousSwipe && originalDirection != newDirection) {
-            if (hasPendingAction) doubleSwipeDisposable!!.dispose()
-            directionReference.set(null)
-            performAction(newDirection)
-            return
-        }
-
-        directionReference.set(originalDirection.match(newDirection))
-
-        if (hasPendingAction) doubleSwipeDisposable!!.dispose()
-
-        doubleSwipeDisposable = timer(delayPercentageToMillis(doubleSwipePreference.value).toLong(), MILLISECONDS)
-            .subscribe({
-                val direction = directionReference.getAndSet(null) ?: return@subscribe
-                performAction(direction)
-            }, this::onError)
+        gestureProcessor.onNext(rawToDirection(raw))
     }
 
     fun performAction(action: GestureAction) {
-        val consumer = consumerForAction(action)
-        consumer?.onGestureActionTriggered(action)
+        consumers.all
+            .firstOrNull { it.accepts(action) }
+            ?.onGestureActionTriggered(action)
     }
 
-    private fun performAction(direction: GestureDirection) {
-        val action = directionToAction(direction)
-        performAction(action)
-    }
-
-    private fun consumerForAction(action: GestureAction): GestureConsumer? {
-        for (consumer in consumers.all) if (consumer.accepts(action)) return consumer
-        return null
-    }
-
-    private fun onError(throwable: Throwable) = throwable.printStackTrace()
-
-    private fun resetIsOngoing() {
-        isSwipingDisposable = App.delay(ONGOING_RESET_DELAY.toLong(), SECONDS) { isOngoing = false }
-    }
+    private fun performAction(direction: GestureDirection) =
+        performAction(directionToAction(direction))
 
     private fun delayPercentageToMillis(percentage: Int): Int =
         (percentage * MAX_DOUBLE_SWIPE_DELAY / 100f).toInt()
@@ -325,9 +263,7 @@ class GestureMapper @Inject constructor(
     }
 
     companion object {
-        private const val ONGOING_RESET_DELAY = 1
         private const val MAX_DOUBLE_SWIPE_DELAY = 1000
         private const val DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE = 50
-        private const val DOUBLE_SWIPE_DELAY = "double swipe delay"
     }
 }

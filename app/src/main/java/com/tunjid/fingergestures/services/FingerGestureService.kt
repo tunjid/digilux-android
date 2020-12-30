@@ -48,7 +48,9 @@ import com.tunjid.fingergestures.di.dagger
 import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.models.ignore
 import com.tunjid.fingergestures.viewmodels.filterIsInstance
-import io.reactivex.disposables.Disposable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class FingerGestureService : AccessibilityService() {
@@ -59,8 +61,8 @@ class FingerGestureService : AccessibilityService() {
 
     private var overlayView: View? = null
 
-    private var gestureThread: HandlerThread? = null
-    private var broadcastDisposable: Disposable? = null
+    private val gestureThread by lazy { HandlerThread("GestureThread").also(HandlerThread::start) }
+    private val broadcastDisposables = CompositeDisposable()
 
     private val accessibilityButtonCallback = object : AccessibilityButtonCallback() {
         override fun onClicked(controller: AccessibilityButtonController) =
@@ -84,13 +86,7 @@ class FingerGestureService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
 
-        if (gestureThread != null) gestureThread?.quitSafely()
-
-        gestureThread = HandlerThread("GestureThread").apply {
-            start()
-            fingerprintGestureController.registerFingerprintGestureCallback(gestureMapper, Handler(looper))
-        }
-
+        fingerprintGestureController.registerFingerprintGestureCallback(gestureMapper, Handler(gestureThread.looper))
         dependencies.backgroundManager.restoreWallpaperChange()
 
         subscribeToBroadcasts()
@@ -104,9 +100,9 @@ class FingerGestureService : AccessibilityService() {
         fingerprintGestureController.unregisterFingerprintGestureCallback(gestureMapper)
         accessibilityButtonController.unregisterAccessibilityButtonCallback(accessibilityButtonCallback)
 
-        if (broadcastDisposable != null) broadcastDisposable!!.dispose()
-        if (gestureThread != null) gestureThread!!.quitSafely()
-        gestureThread = null
+        dependencies.gestureMapper.clear()
+        broadcastDisposables.clear()
+        gestureThread.quitSafely()
 
         super.onDestroy()
     }
@@ -114,7 +110,7 @@ class FingerGestureService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent) =
         gestureConsumers.rotation.onAccessibilityEvent(event)
 
-    override fun onInterrupt() {}
+    override fun onInterrupt() = Unit
 
     private fun expandQuickSettings() {
         val info = findNode(rootInActiveWindow, getSystemUiString(RESOURCE_EXPAND_QUICK_SETTINGS, DEFAULT_EXPAND_QUICK_SETTINGS))
@@ -126,7 +122,7 @@ class FingerGestureService : AccessibilityService() {
         return info != null && info.packageName != null && ANDROID_SYSTEM_UI_PACKAGE == info.packageName.toString()
     }
 
-    private fun expandAudioControls() {
+    private fun expandAudioControls() =
         windows
             .asSequence()
             .map(AccessibilityWindowInfo::getRoot)
@@ -135,7 +131,7 @@ class FingerGestureService : AccessibilityService() {
             .filterNotNull()
             .firstOrNull()
             ?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-    }
+            .ignore
 
     private fun closeNotifications() {
         val closeIntent = Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
@@ -167,7 +163,7 @@ class FingerGestureService : AccessibilityService() {
         if (brightnessGestureConsumer.shouldShowDimmer()) {
             val params: WindowManager.LayoutParams =
                 if (overlayView == null) getLayoutParams(windowManager)
-                else overlayView?.layoutParams as WindowManager.LayoutParams
+                else overlayView?.layoutParams as? WindowManager.LayoutParams ?: return
 
             params.alpha = 0.1f
             params.dimAmount = dimAmount
@@ -219,12 +215,14 @@ class FingerGestureService : AccessibilityService() {
     }
 
     private fun subscribeToBroadcasts() {
-        broadcastDisposable = dagger.appComponent.broadcasts()
+        dagger.appComponent.broadcasts()
             .filterIsInstance<Broadcast.Service>()
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe(::onBroadcastReceived) { error ->
                 error.printStackTrace()
                 subscribeToBroadcasts() // Resubscribe on error
             }
+            .addTo(broadcastDisposables)
     }
 
     private fun onBroadcastReceived(broadcast: Broadcast.Service) = when (broadcast) {
@@ -259,10 +257,8 @@ class FingerGestureService : AccessibilityService() {
         val resources = systemUiResources ?: return defaultValue
         val id = resources.getIdentifier(resourceID, STRING_RESOURCE, ANDROID_SYSTEM_UI_PACKAGE)
 
-        return if (id == INVALID_RESOURCE)
-            defaultValue
-        else
-            resources.getString(id)
+        return if (id == INVALID_RESOURCE) defaultValue
+        else resources.getString(id)
     }
 
     private fun findNode(info: AccessibilityNodeInfo?, name: String): AccessibilityNodeInfo? {

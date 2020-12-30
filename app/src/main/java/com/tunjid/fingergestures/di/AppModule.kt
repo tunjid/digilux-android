@@ -19,24 +19,18 @@ package com.tunjid.fingergestures.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.gestureconsumers.*
+import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.ReactivePreferences
 import com.tunjid.fingergestures.models.Broadcast
+import com.tunjid.fingergestures.preferences
 import dagger.Module
 import dagger.Provides
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
-import javax.inject.Inject
 import javax.inject.Qualifier
 import javax.inject.Singleton
-
-
-class FlowableAppBroadcaster @Inject constructor(
-    private val backing: PublishProcessor<Broadcast>
-) : AppBroadcaster by backing::onNext
 
 typealias AppBroadcaster = (@JvmSuppressWildcards Broadcast) -> Unit
 typealias AppBroadcasts = Flowable<Broadcast>
@@ -47,10 +41,7 @@ annotation class AppContext
 @Module
 class AppModule(private val app: App) {
 
-    private val backingBroadcaster = PublishProcessor.create<Broadcast>()
-    private val broadcasts = backingBroadcaster
-    private val broadcaster = FlowableAppBroadcaster(backingBroadcaster)
-
+    private val broadcaster = PublishProcessor.create<Broadcast>()
     private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf()
 
     @Provides
@@ -63,11 +54,11 @@ class AppModule(private val app: App) {
 
     @Provides
     @Singleton
-    fun provideAppBroadcasts(): AppBroadcasts = broadcasts
+    fun provideAppBroadcasts(): AppBroadcasts = broadcaster
 
     @Provides
     @Singleton
-    fun provideAppBroadcaster(): AppBroadcaster = broadcaster
+    fun provideAppBroadcaster(): AppBroadcaster = broadcaster::onNext
 
     @Provides
     @Singleton
