@@ -40,7 +40,7 @@ interface SetPreference {
 
 class SetManager<K : SetPreference, V : Any>(
     keys: Iterable<K>,
-    reactivePreferences: ReactivePreferences,
+    private val reactivePreferences: ReactivePreferences,
     private val sorter: Comparator<V>,
     private val addFilter: (K) -> Boolean,
     private val stringMapper: (String) -> V?,
@@ -87,12 +87,12 @@ class SetManager<K : SetPreference, V : Any>(
         .map(objectMapper)
 
     fun getSet(key: K): MutableSet<String> = HashSet<String>().apply {
-        val saved = App.transformApp { app -> app.preferences.getStringSet(key.preferenceName, emptySet())?.filterNotNull() }
+        val saved = reactivePreferences.preferences.getStringSet(key.preferenceName, emptySet())?.filterNotNull()
         if (saved != null) addAll(saved)
     }
 
     private fun saveSet(set: Set<String>, key: K) =
-        App.withApp { app -> app.preferences.edit().putStringSet(key.preferenceName, set).apply() }
+        reactivePreferences.preferences.edit().putStringSet(key.preferenceName, set).apply()
 
     fun itemsFlowable(key: K): Flowable<List<V>> = reactivePreferenceMap.getValue(key)
 }

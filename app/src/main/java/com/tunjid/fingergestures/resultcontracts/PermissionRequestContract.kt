@@ -20,6 +20,8 @@ package com.tunjid.fingergestures.resultcontracts
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import com.tunjid.androidx.core.delegates.intentExtras
@@ -36,11 +38,14 @@ class PermissionRequestContract(
         cacheProvider().lastRequest = input
         return when (input) {
             Input.Permission.Request.DoNotDisturb ->
-                ActivityResultContracts.StartActivityForResult().createIntent(context, App.doNotDisturbIntent)
+                ActivityResultContracts.StartActivityForResult().createIntent(context, Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
             Input.Permission.Request.Accessibility ->
-                ActivityResultContracts.StartActivityForResult().createIntent(context, App.accessibilityIntent)
+                ActivityResultContracts.StartActivityForResult().createIntent(context, Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             Input.Permission.Request.Settings ->
-                ActivityResultContracts.StartActivityForResult().createIntent(context, App.settingsIntent)
+                ActivityResultContracts.StartActivityForResult().createIntent(context, Intent(
+                    Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                    Uri.parse("package:" + context.packageName)
+                ))
             Input.Permission.Request.Storage -> {
                 ActivityResultContracts.RequestPermission().createIntent(context, Manifest.permission.READ_EXTERNAL_STORAGE)
             }

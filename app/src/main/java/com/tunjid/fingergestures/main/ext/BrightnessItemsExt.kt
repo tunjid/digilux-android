@@ -47,7 +47,7 @@ val Inputs.brightnessItems: Flowable<List<Item>>
                     consumer = positionPreference.setter,
                     value = it.position.value,
                     isEnabled = it.position.enabled,
-                    function = { percentage -> App.instance!!.getString(R.string.position_percent, percentage) }
+                    function = percentageFormatter
                 ),
                 Item.Slider(
                     tab = Tab.Brightness,

@@ -47,7 +47,7 @@ import kotlin.math.min
 
 @Singleton
 class BrightnessGestureConsumer @Inject constructor(
-    @AppContext  private val context: Context,
+    @AppContext private val context: Context,
     reactivePreferences: ReactivePreferences,
     private val broadcaster: AppBroadcaster,
     private val purchasesManager: PurchasesManager
@@ -232,6 +232,8 @@ class BrightnessGestureConsumer @Inject constructor(
         GestureAction.MINIMIZE_BRIGHTNESS -> true
         else -> false
     }
+
+    val percentageFormatter = { percent: Int -> context.getString(R.string.position_percent, percent) }
 
     fun saveBrightness(byteValue: Int) {
         if (!App.canWriteToSettings) return

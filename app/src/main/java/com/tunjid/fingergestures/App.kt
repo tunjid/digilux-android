@@ -62,21 +62,8 @@ class App : android.app.Application() {
 //    }
 
     companion object {
-
-        const val EMPTY = ""
-
         var instance: App? = null
             private set
-
-        val settingsIntent: Intent
-            get() =
-                Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + instance!!.packageName))
-
-        val accessibilityIntent: Intent
-            get() = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-
-        val doNotDisturbIntent: Intent
-            get() = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
 
         fun delay(interval: Long, timeUnit: TimeUnit, runnable: () -> Unit): Disposable {
             return timer(interval, timeUnit).subscribe({ runnable.invoke() }, { it.printStackTrace() })
@@ -111,18 +98,11 @@ class App : android.app.Application() {
                 false
             }, false)
 
-        fun withApp(appConsumer: (App) -> Unit) {
-            val app = instance ?: return
-
-            appConsumer.invoke(app)
-        }
-
         private fun <T> transformApp(appTFunction: (App) -> T, defaultValue: T): T {
             val app = instance
             return if (app != null) appTFunction.invoke(app) else defaultValue
         }
 
-        fun <T> transformApp(appTFunction: (App) -> T?): T? = transformApp(appTFunction, null)
     }
 }
 
