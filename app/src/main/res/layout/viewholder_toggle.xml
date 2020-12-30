@@ -23,12 +23,11 @@
     android:layout_height="wrap_content"
     android:padding="@dimen/single_margin">
 
-    <Switch
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/toggle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/single_margin"
-        android:layout_marginBottom="@dimen/single_margin"
+        android:textSize="14sp"
         android:textColor="@color/toggle_text"
         android:theme="@style/SwitchTintTheme"
         app:layout_constraintBottom_toBottomOf="parent"
