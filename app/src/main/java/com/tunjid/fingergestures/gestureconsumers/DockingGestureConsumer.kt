@@ -18,16 +18,16 @@
 package com.tunjid.fingergestures.gestureconsumers
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
-
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.activities.DockingActivity
+import com.tunjid.fingergestures.di.AppContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class DockingGestureConsumer @Inject constructor(
-    private val app: App
+    @AppContext private val context: Context
 ) : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
@@ -39,10 +39,10 @@ class DockingGestureConsumer @Inject constructor(
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
             GestureAction.TOGGLE_DOCK -> {
-                val intent = Intent(app, DockingActivity::class.java)
+                val intent = Intent(context, DockingActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
-                app.startActivity(intent)
+                context.startActivity(intent)
             }
             else -> Unit
         }

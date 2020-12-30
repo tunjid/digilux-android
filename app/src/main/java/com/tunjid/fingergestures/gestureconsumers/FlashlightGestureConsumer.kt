@@ -18,37 +18,36 @@
 package com.tunjid.fingergestures.gestureconsumers
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.hardware.camera2.CameraManager
-
-import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.di.AppContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class FlashlightGestureConsumer @Inject constructor(
-    private val app: App
+    @AppContext private val context: Context
 ) : GestureConsumer {
 
     private var isCallbackRegistered: Boolean = false
     private var isTorchOn: Boolean = false
 
     init {
-        isCallbackRegistered = registerTorchCallback(app)
+        isCallbackRegistered = registerTorchCallback(context)
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.TOGGLE_FLASHLIGHT
-    }
+    override fun accepts(gesture: GestureAction): Boolean =
+        gesture == GestureAction.TOGGLE_FLASHLIGHT
 
     @SuppressLint("SwitchIntDef")
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
             GestureAction.TOGGLE_FLASHLIGHT -> {
-                if (!isCallbackRegistered) isCallbackRegistered = registerTorchCallback(app)
+                if (!isCallbackRegistered) isCallbackRegistered = registerTorchCallback(context)
                 if (!isCallbackRegistered) return
 
-                val cameraManager = app.getSystemService(CameraManager::class.java) ?: return
+                val cameraManager = context.getSystemService(CameraManager::class.java) ?: return
 
                 try {
                     cameraManager.setTorchMode(cameraManager.cameraIdList[0], !isTorchOn)
@@ -60,9 +59,7 @@ class FlashlightGestureConsumer @Inject constructor(
         }
     }
 
-    private fun registerTorchCallback(app: App?): Boolean {
-        if (app == null) return false
-
+    private fun registerTorchCallback(app: Context): Boolean {
         val cameraManager = app.getSystemService(CameraManager::class.java) ?: return false
 
         cameraManager.registerTorchCallback(object : CameraManager.TorchCallback() {

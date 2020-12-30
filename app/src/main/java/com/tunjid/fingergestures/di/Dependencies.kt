@@ -21,15 +21,19 @@ import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
-data class AppDependencies(
+@Singleton
+data class AppDependencies @Inject constructor(
     val gestureMapper: GestureMapper,
     val purchasesManager: PurchasesManager,
     val backgroundManager: BackgroundManager,
     val gestureConsumers: GestureConsumers,
 )
 
-data class GestureConsumers(
+@Singleton
+data class GestureConsumers @Inject constructor(
     val nothing: NothingGestureConsumer,
     val brightness: BrightnessGestureConsumer,
     val notification: NotificationGestureConsumer,
