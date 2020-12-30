@@ -39,46 +39,13 @@ class App : android.app.Application() {
 
     val dagger: Dagger by lazy { Dagger.make(this) }
 
-    override fun onCreate() {
-        super.onCreate()
-        instance = this
-    }
-
-//    // Wrap the subject so if there's an error downstream, it doesn't propagate back up to it.
-//    // This way, the broadcast stream should never error or terminate
-//    fun broadcasts(): Flowable<Intent> =
-//        Flowable.defer { broadcaster }.onErrorResumeNext(Function<Throwable, Publisher<out Intent>> { t -> this@App.logAndResume(t) })
-//
-//    // Log the error, and re-wrap the broadcast processor
-//    private fun logAndResume(throwable: Throwable): Flowable<Intent> {
-//        Log.e("App Broadcasts", "Error in broadcast stream", throwable)
-//        return broadcasts()
-//    }
-
     companion object {
-       private var instance: App? = null
-
         fun delay(interval: Long, timeUnit: TimeUnit, runnable: () -> Unit): Disposable {
             return timer(interval, timeUnit).subscribe({ runnable.invoke() }, { it.printStackTrace() })
         }
 
-        val hasStoragePermission: Boolean
-            get() = instance?.hasStoragePermission ?: false
-
         val isPieOrHigher: Boolean
             get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-
-        val hasDoNotDisturbAccess: Boolean
-            get() = instance?.hasDoNotDisturbAccess ?: false
-
-        val accessibilityServiceEnabled: Boolean
-            get() = instance?.accessibilityServiceEnabled ?: false
-
-        private fun <T> transformApp(appTFunction: (App) -> T, defaultValue: T): T {
-            val app = instance
-            return if (app != null) appTFunction.invoke(app) else defaultValue
-        }
-
     }
 }
 

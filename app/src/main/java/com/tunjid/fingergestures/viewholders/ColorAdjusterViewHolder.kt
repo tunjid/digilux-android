@@ -39,6 +39,7 @@ import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderSliderColorBinding
+import com.tunjid.fingergestures.hasStoragePermission
 import com.tunjid.fingergestures.models.Input
 
 private var BindingViewHolder<ViewholderSliderColorBinding>.item by viewHolderDelegate<Item.ColorAdjuster>()
@@ -79,7 +80,7 @@ fun BindingViewHolder<ViewholderSliderColorBinding>.bind(item: Item.ColorAdjuste
 
     item.palette?.let(::onPaletteExtracted)
 
-    if (!App.hasStoragePermission) item.input.accept(Input.Permission.Request.Storage)
+    if (!itemView.context.hasStoragePermission) item.input.accept(Input.Permission.Request.Storage)
 }
 
 private fun BindingViewHolder<ViewholderSliderColorBinding>.onPaletteExtracted(palette: Palette) {

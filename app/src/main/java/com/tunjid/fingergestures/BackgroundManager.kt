@@ -89,7 +89,7 @@ class BackgroundManager @Inject constructor(
 
     // TODO: Improve this
     val paletteFlowable: Flowable<PaletteStatus> = Flowable.defer {
-        if (!App.hasStoragePermission) return@defer Flowable.just(PaletteStatus.Unavailable("Need permission"))
+        if (!context.hasStoragePermission) return@defer Flowable.just(PaletteStatus.Unavailable("Need permission"))
 
         val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
             ?: return@defer Flowable.just(PaletteStatus.Unavailable("No Wallpaper manager"))
@@ -194,7 +194,7 @@ class BackgroundManager @Inject constructor(
         val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
         if (wallpaperManager == null || !wallpaperFile.exists()) return
 
-        if (!App.hasStoragePermission) return
+        if (!context.hasStoragePermission) return
         try {
             wallpaperManager.setStream(FileInputStream(wallpaperFile))
         } catch (e: Exception) {

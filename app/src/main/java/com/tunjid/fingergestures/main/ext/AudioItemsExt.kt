@@ -17,7 +17,6 @@
 
 package com.tunjid.fingergestures.main.ext
 
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
@@ -55,7 +54,7 @@ val Inputs.audioItems: Flowable<List<Item>>
                     tab = Tab.Audio,
                     sortKey = AppViewModel.AUDIO_STREAM_TYPE,
                     titleFunction = ::getStreamTitle,
-                    hasDoNotDisturbAccess = App.hasDoNotDisturbAccess,
+                    hasDoNotDisturbAccess = hasDoNotDisturbAccess,
                     consumer = streamTypePreference.setter,
                     stream = AudioGestureConsumer.Stream
                         .values()

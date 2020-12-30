@@ -47,10 +47,7 @@ import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.navigation.MultiStackNavigator
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.multiStackNavigationController
-import com.tunjid.fingergestures.App.Companion.accessibilityServiceEnabled
-import com.tunjid.fingergestures.App.Companion.hasStoragePermission
-import com.tunjid.fingergestures.CheatSheet
-import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.activities.main.MainApp
 import com.tunjid.fingergestures.activities.main.cropImage
 import com.tunjid.fingergestures.activities.main.observe
@@ -62,7 +59,6 @@ import com.tunjid.fingergestures.databinding.TrialViewBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.main.ext.Tab
-import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
 import com.tunjid.fingergestures.resultcontracts.WallpaperPickContract

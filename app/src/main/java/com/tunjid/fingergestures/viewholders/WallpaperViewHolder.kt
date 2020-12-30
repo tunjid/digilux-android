@@ -29,14 +29,14 @@ import com.squareup.picasso.Picasso
 import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
-import com.tunjid.fingergestures.models.uiState
-import com.tunjid.fingergestures.models.updatePartial
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderWallpaperPickBinding
+import com.tunjid.fingergestures.hasStoragePermission
 import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.models.uiState
+import com.tunjid.fingergestures.models.updatePartial
 import java.io.File
 
 private var BindingViewHolder<ViewholderWallpaperPickBinding>.item by viewHolderDelegate<Item.WallpaperPick>()
@@ -56,7 +56,7 @@ fun BindingViewHolder<ViewholderWallpaperPickBinding>.bind(item: Item.WallpaperP
     setAspectRatio(mainWallpaper)
     setAspectRatio(altWallpaper)
 
-    if (App.hasStoragePermission) {
+    if (itemView.context.hasStoragePermission) {
         val context = itemView.context
         val wallpaperManager = context.getSystemService(WallpaperManager::class.java) ?: return@run
 

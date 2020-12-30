@@ -27,10 +27,7 @@ import android.media.AudioManager.ADJUST_LOWER
 import android.media.AudioManager.ADJUST_RAISE
 import androidx.annotation.IdRes
 import androidx.core.content.getSystemService
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ReactivePreference
-import com.tunjid.fingergestures.ReactivePreferences
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.models.Broadcast
@@ -63,10 +60,12 @@ class AudioGestureConsumer @Inject constructor(
         default = Stream.Default.type
     )
 
+    val hasDoNotDisturbAccess get() = context.hasDoNotDisturbAccess
+
     private val audioManager get() = context.getSystemService<AudioManager>()!!
 
     val canSetVolumeDelta: Boolean
-        get() = App.hasDoNotDisturbAccess && streamTypePreference.value != Stream.Default.type
+        get() = context.hasDoNotDisturbAccess && streamTypePreference.value != Stream.Default.type
 
     private val flags: Int
         get() {
@@ -112,7 +111,7 @@ class AudioGestureConsumer @Inject constructor(
         min(currentValue + normalizePercentageForStream(incrementPreference.value, stream, audioManager), audioManager.getStreamMaxVolume(stream))
 
     private fun adjustAudio(increase: Boolean) {
-        if (!App.hasDoNotDisturbAccess) return
+        if (!context.hasDoNotDisturbAccess) return
         when (val stream = Stream.forType(streamTypePreference.value)) {
             Stream.Default -> audioManager.adjustSuggestedStreamVolume(if (increase) ADJUST_RAISE else ADJUST_LOWER, stream.type, flags)
             Stream.Media, Stream.Alarm, Stream.Ring -> setStreamVolume(increase, audioManager, stream.type)
@@ -126,7 +125,7 @@ class AudioGestureConsumer @Inject constructor(
     }
 
     fun getChangeText(percentage: Int): String {
-        if (!App.hasDoNotDisturbAccess) return context.getString(R.string.enable_do_not_disturb)
+        if (!context.hasDoNotDisturbAccess) return context.getString(R.string.enable_do_not_disturb)
         val normalized = normalizePercentageForStream(percentage, streamTypePreference.value, audioManager)
 
         return when (val maxSteps = getMaxSteps(audioManager)) {

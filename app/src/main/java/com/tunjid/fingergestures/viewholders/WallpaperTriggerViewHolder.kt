@@ -33,6 +33,7 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderWallpaperTriggerBinding
+import com.tunjid.fingergestures.hasStoragePermission
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Calendar.HOUR_OF_DAY
@@ -57,7 +58,7 @@ fun BindingViewHolder<ViewholderWallpaperTriggerBinding>.bind(item: Item.Wallpap
 }
 
 private fun BindingViewHolder<ViewholderWallpaperTriggerBinding>.showTimePicker(calendar: Calendar, onTimeSetListener: TimePickerDialog.OnTimeSetListener) {
-    if (App.hasStoragePermission)
+    if (itemView.context.hasStoragePermission)
         TimePickerDialog(itemView.context, onTimeSetListener, calendar.get(HOUR_OF_DAY), calendar.get(MINUTE), false).show()
     else itemView::uiState.updatePartial { copy(snackbarText = itemView.context.getString(R.string.enable_storage_settings)) }
 }

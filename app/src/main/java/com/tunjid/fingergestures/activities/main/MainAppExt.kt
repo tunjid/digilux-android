@@ -127,7 +127,7 @@ private fun MainApp.onUiInteraction(it: Input.UiInteraction) =
             .show()
             .let { }
         is Input.UiInteraction.WallpaperPick -> when {
-            App.hasStoragePermission -> wallpaperPickContract.launch(it.selection)
+            activity.hasStoragePermission -> wallpaperPickContract.launch(it.selection)
             else -> ::uiState.updatePartial { copy(snackbarText = getString(R.string.enable_storage_settings)) }
         }
         is Input.UiInteraction.PurchaseResult -> ::uiState.updatePartial { copy(snackbarText = getString(it.messageRes)) }
