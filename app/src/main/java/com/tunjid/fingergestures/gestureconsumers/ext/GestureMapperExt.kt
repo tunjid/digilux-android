@@ -38,7 +38,7 @@ private sealed class Signal {
     data class Item(val direction: GestureDirection, val id: String = UUID.randomUUID().toString().take(4)) : Signal()
 }
 
-val GestureDirection.isDouble get() = kind == Kind.Double
+private val GestureDirection.isDouble get() = kind == Kind.Double
 
 val GestureDirection.double: GestureDirection
     get() = this.match(this)

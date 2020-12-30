@@ -26,7 +26,7 @@ import io.reactivex.rxkotlin.Flowables
 
 val Inputs.gestureItems: Flowable<List<Item>>
     get() = Flowables.combineLatest(
-        dependencies.gestureMapper.directionPreferencesFlowable,
+        dependencies.gestureMapper.state,
         dependencies.purchasesManager.state.map(PurchasesManager.State::isPremium)
     ) { state, isPremium ->
         listOf(

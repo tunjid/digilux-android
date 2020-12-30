@@ -20,17 +20,14 @@ package com.tunjid.fingergestures.gestureconsumers
 import android.accessibilityservice.FingerprintGestureController
 import android.accessibilityservice.FingerprintGestureController.*
 import android.content.Context
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ReactivePreference
-import com.tunjid.fingergestures.ReactivePreferences
+import com.jakewharton.rx.replayingShare
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.GestureConsumers
 import com.tunjid.fingergestures.gestureconsumers.ext.GestureProcessor
 import com.tunjid.fingergestures.gestureconsumers.ext.double
-import com.tunjid.fingergestures.gestureconsumers.ext.isDouble
 import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.viewmodels.filterIsInstance
 import io.reactivex.Flowable
@@ -70,20 +67,23 @@ class GestureMapper @Inject constructor(
     private val purchasesManager: PurchasesManager,
     private val consumers: GestureConsumers,
     broadcasts: AppBroadcasts
-) : FingerprintGestureController.FingerprintGestureCallback(), GestureProcessor {
+) : FingerprintGestureController.FingerprintGestureCallback() {
 
     data class GesturePair(
-        val singleGestureName: String,
-        val doubleGestureName: String,
-        val singleActionName: String,
-        val doubleActionName: String,
+        val singleGestureName: String = "",
+        val doubleGestureName: String = "",
+        val singleActionName: String = "",
+        val doubleActionName: String = "",
+        val singleAction: GestureAction = GestureAction.DoNothing,
+        val doubleAction: GestureAction = GestureAction.DoNothing,
     )
 
     data class State(
-        val left: GesturePair,
-        val up: GesturePair,
-        val right: GesturePair,
-        val down: GesturePair,
+        val left: GesturePair = GesturePair(),
+        val up: GesturePair = GesturePair(),
+        val right: GesturePair = GesturePair(),
+        val down: GesturePair = GesturePair(),
+        val doubleSwipeDelayMillis: Long = MAX_DOUBLE_SWIPE_DELAY,
     )
 
     val doubleSwipePreference: ReactivePreference<Int> = ReactivePreference(
@@ -114,49 +114,44 @@ class GestureMapper @Inject constructor(
             .switchMap { isPremium ->
                 Flowables.combineLatest(
                     directionPreferencesMap.getValue(this).monitor.map {
-                        context.getString(GestureAction.fromId(it).resource)
+                        GestureAction.fromId(it)
                     },
                     directionPreferencesMap.getValue(this.double).monitor.map {
-                        context.getString(when {
-                            isPremium -> GestureAction.fromId(it)
-                            else -> GestureAction.DoNothing
-                        }.resource)
+                        if (isPremium) GestureAction.fromId(it)
+                        else GestureAction.DoNothing
                     }
                 )
-            }.map { (singleName, doubleName) ->
+            }.map { (singleAction, doubleAction) ->
                 GesturePair(
                     singleGestureName = context.getString(this.stringRes),
                     doubleGestureName = context.getString(double.stringRes),
-                    singleActionName = singleName,
-                    doubleActionName = doubleName
+                    singleActionName = context.getString(singleAction.resource),
+                    doubleActionName = context.getString(doubleAction.resource),
+                    singleAction = singleAction,
+                    doubleAction = doubleAction,
                 )
             }
 
-    val directionPreferencesFlowable: Flowable<State>
-        get() = Flowable.combineLatest(
-            GestureDirection.Left.pairedState,
-            GestureDirection.Up.pairedState,
-            GestureDirection.Right.pairedState,
-            GestureDirection.Down.pairedState,
-            ::State
-        )
+    val state: Flowable<State> = Flowable.combineLatest(
+        GestureDirection.Left.pairedState,
+        GestureDirection.Up.pairedState,
+        GestureDirection.Right.pairedState,
+        GestureDirection.Down.pairedState,
+        doubleSwipePreference.monitor.map(::delayPercentageToMillis),
+        ::State
+    ).replayingShare()
 
     private val actionIds: IntArray
-    private val gestureProcessor = PublishProcessor.create<GestureDirection>()
+    private val gestures = PublishProcessor.create<GestureDirection>()
     private val disposables = CompositeDisposable()
+    private val currentState by state.asProperty(
+        default = State(),
+        disposableHandler = disposables::add
+    )
 
     val actions: List<GestureAction>
         get() = actionIds.map(::actionForResource)
             .filter(::isSupportedAction)
-
-    override val scheduler: Scheduler
-        get() = Schedulers.io()
-
-    override val delayMillis: Long
-        get() = delayPercentageToMillis(doubleSwipePreference.value).toLong()
-
-    override val GestureDirection.hasDoubleAction: Boolean
-        get() = directionToAction(this.double) != GestureAction.DoNothing
 
     init {
         actionIds = getActionIds()
@@ -165,9 +160,21 @@ class GestureMapper @Inject constructor(
             .subscribe(this@GestureMapper::performAction)
             .addTo(disposables)
 
-        gestureProcessor.processed
-            .subscribe(::performAction)
-            .addTo(disposables)
+        object : GestureProcessor {
+            override val scheduler: Scheduler = Schedulers.io()
+
+            override val delayMillis: Long
+                get() = currentState.doubleSwipeDelayMillis
+
+            override val GestureDirection.hasDoubleAction: Boolean
+                get() = currentState.pairFor(this).doubleAction != GestureAction.DoNothing
+
+            init {
+                gestures.processed
+                    .subscribe(::performAction)
+                    .addTo(disposables)
+            }
+        }
     }
 
     fun mapGestureToAction(direction: GestureDirection, action: GestureAction) {
@@ -184,7 +191,7 @@ class GestureMapper @Inject constructor(
 
     override fun onGestureDetected(raw: Int) {
         super.onGestureDetected(raw)
-        gestureProcessor.onNext(rawToDirection(raw))
+        gestures.onNext(rawToDirection(raw))
     }
 
     fun performAction(action: GestureAction) {
@@ -194,10 +201,10 @@ class GestureMapper @Inject constructor(
     }
 
     private fun performAction(direction: GestureDirection) =
-        performAction(directionToAction(direction))
+        performAction(currentState.actionFor(direction))
 
-    private fun delayPercentageToMillis(percentage: Int): Int =
-        (percentage * MAX_DOUBLE_SWIPE_DELAY / 100f).toInt()
+    private fun delayPercentageToMillis(percentage: Int): Long =
+        (percentage * MAX_DOUBLE_SWIPE_DELAY / 100f).toLong()
 
     private fun rawToDirection(raw: Int): GestureDirection = when (raw) {
         FINGERPRINT_GESTURE_SWIPE_UP -> GestureDirection.Up
@@ -207,15 +214,30 @@ class GestureMapper @Inject constructor(
         else -> GestureDirection.Up
     }
 
+    private fun State.pairFor(direction: GestureDirection) = when (direction) {
+        GestureDirection.Up -> up
+        GestureDirection.Down -> down
+        GestureDirection.Left -> left
+        GestureDirection.Right -> right
+        GestureDirection.DoubleUp -> up
+        GestureDirection.DoubleDown -> down
+        GestureDirection.DoubleLeft -> left
+        GestureDirection.DoubleRight -> right
+    }
+
+    private fun State.actionFor(direction: GestureDirection) = when (direction) {
+        GestureDirection.Up -> up.singleAction
+        GestureDirection.Down -> down.singleAction
+        GestureDirection.Left -> left.singleAction
+        GestureDirection.Right -> right.singleAction
+        GestureDirection.DoubleUp -> up.doubleAction
+        GestureDirection.DoubleDown -> down.doubleAction
+        GestureDirection.DoubleLeft -> left.doubleAction
+        GestureDirection.DoubleRight -> right.doubleAction
+    }
+
     private fun isSupportedAction(action: GestureAction): Boolean =
         if (action == GestureAction.GlobalLockScreen || action == GestureAction.GlobalTakeScreenshot) App.isPieOrHigher else true
-
-    private fun directionToAction(direction: GestureDirection): GestureAction {
-        if (direction.isDouble && purchasesManager.isNotPremium) return GestureAction.DoNothing
-
-        val id = directionPreferencesMap.getValue(direction).value
-        return GestureAction.fromId(id)
-    }
 
     private fun actionForResource(resource: Int): GestureAction = when (resource) {
         R.string.do_nothing -> GestureAction.DoNothing
@@ -255,7 +277,7 @@ class GestureMapper @Inject constructor(
     }
 
     companion object {
-        private const val MAX_DOUBLE_SWIPE_DELAY = 1000
+        private const val MAX_DOUBLE_SWIPE_DELAY = 1000L
         private const val DEF_DOUBLE_SWIPE_DELAY_PERCENTAGE = 50
     }
 }

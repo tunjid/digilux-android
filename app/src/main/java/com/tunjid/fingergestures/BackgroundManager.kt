@@ -62,7 +62,6 @@ class BackgroundManager @Inject constructor(
     reactivePreferences: ReactivePreferences,
     private val broadcaster: AppBroadcaster
 ) {
-
     val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
         key = "background color",
