@@ -29,11 +29,16 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
+import javax.inject.Inject
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
 
-typealias AppBroadcaster = (Broadcast) -> Unit
+class FlowableAppBroadcaster @Inject constructor(
+    private val backing: PublishProcessor<Broadcast>
+) : AppBroadcaster by backing::onNext
+
+typealias AppBroadcaster = (@JvmSuppressWildcards Broadcast) -> Unit
 typealias AppBroadcasts = Flowable<Broadcast>
 
 @Qualifier
@@ -44,7 +49,7 @@ class AppModule(private val app: App) {
 
     private val backingBroadcaster = PublishProcessor.create<Broadcast>()
     private val broadcasts = backingBroadcaster
-    private val broadcaster = backingBroadcaster::onNext
+    private val broadcaster = FlowableAppBroadcaster(backingBroadcaster)
 
     private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf()
 
@@ -55,6 +60,14 @@ class AppModule(private val app: App) {
     @Provides
     @AppContext
     fun provideAppContext(): Context = app
+
+    @Provides
+    @Singleton
+    fun provideAppBroadcasts(): AppBroadcasts = broadcasts
+
+    @Provides
+    @Singleton
+    fun provideAppBroadcaster(): AppBroadcaster = broadcaster
 
     @Provides
     @Singleton
@@ -84,14 +97,6 @@ class AppModule(private val app: App) {
             context = app,
             reactivePreferences = reactivePreferences,
         )
-
-    @Provides
-    @Singleton
-    fun provideAppBroadcasts(): AppBroadcasts = broadcasts
-
-    @Provides
-    @Singleton
-    fun provideAppBroadcaster(): AppBroadcaster = broadcaster
 
     @Provides
     @Singleton

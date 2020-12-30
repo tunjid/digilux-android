@@ -66,4 +66,7 @@ abstract class AppViewModelModule {
 
     @Binds @IntoMap @ViewModelKey(BrightnessViewModel::class)
     abstract fun bindBrightnessViewModel(viewModel: BrightnessViewModel): ViewModel
+
+    @Binds @IntoMap @ViewModelKey(DockingViewModel::class)
+    abstract fun bindDockingViewModel(viewModel: DockingViewModel): ViewModel
 }
