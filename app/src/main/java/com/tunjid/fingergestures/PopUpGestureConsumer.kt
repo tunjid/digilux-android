@@ -25,7 +25,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.gestureconsumers.GestureAction
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.SHOW_POPUP
+import com.tunjid.fingergestures.gestureconsumers.GestureAction.PopUpShow
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.models.Broadcast
 import javax.inject.Inject
@@ -79,7 +79,7 @@ class PopUpGestureConsumer @Inject constructor(
         broadcaster(Broadcast.Service.ShowPopUp)
     }
 
-    override fun accepts(gesture: GestureAction): Boolean = gesture == SHOW_POPUP
+    override fun accepts(gesture: GestureAction): Boolean = gesture == PopUpShow
 
     fun showPopup() = when {
         accessibilityButtonSingleClickPreference.value -> list

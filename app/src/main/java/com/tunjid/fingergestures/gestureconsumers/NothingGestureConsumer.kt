@@ -24,7 +24,7 @@ import javax.inject.Singleton
 class NothingGestureConsumer @Inject constructor() : GestureConsumer {
 
     override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.DO_NOTHING
+        return gesture == GestureAction.DoNothing
     }
 
     override fun onGestureActionTriggered(gestureAction: GestureAction) {

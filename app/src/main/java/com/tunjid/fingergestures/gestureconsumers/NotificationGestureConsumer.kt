@@ -31,9 +31,9 @@ class NotificationGestureConsumer @Inject constructor(
     @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean {
         return when (gesture) {
-            GestureAction.NOTIFICATION_UP,
-            GestureAction.NOTIFICATION_DOWN,
-            GestureAction.NOTIFICATION_TOGGLE -> true
+            GestureAction.NotificationUp,
+            GestureAction.NotificationDown,
+            GestureAction.NotificationToggle -> true
             else -> false
         }
     }
@@ -41,11 +41,11 @@ class NotificationGestureConsumer @Inject constructor(
     @SuppressLint("SwitchIntDef")
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
-            GestureAction.NOTIFICATION_UP,
-            GestureAction.NOTIFICATION_DOWN,
-            GestureAction.NOTIFICATION_TOGGLE -> broadcaster(when (gestureAction) {
-                GestureAction.NOTIFICATION_UP -> Broadcast.Service.ShadeUp
-                GestureAction.NOTIFICATION_DOWN -> Broadcast.Service.ShadeDown
+            GestureAction.NotificationUp,
+            GestureAction.NotificationDown,
+            GestureAction.NotificationToggle -> broadcaster(when (gestureAction) {
+                GestureAction.NotificationUp -> Broadcast.Service.ShadeUp
+                GestureAction.NotificationDown -> Broadcast.Service.ShadeDown
                 else -> Broadcast.Service.ShadeToggle
             })
             else -> Unit

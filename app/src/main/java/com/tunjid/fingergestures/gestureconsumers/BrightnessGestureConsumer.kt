@@ -199,10 +199,10 @@ class BrightnessGestureConsumer @Inject constructor(
         originalValue = byteValue
 
         when (gestureAction) {
-            GestureAction.INCREASE_BRIGHTNESS -> byteValue = increase(byteValue)
-            GestureAction.REDUCE_BRIGHTNESS -> byteValue = reduce(byteValue)
-            GestureAction.MAXIMIZE_BRIGHTNESS -> byteValue = MAX_BRIGHTNESS.toInt()
-            GestureAction.MINIMIZE_BRIGHTNESS -> byteValue = MIN_BRIGHTNESS.toInt()
+            GestureAction.IncreaseBrightness -> byteValue = increase(byteValue)
+            GestureAction.ReduceBrightness -> byteValue = reduce(byteValue)
+            GestureAction.MaximizeBrightness -> byteValue = MAX_BRIGHTNESS.toInt()
+            GestureAction.MinimizeBrightness -> byteValue = MIN_BRIGHTNESS.toInt()
             else -> Unit
         }
 
@@ -226,10 +226,10 @@ class BrightnessGestureConsumer @Inject constructor(
 
     @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean = when (gesture) {
-        GestureAction.INCREASE_BRIGHTNESS,
-        GestureAction.REDUCE_BRIGHTNESS,
-        GestureAction.MAXIMIZE_BRIGHTNESS,
-        GestureAction.MINIMIZE_BRIGHTNESS -> true
+        GestureAction.IncreaseBrightness,
+        GestureAction.ReduceBrightness,
+        GestureAction.MaximizeBrightness,
+        GestureAction.MinimizeBrightness -> true
         else -> false
     }
 
@@ -282,11 +282,11 @@ class BrightnessGestureConsumer @Inject constructor(
     private fun engagedDimmer(gestureAction: GestureAction, byteValue: Int): Boolean =
         when {
             !isDimmerEnabled -> false
-            byteValue == MIN_BRIGHTNESS.toInt() && gestureAction == GestureAction.REDUCE_BRIGHTNESS -> {
+            byteValue == MIN_BRIGHTNESS.toInt() && gestureAction == GestureAction.ReduceBrightness -> {
                 increaseScreenDimmer()
                 true
             }
-            gestureAction == GestureAction.INCREASE_BRIGHTNESS && screenDimmerPercentPreference.value > MIN_DIM_PERCENT -> {
+            gestureAction == GestureAction.IncreaseBrightness && screenDimmerPercentPreference.value > MIN_DIM_PERCENT -> {
                 reduceScreenDimmer()
                 true
             }
@@ -402,7 +402,7 @@ class BrightnessGestureConsumer @Inject constructor(
     }
 
     private fun shouldRemoveDimmerOnChange(gestureAction: GestureAction): Boolean =
-        (gestureAction == GestureAction.MINIMIZE_BRIGHTNESS || gestureAction == GestureAction.MAXIMIZE_BRIGHTNESS
+        (gestureAction == GestureAction.MinimizeBrightness || gestureAction == GestureAction.MaximizeBrightness
             || shouldShowDimmer() && purchasesManager.isNotPremium)
 
     private fun noDiscreteBrightness(): Boolean =

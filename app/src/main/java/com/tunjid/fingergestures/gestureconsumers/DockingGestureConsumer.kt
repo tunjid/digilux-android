@@ -32,13 +32,13 @@ class DockingGestureConsumer @Inject constructor(
 
     @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.TOGGLE_DOCK
+        return gesture == GestureAction.DockToggle
     }
 
     @SuppressLint("SwitchIntDef")
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
-            GestureAction.TOGGLE_DOCK -> {
+            GestureAction.DockToggle -> {
                 val intent = Intent(context, DockingActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 

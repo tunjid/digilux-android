@@ -97,11 +97,11 @@ class GestureMapper @Inject constructor(
             reactivePreferences = reactivePreferences,
             key = gestureDirection.direction,
             default = when (gestureDirection) {
-                GestureDirection.Up -> GestureAction.NOTIFICATION_UP
-                GestureDirection.Down -> GestureAction.NOTIFICATION_DOWN
-                GestureDirection.Left -> GestureAction.REDUCE_BRIGHTNESS
-                GestureDirection.Right -> GestureAction.INCREASE_BRIGHTNESS
-                else -> GestureAction.DO_NOTHING
+                GestureDirection.Up -> GestureAction.NotificationUp
+                GestureDirection.Down -> GestureAction.NotificationDown
+                GestureDirection.Left -> GestureAction.ReduceBrightness
+                GestureDirection.Right -> GestureAction.IncreaseBrightness
+                else -> GestureAction.DoNothing
             }.id
         )
     }
@@ -119,7 +119,7 @@ class GestureMapper @Inject constructor(
                     directionPreferencesMap.getValue(this.double).monitor.map {
                         context.getString(when {
                             isPremium -> GestureAction.fromId(it)
-                            else -> GestureAction.DO_NOTHING
+                            else -> GestureAction.DoNothing
                         }.resource)
                     }
                 )
@@ -156,7 +156,7 @@ class GestureMapper @Inject constructor(
         get() = delayPercentageToMillis(doubleSwipePreference.value).toLong()
 
     override val GestureDirection.hasDoubleAction: Boolean
-        get() = directionToAction(this.double) != GestureAction.DO_NOTHING
+        get() = directionToAction(this.double) != GestureAction.DoNothing
 
     init {
         actionIds = getActionIds()
@@ -208,38 +208,38 @@ class GestureMapper @Inject constructor(
     }
 
     private fun isSupportedAction(action: GestureAction): Boolean =
-        if (action == GestureAction.GLOBAL_LOCK_SCREEN || action == GestureAction.GLOBAL_TAKE_SCREENSHOT) App.isPieOrHigher else true
+        if (action == GestureAction.GlobalLockScreen || action == GestureAction.GlobalTakeScreenshot) App.isPieOrHigher else true
 
     private fun directionToAction(direction: GestureDirection): GestureAction {
-        if (direction.isDouble && purchasesManager.isNotPremium) return GestureAction.DO_NOTHING
+        if (direction.isDouble && purchasesManager.isNotPremium) return GestureAction.DoNothing
 
         val id = directionPreferencesMap.getValue(direction).value
         return GestureAction.fromId(id)
     }
 
     private fun actionForResource(resource: Int): GestureAction = when (resource) {
-        R.string.do_nothing -> GestureAction.DO_NOTHING
-        R.string.increase_brightness -> GestureAction.INCREASE_BRIGHTNESS
-        R.string.reduce_brightness -> GestureAction.REDUCE_BRIGHTNESS
-        R.string.maximize_brightness -> GestureAction.MAXIMIZE_BRIGHTNESS
-        R.string.minimize_brightness -> GestureAction.MINIMIZE_BRIGHTNESS
-        R.string.increase_audio -> GestureAction.INCREASE_AUDIO
-        R.string.reduce_audio -> GestureAction.REDUCE_AUDIO
-        R.string.notification_up -> GestureAction.NOTIFICATION_UP
-        R.string.notification_down -> GestureAction.NOTIFICATION_DOWN
-        R.string.toggle_notifications -> GestureAction.NOTIFICATION_TOGGLE
-        R.string.toggle_flashlight -> GestureAction.TOGGLE_FLASHLIGHT
-        R.string.toggle_dock -> GestureAction.TOGGLE_DOCK
-        R.string.toggle_auto_rotate -> GestureAction.TOGGLE_AUTO_ROTATE
-        R.string.global_home -> GestureAction.GLOBAL_HOME
-        R.string.global_back -> GestureAction.GLOBAL_BACK
-        R.string.global_recents -> GestureAction.GLOBAL_RECENTS
-        R.string.global_split_screen -> GestureAction.GLOBAL_SPLIT_SCREEN
-        R.string.global_power_dialog -> GestureAction.GLOBAL_POWER_DIALOG
-        R.string.global_lock_screen -> GestureAction.GLOBAL_LOCK_SCREEN
-        R.string.global_take_screenshot -> GestureAction.GLOBAL_TAKE_SCREENSHOT
-        R.string.show_popup -> GestureAction.SHOW_POPUP
-        else -> GestureAction.DO_NOTHING
+        R.string.do_nothing -> GestureAction.DoNothing
+        R.string.increase_brightness -> GestureAction.IncreaseBrightness
+        R.string.reduce_brightness -> GestureAction.ReduceBrightness
+        R.string.maximize_brightness -> GestureAction.MaximizeBrightness
+        R.string.minimize_brightness -> GestureAction.MinimizeBrightness
+        R.string.increase_audio -> GestureAction.IncreaseAudio
+        R.string.reduce_audio -> GestureAction.ReduceAudio
+        R.string.notification_up -> GestureAction.NotificationUp
+        R.string.notification_down -> GestureAction.NotificationDown
+        R.string.toggle_notifications -> GestureAction.NotificationToggle
+        R.string.toggle_flashlight -> GestureAction.FlashlightToggle
+        R.string.toggle_dock -> GestureAction.DockToggle
+        R.string.toggle_auto_rotate -> GestureAction.AutoRotateToggle
+        R.string.global_home -> GestureAction.GlobalHome
+        R.string.global_back -> GestureAction.GlobalBack
+        R.string.global_recents -> GestureAction.GlobalRecents
+        R.string.global_split_screen -> GestureAction.GlobalSplitScreen
+        R.string.global_power_dialog -> GestureAction.GlobalPowerDialog
+        R.string.global_lock_screen -> GestureAction.GlobalLockScreen
+        R.string.global_take_screenshot -> GestureAction.GlobalTakeScreenshot
+        R.string.show_popup -> GestureAction.PopUpShow
+        else -> GestureAction.DoNothing
     }
 
     private fun getActionIds(): IntArray {

@@ -19,31 +19,33 @@ package com.tunjid.fingergestures.gestureconsumers
 
 import com.tunjid.fingergestures.R
 
+/**
+ * Actions available. The ids are serialized to shared preferences and MUST not change
+ */
 enum class GestureAction(val id: Int) {
-    INCREASE_BRIGHTNESS(0),
-    REDUCE_BRIGHTNESS(1),
-    MAXIMIZE_BRIGHTNESS(2),
-    MINIMIZE_BRIGHTNESS(3),
-
+    IncreaseBrightness(0),
+    ReduceBrightness(1),
+    MaximizeBrightness(2),
+    MinimizeBrightness(3),
     // int NIGHT_MODE_ON = 4; DO NOT REMOVE FOR LEGACY REASONS
     // int NIGHT_MODE_OFF = 5; DO NOT REMOVE FOR LEGACY REASONS
-    NOTIFICATION_UP(6),
-    NOTIFICATION_DOWN(7),
-    DO_NOTHING(8),
-    TOGGLE_FLASHLIGHT(9),
-    TOGGLE_DOCK(10),
-    TOGGLE_AUTO_ROTATE(11),
-    NOTIFICATION_TOGGLE(12),
-    GLOBAL_HOME(13),
-    GLOBAL_BACK(14),
-    GLOBAL_RECENTS(15),
-    GLOBAL_SPLIT_SCREEN(16),
-    GLOBAL_POWER_DIALOG(17),
-    SHOW_POPUP(18),
-    INCREASE_AUDIO(19),
-    REDUCE_AUDIO(20),
-    GLOBAL_LOCK_SCREEN(21),
-    GLOBAL_TAKE_SCREENSHOT(22);
+    NotificationUp(6),
+    NotificationDown(7),
+    DoNothing(8),
+    FlashlightToggle(9),
+    DockToggle(10),
+    AutoRotateToggle(11),
+    NotificationToggle(12),
+    GlobalHome(13),
+    GlobalBack(14),
+    GlobalRecents(15),
+    GlobalSplitScreen(16),
+    GlobalPowerDialog(17),
+    PopUpShow(18),
+    IncreaseAudio(19),
+    ReduceAudio(20),
+    GlobalLockScreen(21),
+    GlobalTakeScreenshot(22);
 
     val serialized get() = id.toString()
 
@@ -53,6 +55,31 @@ enum class GestureAction(val id: Int) {
         fun deserialize(id: String) = fromId(id.toInt())
     }
 }
+
+val GestureAction.resource: Int
+    get() = when (this) {
+        GestureAction.DoNothing -> R.string.do_nothing
+        GestureAction.IncreaseBrightness -> R.string.increase_brightness
+        GestureAction.ReduceBrightness -> R.string.reduce_brightness
+        GestureAction.MaximizeBrightness -> R.string.maximize_brightness
+        GestureAction.MinimizeBrightness -> R.string.minimize_brightness
+        GestureAction.IncreaseAudio -> R.string.increase_audio
+        GestureAction.ReduceAudio -> R.string.reduce_audio
+        GestureAction.NotificationUp -> R.string.notification_up
+        GestureAction.NotificationDown -> R.string.notification_down
+        GestureAction.NotificationToggle -> R.string.toggle_notifications
+        GestureAction.FlashlightToggle -> R.string.toggle_flashlight
+        GestureAction.DockToggle -> R.string.toggle_dock
+        GestureAction.AutoRotateToggle -> R.string.toggle_auto_rotate
+        GestureAction.GlobalHome -> R.string.global_home
+        GestureAction.GlobalBack -> R.string.global_back
+        GestureAction.GlobalRecents -> R.string.global_recents
+        GestureAction.GlobalSplitScreen -> R.string.global_split_screen
+        GestureAction.GlobalPowerDialog -> R.string.global_power_dialog
+        GestureAction.GlobalLockScreen -> R.string.global_lock_screen
+        GestureAction.GlobalTakeScreenshot -> R.string.global_take_screenshot
+        GestureAction.PopUpShow -> R.string.show_popup
+    }
 
 interface GestureConsumer {
 
@@ -69,28 +96,3 @@ interface GestureConsumer {
         fun normalizePercentageToFraction(percentage: Int): Float = percentage / 100f
     }
 }
-
-val GestureAction.resource: Int
-    get() = when (this) {
-        GestureAction.DO_NOTHING -> R.string.do_nothing
-        GestureAction.INCREASE_BRIGHTNESS -> R.string.increase_brightness
-        GestureAction.REDUCE_BRIGHTNESS -> R.string.reduce_brightness
-        GestureAction.MAXIMIZE_BRIGHTNESS -> R.string.maximize_brightness
-        GestureAction.MINIMIZE_BRIGHTNESS -> R.string.minimize_brightness
-        GestureAction.INCREASE_AUDIO -> R.string.increase_audio
-        GestureAction.REDUCE_AUDIO -> R.string.reduce_audio
-        GestureAction.NOTIFICATION_UP -> R.string.notification_up
-        GestureAction.NOTIFICATION_DOWN -> R.string.notification_down
-        GestureAction.NOTIFICATION_TOGGLE -> R.string.toggle_notifications
-        GestureAction.TOGGLE_FLASHLIGHT -> R.string.toggle_flashlight
-        GestureAction.TOGGLE_DOCK -> R.string.toggle_dock
-        GestureAction.TOGGLE_AUTO_ROTATE -> R.string.toggle_auto_rotate
-        GestureAction.GLOBAL_HOME -> R.string.global_home
-        GestureAction.GLOBAL_BACK -> R.string.global_back
-        GestureAction.GLOBAL_RECENTS -> R.string.global_recents
-        GestureAction.GLOBAL_SPLIT_SCREEN -> R.string.global_split_screen
-        GestureAction.GLOBAL_POWER_DIALOG -> R.string.global_power_dialog
-        GestureAction.GLOBAL_LOCK_SCREEN -> R.string.global_lock_screen
-        GestureAction.GLOBAL_TAKE_SCREENSHOT -> R.string.global_take_screenshot
-        GestureAction.SHOW_POPUP -> R.string.show_popup
-    }

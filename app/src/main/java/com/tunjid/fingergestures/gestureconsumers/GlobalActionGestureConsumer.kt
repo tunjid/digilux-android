@@ -38,13 +38,13 @@ class GlobalActionGestureConsumer @Inject constructor(
 
     @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean = when (gesture) {
-        GestureAction.GLOBAL_HOME,
-        GestureAction.GLOBAL_BACK,
-        GestureAction.GLOBAL_RECENTS,
-        GestureAction.GLOBAL_LOCK_SCREEN,
-        GestureAction.GLOBAL_SPLIT_SCREEN,
-        GestureAction.GLOBAL_POWER_DIALOG,
-        GestureAction.GLOBAL_TAKE_SCREENSHOT -> true
+        GestureAction.GlobalHome,
+        GestureAction.GlobalBack,
+        GestureAction.GlobalRecents,
+        GestureAction.GlobalLockScreen,
+        GestureAction.GlobalSplitScreen,
+        GestureAction.GlobalPowerDialog,
+        GestureAction.GlobalTakeScreenshot -> true
         else -> false
     }
 
@@ -53,16 +53,16 @@ class GlobalActionGestureConsumer @Inject constructor(
         var action = -1
 
         when (gestureAction) {
-            GestureAction.GLOBAL_HOME -> action = GLOBAL_ACTION_HOME
-            GestureAction.GLOBAL_BACK -> action = GLOBAL_ACTION_BACK
-            GestureAction.GLOBAL_RECENTS -> action = GLOBAL_ACTION_RECENTS
-            GestureAction.GLOBAL_SPLIT_SCREEN -> action = GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
-            GestureAction.GLOBAL_POWER_DIALOG -> action = GLOBAL_ACTION_POWER_DIALOG
+            GestureAction.GlobalHome -> action = GLOBAL_ACTION_HOME
+            GestureAction.GlobalBack -> action = GLOBAL_ACTION_BACK
+            GestureAction.GlobalRecents -> action = GLOBAL_ACTION_RECENTS
+            GestureAction.GlobalSplitScreen -> action = GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
+            GestureAction.GlobalPowerDialog -> action = GLOBAL_ACTION_POWER_DIALOG
         }
 
         if (App.isPieOrHigher) {
-            if (gestureAction == GestureAction.GLOBAL_TAKE_SCREENSHOT) action = GLOBAL_ACTION_TAKE_SCREENSHOT
-            else if (gestureAction == GestureAction.GLOBAL_LOCK_SCREEN) action = GLOBAL_ACTION_LOCK_SCREEN
+            if (gestureAction == GestureAction.GlobalTakeScreenshot) action = GLOBAL_ACTION_TAKE_SCREENSHOT
+            else if (gestureAction == GestureAction.GlobalLockScreen) action = GLOBAL_ACTION_LOCK_SCREEN
         }
 
         if (action == -1) return

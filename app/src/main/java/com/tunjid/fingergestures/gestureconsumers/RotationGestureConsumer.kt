@@ -104,7 +104,7 @@ class RotationGestureConsumer @Inject constructor(
         isAutoRotateOn = !isAutoRotateOn
     }
 
-    override fun accepts(gesture: GestureAction): Boolean = gesture == GestureAction.TOGGLE_AUTO_ROTATE
+    override fun accepts(gesture: GestureAction): Boolean = gesture == GestureAction.AutoRotateToggle
 
     fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return

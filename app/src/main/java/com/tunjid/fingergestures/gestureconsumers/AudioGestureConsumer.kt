@@ -76,12 +76,12 @@ class AudioGestureConsumer @Inject constructor(
 
     @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.INCREASE_AUDIO || gesture == GestureAction.REDUCE_AUDIO
+        return gesture == GestureAction.IncreaseAudio || gesture == GestureAction.ReduceAudio
     }
 
     @SuppressLint("SwitchIntDef")
     override fun onGestureActionTriggered(gestureAction: GestureAction) =
-        adjustAudio(gestureAction == GestureAction.INCREASE_AUDIO)
+        adjustAudio(gestureAction == GestureAction.IncreaseAudio)
 
     private fun setStreamVolume(increase: Boolean, audioManager: AudioManager, streamType: Int) {
         val currentVolume = audioManager.getStreamVolume(streamType)

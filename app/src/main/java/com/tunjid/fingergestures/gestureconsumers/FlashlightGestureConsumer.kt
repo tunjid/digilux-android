@@ -38,12 +38,12 @@ class FlashlightGestureConsumer @Inject constructor(
 
     @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean =
-        gesture == GestureAction.TOGGLE_FLASHLIGHT
+        gesture == GestureAction.FlashlightToggle
 
     @SuppressLint("SwitchIntDef")
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
-            GestureAction.TOGGLE_FLASHLIGHT -> {
+            GestureAction.FlashlightToggle -> {
                 if (!isCallbackRegistered) isCallbackRegistered = registerTorchCallback(context)
                 if (!isCallbackRegistered) return
 
