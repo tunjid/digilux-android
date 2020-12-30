@@ -28,7 +28,6 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.GestureConsumers
-import com.tunjid.fingergestures.gestureconsumers.GestureAction.*
 import com.tunjid.fingergestures.gestureconsumers.ext.GestureProcessor
 import com.tunjid.fingergestures.gestureconsumers.ext.double
 import com.tunjid.fingergestures.gestureconsumers.ext.isDouble
@@ -38,6 +37,7 @@ import io.reactivex.Flowable
 import io.reactivex.Scheduler
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
+import io.reactivex.rxkotlin.Flowables
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
@@ -97,57 +97,49 @@ class GestureMapper @Inject constructor(
             reactivePreferences = reactivePreferences,
             key = gestureDirection.direction,
             default = when (gestureDirection) {
-                GestureDirection.Up -> NOTIFICATION_UP
-                GestureDirection.Down -> NOTIFICATION_DOWN
-                GestureDirection.Left -> REDUCE_BRIGHTNESS
-                GestureDirection.Right -> INCREASE_BRIGHTNESS
-                else -> DO_NOTHING
+                GestureDirection.Up -> GestureAction.NOTIFICATION_UP
+                GestureDirection.Down -> GestureAction.NOTIFICATION_DOWN
+                GestureDirection.Left -> GestureAction.REDUCE_BRIGHTNESS
+                GestureDirection.Right -> GestureAction.INCREASE_BRIGHTNESS
+                else -> GestureAction.DO_NOTHING
             }.id
         )
     }
         .toMap()
 
+    private val GestureDirection.pairedState
+        get() = purchasesManager.state
+            .map(PurchasesManager.State::isPremium)
+            .distinctUntilChanged()
+            .switchMap { isPremium ->
+                Flowables.combineLatest(
+                    directionPreferencesMap.getValue(this).monitor.map {
+                        context.getString(GestureAction.fromId(it).resource)
+                    },
+                    directionPreferencesMap.getValue(this.double).monitor.map {
+                        context.getString(when {
+                            isPremium -> GestureAction.fromId(it)
+                            else -> GestureAction.DO_NOTHING
+                        }.resource)
+                    }
+                )
+            }.map { (singleName, doubleName) ->
+                GesturePair(
+                    singleGestureName = context.getString(this.stringRes),
+                    doubleGestureName = context.getString(double.stringRes),
+                    singleActionName = singleName,
+                    doubleActionName = doubleName
+                )
+            }
+
     val directionPreferencesFlowable: Flowable<State>
         get() = Flowable.combineLatest(
-            directionPreferencesMap
-                .entries
-                .map { (gestureDirection, preference) ->
-                    preference.monitor.map {
-                        val resource = (if (gestureDirection.isDouble && purchasesManager.isNotPremium) DO_NOTHING
-                        else GestureAction.fromId(it)).resource
-
-                        gestureDirection to context.getString(resource)
-                    }
-                }) { items ->
-            val map = (items.toList() as List<Pair<GestureDirection, String>>).toMap()
-            State(
-                left = GesturePair(
-                    singleGestureName = context.getString(GestureDirection.Left.stringRes),
-                    doubleGestureName = context.getString(GestureDirection.DoubleLeft.stringRes),
-                    singleActionName = map.getValue(GestureDirection.Left),
-                    doubleActionName = map.getValue(GestureDirection.DoubleLeft)
-                ),
-                up = GesturePair(
-                    singleGestureName = context.getString(GestureDirection.Up.stringRes),
-                    doubleGestureName = context.getString(GestureDirection.DoubleUp.stringRes),
-                    singleActionName = map.getValue(GestureDirection.Up),
-                    doubleActionName = map.getValue(GestureDirection.DoubleUp)
-                ),
-                right = GesturePair(
-                    singleGestureName = context.getString(GestureDirection.Right.stringRes),
-                    doubleGestureName = context.getString(GestureDirection.DoubleRight.stringRes),
-                    singleActionName = map.getValue(GestureDirection.Right),
-                    doubleActionName = map.getValue(GestureDirection.DoubleRight)
-                ),
-                down = GesturePair(
-                    singleGestureName = context.getString(GestureDirection.Down.stringRes),
-                    doubleGestureName = context.getString(GestureDirection.DoubleDown.stringRes),
-                    singleActionName = map.getValue(GestureDirection.Down),
-                    doubleActionName = map.getValue(GestureDirection.DoubleDown)
-                ),
-            )
-        }
-
+            GestureDirection.Left.pairedState,
+            GestureDirection.Up.pairedState,
+            GestureDirection.Right.pairedState,
+            GestureDirection.Down.pairedState,
+            ::State
+        )
 
     private val actionIds: IntArray
     private val gestureProcessor = PublishProcessor.create<GestureDirection>()
@@ -164,7 +156,7 @@ class GestureMapper @Inject constructor(
         get() = delayPercentageToMillis(doubleSwipePreference.value).toLong()
 
     override val GestureDirection.hasDoubleAction: Boolean
-        get() = directionToAction(this.double) != DO_NOTHING
+        get() = directionToAction(this.double) != GestureAction.DO_NOTHING
 
     init {
         actionIds = getActionIds()
@@ -216,38 +208,38 @@ class GestureMapper @Inject constructor(
     }
 
     private fun isSupportedAction(action: GestureAction): Boolean =
-        if (action == GLOBAL_LOCK_SCREEN || action == GLOBAL_TAKE_SCREENSHOT) App.isPieOrHigher else true
+        if (action == GestureAction.GLOBAL_LOCK_SCREEN || action == GestureAction.GLOBAL_TAKE_SCREENSHOT) App.isPieOrHigher else true
 
     private fun directionToAction(direction: GestureDirection): GestureAction {
-        if (direction.isDouble && purchasesManager.isNotPremium) return DO_NOTHING
+        if (direction.isDouble && purchasesManager.isNotPremium) return GestureAction.DO_NOTHING
 
         val id = directionPreferencesMap.getValue(direction).value
         return GestureAction.fromId(id)
     }
 
     private fun actionForResource(resource: Int): GestureAction = when (resource) {
-        R.string.do_nothing -> DO_NOTHING
-        R.string.increase_brightness -> INCREASE_BRIGHTNESS
-        R.string.reduce_brightness -> REDUCE_BRIGHTNESS
-        R.string.maximize_brightness -> MAXIMIZE_BRIGHTNESS
-        R.string.minimize_brightness -> MINIMIZE_BRIGHTNESS
-        R.string.increase_audio -> INCREASE_AUDIO
-        R.string.reduce_audio -> REDUCE_AUDIO
-        R.string.notification_up -> NOTIFICATION_UP
-        R.string.notification_down -> NOTIFICATION_DOWN
-        R.string.toggle_notifications -> NOTIFICATION_TOGGLE
-        R.string.toggle_flashlight -> TOGGLE_FLASHLIGHT
-        R.string.toggle_dock -> TOGGLE_DOCK
-        R.string.toggle_auto_rotate -> TOGGLE_AUTO_ROTATE
-        R.string.global_home -> GLOBAL_HOME
-        R.string.global_back -> GLOBAL_BACK
-        R.string.global_recents -> GLOBAL_RECENTS
-        R.string.global_split_screen -> GLOBAL_SPLIT_SCREEN
-        R.string.global_power_dialog -> GLOBAL_POWER_DIALOG
-        R.string.global_lock_screen -> GLOBAL_LOCK_SCREEN
-        R.string.global_take_screenshot -> GLOBAL_TAKE_SCREENSHOT
-        R.string.show_popup -> SHOW_POPUP
-        else -> DO_NOTHING
+        R.string.do_nothing -> GestureAction.DO_NOTHING
+        R.string.increase_brightness -> GestureAction.INCREASE_BRIGHTNESS
+        R.string.reduce_brightness -> GestureAction.REDUCE_BRIGHTNESS
+        R.string.maximize_brightness -> GestureAction.MAXIMIZE_BRIGHTNESS
+        R.string.minimize_brightness -> GestureAction.MINIMIZE_BRIGHTNESS
+        R.string.increase_audio -> GestureAction.INCREASE_AUDIO
+        R.string.reduce_audio -> GestureAction.REDUCE_AUDIO
+        R.string.notification_up -> GestureAction.NOTIFICATION_UP
+        R.string.notification_down -> GestureAction.NOTIFICATION_DOWN
+        R.string.toggle_notifications -> GestureAction.NOTIFICATION_TOGGLE
+        R.string.toggle_flashlight -> GestureAction.TOGGLE_FLASHLIGHT
+        R.string.toggle_dock -> GestureAction.TOGGLE_DOCK
+        R.string.toggle_auto_rotate -> GestureAction.TOGGLE_AUTO_ROTATE
+        R.string.global_home -> GestureAction.GLOBAL_HOME
+        R.string.global_back -> GestureAction.GLOBAL_BACK
+        R.string.global_recents -> GestureAction.GLOBAL_RECENTS
+        R.string.global_split_screen -> GestureAction.GLOBAL_SPLIT_SCREEN
+        R.string.global_power_dialog -> GestureAction.GLOBAL_POWER_DIALOG
+        R.string.global_lock_screen -> GestureAction.GLOBAL_LOCK_SCREEN
+        R.string.global_take_screenshot -> GestureAction.GLOBAL_TAKE_SCREENSHOT
+        R.string.show_popup -> GestureAction.SHOW_POPUP
+        else -> GestureAction.DO_NOTHING
     }
 
     private fun getActionIds(): IntArray {
