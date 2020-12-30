@@ -236,7 +236,7 @@ class BrightnessGestureConsumer @Inject constructor(
     val percentageFormatter = { percent: Int -> context.getString(R.string.position_percent, percent) }
 
     fun saveBrightness(byteValue: Int) {
-        if (!App.canWriteToSettings) return
+        if (!context.canWriteToSettings) return
 
         val contentResolver = context.contentResolver ?: return
 
@@ -245,7 +245,7 @@ class BrightnessGestureConsumer @Inject constructor(
     }
 
     fun onScreenTurnedOn() {
-        if (!App.canWriteToSettings) return
+        if (!context.canWriteToSettings) return
 
         val threshold = adaptiveThresholdToLux(adaptiveBrightnessThresholdPreference.value)
         val restoresAdaptiveBrightness = adaptiveBrightnessPreference.value

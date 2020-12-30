@@ -43,6 +43,7 @@ import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.SetPreferenceEditor
 import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Input
@@ -69,7 +70,7 @@ fun ViewGroup.discreteBrightness() = viewHolderFrom(ViewholderHorizontalListBind
     binding.add.setOnClickListener {
         val builder = MaterialAlertDialogBuilder(itemView.context)
 
-        if (App.canWriteToSettings) requestDiscreteValue(builder)
+        if (itemView.context.canWriteToSettings) requestDiscreteValue(builder)
         else builder.setMessage(R.string.permission_required).show()
     }
     binding.itemList.apply {
@@ -86,7 +87,7 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.DiscreteB
     this@bind.item = item
 
     listAdapter.submitList(item.brightnesses)
-    if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
+    if (!itemView.context.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
 }
 
 private fun BindingViewHolder<ViewholderHorizontalListBinding>.requestDiscreteValue(builder: MaterialAlertDialogBuilder) {

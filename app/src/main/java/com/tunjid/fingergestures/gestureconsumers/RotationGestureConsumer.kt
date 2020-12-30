@@ -108,7 +108,7 @@ class RotationGestureConsumer @Inject constructor(
 
     fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
-        if (!App.canWriteToSettings || event.eventType != TYPE_WINDOW_STATE_CHANGED) return
+        if (!context.canWriteToSettings || event.eventType != TYPE_WINDOW_STATE_CHANGED) return
 
         val sequence = event.packageName ?: return
 

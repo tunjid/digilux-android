@@ -20,23 +20,17 @@ package com.tunjid.fingergestures
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
 import android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK
 import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import com.tunjid.fingergestures.di.Dagger
-import io.reactivex.Flowable
 import io.reactivex.Flowable.timer
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Function
-import io.reactivex.processors.PublishProcessor
-import org.reactivestreams.Publisher
 import java.util.concurrent.TimeUnit
 
 val Context.preferences: SharedPreferences get() = getSharedPreferences(BRIGHTNESS_PREFS, Context.MODE_PRIVATE)
@@ -62,41 +56,23 @@ class App : android.app.Application() {
 //    }
 
     companion object {
-        var instance: App? = null
-            private set
+       private var instance: App? = null
 
         fun delay(interval: Long, timeUnit: TimeUnit, runnable: () -> Unit): Disposable {
             return timer(interval, timeUnit).subscribe({ runnable.invoke() }, { it.printStackTrace() })
         }
 
-        val canWriteToSettings: Boolean
-            get() = transformApp({ Settings.System.canWrite(it) }, false)
-
         val hasStoragePermission: Boolean
-            get() =
-                transformApp({ app -> ContextCompat.checkSelfPermission(app, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED }, false)
+            get() = instance?.hasStoragePermission ?: false
 
         val isPieOrHigher: Boolean
             get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
 
         val hasDoNotDisturbAccess: Boolean
-            get() = transformApp({ app ->
-                val notificationManager = app.getSystemService(NotificationManager::class.java)
-                notificationManager != null && notificationManager.isNotificationPolicyAccessGranted
-            }, false)
+            get() = instance?.hasDoNotDisturbAccess ?: false
 
         val accessibilityServiceEnabled: Boolean
-            get() = transformApp({ app ->
-                val key = app.packageName
-
-                val accessibilityManager = app.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
-                    ?: return@transformApp false
-
-                val list = accessibilityManager.getEnabledAccessibilityServiceList(TYPES_ALL_MASK)
-
-                for (info in list) if (info.id.contains(key)) return@transformApp true
-                false
-            }, false)
+            get() = instance?.accessibilityServiceEnabled ?: false
 
         private fun <T> transformApp(appTFunction: (App) -> T, defaultValue: T): T {
             val app = instance
@@ -105,5 +81,29 @@ class App : android.app.Application() {
 
     }
 }
+
+val Context.canWriteToSettings: Boolean
+    get() = Settings.System.canWrite(this)
+
+val Context.hasStoragePermission: Boolean
+    get() =
+        ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED
+
+val Context.hasDoNotDisturbAccess: Boolean
+    get() = getSystemService<NotificationManager>()
+        ?.let(NotificationManager::isNotificationPolicyAccessGranted) == true
+
+val Context.accessibilityServiceEnabled: Boolean
+    get() {
+        val key = packageName
+
+        val accessibilityManager = getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+            ?: return false
+
+        val list = accessibilityManager.getEnabledAccessibilityServiceList(TYPES_ALL_MASK)
+
+        for (info in list) if (info.id.contains(key)) return true
+        return false
+    }
 
 private const val BRIGHTNESS_PREFS = "brightness prefs"

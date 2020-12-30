@@ -29,6 +29,7 @@ import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.models.Action
@@ -57,7 +58,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
     }
     binding.add.setOnClickListener {
         when {
-            !App.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+            !itemView.context.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
             !item.accessibilityButtonEnabled -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
             else -> item.input.accept(Input.UiInteraction.ShowSheet(ActionFragment.popUpInstance()))
         }
@@ -71,7 +72,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
 fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.PopUp) = binding.run {
     this@bind.item = item
 
-    if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
+    if (!itemView.context.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
     listAdapter.submitList(item.items)
 }
 
@@ -79,12 +80,12 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(a
     val builder = MaterialAlertDialogBuilder(itemView.context)
 
     when {
-        !App.canWriteToSettings -> builder.setMessage(R.string.permission_required)
+        !itemView.context.canWriteToSettings -> builder.setMessage(R.string.permission_required)
         !item.accessibilityButtonEnabled -> builder.setMessage(R.string.popup_prompt)
         else -> builder.setTitle(R.string.popup_remove)
             .setPositiveButton(R.string.yes) { _, _ ->
                 item.editor - action.value
-                if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
+                if (!itemView.context.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
     }

@@ -31,6 +31,7 @@ import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.fragments.PackageFragment
 import com.tunjid.fingergestures.models.Input
@@ -53,7 +54,7 @@ fun ViewGroup.rotation() = viewHolderFrom(ViewholderHorizontalListBinding::infla
     binding.title.setOnClickListener { MaterialAlertDialogBuilder(it.context).setMessage(item.infoRes).show() }
     binding.add.setOnClickListener {
         when {
-            !App.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+            !itemView.context.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
             !item.canAutoRotate -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.auto_rotate_prompt).show()
             item.preference != null -> item.preference
                 ?.let(PackageFragment.Companion::newInstance)
@@ -74,7 +75,7 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.Rotation)
     add.isVisible = item.preference != null
     listAdapter.submitList(item.items)
 
-    if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
+    if (!itemView.context.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
 }
 
 private fun BindingViewHolder<ViewholderHorizontalListBinding>.onPackageClicked(app: ApplicationInfo) {
@@ -82,7 +83,7 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onPackageClicked(
     val editor = item.editor
 
     when {
-        !App.canWriteToSettings -> builder.setMessage(R.string.permission_required)
+        !itemView.context.canWriteToSettings -> builder.setMessage(R.string.permission_required)
         !item.canAutoRotate -> builder.setMessage(R.string.auto_rotate_prompt)
         item.unRemovablePackages.contains(app.packageName) -> builder.setMessage(R.string.auto_rotate_cannot_remove)
         editor != null -> builder.setTitle(item.removeText)

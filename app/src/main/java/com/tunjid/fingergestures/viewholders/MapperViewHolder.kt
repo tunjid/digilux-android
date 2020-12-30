@@ -25,7 +25,9 @@ import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.accessibilityServiceEnabled
 import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderMapperBinding
 import com.tunjid.fingergestures.fragments.ActionFragment
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
@@ -57,8 +59,8 @@ fun BindingViewHolder<ViewholderMapperBinding>.bind(item: Item.Mapper) = binding
         GestureDirection.DoubleRight -> R.drawable.ic_chevron_right_white_24dp
     })
 
-    if (!App.accessibilityServiceEnabled) item.input.accept(Input.Permission.Request.Accessibility)
-    if (!App.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
+    if (!itemView.context.accessibilityServiceEnabled) item.input.accept(Input.Permission.Request.Accessibility)
+    if (!itemView.context.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
 
     fun getFormattedText(directionName: String, text: String): CharSequence =
         itemView.context.getString(R.string.mapper_format).formatSpanned(

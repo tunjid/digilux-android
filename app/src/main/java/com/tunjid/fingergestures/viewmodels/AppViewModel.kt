@@ -39,19 +39,19 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class AppViewModel @Inject constructor(
-    @AppContext app: Context,
+    @AppContext private val context: Context,
     broadcasts: Flowable<Broadcast>,
     override val dependencies: AppDependencies
 ) : ViewModel(), Inputs {
 
-    private val quips = app.resources.getStringArray(R.array.upsell_text)
+    private val quips = context.resources.getStringArray(R.array.upsell_text)
     private val inputProcessor: PublishProcessor<Input> = PublishProcessor.create()
     private val disposable: CompositeDisposable = CompositeDisposable()
 
     private val backingState = Flowables.combineLatest(
         dependencies.purchasesManager.shill(),
         dependencies.purchasesManager.state,
-        Flowable.just(app.links),
+        Flowable.just(context.links),
         broadcasts.filterIsInstance<Broadcast.Prompt>().map { Optional.of(it) }.startWith(Optional.empty()),
         inputProcessor.filterIsInstance<Input.UiInteraction>().startWith(Input.UiInteraction.Default),
         inputProcessor.permissionState,
@@ -68,7 +68,7 @@ class AppViewModel @Inject constructor(
     }
 
     init {
-        val client = BillingClient.newBuilder(app)
+        val client = BillingClient.newBuilder(context)
             .setListener(dependencies.purchasesManager)
             .build()
 
@@ -110,6 +110,53 @@ class AppViewModel @Inject constructor(
                 .map(Shilling::Quip)
             else Flowable.just(Shilling.Calm)
         }
+
+    private val Flowable<Input>.permissionState
+        get() = filterIsInstance<Input.Permission>()
+            .scan(PermissionState()) { state, permission ->
+                when (permission) {
+                    Input.Permission.Request.Storage,
+                    Input.Permission.Request.Settings,
+                    Input.Permission.Request.Accessibility,
+                    Input.Permission.Request.DoNotDisturb -> {
+                        if (permission is Input.Permission.Request) {
+                            val queue = if (state.queue.contains(permission)) state.queue - permission else state.queue
+                            state.copy(queue = queue + permission)
+                        } else state
+                    }
+                    is Input.Permission.Action.Clear -> state.copy(
+                        queue = listOf()
+                    )
+                    is Input.Permission.Action.Clicked -> state.copy(
+                        active = state.queue.lastOrNull()?.let(::Unique),
+                        queue = state.queue.dropLast(1)
+                    )
+                    is Input.Permission.Action.Changed -> {
+                        val (prompt, shouldRemove) = when (permission.request) {
+                            Input.Permission.Request.Storage ->
+                                if (context.hasStoragePermission) R.string.storage_permission_granted to true
+                                else R.string.storage_permission_denied to false
+                            Input.Permission.Request.Settings ->
+                                if (context.canWriteToSettings) R.string.settings_permission_granted to true
+                                else R.string.settings_permission_denied to false
+                            Input.Permission.Request.Accessibility ->
+                                if (context.accessibilityServiceEnabled) R.string.accessibility_permission_granted to true
+                                else R.string.accessibility_permission_denied to false
+                            Input.Permission.Request.DoNotDisturb ->
+                                if (context.hasDoNotDisturbAccess) R.string.do_not_disturb_permission_granted to true
+                                else R.string.do_not_disturb_permission_denied to false
+                        }
+
+                        state.copy(
+                            prompt = Unique(prompt),
+                            queue = when {
+                                shouldRemove -> state.queue - permission.request
+                                else -> state.queue
+                            }
+                        )
+                    }
+                }
+            }
 
 //    private fun consume(purchaseToken: String) {
 //        billingClient.consumeAsync(purchaseToken) { _, _ -> }
@@ -177,53 +224,6 @@ val Context.links
         TextLink(getString(R.string.material_design_icons), AppViewModel.MATERIAL_DESIGN_ICONS_LINK),
         TextLink(getString(R.string.android_bootstrap), AppViewModel.ANDROID_BOOTSTRAP_LINK)
     )
-
-private val Flowable<Input>.permissionState
-    get() = filterIsInstance<Input.Permission>()
-        .scan(PermissionState()) { state, permission ->
-            when (permission) {
-                Input.Permission.Request.Storage,
-                Input.Permission.Request.Settings,
-                Input.Permission.Request.Accessibility,
-                Input.Permission.Request.DoNotDisturb -> {
-                    if (permission is Input.Permission.Request) {
-                        val queue = if (state.queue.contains(permission)) state.queue - permission else state.queue
-                        state.copy(queue = queue + permission)
-                    } else state
-                }
-                is Input.Permission.Action.Clear -> state.copy(
-                    queue = listOf()
-                )
-                is Input.Permission.Action.Clicked -> state.copy(
-                    active = state.queue.lastOrNull()?.let(::Unique),
-                    queue = state.queue.dropLast(1)
-                )
-                is Input.Permission.Action.Changed -> {
-                    val (prompt, shouldRemove) = when (permission.request) {
-                        Input.Permission.Request.Storage ->
-                            if (App.hasStoragePermission) R.string.storage_permission_granted to true
-                            else R.string.storage_permission_denied to false
-                        Input.Permission.Request.Settings ->
-                            if (App.canWriteToSettings) R.string.settings_permission_granted to true
-                            else R.string.settings_permission_denied to false
-                        Input.Permission.Request.Accessibility ->
-                            if (App.accessibilityServiceEnabled) R.string.accessibility_permission_granted to true
-                            else R.string.accessibility_permission_denied to false
-                        Input.Permission.Request.DoNotDisturb ->
-                            if (App.hasDoNotDisturbAccess) R.string.do_not_disturb_permission_granted to true
-                            else R.string.do_not_disturb_permission_denied to false
-                    }
-
-                    state.copy(
-                        prompt = Unique(prompt),
-                        queue = when {
-                            shouldRemove -> state.queue - permission.request
-                            else -> state.queue
-                        }
-                    )
-                }
-            }
-        }
 
 private val Flowable<Input>.billingState
     get() = filterIsInstance<Input.Billing>()
