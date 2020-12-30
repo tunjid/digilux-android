@@ -17,34 +17,34 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
+import androidx.annotation.StringRes
 import com.tunjid.fingergestures.R
 
 /**
  * Actions available. The ids are serialized to shared preferences and MUST not change
  */
-
 enum class GestureAction(val id: Int, val nameRes: Int) {
+    DoNothing(id = 8, nameRes = R.string.do_nothing),
     IncreaseBrightness(id = 0, nameRes = R.string.increase_brightness),
     ReduceBrightness(id = 1, nameRes = R.string.reduce_brightness),
     MaximizeBrightness(id = 2, nameRes = R.string.maximize_brightness),
     MinimizeBrightness(id = 3, nameRes = R.string.minimize_brightness),
+    IncreaseAudio(id = 19, nameRes = R.string.increase_audio),
+    ReduceAudio(id = 20, nameRes = R.string.reduce_audio),
     // int NIGHT_MODE_ON = 4; DO NOT REMOVE FOR LEGACY REASONS
     // int NIGHT_MODE_OFF = 5; DO NOT REMOVE FOR LEGACY REASONS
     NotificationUp(id = 6, nameRes = R.string.notification_up),
     NotificationDown(id = 7, nameRes = R.string.notification_down),
-    DoNothing(id = 8, nameRes = R.string.do_nothing),
+    NotificationToggle(id = 12, nameRes = R.string.toggle_notifications),
+    PopUpShow(id = 18, nameRes = R.string.show_popup),
     FlashlightToggle(id = 9, nameRes = R.string.toggle_flashlight),
     DockToggle(id = 10, nameRes = R.string.toggle_dock),
     AutoRotateToggle(id = 11, nameRes = R.string.toggle_auto_rotate),
-    NotificationToggle(id = 12, nameRes = R.string.toggle_notifications),
     GlobalHome(id = 13, nameRes = R.string.global_home),
     GlobalBack(id = 14, nameRes = R.string.global_back),
     GlobalRecents(id = 15, nameRes = R.string.global_recents),
     GlobalSplitScreen(id = 16, nameRes = R.string.global_split_screen),
     GlobalPowerDialog(id = 17, nameRes = R.string.global_power_dialog),
-    PopUpShow(id = 18, nameRes = R.string.show_popup),
-    IncreaseAudio(id = 19, nameRes = R.string.increase_audio),
-    ReduceAudio(id = 20, nameRes = R.string.reduce_audio),
     GlobalLockScreen(id = 21, nameRes = R.string.global_lock_screen),
     GlobalTakeScreenshot(id = 22, nameRes = R.string.global_take_screenshot);
 
