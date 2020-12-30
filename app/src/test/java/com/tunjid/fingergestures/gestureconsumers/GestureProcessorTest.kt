@@ -17,8 +17,6 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import com.tunjid.fingergestures.gestureconsumers.GestureDirection
-import com.tunjid.fingergestures.gestureconsumers.GestureProcessor
 import io.reactivex.Flowable
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subscribers.TestSubscriber

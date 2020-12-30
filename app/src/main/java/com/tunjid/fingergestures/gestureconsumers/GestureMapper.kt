@@ -123,8 +123,8 @@ class GestureMapper @Inject constructor(
                 GesturePair(
                     singleGestureName = context.getString(this.stringRes),
                     doubleGestureName = context.getString(double.stringRes),
-                    singleActionName = context.getString(singleAction.resource),
-                    doubleActionName = context.getString(doubleAction.resource),
+                    singleActionName = context.getString(singleAction.nameRes),
+                    doubleActionName = context.getString(doubleAction.nameRes),
                     singleAction = singleAction,
                     doubleAction = doubleAction,
                 )
@@ -147,9 +147,12 @@ class GestureMapper @Inject constructor(
         disposableHandler = disposables::add
     )
 
-    val actions: List<GestureAction>
-        get() = actionIds.map(::actionForResource)
-            .filter(::isSupportedAction)
+    val supportedActions: Flowable<List<GestureAction>>
+        get() = Flowable.just(
+            GestureAction.values()
+                .toList()
+                .filter(::isSupportedAction)
+        )
 
     init {
         actionIds = getActionIds()
@@ -236,31 +239,6 @@ class GestureMapper @Inject constructor(
 
     private fun isSupportedAction(action: GestureAction): Boolean =
         if (action == GestureAction.GlobalLockScreen || action == GestureAction.GlobalTakeScreenshot) App.isPieOrHigher else true
-
-    private fun actionForResource(resource: Int): GestureAction = when (resource) {
-        R.string.do_nothing -> GestureAction.DoNothing
-        R.string.increase_brightness -> GestureAction.IncreaseBrightness
-        R.string.reduce_brightness -> GestureAction.ReduceBrightness
-        R.string.maximize_brightness -> GestureAction.MaximizeBrightness
-        R.string.minimize_brightness -> GestureAction.MinimizeBrightness
-        R.string.increase_audio -> GestureAction.IncreaseAudio
-        R.string.reduce_audio -> GestureAction.ReduceAudio
-        R.string.notification_up -> GestureAction.NotificationUp
-        R.string.notification_down -> GestureAction.NotificationDown
-        R.string.toggle_notifications -> GestureAction.NotificationToggle
-        R.string.toggle_flashlight -> GestureAction.FlashlightToggle
-        R.string.toggle_dock -> GestureAction.DockToggle
-        R.string.toggle_auto_rotate -> GestureAction.AutoRotateToggle
-        R.string.global_home -> GestureAction.GlobalHome
-        R.string.global_back -> GestureAction.GlobalBack
-        R.string.global_recents -> GestureAction.GlobalRecents
-        R.string.global_split_screen -> GestureAction.GlobalSplitScreen
-        R.string.global_power_dialog -> GestureAction.GlobalPowerDialog
-        R.string.global_lock_screen -> GestureAction.GlobalLockScreen
-        R.string.global_take_screenshot -> GestureAction.GlobalTakeScreenshot
-        R.string.show_popup -> GestureAction.PopUpShow
-        else -> GestureAction.DoNothing
-    }
 
     private fun getActionIds(): IntArray {
         val array = context.resources.obtainTypedArray(R.array.action_resources)

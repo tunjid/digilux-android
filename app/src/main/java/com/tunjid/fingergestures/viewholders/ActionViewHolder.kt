@@ -26,7 +26,6 @@ import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.*
-import com.tunjid.fingergestures.gestureconsumers.resource
 import com.tunjid.fingergestures.models.Action
 
 class ActionViewHolder(
@@ -47,7 +46,7 @@ class ActionViewHolder(
         this.action = action
 
         textView.isVisible = showsText
-        textView.setText(action.value.resource)
+        textView.setText(action.value.nameRes)
 
         val iconRes = actionToIcon(action)
 

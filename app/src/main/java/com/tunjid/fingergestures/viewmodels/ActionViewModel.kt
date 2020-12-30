@@ -53,7 +53,7 @@ class ActionViewModel @Inject constructor(
 
     val state = Flowable.combineLatest(
         processor.startWith(false).map(::Unique),
-        Flowable.just(gestureMapper.actions).toPopUpActions(backgroundManager.sliderColorPreference.monitor),
+        gestureMapper.supportedActions.toPopUpActions(backgroundManager.sliderColorPreference.monitor),
         ::ActionState
     ).toLiveData()
 

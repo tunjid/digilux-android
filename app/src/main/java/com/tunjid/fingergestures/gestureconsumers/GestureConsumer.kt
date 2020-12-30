@@ -22,30 +22,31 @@ import com.tunjid.fingergestures.R
 /**
  * Actions available. The ids are serialized to shared preferences and MUST not change
  */
-enum class GestureAction(val id: Int) {
-    IncreaseBrightness(0),
-    ReduceBrightness(1),
-    MaximizeBrightness(2),
-    MinimizeBrightness(3),
+
+enum class GestureAction(val id: Int, val nameRes: Int) {
+    IncreaseBrightness(id = 0, nameRes = R.string.increase_brightness),
+    ReduceBrightness(id = 1, nameRes = R.string.reduce_brightness),
+    MaximizeBrightness(id = 2, nameRes = R.string.maximize_brightness),
+    MinimizeBrightness(id = 3, nameRes = R.string.minimize_brightness),
     // int NIGHT_MODE_ON = 4; DO NOT REMOVE FOR LEGACY REASONS
     // int NIGHT_MODE_OFF = 5; DO NOT REMOVE FOR LEGACY REASONS
-    NotificationUp(6),
-    NotificationDown(7),
-    DoNothing(8),
-    FlashlightToggle(9),
-    DockToggle(10),
-    AutoRotateToggle(11),
-    NotificationToggle(12),
-    GlobalHome(13),
-    GlobalBack(14),
-    GlobalRecents(15),
-    GlobalSplitScreen(16),
-    GlobalPowerDialog(17),
-    PopUpShow(18),
-    IncreaseAudio(19),
-    ReduceAudio(20),
-    GlobalLockScreen(21),
-    GlobalTakeScreenshot(22);
+    NotificationUp(id = 6, nameRes = R.string.notification_up),
+    NotificationDown(id = 7, nameRes = R.string.notification_down),
+    DoNothing(id = 8, nameRes = R.string.do_nothing),
+    FlashlightToggle(id = 9, nameRes = R.string.toggle_flashlight),
+    DockToggle(id = 10, nameRes = R.string.toggle_dock),
+    AutoRotateToggle(id = 11, nameRes = R.string.toggle_auto_rotate),
+    NotificationToggle(id = 12, nameRes = R.string.toggle_notifications),
+    GlobalHome(id = 13, nameRes = R.string.global_home),
+    GlobalBack(id = 14, nameRes = R.string.global_back),
+    GlobalRecents(id = 15, nameRes = R.string.global_recents),
+    GlobalSplitScreen(id = 16, nameRes = R.string.global_split_screen),
+    GlobalPowerDialog(id = 17, nameRes = R.string.global_power_dialog),
+    PopUpShow(id = 18, nameRes = R.string.show_popup),
+    IncreaseAudio(id = 19, nameRes = R.string.increase_audio),
+    ReduceAudio(id = 20, nameRes = R.string.reduce_audio),
+    GlobalLockScreen(id = 21, nameRes = R.string.global_lock_screen),
+    GlobalTakeScreenshot(id = 22, nameRes = R.string.global_take_screenshot);
 
     val serialized get() = id.toString()
 
@@ -56,31 +57,6 @@ enum class GestureAction(val id: Int) {
     }
 }
 
-val GestureAction.resource: Int
-    get() = when (this) {
-        GestureAction.DoNothing -> R.string.do_nothing
-        GestureAction.IncreaseBrightness -> R.string.increase_brightness
-        GestureAction.ReduceBrightness -> R.string.reduce_brightness
-        GestureAction.MaximizeBrightness -> R.string.maximize_brightness
-        GestureAction.MinimizeBrightness -> R.string.minimize_brightness
-        GestureAction.IncreaseAudio -> R.string.increase_audio
-        GestureAction.ReduceAudio -> R.string.reduce_audio
-        GestureAction.NotificationUp -> R.string.notification_up
-        GestureAction.NotificationDown -> R.string.notification_down
-        GestureAction.NotificationToggle -> R.string.toggle_notifications
-        GestureAction.FlashlightToggle -> R.string.toggle_flashlight
-        GestureAction.DockToggle -> R.string.toggle_dock
-        GestureAction.AutoRotateToggle -> R.string.toggle_auto_rotate
-        GestureAction.GlobalHome -> R.string.global_home
-        GestureAction.GlobalBack -> R.string.global_back
-        GestureAction.GlobalRecents -> R.string.global_recents
-        GestureAction.GlobalSplitScreen -> R.string.global_split_screen
-        GestureAction.GlobalPowerDialog -> R.string.global_power_dialog
-        GestureAction.GlobalLockScreen -> R.string.global_lock_screen
-        GestureAction.GlobalTakeScreenshot -> R.string.global_take_screenshot
-        GestureAction.PopUpShow -> R.string.show_popup
-    }
-
 interface GestureConsumer {
 
     fun onGestureActionTriggered(gestureAction: GestureAction)
@@ -88,11 +64,8 @@ interface GestureConsumer {
     fun accepts(gesture: GestureAction): Boolean
 
     companion object {
-
         const val ZERO_PERCENT = 0
-        const val FIFTY_PERCENT = 50
         const val HUNDRED_PERCENT = 100
-
         fun normalizePercentageToFraction(percentage: Int): Float = percentage / 100f
     }
 }
