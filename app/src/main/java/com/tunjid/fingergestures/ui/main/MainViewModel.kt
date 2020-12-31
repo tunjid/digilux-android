@@ -179,59 +179,14 @@ class MainViewModel @Inject constructor(
 //        if (billingClient == null || result.responseCode != BillingClient.BillingResponse.OK) return
 //        for (item in result.purchasesList) consume(item.purchaseToken)
 //    }
-
-    companion object {
-        private const val PADDING = -1
-        const val SLIDER_DELTA = PADDING + 1
-        const val SLIDER_POSITION = SLIDER_DELTA + 1
-        const val SLIDER_DURATION = SLIDER_POSITION + 1
-        const val SLIDER_COLOR = SLIDER_DURATION + 1
-        const val SCREEN_DIMMER = SLIDER_COLOR + 1
-        const val USE_LOGARITHMIC_SCALE = SCREEN_DIMMER + 1
-        const val SHOW_SLIDER = USE_LOGARITHMIC_SCALE + 1
-        const val ADAPTIVE_BRIGHTNESS = SHOW_SLIDER + 1
-        const val ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS = ADAPTIVE_BRIGHTNESS + 1
-        const val DOUBLE_SWIPE_SETTINGS = ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS + 1
-        const val MAP_UP_ICON = DOUBLE_SWIPE_SETTINGS + 1
-        const val MAP_DOWN_ICON = MAP_UP_ICON + 1
-        const val MAP_LEFT_ICON = MAP_DOWN_ICON + 1
-        const val MAP_RIGHT_ICON = MAP_LEFT_ICON + 1
-        const val AD_FREE = MAP_RIGHT_ICON + 1
-        const val REVIEW = AD_FREE + 1
-        const val WALLPAPER_PICKER = REVIEW + 1
-        const val WALLPAPER_TRIGGER = WALLPAPER_PICKER + 1
-        const val ROTATION_LOCK = WALLPAPER_TRIGGER + 1
-        const val EXCLUDED_ROTATION_LOCK = ROTATION_LOCK + 1
-        const val ENABLE_WATCH_WINDOWS = EXCLUDED_ROTATION_LOCK + 1
-        const val POPUP_ACTION = ENABLE_WATCH_WINDOWS + 1
-        const val ENABLE_ACCESSIBILITY_BUTTON = POPUP_ACTION + 1
-        const val ACCESSIBILITY_SINGLE_CLICK = ENABLE_ACCESSIBILITY_BUTTON + 1
-        const val ANIMATES_SLIDER = ACCESSIBILITY_SINGLE_CLICK + 1
-        const val ANIMATES_POPUP = ANIMATES_SLIDER + 1
-        const val DISCRETE_BRIGHTNESS = ANIMATES_POPUP + 1
-        const val AUDIO_DELTA = DISCRETE_BRIGHTNESS + 1
-        const val AUDIO_STREAM_TYPE = AUDIO_DELTA + 1
-        const val AUDIO_SLIDER_SHOW = AUDIO_STREAM_TYPE + 1
-        const val NAV_BAR_COLOR = AUDIO_SLIDER_SHOW + 1
-        const val LOCKED_CONTENT = NAV_BAR_COLOR + 1
-        const val SUPPORT = LOCKED_CONTENT + 1
-        const val ROTATION_HISTORY = SUPPORT + 1
-
-        internal const val RX_JAVA_LINK = "https://github.com/ReactiveX/RxJava"
-        internal const val COLOR_PICKER_LINK = "https://github.com/QuadFlask/colorpicker"
-        internal const val ANDROID_BOOTSTRAP_LINK = "https://github.com/tunjid/android-bootstrap"
-        internal const val GET_SET_ICON_LINK = "http://www.myiconfinder.com/getseticons"
-        internal const val IMAGE_CROPPER_LINK = "https://github.com/ArthurHub/Android-Image-Cropper"
-        internal const val MATERIAL_DESIGN_ICONS_LINK = "https://materialdesignicons.com/"
-    }
 }
 
 val Context.links
     get() = listOf(
-        TextLink(getString(R.string.get_set_icon), MainViewModel.GET_SET_ICON_LINK),
-        TextLink(getString(R.string.rxjava), MainViewModel.RX_JAVA_LINK),
-        TextLink(getString(R.string.color_picker), MainViewModel.COLOR_PICKER_LINK),
-        TextLink(getString(R.string.image_cropper), MainViewModel.IMAGE_CROPPER_LINK),
-        TextLink(getString(R.string.material_design_icons), MainViewModel.MATERIAL_DESIGN_ICONS_LINK),
-        TextLink(getString(R.string.android_bootstrap), MainViewModel.ANDROID_BOOTSTRAP_LINK)
+        TextLink(text = getString(R.string.get_set_icon), link = "https://github.com/tunjid/android-bootstrap"),
+        TextLink(text = getString(R.string.rxjava), link = "https://github.com/ReactiveX/RxJava"),
+        TextLink(text = getString(R.string.color_picker), link = "https://github.com/QuadFlask/colorpicker"),
+        TextLink(text = getString(R.string.image_cropper), link = "https://github.com/ArthurHub/Android-Image-Cropper"),
+        TextLink(text = getString(R.string.material_design_icons), link = "https://materialdesignicons.com/"),
+        TextLink(text = getString(R.string.android_bootstrap), link = "http://www.myiconfinder.com/getseticons")
     )

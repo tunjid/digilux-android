@@ -36,14 +36,14 @@ val Inputs.rotationItems: Flowable<List<Item>>
             listOf(
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    sortKey = MainViewModel.ENABLE_WATCH_WINDOWS,
+                    sortKey = ItemSorter.ENABLE_WATCH_WINDOWS,
                     titleRes = R.string.selective_app_rotation,
                     isChecked = canAutoRotate,
                     consumer = autoRotatePreference.setter
                 ),
                 Item.Rotation(
                     tab = Tab.Shortcuts,
-                    sortKey = MainViewModel.ROTATION_LOCK,
+                    sortKey = ItemSorter.ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.RotatingApps,
                     removeText = getRemoveText(RotationGestureConsumer.Preference.RotatingApps),
                     titleRes = R.string.auto_rotate_apps,
@@ -56,7 +56,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                 ),
                 Item.Rotation(
                     tab = Tab.Shortcuts,
-                    sortKey = MainViewModel.EXCLUDED_ROTATION_LOCK,
+                    sortKey = ItemSorter.EXCLUDED_ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.NonRotatingApps,
                     removeText = getRemoveText(RotationGestureConsumer.Preference.NonRotatingApps),
                     titleRes = R.string.auto_rotate_apps_excluded,
@@ -69,7 +69,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                 ),
                 Item.Rotation(
                     tab = Tab.Shortcuts,
-                    sortKey = MainViewModel.ROTATION_HISTORY,
+                    sortKey = ItemSorter.ROTATION_HISTORY,
                     preference = null,
                     removeText = "",
                     titleRes = R.string.app_rotation_history_title,

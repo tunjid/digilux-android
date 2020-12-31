@@ -30,7 +30,7 @@ val Inputs.purchaseItems: Flowable<List<Item>>
         ) { doubleSwipe, state ->
             listOf(
                 Item.AdFree(
-                    sortKey = MainViewModel.AD_FREE,
+                    sortKey = ItemSorter.AD_FREE,
                     tab = Tab.Gestures,
                     input = this@purchaseItems,
                     notAdFree = state.notAdFree,
@@ -39,14 +39,14 @@ val Inputs.purchaseItems: Flowable<List<Item>>
                 ),
                 Item.Toggle(
                     tab = Tab.Gestures,
-                    sortKey = MainViewModel.LOCKED_CONTENT,
+                    sortKey = ItemSorter.LOCKED_CONTENT,
                     titleRes = R.string.set_locked_content,
                     isChecked = state.hasLockedContent,
                     consumer = lockedContentPreference.setter
                 ),
                 Item.Slider(
                     tab = Tab.Brightness,
-                    sortKey = MainViewModel.DOUBLE_SWIPE_SETTINGS,
+                    sortKey = ItemSorter.DOUBLE_SWIPE_SETTINGS,
                     titleRes = R.string.adjust_double_swipe_settings,
                     infoRes = 0,
                     isEnabled = state.isPremium,

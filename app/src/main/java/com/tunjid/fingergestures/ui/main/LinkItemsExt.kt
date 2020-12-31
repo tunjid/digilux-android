@@ -25,13 +25,13 @@ import io.reactivex.Flowable
 val Inputs.linkItems: Flowable<List<Item>>
     get() = Flowable.just(listOf(
         Item.Link(
-            sortKey = MainViewModel.SUPPORT,
+            sortKey = ItemSorter.SUPPORT,
             tab = Tab.Gestures,
             linkItem = SupportLinkItem,
             input = this@linkItems
         ),
         Item.Link(
-            sortKey = MainViewModel.REVIEW,
+            sortKey = ItemSorter.REVIEW,
             tab = Tab.Gestures,
             linkItem = ReviewLinkItem,
             input = this@linkItems

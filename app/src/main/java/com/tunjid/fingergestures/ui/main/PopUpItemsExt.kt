@@ -36,28 +36,28 @@ val Inputs.popUpItems: Flowable<List<Item>>
             listOf(
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    sortKey = MainViewModel.ENABLE_ACCESSIBILITY_BUTTON,
+                    sortKey = ItemSorter.ENABLE_ACCESSIBILITY_BUTTON,
                     titleRes = R.string.popup_enable,
                     isChecked = accessibilityButtonEnabled,
                     consumer = accessibilityButtonEnabledPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    sortKey = MainViewModel.ACCESSIBILITY_SINGLE_CLICK,
+                    sortKey = ItemSorter.ACCESSIBILITY_SINGLE_CLICK,
                     titleRes = R.string.popup_single_click,
                     isChecked = isSingleClick,
                     consumer = accessibilityButtonSingleClickPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    sortKey = MainViewModel.ANIMATES_POPUP,
+                    sortKey = ItemSorter.ANIMATES_POPUP,
                     titleRes = R.string.popup_animate_in,
                     isChecked = animatePopup,
                     consumer = animatePopUpPreference.setter
                 ),
                 Item.PopUp(
                     tab = Tab.Shortcuts,
-                    sortKey = MainViewModel.POPUP_ACTION,
+                    sortKey = ItemSorter.POPUP_ACTION,
                     items = savedActions,
                     editor = setManager.editorFor(PopUpGestureConsumer.Preference.SavedActions),
                     accessibilityButtonEnabled = accessibilityButtonEnabled,

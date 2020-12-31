@@ -39,7 +39,7 @@ val Inputs.backgroundItems: Flowable<List<Item>>
             listOf(
                 Item.Slider(
                     tab = Tab.Display,
-                    sortKey = MainViewModel.SLIDER_DURATION,
+                    sortKey = ItemSorter.SLIDER_DURATION,
                     titleRes = R.string.adjust_slider_duration,
                     infoRes = 0,
                     value = sliderDuration,
@@ -49,14 +49,14 @@ val Inputs.backgroundItems: Flowable<List<Item>>
                 ),
                 Item.Toggle(
                     tab = Tab.Display,
-                    sortKey = MainViewModel.NAV_BAR_COLOR,
+                    sortKey = ItemSorter.NAV_BAR_COLOR,
                     titleRes = R.string.use_colored_nav,
                     isChecked = coloredNav,
                     consumer = coloredNavPreference.setter
                 ),
                 Item.ColorAdjuster(
                     tab = Tab.Display,
-                    sortKey = MainViewModel.SLIDER_COLOR,
+                    sortKey = ItemSorter.SLIDER_COLOR,
                     backgroundColor = backgroundColor,
                     sliderColor = sliderColor,
                     canPickColorFromWallpaper = purchasesState.isPremium,
@@ -70,7 +70,7 @@ val Inputs.backgroundItems: Flowable<List<Item>>
                 ),
                 Item.WallpaperTrigger(
                     tab = Tab.Display,
-                    sortKey = MainViewModel.WALLPAPER_TRIGGER,
+                    sortKey = ItemSorter.WALLPAPER_TRIGGER,
                     dayStatus = dayStatus,
                     nightStatus = nightStatus,
                     selectTime = setWallpaperChangeTime,
@@ -79,7 +79,7 @@ val Inputs.backgroundItems: Flowable<List<Item>>
                 ),
                 Item.WallpaperPick(
                     tab = Tab.Display,
-                    sortKey = MainViewModel.WALLPAPER_PICKER,
+                    sortKey = ItemSorter.WALLPAPER_PICKER,
                     dayFile = getWallpaperFile(WallpaperSelection.Day),
                     nightFile = getWallpaperFile(WallpaperSelection.Night),
                     screenDimensionRatio = screenDimensionRatio,

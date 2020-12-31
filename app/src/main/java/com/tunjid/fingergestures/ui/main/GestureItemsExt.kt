@@ -30,7 +30,7 @@ val Inputs.gestureItems: Flowable<List<Item>>
     ) { state, isPremium ->
         listOf(
             Item.Mapper(
-                sortKey = MainViewModel.MAP_UP_ICON,
+                sortKey = ItemSorter.MAP_UP_ICON,
                 tab = Tab.Gestures,
                 direction = GestureDirection.Up,
                 doubleDirection = GestureDirection.DoubleUp,
@@ -39,7 +39,7 @@ val Inputs.gestureItems: Flowable<List<Item>>
                 input = this@gestureItems
             ),
             Item.Mapper(
-                sortKey = MainViewModel.MAP_DOWN_ICON,
+                sortKey = ItemSorter.MAP_DOWN_ICON,
                 tab = Tab.Gestures,
                 direction = GestureDirection.Down,
                 doubleDirection = GestureDirection.DoubleDown,
@@ -48,7 +48,7 @@ val Inputs.gestureItems: Flowable<List<Item>>
                 input = this@gestureItems
             ),
             Item.Mapper(
-                sortKey = MainViewModel.MAP_LEFT_ICON,
+                sortKey = ItemSorter.MAP_LEFT_ICON,
                 tab = Tab.Gestures,
                 direction = GestureDirection.Left,
                 doubleDirection = GestureDirection.DoubleLeft,
@@ -57,7 +57,7 @@ val Inputs.gestureItems: Flowable<List<Item>>
                 input = this@gestureItems
             ),
             Item.Mapper(
-                sortKey = MainViewModel.MAP_RIGHT_ICON,
+                sortKey = ItemSorter.MAP_RIGHT_ICON,
                 tab = Tab.Gestures,
                 direction = GestureDirection.Right,
                 doubleDirection = GestureDirection.DoubleRight,

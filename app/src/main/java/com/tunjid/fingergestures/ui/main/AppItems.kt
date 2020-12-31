@@ -18,7 +18,6 @@
 package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.models.Input
 import io.reactivex.Flowable
@@ -81,26 +80,64 @@ private val COMPARATOR: Comparator<Item> = compareBy(Item::tab, {
 
 private val Item.sortList get() = tabItems.getValue(tab)
 
+object ItemSorter {
+    private const val PADDING = -1
+    const val SLIDER_DELTA = PADDING + 1
+    const val SLIDER_POSITION = SLIDER_DELTA + 1
+    const val SLIDER_DURATION = SLIDER_POSITION + 1
+    const val SLIDER_COLOR = SLIDER_DURATION + 1
+    const val SCREEN_DIMMER = SLIDER_COLOR + 1
+    const val USE_LOGARITHMIC_SCALE = SCREEN_DIMMER + 1
+    const val SHOW_SLIDER = USE_LOGARITHMIC_SCALE + 1
+    const val ADAPTIVE_BRIGHTNESS = SHOW_SLIDER + 1
+    const val ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS = ADAPTIVE_BRIGHTNESS + 1
+    const val DOUBLE_SWIPE_SETTINGS = ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS + 1
+    const val MAP_UP_ICON = DOUBLE_SWIPE_SETTINGS + 1
+    const val MAP_DOWN_ICON = MAP_UP_ICON + 1
+    const val MAP_LEFT_ICON = MAP_DOWN_ICON + 1
+    const val MAP_RIGHT_ICON = MAP_LEFT_ICON + 1
+    const val AD_FREE = MAP_RIGHT_ICON + 1
+    const val REVIEW = AD_FREE + 1
+    const val WALLPAPER_PICKER = REVIEW + 1
+    const val WALLPAPER_TRIGGER = WALLPAPER_PICKER + 1
+    const val ROTATION_LOCK = WALLPAPER_TRIGGER + 1
+    const val EXCLUDED_ROTATION_LOCK = ROTATION_LOCK + 1
+    const val ENABLE_WATCH_WINDOWS = EXCLUDED_ROTATION_LOCK + 1
+    const val POPUP_ACTION = ENABLE_WATCH_WINDOWS + 1
+    const val ENABLE_ACCESSIBILITY_BUTTON = POPUP_ACTION + 1
+    const val ACCESSIBILITY_SINGLE_CLICK = ENABLE_ACCESSIBILITY_BUTTON + 1
+    const val ANIMATES_SLIDER = ACCESSIBILITY_SINGLE_CLICK + 1
+    const val ANIMATES_POPUP = ANIMATES_SLIDER + 1
+    const val DISCRETE_BRIGHTNESS = ANIMATES_POPUP + 1
+    const val AUDIO_DELTA = DISCRETE_BRIGHTNESS + 1
+    const val AUDIO_STREAM_TYPE = AUDIO_DELTA + 1
+    const val AUDIO_SLIDER_SHOW = AUDIO_STREAM_TYPE + 1
+    const val NAV_BAR_COLOR = AUDIO_SLIDER_SHOW + 1
+    const val LOCKED_CONTENT = NAV_BAR_COLOR + 1
+    const val SUPPORT = LOCKED_CONTENT + 1
+    const val ROTATION_HISTORY = SUPPORT + 1
+}
+
 private val tabItems = listOf(
     Tab.Gestures to intArrayOf(
-        MainViewModel.MAP_UP_ICON, MainViewModel.MAP_DOWN_ICON, MainViewModel.MAP_LEFT_ICON, MainViewModel.MAP_RIGHT_ICON,
-        MainViewModel.AD_FREE, MainViewModel.SUPPORT, MainViewModel.REVIEW, MainViewModel.LOCKED_CONTENT
+        ItemSorter.MAP_UP_ICON, ItemSorter.MAP_DOWN_ICON, ItemSorter.MAP_LEFT_ICON, ItemSorter.MAP_RIGHT_ICON,
+        ItemSorter.AD_FREE, ItemSorter.SUPPORT, ItemSorter.REVIEW, ItemSorter.LOCKED_CONTENT
     ),
     Tab.Brightness to intArrayOf(
-        MainViewModel.SLIDER_DELTA, MainViewModel.DISCRETE_BRIGHTNESS, MainViewModel.SCREEN_DIMMER, MainViewModel.USE_LOGARITHMIC_SCALE,
-        MainViewModel.SHOW_SLIDER, MainViewModel.ADAPTIVE_BRIGHTNESS, MainViewModel.ANIMATES_SLIDER, MainViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
-        MainViewModel.DOUBLE_SWIPE_SETTINGS
+        ItemSorter.SLIDER_DELTA, ItemSorter.DISCRETE_BRIGHTNESS, ItemSorter.SCREEN_DIMMER, ItemSorter.USE_LOGARITHMIC_SCALE,
+        ItemSorter.SHOW_SLIDER, ItemSorter.ADAPTIVE_BRIGHTNESS, ItemSorter.ANIMATES_SLIDER, ItemSorter.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+        ItemSorter.DOUBLE_SWIPE_SETTINGS
     ),
     Tab.Audio to intArrayOf(
-        MainViewModel.AUDIO_DELTA, MainViewModel.AUDIO_STREAM_TYPE, MainViewModel.AUDIO_SLIDER_SHOW
+        ItemSorter.AUDIO_DELTA, ItemSorter.AUDIO_STREAM_TYPE, ItemSorter.AUDIO_SLIDER_SHOW
     ),
     Tab.Shortcuts to intArrayOf(
-        MainViewModel.ENABLE_ACCESSIBILITY_BUTTON, MainViewModel.ACCESSIBILITY_SINGLE_CLICK,
-        MainViewModel.ANIMATES_POPUP, MainViewModel.ENABLE_WATCH_WINDOWS, MainViewModel.POPUP_ACTION,
-        MainViewModel.ROTATION_LOCK, MainViewModel.EXCLUDED_ROTATION_LOCK, MainViewModel.ROTATION_HISTORY
+        ItemSorter.ENABLE_ACCESSIBILITY_BUTTON, ItemSorter.ACCESSIBILITY_SINGLE_CLICK,
+        ItemSorter.ANIMATES_POPUP, ItemSorter.ENABLE_WATCH_WINDOWS, ItemSorter.POPUP_ACTION,
+        ItemSorter.ROTATION_LOCK, ItemSorter.EXCLUDED_ROTATION_LOCK, ItemSorter.ROTATION_HISTORY
     ),
     Tab.Display to intArrayOf(
-        MainViewModel.SLIDER_POSITION, MainViewModel.SLIDER_DURATION, MainViewModel.NAV_BAR_COLOR,
-        MainViewModel.SLIDER_COLOR, MainViewModel.WALLPAPER_PICKER, MainViewModel.WALLPAPER_TRIGGER
+        ItemSorter.SLIDER_POSITION, ItemSorter.SLIDER_DURATION, ItemSorter.NAV_BAR_COLOR,
+        ItemSorter.SLIDER_COLOR, ItemSorter.WALLPAPER_PICKER, ItemSorter.WALLPAPER_TRIGGER
     )
 ).toMap()
