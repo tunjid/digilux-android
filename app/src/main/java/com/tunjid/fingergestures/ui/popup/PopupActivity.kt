@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.ui
+package com.tunjid.fingergestures.ui.popup
 
 import android.annotation.SuppressLint
 import android.content.Intent

@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.ui
+package com.tunjid.fingergestures.ui.docking
 
 import android.content.Intent
 import android.os.Bundle

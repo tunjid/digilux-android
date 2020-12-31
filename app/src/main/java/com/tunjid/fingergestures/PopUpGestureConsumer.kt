@@ -20,7 +20,7 @@ package com.tunjid.fingergestures
 
 import android.content.Context
 import android.content.Intent
-import com.tunjid.fingergestures.ui.PopupActivity
+import com.tunjid.fingergestures.ui.popup.PopupActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
