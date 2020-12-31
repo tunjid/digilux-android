@@ -64,7 +64,7 @@ class BrightnessDialogActivity : AppCompatActivity() {
             controls.slider::getValue
         ).setSpring(SpringForce(100f)
             .setDampingRatio(SpringForce.DAMPING_RATIO_LOW_BOUNCY)
-        )
+        ).setMaxValue(100F).setMinValue(0F)
 
         controls.slider.labelBehavior = LabelFormatter.LABEL_GONE
         controls.slider.addOnChangeListener { _, value, fromUser ->

@@ -29,12 +29,12 @@ import androidx.annotation.IntRange
 import com.jakewharton.rx.replayingShare
 import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.ui.brightness.BrightnessDialogActivity
-import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDisposable
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.models.Broadcast
+import com.tunjid.fingergestures.ui.brightness.BrightnessDialogActivity
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 import java.math.BigDecimal
@@ -366,12 +366,12 @@ class BrightnessGestureConsumer @Inject constructor(
     }
 
     fun percentToByte(percentage: Int): Int =
-        if (logarithmicBrightnessPreference.value) BrightnessLookup.lookup(percentage, false)
-        else (percentage * MAX_BRIGHTNESS / 100).toInt()
+        min(a = if (logarithmicBrightnessPreference.value) BrightnessLookup.lookup(percentage, false)
+        else (percentage * MAX_BRIGHTNESS / 100).toInt(), b = 255)
 
     fun byteToPercentage(byteValue: Int): Int =
-        if (logarithmicBrightnessPreference.value) BrightnessLookup.lookup(byteValue, true)
-        else (byteValue * 100 / MAX_BRIGHTNESS).toInt()
+        min(a = if (logarithmicBrightnessPreference.value) BrightnessLookup.lookup(byteValue, true)
+        else (byteValue * 100 / MAX_BRIGHTNESS).toInt(), b = 100)
 
     private fun adaptiveThresholdToLux(percentage: Int): Int =
         (percentage * MAX_ADAPTIVE_THRESHOLD / 100f).toInt()
