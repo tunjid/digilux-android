@@ -18,31 +18,14 @@
 package com.tunjid.fingergestures.models
 
 import android.content.pm.ApplicationInfo
-import com.android.billingclient.api.BillingClient
 import com.tunjid.androidx.recyclerview.diff.Differentiable
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureAction
-import com.tunjid.fingergestures.ui.main.AppState
-import com.tunjid.fingergestures.ui.main.Input
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
 data class Unique<T>(
     val item: T,
     val time: Long = System.currentTimeMillis()
-)
-
-data class PermissionState(
-    val queue: List<Input.Permission.Request> = listOf(),
-    val active: Unique<Input.Permission.Request>? = null,
-    val prompt: Unique<Int>? = null,
-)
-
-data class BillingState(
-    val client: BillingClient? = null,
-    val prompt: Unique<Int>? = null,
-    val cart: Unique<Pair<BillingClient, PurchasesManager.Sku>>? = null
 )
 
 data class Package(val app: ApplicationInfo) : Differentiable {
@@ -64,41 +47,9 @@ data class Brightness(val value: Int) : Differentiable {
         (other as? Brightness)?.let { it.value == value } ?: super.areContentsTheSame(other)
 }
 
-data class UiUpdate(
-    val titleRes: Int = R.string.blank_string,
-    val iconRes: Int = R.drawable.ic_add_24dp,
-    val fabVisible: Boolean = false
-)
-
 @Suppress("unused")
 val Any?.ignore
     get() = Unit
-
-sealed class Shilling {
-    object Calm : Shilling()
-    data class Quip(val message: CharSequence) : Shilling()
-}
-
-val AppState.uiUpdate
-    get() = when (permissionState.queue.lastOrNull()) {
-        Input.Permission.Request.DoNotDisturb -> UiUpdate(
-            titleRes = R.string.enable_do_not_disturb,
-            iconRes = R.drawable.ic_volume_loud_24dp
-        )
-        Input.Permission.Request.Accessibility -> UiUpdate(
-            titleRes = R.string.enable_accessibility,
-            iconRes = R.drawable.ic_human_24dp
-        )
-        Input.Permission.Request.Settings -> UiUpdate(
-            titleRes = R.string.enable_write_settings,
-            iconRes = R.drawable.ic_settings_white_24dp
-        )
-        Input.Permission.Request.Storage -> UiUpdate(
-            titleRes = R.string.enable_storage_settings,
-            iconRes = R.drawable.ic_storage_24dp
-        )
-        else -> UiUpdate()
-    }.copy(fabVisible = permissionState.queue.isNotEmpty())
 
 fun Flowable<List<GestureAction>>.toPopUpActions(colorSource: Flowable<Int>) = Flowables.combineLatest(
     this,

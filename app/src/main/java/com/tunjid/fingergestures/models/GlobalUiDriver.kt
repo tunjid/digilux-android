@@ -34,6 +34,7 @@ import com.tunjid.androidx.view.util.*
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.map
+import com.tunjid.fingergestures.ui.main.Shilling
 import kotlin.math.max
 
 /**

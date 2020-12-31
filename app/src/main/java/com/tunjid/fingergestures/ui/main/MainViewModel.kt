@@ -53,6 +53,29 @@ data class AppState(
     val items: List<Item> = listOf(),
 )
 
+data class PermissionState(
+    val queue: List<Input.Permission.Request> = listOf(),
+    val active: Unique<Input.Permission.Request>? = null,
+    val prompt: Unique<Int>? = null,
+)
+
+data class BillingState(
+    val client: BillingClient? = null,
+    val prompt: Unique<Int>? = null,
+    val cart: Unique<Pair<BillingClient, PurchasesManager.Sku>>? = null
+)
+
+sealed class Shilling {
+    object Calm : Shilling()
+    data class Quip(val message: CharSequence) : Shilling()
+}
+
+data class FabState(
+    val titleRes: Int = R.string.blank_string,
+    val iconRes: Int = R.drawable.ic_add_24dp,
+    val fabVisible: Boolean = false
+)
+
 sealed class Input {
     sealed class Permission : Input() {
         sealed class Request(val prompt: Int) : Permission(), Parcelable {
@@ -246,3 +269,24 @@ private val Context.links
         TextLink(text = getString(R.string.material_design_icons), link = "https://materialdesignicons.com/"),
         TextLink(text = getString(R.string.android_bootstrap), link = "http://www.myiconfinder.com/getseticons")
     )
+
+val AppState.fabState
+    get() = when (permissionState.queue.lastOrNull()) {
+        Input.Permission.Request.DoNotDisturb -> FabState(
+            titleRes = R.string.enable_do_not_disturb,
+            iconRes = R.drawable.ic_volume_loud_24dp
+        )
+        Input.Permission.Request.Accessibility -> FabState(
+            titleRes = R.string.enable_accessibility,
+            iconRes = R.drawable.ic_human_24dp
+        )
+        Input.Permission.Request.Settings -> FabState(
+            titleRes = R.string.enable_write_settings,
+            iconRes = R.drawable.ic_settings_white_24dp
+        )
+        Input.Permission.Request.Storage -> FabState(
+            titleRes = R.string.enable_storage_settings,
+            iconRes = R.drawable.ic_storage_24dp
+        )
+        else -> FabState()
+    }.copy(fabVisible = permissionState.queue.isNotEmpty())

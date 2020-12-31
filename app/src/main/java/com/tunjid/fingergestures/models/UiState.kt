@@ -8,6 +8,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.MenuRes
 import androidx.dynamicanimation.animation.SpringAnimation
+import com.tunjid.fingergestures.ui.main.Shilling
 import kotlin.reflect.KMutableProperty0
 
 fun KMutableProperty0<UiState>.updatePartial(updater: UiState.() -> UiState) = set(updater.invoke(get()))

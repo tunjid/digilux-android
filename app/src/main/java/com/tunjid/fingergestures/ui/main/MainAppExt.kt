@@ -50,7 +50,7 @@ interface MainApp : LifecycleOwner, ActivityResultCaller, BottomSheetController 
 }
 
 fun MainApp.observe(state: LiveData<AppState>) = with(state) {
-    mapDistinct(AppState::uiUpdate)
+    mapDistinct(AppState::fabState)
         .observe(this@observe, ::onStateChanged)
 
     mapDistinct(AppState::permissionState)
@@ -140,11 +140,11 @@ private fun MainApp.onUiInteraction(it: Input.UiInteraction) =
         Input.UiInteraction.Default -> Unit
     }
 
-private fun MainApp.onStateChanged(uiUpdate: UiUpdate) {
+private fun MainApp.onStateChanged(fabState: FabState) {
     uiState = uiState.copy(
-        fabIcon = uiUpdate.iconRes,
-        fabText = getString(uiUpdate.titleRes),
-        fabShows = uiUpdate.fabVisible
+        fabIcon = fabState.iconRes,
+        fabText = getString(fabState.titleRes),
+        fabShows = fabState.fabVisible
     )
 }
 
