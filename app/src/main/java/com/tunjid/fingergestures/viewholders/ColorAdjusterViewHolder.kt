@@ -35,12 +35,11 @@ import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.databinding.ViewholderSliderColorBinding
 import com.tunjid.fingergestures.hasStoragePermission
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 
 private var BindingViewHolder<ViewholderSliderColorBinding>.item by viewHolderDelegate<Item.ColorAdjuster>()
 private var BindingViewHolder<ViewholderSliderColorBinding>.targetOptions by viewHolderDelegate<List<String>>()

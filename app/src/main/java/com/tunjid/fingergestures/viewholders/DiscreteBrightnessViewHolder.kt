@@ -39,14 +39,13 @@ import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.models.uiState
 import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.androidx.view.util.inflate
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.SetPreferenceEditor
 import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.models.Brightness
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 
 private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.DiscreteBrightness>()
 private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Brightness, DiscreteItemViewHolder> by viewHolderDelegate()

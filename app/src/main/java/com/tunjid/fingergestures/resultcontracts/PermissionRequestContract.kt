@@ -25,8 +25,7 @@ import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import com.tunjid.androidx.core.delegates.intentExtras
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 
 private var Intent.lastRequest by intentExtras<Input.Permission.Request>()
 

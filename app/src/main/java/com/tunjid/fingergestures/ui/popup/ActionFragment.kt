@@ -34,7 +34,7 @@ import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.models.Action
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.ui.main.MainViewModel

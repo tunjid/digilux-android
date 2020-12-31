@@ -26,7 +26,7 @@ import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.databinding.ViewholderAudioStreamTypeBinding
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 
 private var BindingViewHolder<ViewholderAudioStreamTypeBinding>.item by viewHolderDelegate<Item.AudioStream>()
 

@@ -19,7 +19,6 @@ package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.di.AppDependencies
-import com.tunjid.fingergestures.models.Input
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 import java.util.*

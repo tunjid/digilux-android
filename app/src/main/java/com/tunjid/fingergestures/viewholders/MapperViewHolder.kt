@@ -30,7 +30,7 @@ import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderMapperBinding
 import com.tunjid.fingergestures.ui.popup.ActionFragment
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 
 private var BindingViewHolder<ViewholderMapperBinding>.item by viewHolderDelegate<Item.Mapper>()
 

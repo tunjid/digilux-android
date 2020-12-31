@@ -37,7 +37,7 @@ import com.tunjid.fingergestures.databinding.FragmentPackagesBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.ui.main.MainViewModel
 import com.tunjid.fingergestures.viewholders.PackageViewHolder

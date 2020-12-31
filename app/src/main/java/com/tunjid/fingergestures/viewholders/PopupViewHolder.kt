@@ -32,7 +32,7 @@ import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.ui.popup.ActionFragment
 import com.tunjid.fingergestures.models.Action
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 
 private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.PopUp>()
 private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Action, ActionViewHolder> by viewHolderDelegate()

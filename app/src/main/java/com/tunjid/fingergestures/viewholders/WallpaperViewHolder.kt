@@ -34,7 +34,7 @@ import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.databinding.ViewholderWallpaperPickBinding
 import com.tunjid.fingergestures.hasStoragePermission
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 import com.tunjid.fingergestures.models.uiState
 import com.tunjid.fingergestures.models.updatePartial
 import java.io.File

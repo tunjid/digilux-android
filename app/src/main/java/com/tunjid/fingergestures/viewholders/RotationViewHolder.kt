@@ -33,7 +33,7 @@ import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.ui.packages.PackageFragment
-import com.tunjid.fingergestures.models.Input
+import com.tunjid.fingergestures.ui.main.Input
 import com.tunjid.fingergestures.models.Package
 
 private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.Rotation>()

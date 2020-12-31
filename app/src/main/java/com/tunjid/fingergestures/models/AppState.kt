@@ -18,48 +18,15 @@
 package com.tunjid.fingergestures.models
 
 import android.content.pm.ApplicationInfo
-import android.os.Parcelable
-import androidx.fragment.app.Fragment
 import com.android.billingclient.api.BillingClient
 import com.tunjid.androidx.recyclerview.diff.Differentiable
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureAction
 import com.tunjid.fingergestures.ui.main.AppState
+import com.tunjid.fingergestures.ui.main.Input
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
-import kotlinx.parcelize.Parcelize
-
-sealed class Input {
-    sealed class Permission : Input() {
-        sealed class Request(val prompt: Int) : Permission(), Parcelable {
-            @Parcelize object Storage : Request(R.string.wallpaper_permission_request)
-            @Parcelize object Settings : Request(R.string.settings_permission_request)
-            @Parcelize object Accessibility : Request(R.string.accessibility_permissions_request)
-            @Parcelize object DoNotDisturb : Request(R.string.do_not_disturb_permissions_request)
-        }
-        sealed class Action : Permission() {
-            data class Clear(val time: Long = System.currentTimeMillis()) : Action()
-            data class Clicked(val time: Long = System.currentTimeMillis()) : Action()
-            data class Changed(val request: Request) : Action()
-        }
-    }
-    sealed class UiInteraction : Input() {
-        object Default : UiInteraction()
-        data class ShowSheet(val fragment: Fragment) : UiInteraction()
-        data class GoPremium(val description: Int) : UiInteraction()
-        data class PurchaseResult(val messageRes: Int) : UiInteraction()
-        data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
-    }
-    sealed class Billing : Input() {
-        data class Client(val client: BillingClient?) : Billing()
-        data class Purchase(val sku: PurchasesManager.Sku) : Billing()
-    }
-    object StartTrial : Input()
-    object Shill : Input()
-    object AppResumed : Input()
-}
 
 data class Unique<T>(
     val item: T,
