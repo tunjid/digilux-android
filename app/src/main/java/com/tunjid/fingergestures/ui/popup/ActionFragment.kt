@@ -37,7 +37,7 @@ import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
-import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.ui.main.AppViewModel
 
 class ActionFragment : Fragment(R.layout.fragment_actions) {
 

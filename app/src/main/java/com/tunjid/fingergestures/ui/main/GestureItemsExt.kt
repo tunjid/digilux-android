@@ -22,7 +22,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.ui.main.Inputs
 import com.tunjid.fingergestures.ui.main.Tab
-import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 

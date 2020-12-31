@@ -21,7 +21,7 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Package
-import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.ui.main.AppViewModel
 import com.tunjid.fingergestures.listMap
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables

@@ -20,7 +20,7 @@ package com.tunjid.fingergestures.ui.main
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
-import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 

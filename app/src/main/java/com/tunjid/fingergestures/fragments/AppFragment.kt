@@ -33,7 +33,7 @@ import com.tunjid.fingergestures.databinding.FragmentHomeBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.AppState
-import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.ui.main.AppViewModel
 import com.tunjid.fingergestures.ui.main.Tab
 import kotlin.math.abs
 

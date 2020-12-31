@@ -39,8 +39,8 @@ import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.models.Unique
+import com.tunjid.fingergestures.ui.main.AppViewModel
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
-import com.tunjid.fingergestures.viewmodels.*
 
 class PackageFragment : Fragment(R.layout.fragment_packages) {
 

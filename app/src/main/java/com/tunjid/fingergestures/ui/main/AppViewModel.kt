@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.viewmodels
+package com.tunjid.fingergestures.ui.main
 
 import android.content.Context
 import androidx.lifecycle.LiveData
@@ -170,7 +170,7 @@ class AppViewModel @Inject constructor(
 //    }
 
     companion object {
-        const val PADDING = -1
+        private const val PADDING = -1
         const val SLIDER_DELTA = PADDING + 1
         const val SLIDER_POSITION = SLIDER_DELTA + 1
         const val SLIDER_DURATION = SLIDER_POSITION + 1

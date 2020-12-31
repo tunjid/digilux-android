@@ -22,7 +22,7 @@ import com.tunjid.fingergestures.ui.main.Inputs
 import com.tunjid.fingergestures.ui.main.Tab
 import com.tunjid.fingergestures.viewholders.ReviewLinkItem
 import com.tunjid.fingergestures.viewholders.SupportLinkItem
-import com.tunjid.fingergestures.viewmodels.AppViewModel
+import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 
 val Inputs.linkItems: Flowable<List<Item>>

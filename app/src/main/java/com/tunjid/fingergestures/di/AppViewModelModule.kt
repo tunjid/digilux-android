@@ -26,10 +26,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tunjid.fingergestures.ui.brightness.BrightnessViewModel
 import com.tunjid.fingergestures.ui.docking.DockingViewModel
+import com.tunjid.fingergestures.ui.main.AppViewModel
 import com.tunjid.fingergestures.ui.packages.PackageViewModel
 import com.tunjid.fingergestures.ui.popup.ActionViewModel
 import com.tunjid.fingergestures.ui.popup.PopUpViewModel
-import com.tunjid.fingergestures.viewmodels.*
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
@@ -57,7 +57,7 @@ abstract class AppViewModelModule {
     abstract fun bindAppViewModelFactory(factory: AppViewModelFactory): ViewModelProvider.Factory
 
     @Binds @IntoMap @ViewModelKey(AppViewModel::class)
-    abstract fun bindAppViewModel(splashViewModel: AppViewModel): ViewModel
+    abstract fun bindAppViewModel(viewModel: AppViewModel): ViewModel
 
     @Binds @IntoMap @ViewModelKey(ActionViewModel::class)
     abstract fun bindActionViewModel(viewModel: ActionViewModel): ViewModel
