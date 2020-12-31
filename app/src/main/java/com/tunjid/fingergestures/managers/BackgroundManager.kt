@@ -35,8 +35,10 @@ import androidx.annotation.IntRange
 import androidx.palette.graphics.Palette
 import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.fingergestures.*
+import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
+import com.tunjid.fingergestures.models.Broadcast
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 import io.reactivex.schedulers.Schedulers.computation
@@ -59,6 +61,7 @@ fun Context.getWallpaperFile(selection: WallpaperSelection): File =
 class BackgroundManager @Inject constructor(
     @AppContext private val context: Context,
     reactivePreferences: ReactivePreferences,
+    private val broadcaster: AppBroadcaster,
 ) {
     val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
@@ -185,6 +188,7 @@ class BackgroundManager @Inject constructor(
     internal fun onIntentReceived(intent: Intent) {
         if (handledEditPick(intent)) return
 
+        println("HELLO HI. Intent action: ${intent.action}")
         val selection = selectionFromIntent(intent) ?: return
         val wallpaperFile = context.getWallpaperFile(selection)
 
@@ -280,7 +284,7 @@ class BackgroundManager @Inject constructor(
             ?: return false
 
         val handled = componentName.packageName == "com.google.android.apps.photos"
-//        if (handled) broadcaster(intent)
+        if (handled) broadcaster(Broadcast.Prompt(context.getString(R.string.error_wallpaper_google_photos)))
 
         return handled
     }
@@ -337,6 +341,7 @@ private fun calendarForTime(hourMinutePair: Pair<Int, Int>): Calendar {
 enum class WallpaperSelection(
     val code: Int,
     val fileName: String,
+    val textRes: Int,
     val set: String,
     val minute: String,
     val hour: String
@@ -345,6 +350,7 @@ enum class WallpaperSelection(
     Day(
         code = 0,
         fileName = "day",
+        textRes = R.string.day_wallpaper,
         set = "day wallpaper set",
         minute = "day wallpaper minute",
         hour = "day wallpaper hour",
@@ -352,6 +358,7 @@ enum class WallpaperSelection(
     Night(
         code = 1,
         fileName = "night",
+        textRes = R.string.night_wallpaper,
         set = "night wallpaper set",
         minute = "night wallpaper minute",
         hour = "night wallpaper hour",

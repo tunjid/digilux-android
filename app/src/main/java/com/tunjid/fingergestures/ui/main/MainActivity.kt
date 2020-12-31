@@ -55,6 +55,7 @@ import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.databinding.TrialViewBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.fragments.MainFragment
+import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
 import com.tunjid.fingergestures.resultcontracts.WallpaperPickContract
@@ -80,7 +81,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
     override val cropWallpaperContract = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        // Do nothing, result already written to a URI
+        navigator.show(Tab.Display.ordinal)
     }
 
     override val activity get() = this
@@ -252,26 +253,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM) ?: return
 
-//        navigator.performConsecutively(lifecycleScope) {
-//            show(Tab.Display.ordinal)
-//            MaterialAlertDialogBuilder(this@MainActivity)
-//                .setTitle(R.string.choose_target)
-//                .setItems(
-//                    WallpaperSelection.values()
-//                        .map(WallpaperSelection::textRes)
-//                        .map(::getString)
-//                        .toTypedArray()
-//                ) { _, index ->
-//                    val selection = if (index == 0) WallpaperSelection.Day
-//                    else WallpaperSelection.Night
-//
-//                    val shown = navigator.current as AppFragment?
-//
-//                    if (shown != null && shown.isVisible) shown.doOnLifecycleEvent(Lifecycle.Event.ON_RESUME) { shown.cropImage(imageUri, selection) }
-//                    else ::uiState.updatePartial { copy(snackbarText = getString(R.string.error_wallpaper)) }
-//                }
-//                .show()
-//        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.choose_target)
+            .setItems(
+                WallpaperSelection.values()
+                    .map(WallpaperSelection::textRes)
+                    .map(::getString)
+                    .toTypedArray()
+            ) { _, index ->
+                WallpaperSelection.values()
+                    .getOrNull(index)
+                    ?.let { cropImage(it to imageUri) }
+            }
+            .show()
     }
 
     private fun showLink(textLink: TextLink) {

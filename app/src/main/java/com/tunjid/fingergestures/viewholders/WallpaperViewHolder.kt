@@ -84,7 +84,6 @@ private fun BindingViewHolder<ViewholderWallpaperPickBinding>.requestEdit(select
             copy(snackbarText = itemView.context.getString(R.string.error_wallpaper_not_created))
         }
 
-
     val context = itemView.context
     val uri = FileProvider.getUriForFile(context, context.packageName + ".com.tunjid.fingergestures.wallpaperprovider", file)
     val editIntent = Intent(Intent.ACTION_EDIT)
