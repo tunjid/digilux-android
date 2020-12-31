@@ -194,6 +194,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onResume() {
         super.onResume()
+        viewModel.accept(Input.AppResumed)
         if (!accessibilityServiceEnabled) viewModel.accept(Input.Permission.Request.Accessibility)
     }
 

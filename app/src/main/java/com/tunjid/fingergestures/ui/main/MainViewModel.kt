@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModel
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.tunjid.fingergestures.*
+import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDependencies
@@ -39,8 +40,9 @@ import javax.inject.Inject
 
 class MainViewModel @Inject constructor(
     @AppContext private val context: Context,
+    override val dependencies: AppDependencies,
+    private val broadcaster: AppBroadcaster,
     broadcasts: Flowable<Broadcast>,
-    override val dependencies: AppDependencies
 ) : ViewModel(), Inputs {
 
     private val quips = context.resources.getStringArray(R.array.upsell_text)
@@ -92,6 +94,11 @@ class MainViewModel @Inject constructor(
         inputProcessor
             .filterIsInstance<Input.StartTrial>()
             .subscribe { dependencies.purchasesManager.startTrial() }
+            .addTo(disposable)
+
+        inputProcessor
+            .filterIsInstance<Input.AppResumed>()
+            .subscribe { broadcaster(Broadcast.AppResumed) }
             .addTo(disposable)
     }
 

@@ -34,4 +34,5 @@ sealed class Broadcast {
     }
     data class Prompt(val message: String): Broadcast()
     data class Gesture(val gesture: GestureAction): Broadcast()
+    object AppResumed : Broadcast()
 }

@@ -29,6 +29,7 @@ import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.databinding.*
 import com.tunjid.fingergestures.gestureconsumers.*
+import com.tunjid.fingergestures.managers.PaletteStatus
 import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.managers.WallpaperStatus
 import com.tunjid.fingergestures.models.Action
@@ -169,6 +170,7 @@ sealed class Item(
         val nightFile: File?,
         val editWallPaperPendingIntent: PendingIntent,
         val screenDimensionRatio: String,
+        val paletteStatus: PaletteStatus,
         val input: Inputs
     ) : Item("WallpaperView")
 

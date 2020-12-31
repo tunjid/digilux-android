@@ -81,6 +81,7 @@ sealed class Input {
 
     object StartTrial : Input()
     object Shill : Input()
+    object AppResumed : Input()
 }
 
 data class Unique<T>(

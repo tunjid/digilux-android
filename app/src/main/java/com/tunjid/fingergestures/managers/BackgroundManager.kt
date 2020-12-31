@@ -18,17 +18,14 @@
 package com.tunjid.fingergestures.managers
 
 
-import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.AlarmManager.INTERVAL_DAY
 import android.app.AlarmManager.RTC_WAKEUP
 import android.app.PendingIntent
 import android.app.WallpaperManager
-import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Parcelable
 import androidx.annotation.IntRange
@@ -41,7 +38,6 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.models.Broadcast
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
-import io.reactivex.schedulers.Schedulers.computation
 import kotlinx.parcelize.Parcelize
 import java.io.File
 import java.io.FileInputStream
@@ -62,6 +58,7 @@ class BackgroundManager @Inject constructor(
     @AppContext private val context: Context,
     reactivePreferences: ReactivePreferences,
     private val broadcaster: AppBroadcaster,
+    broadcasts: Flowable<Broadcast>
 ) {
     val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
@@ -87,31 +84,10 @@ class BackgroundManager @Inject constructor(
     val dayWallpaperStatus = WallpaperSelection.Day.wallpaperStatus(reactivePreferences)
     val nightWallpaperStatus = WallpaperSelection.Night.wallpaperStatus(reactivePreferences)
 
-    // TODO: Improve this
-    val paletteFlowable: Flowable<PaletteStatus> = Flowable.defer {
-        if (!context.hasStoragePermission) return@defer Flowable.just(PaletteStatus.Unavailable("Need permission"))
-
-        val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
-            ?: return@defer Flowable.just(PaletteStatus.Unavailable("No Wallpaper manager"))
-
-        if (isLiveWallpaper(wallpaperManager)) {
-            val swatches = getLiveWallpaperWatches(wallpaperManager)
-            if (swatches.isNotEmpty())
-                return@defer Flowable.fromCallable { Palette.from(swatches) }
-                    .map(PaletteStatus::Available)
-                    .subscribeOn(computation())
-        }
-
-        val drawable = (wallpaperManager.drawable
-            ?: return@defer Flowable.just(PaletteStatus.Unavailable("No Drawable found")))
-            as? BitmapDrawable
-            ?: return@defer Flowable.just(PaletteStatus.Unavailable("Not a Bitmap"))
-
-        val bitmap = drawable.bitmap
-        Flowable.fromCallable { Palette.from(bitmap).generate() }
-            .map(PaletteStatus::Available)
-            .subscribeOn(computation())
-    }
+    val paletteFlowable: Flowable<PaletteStatus> =
+        broadcasts.filterIsInstance<Broadcast.AppResumed>()
+            .doOnNext { println("APP RESUMED") }
+            .switchMap { context.wallpaperPalettes }
 
     val sliderDurationMillis: Int
         get() = durationPercentageToMillis(sliderDurationPreference.value)
@@ -187,26 +163,23 @@ class BackgroundManager @Inject constructor(
 
     internal fun onIntentReceived(intent: Intent) {
         if (handledEditPick(intent)) return
+        if (intent.action == ACTION_CHANGE_WALLPAPER) {
+            val code = intent.getIntExtra(EXTRA_CHANGE_WALLPAPER, -1)
 
-        println("HELLO HI. Intent action: ${intent.action}")
-        val selection = selectionFromIntent(intent) ?: return
-        val wallpaperFile = context.getWallpaperFile(selection)
+            val selection = WallpaperSelection.values().firstOrNull { it.code == code }
+                ?: return
+            val wallpaperFile = context.getWallpaperFile(selection)
 
-        val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
-        if (wallpaperManager == null || !wallpaperFile.exists()) return
+            val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
+            if (wallpaperManager == null || !wallpaperFile.exists()) return
 
-        if (!context.hasStoragePermission) return
-        try {
-            wallpaperManager.setStream(FileInputStream(wallpaperFile))
-        } catch (e: Exception) {
-            e.printStackTrace()
+            if (!context.hasStoragePermission) return
+            try {
+                wallpaperManager.setStream(FileInputStream(wallpaperFile))
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
-    }
-
-    private fun selectionFromIntent(intent: Intent): WallpaperSelection? = when (intent.action) {
-        ACTION_CHANGE_WALLPAPER -> intent.getIntExtra(EXTRA_CHANGE_WALLPAPER, -1)
-            .let { code -> WallpaperSelection.values().firstOrNull { it.code == code } }
-        else -> null
     }
 
     private fun reInitializeWallpaperChange(selection: WallpaperSelection) {
@@ -237,28 +210,6 @@ class BackgroundManager @Inject constructor(
 
         val alarmIntent = getWallpaperPendingIntent(selection)
         alarmManager.setRepeating(RTC_WAKEUP, calendar.timeInMillis, INTERVAL_DAY, alarmIntent)
-    }
-
-    @TargetApi(Build.VERSION_CODES.O_MR1)
-    private fun getLiveWallpaperWatches(wallpaperManager: WallpaperManager): List<Palette.Swatch> {
-        val colors = wallpaperManager.getWallpaperColors(FLAG_SYSTEM)
-        val result = ArrayList<Palette.Swatch>()
-        if (colors == null) return result
-
-        val primary = colors.primaryColor
-        val secondary = colors.secondaryColor
-        val tertiary = colors.tertiaryColor
-
-        result.add(Palette.Swatch(primary.toArgb(), 3))
-
-        if (secondary != null) result.add(Palette.Swatch(secondary.toArgb(), 2))
-        if (tertiary != null) result.add(Palette.Swatch(tertiary.toArgb(), 2))
-
-        return result
-    }
-
-    private fun isLiveWallpaper(wallpaperManager: WallpaperManager): Boolean {
-        return Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1 && wallpaperManager.wallpaperInfo != null
     }
 
     fun willChangeWallpaper(selection: WallpaperSelection): Boolean =

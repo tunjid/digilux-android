@@ -17,10 +17,9 @@
 
 package com.tunjid.fingergestures.ui.main
 
-import com.tunjid.fingergestures.managers.PaletteStatus
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.managers.PaletteStatus
 import com.tunjid.fingergestures.managers.WallpaperSelection
-import com.tunjid.fingergestures.ui.main.Item
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
@@ -83,6 +82,7 @@ val Inputs.backgroundItems: Flowable<List<Item>>
                     dayFile = getWallpaperFile(WallpaperSelection.Day),
                     nightFile = getWallpaperFile(WallpaperSelection.Night),
                     screenDimensionRatio = screenDimensionRatio,
+                    paletteStatus = paletteStatus,
                     editWallPaperPendingIntent = wallpaperEditPendingIntent,
                     input = this@backgroundItems,
                 ),
