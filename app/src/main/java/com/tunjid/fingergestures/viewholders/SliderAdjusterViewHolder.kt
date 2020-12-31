@@ -19,6 +19,7 @@ package com.tunjid.fingergestures.viewholders
 
 import android.view.ViewGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
@@ -32,6 +33,7 @@ private var BindingViewHolder<ViewholderSliderDeltaBinding>.isTouched by viewHol
 
 fun ViewGroup.sliderAdjuster() = viewHolderFrom(ViewholderSliderDeltaBinding::inflate).apply {
     itemView.setOnClickListener { if (item.infoRes != 0) MaterialAlertDialogBuilder(itemView.context).setMessage(item.infoRes).show() }
+    binding.seekbar.labelBehavior = LabelFormatter.LABEL_GONE
     binding.seekbar.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
         override fun onStartTrackingTouch(slider: Slider) {
             isTouched = true

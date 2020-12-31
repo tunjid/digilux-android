@@ -101,9 +101,9 @@ class BrightnessActivity : AppCompatActivity() {
                     set.applyTo(layout)
                 }
             mapDistinct(State::showDimmerText)
-                .observe(dialogLifecycleOwner, {
+                .observe(dialogLifecycleOwner, { dimmerVisible ->
                     TransitionManager.beginDelayedTransition(binding.controls.sliderBackground, AutoTransition())
-                    controls.sliderText.isVisible = it
+                    controls.sliderText.isVisible = dimmerVisible
                 })
 
             filter(State::showDimmerText)
