@@ -27,7 +27,6 @@ import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.fingergestures.models.uiState
 import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.appAdapter
 import com.tunjid.fingergestures.baseclasses.divider
 import com.tunjid.fingergestures.databinding.FragmentHomeBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
@@ -35,6 +34,7 @@ import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.ui.main.MainViewModel
 import com.tunjid.fingergestures.ui.main.Tab
+import com.tunjid.fingergestures.ui.main.mainAdapter
 import kotlin.math.abs
 
 private var MainFragment.tab by fragmentArgs<Tab>()
@@ -47,7 +47,7 @@ class MainFragment : Fragment(R.layout.fragment_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val listAdapter = appAdapter(tabItems(viewModel.state.value))
+        val listAdapter = mainAdapter(tabItems(viewModel.state.value))
 
         FragmentHomeBinding.bind(view).optionsList.apply {
             layoutManager = verticalLayoutManager()

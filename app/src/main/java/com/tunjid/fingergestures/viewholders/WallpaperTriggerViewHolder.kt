@@ -30,7 +30,7 @@ import com.tunjid.fingergestures.models.uiState
 import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.managers.WallpaperSelection
-import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.databinding.ViewholderWallpaperTriggerBinding
 import com.tunjid.fingergestures.hasStoragePermission
 import java.text.SimpleDateFormat

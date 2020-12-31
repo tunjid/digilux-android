@@ -17,7 +17,7 @@
 
 package com.tunjid.fingergestures.ui.main
 
-import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.viewholders.ReviewLinkItem
 import com.tunjid.fingergestures.viewholders.SupportLinkItem
 import io.reactivex.Flowable

@@ -19,7 +19,7 @@ package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.models.toPopUpActions
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables

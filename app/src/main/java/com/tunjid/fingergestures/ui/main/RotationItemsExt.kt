@@ -18,7 +18,7 @@
 package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.listMap

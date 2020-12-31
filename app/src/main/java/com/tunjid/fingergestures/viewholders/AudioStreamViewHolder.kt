@@ -23,7 +23,7 @@ import androidx.core.view.children
 import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
-import com.tunjid.fingergestures.adapters.Item
+import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.databinding.ViewholderAudioStreamTypeBinding
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
 import com.tunjid.fingergestures.models.Input

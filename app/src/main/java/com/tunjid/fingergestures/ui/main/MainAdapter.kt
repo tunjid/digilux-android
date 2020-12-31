@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.adapters
+package com.tunjid.fingergestures.ui.main
 
 import android.app.PendingIntent
 import android.content.pm.ApplicationInfo
@@ -35,11 +35,9 @@ import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.viewholders.*
-import com.tunjid.fingergestures.ui.main.Inputs
-import com.tunjid.fingergestures.ui.main.Tab
 import java.io.File
 
-fun appAdapter(items: List<Item>?) = listAdapterOf(
+fun mainAdapter(items: List<Item>?) = listAdapterOf(
     initialItems = items ?: listOf(),
     viewHolderCreator = { parent, viewType ->
         when (viewType) {
