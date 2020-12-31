@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.fragments
+package com.tunjid.fingergestures.ui.packages
 
 
 import android.content.pm.ApplicationInfo

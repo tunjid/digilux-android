@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tunjid.fingergestures.ui.brightness.BrightnessViewModel
 import com.tunjid.fingergestures.ui.docking.DockingViewModel
+import com.tunjid.fingergestures.ui.packages.PackageViewModel
 import com.tunjid.fingergestures.ui.popup.ActionViewModel
 import com.tunjid.fingergestures.ui.popup.PopUpViewModel
 import com.tunjid.fingergestures.viewmodels.*
