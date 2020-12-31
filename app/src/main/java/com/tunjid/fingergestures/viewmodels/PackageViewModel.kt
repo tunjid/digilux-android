@@ -21,7 +21,9 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import androidx.lifecycle.ViewModel
 import com.tunjid.fingergestures.di.AppContext
+import com.tunjid.fingergestures.filterIsInstance
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
+import com.tunjid.fingergestures.listMap
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.toLiveData

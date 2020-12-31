@@ -21,7 +21,7 @@ import androidx.lifecycle.ViewModel
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.toLiveData
-import com.tunjid.fingergestures.viewmodels.filterIsInstance
+import com.tunjid.fingergestures.filterIsInstance
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables

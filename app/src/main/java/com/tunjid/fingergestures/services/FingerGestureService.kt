@@ -47,9 +47,8 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.di.dagger
 import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.models.ignore
-import com.tunjid.fingergestures.viewmodels.filterIsInstance
+import com.tunjid.fingergestures.filterIsInstance
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import java.util.concurrent.TimeUnit.MILLISECONDS
 

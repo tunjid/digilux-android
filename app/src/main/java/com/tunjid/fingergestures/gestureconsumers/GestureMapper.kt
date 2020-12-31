@@ -28,7 +28,7 @@ import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDisposable
 import com.tunjid.fingergestures.di.GestureConsumers
 import com.tunjid.fingergestures.models.Broadcast
-import com.tunjid.fingergestures.viewmodels.filterIsInstance
+import com.tunjid.fingergestures.filterIsInstance
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
 import io.reactivex.processors.PublishProcessor
