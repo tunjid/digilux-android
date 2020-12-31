@@ -45,6 +45,7 @@ data class UiState(
     val showsBottomNav: Boolean? = null,
     val insetFlags: InsetDescriptor = InsetFlags.ALL,
     val systemUI: SystemUI = NoOpSystemUI,
+    val shilling: Shilling = Shilling.Calm,
     val fabClickListener: (View) -> Unit = emptyCallback(),
     val fabTransitionOptions: SpringAnimation.() -> Unit = emptyCallback(),
     val toolbarMenuClickListener: (MenuItem) -> Unit = emptyCallback(),
@@ -73,6 +74,7 @@ internal data class FabPositionalState(
     val fabVisible: Boolean,
     val bottomNavVisible: Boolean,
     val snackbarHeight: Int,
+    val shilling: Shilling,
     override val bottomInset: Int,
     override val navBarSize: Int,
     override val insetDescriptor: InsetDescriptor
@@ -107,7 +109,8 @@ internal val UiState.fabState
         bottomNavVisible = showsBottomNav == true,
         bottomInset = systemUI.dynamic.bottomInset,
         navBarSize = systemUI.static.navBarSize,
-        insetDescriptor = insetFlags
+        insetDescriptor = insetFlags,
+        shilling = shilling
     )
 
 internal val UiState.snackbarPositionalState

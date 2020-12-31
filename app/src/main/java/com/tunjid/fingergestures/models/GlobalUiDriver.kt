@@ -157,23 +157,39 @@ class GlobalUiDriver(
     }
 
     private fun updateFabState(state: FabPositionalState) {
-        if (state.fabVisible) binding.fab.isVisible = true
-        val fabTranslation = when {
-            state.fabVisible -> {
-                val navBarHeight = state.navBarSize
-                val snackbarHeight = state.snackbarHeight
-                val bottomNavHeight = uiSizes.bottomNavSize countIf state.bottomNavVisible
-                val insetClearance = max(bottomNavHeight, state.keyboardSize)
-                val totalBottomClearance = navBarHeight + insetClearance + snackbarHeight
-
-                -totalBottomClearance.toFloat()
+        val isShilling =  when(val shill = state.shilling) {
+            Shilling.Calm -> false
+            is Shilling.Quip -> {
+                println("Shilling: ${shill.message}")
+                binding.upgradePrompt.setText(shill.message).let { true }
             }
+        }
+
+        if (state.fabVisible) binding.fab.isVisible = true
+        if (isShilling) binding.upgradePrompt.isVisible = true
+
+        val navBarHeight = state.navBarSize
+        val snackbarHeight = state.snackbarHeight
+        val bottomNavHeight = uiSizes.bottomNavSize countIf state.bottomNavVisible
+        val insetClearance = max(bottomNavHeight, state.keyboardSize)
+        val shillClearance = uiSizes.shillTextSize countIf isShilling
+
+        val fabTranslation = when {
+            state.fabVisible -> -(navBarHeight + insetClearance + snackbarHeight + shillClearance).toFloat()
             else -> binding.fab.height.toFloat() + binding.fab.paddingBottom
+        }
+        val shillTranslation = when {
+            isShilling -> -(navBarHeight + insetClearance + snackbarHeight).toFloat()
+            else -> binding.upgradePrompt.height.toFloat()
         }
 
         binding.fab.softSpring(SpringAnimation.TRANSLATION_Y)
             .withOneShotEndListener { binding.fab.isVisible = state.fabVisible } // Make the fab gone if hidden
             .animateToFinalPosition(fabTranslation)
+
+        binding.upgradePrompt.softSpring(SpringAnimation.TRANSLATION_Y)
+            .withOneShotEndListener { binding.upgradePrompt.isVisible = isShilling } // Make the fab gone if hidden
+            .animateToFinalPosition(shillTranslation)
     }
 
     private fun updateSnackbar(state: SnackbarPositionalState) {
@@ -321,6 +337,7 @@ private class LifeCycleAwareCallback<T>(lifecycle: Lifecycle, implementation: (T
 private class UISizes(host: FragmentActivity) {
     val toolbarSize: Int = host.resources.getDimensionPixelSize(R.dimen.triple_and_half_margin)
     val bottomNavSize: Int = host.resources.getDimensionPixelSize(R.dimen.triple_and_half_margin)
+    val shillTextSize: Int = host.resources.getDimensionPixelSize(R.dimen.triple_margin)
     val snackbarPadding: Int = host.resources.getDimensionPixelSize(R.dimen.half_margin)
     val navBarHeightThreshold: Int = host.resources.getDimensionPixelSize(R.dimen.quintuple_margin)
 }

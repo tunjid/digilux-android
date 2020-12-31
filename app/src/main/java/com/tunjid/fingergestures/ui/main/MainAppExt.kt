@@ -31,12 +31,12 @@ import com.android.billingclient.api.BillingFlowParams
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.ui.BottomSheetController
 import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.managers.getWallpaperFile
 import com.tunjid.fingergestures.managers.screenAspectRatio
 import com.tunjid.fingergestures.models.*
+import com.tunjid.fingergestures.ui.BottomSheetController
 import java.util.*
 
 interface MainApp : LifecycleOwner, ActivityResultCaller, BottomSheetController {
@@ -88,6 +88,10 @@ fun MainApp.observe(state: LiveData<AppState>) = with(state) {
         .filterUnhandledEvents()
         .observe(this@observe) {
             ::uiState.updatePartial { copy(toolbarInvalidated = true) }
+        }
+    mapDistinct(AppState::shilling)
+        .observe(this@observe) {
+            ::uiState.updatePartial { copy(shilling = it) }
         }
 }
 

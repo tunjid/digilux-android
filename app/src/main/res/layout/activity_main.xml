@@ -49,15 +49,14 @@
 
     <TextSwitcher
         android:id="@+id/upgrade_prompt"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="@dimen/triple_margin"
+        android:layout_gravity="bottom"
+        android:background="@color/colorBackground"
         android:gravity="center"
         android:text="@string/blank_emoji"
         android:textColor="@color/toggle_text"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        android:textStyle="bold" />
 
     <FrameLayout
         android:id="@+id/bottom_sheet"

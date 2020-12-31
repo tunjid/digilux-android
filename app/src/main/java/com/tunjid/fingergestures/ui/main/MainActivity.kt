@@ -23,10 +23,6 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.transition.AutoTransition
-import android.transition.Transition
-import android.transition.TransitionListenerAdapter
-import android.transition.TransitionManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -47,20 +43,23 @@ import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.navigation.MultiStackNavigator
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.multiStackNavigationController
-import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.ui.BottomSheetNavigator
-import com.tunjid.fingergestures.managers.PurchasesManager
-import com.tunjid.fingergestures.managers.TrialStatus
+import com.tunjid.fingergestures.CheatSheet
+import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.accessibilityServiceEnabled
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.databinding.TrialViewBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.fragments.MainFragment
+import com.tunjid.fingergestures.hasStoragePermission
+import com.tunjid.fingergestures.managers.PurchasesManager
+import com.tunjid.fingergestures.managers.TrialStatus
 import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
 import com.tunjid.fingergestures.resultcontracts.WallpaperPickContract
+import com.tunjid.fingergestures.ui.BottomSheetNavigator
 
-class MainActivity : AppCompatActivity(R.layout.activity_main),
+class MainActivity : AppCompatActivity(),
     MainApp,
     GlobalUiHost,
     Navigator.Controller {
@@ -81,7 +80,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
     }
     override val cropWallpaperContract = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        navigator.show(Tab.Display.ordinal)
+        lifecycleScope.launchWhenResumed { navigator.show(Tab.Display.ordinal) }
     }
 
     override val activity get() = this
@@ -142,8 +141,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             navBarColor = colorAt(R.color.colorPrimary),
         )
 
-        // TODO: Back press dispatcher for bottom sheet
-        onBackPressedDispatcher.addCallback(this) { if (!navigator.pop()) finish() }
+        onBackPressedDispatcher.addCallback(this) {
+            when {
+                bottomSheetNavigator.pop() -> Unit
+                navigator.pop() -> Unit
+                else -> finish()
+            }
+        }
 
         bottomSheetNavigator.pop()
 
@@ -170,25 +174,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         val startIntent = intent
         val isPickIntent = startIntent != null && ACTION_SEND == startIntent.action
 
-        if (savedInstanceState == null && isPickIntent) handleIntent(startIntent)
+        if (savedInstanceState == null && isPickIntent) handleWallpaperIntent(startIntent)
 
         binding.upgradePrompt.apply {
             setFactory {
-                val view = layoutInflater.inflate(R.layout.text_switch, this, false)
-                view.setOnClickListener { viewModel.accept(Input.Shill) }
-                view
+                layoutInflater.inflate(R.layout.text_switch, this, false).apply {
+                    setOnClickListener { viewModel.accept(Input.Shill) }
+                }
             }
-
             inAnimation = loadAnimation(context, android.R.anim.slide_in_left)
             outAnimation = loadAnimation(context, android.R.anim.slide_out_right)
         }
-
-        viewModel.state
-            .mapDistinct(AppState::shilling)
-            .observe(this) {
-                if (it is Shilling.Quip) binding.upgradePrompt.apply { setText(it.message); isVisible = true }
-                else hideAds()
-            }
         observe(viewModel.state)
     }
 
@@ -196,6 +192,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         super.onResume()
         viewModel.accept(Input.AppResumed)
         if (!accessibilityServiceEnabled) viewModel.accept(Input.Permission.Request.Accessibility)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleWallpaperIntent(intent)
     }
 
     private fun refreshToolbarMenu(menu: Menu) {
@@ -230,17 +231,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 ?.let(navigator::show)
             R.id.info -> MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.open_source_libraries)
-                .setItems(links) { _, index -> showLink(links[index]) }
+                .setItems(links) { _, index ->
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(links[index].link)))
+                }
                 .show()
         }
     }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        handleIntent(intent)
-    }
-
-    private fun handleIntent(intent: Intent) {
+    private fun handleWallpaperIntent(intent: Intent) {
         val action = intent.action
         val type = intent.type
 
@@ -267,23 +265,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                     ?.let { cropImage(it to imageUri) }
             }
             .show()
-    }
-
-    private fun showLink(textLink: TextLink) {
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(textLink.link))
-        startActivity(browserIntent)
-    }
-
-    private fun hideAds() {
-        if (binding.upgradePrompt.visibility == View.GONE) return
-
-        TransitionManager.beginDelayedTransition(binding.root, AutoTransition().apply {
-            addTarget(binding.upgradePrompt)
-            addListener(object : TransitionListenerAdapter() {
-                override fun onTransitionEnd(transition: Transition) = ::uiState.updatePartial { copy(snackbarText = getString(R.string.billing_thanks)) }
-            })
-        })
-        binding.upgradePrompt.visibility = View.GONE
     }
 }
 
