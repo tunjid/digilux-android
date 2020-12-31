@@ -42,14 +42,14 @@ fun <T> LiveData<T>.filter(predicate: (T) -> Boolean): LiveData<T> {
     val mediator = MediatorLiveData<T>()
     val current = this.value
     if (current != null && predicate(current)) mediator.value = current
-    mediator.addSource(this) { if (predicate(it)) mediator.value = it }
+    mediator.addSource(this) { it.takeIf(predicate)?.let(mediator::setValue) }
     return mediator
 }
 
 fun <T> LiveData<T>.filterUnhandledEvents(): LiveData<T> =
-    map(::LiveDataEvent)
-        .filter { !it.hasBeenHandled }
-        .map(LiveDataEvent<T>::peekContent)
+    mapDistinct(::LiveDataEvent)
+        .map(LiveDataEvent<T>::unhandledContent)
+        .nonNull()
 
 fun <T> LiveData<T?>.nonNull(): LiveData<T> =
     filter { it != null }.map { it!! }
@@ -62,16 +62,12 @@ private data class LiveDataEvent<out T>(private val content: T) {
     /**
      * Returns the content and prevents its use again.
      */
-    fun getContentIfNotHandled(): T? =
-        if (hasBeenHandled) null else {
-        hasBeenHandled = true
-        content
-    }
+    val unhandledContent: T?
+        get() = if (hasBeenHandled) null else {
+            hasBeenHandled = true
+            content
+        }
 
-    /**
-     * Returns the content, even if it's already been handled.
-     */
-    fun peekContent(): T = content
 }
 
 /**
