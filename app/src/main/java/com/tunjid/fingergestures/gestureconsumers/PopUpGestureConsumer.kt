@@ -24,7 +24,7 @@ import com.tunjid.fingergestures.ReactivePreference
 import com.tunjid.fingergestures.ReactivePreferences
 import com.tunjid.fingergestures.SetManager
 import com.tunjid.fingergestures.SetPreference
-import com.tunjid.fingergestures.ui.popup.PopupActivity
+import com.tunjid.fingergestures.ui.popup.PopupDialogActivity
 import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
@@ -88,7 +88,7 @@ class PopUpGestureConsumer @Inject constructor(
             ?.let(Broadcast::Gesture)
             ?.let(broadcaster)
             ?: Unit
-        else -> context.startActivity(Intent(context, PopupActivity::class.java).apply {
+        else -> context.startActivity(Intent(context, PopupDialogActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         })
     }

@@ -37,16 +37,16 @@ import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ui.main.MainActivity
 import com.tunjid.fingergestures.ui.main.dialogLifecycleOwner
-import com.tunjid.fingergestures.databinding.ActivityBrightnessBinding
+import com.tunjid.fingergestures.databinding.ActivityBrightnessDialogBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.filter
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.CURRENT_BRIGHTNESS_BYTE
 import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.mapDistinct
 
-class BrightnessActivity : AppCompatActivity() {
+class BrightnessDialogActivity : AppCompatActivity() {
     private val viewModel by viewModelFactory<BrightnessViewModel>()
-    private val binding by lazy { ActivityBrightnessBinding.inflate(layoutInflater) }
+    private val binding by lazy { ActivityBrightnessDialogBinding.inflate(layoutInflater) }
     private val dialogLifecycleOwner by lazy { dialogLifecycleOwner() }
 
     override fun onCreate(savedInstanceState: Bundle?) {

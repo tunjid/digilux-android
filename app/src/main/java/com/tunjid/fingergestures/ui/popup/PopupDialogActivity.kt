@@ -28,16 +28,16 @@ import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ui.main.dialogLifecycleOwner
-import com.tunjid.fingergestures.databinding.ActivityPopupBinding
+import com.tunjid.fingergestures.databinding.ActivityPopupDialogBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import java.util.concurrent.atomic.AtomicInteger
 
-class PopupActivity : AppCompatActivity() {
+class PopupDialogActivity : AppCompatActivity() {
 
-    private val binding by lazy { ActivityPopupBinding.inflate(layoutInflater) }
+    private val binding by lazy { ActivityPopupDialogBinding.inflate(layoutInflater) }
     private val viewModel by viewModelFactory<PopUpViewModel>()
     private val dialogLifecycleOwner by lazy { dialogLifecycleOwner() }
 

@@ -90,7 +90,7 @@ class ActionFragment : Fragment(R.layout.fragment_actions) {
     }
 
     companion object {
-        fun directionInstance(direction: GestureDirection): ActionFragment =
+        fun gestureInstance(direction: GestureDirection): ActionFragment =
             ActionFragment().apply { this.direction = direction }
 
         fun popUpInstance(): ActionFragment =

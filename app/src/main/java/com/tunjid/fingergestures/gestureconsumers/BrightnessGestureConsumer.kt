@@ -29,7 +29,7 @@ import androidx.annotation.IntRange
 import com.jakewharton.rx.replayingShare
 import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.ui.brightness.BrightnessActivity
+import com.tunjid.fingergestures.ui.brightness.BrightnessDialogActivity
 import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
@@ -213,7 +213,7 @@ class BrightnessGestureConsumer @Inject constructor(
             else -> Unit
         }
 
-        val intent = Intent(context, BrightnessActivity::class.java)
+        val intent = Intent(context, BrightnessDialogActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
         if (engagedDimmer(gestureAction, originalValue)) {

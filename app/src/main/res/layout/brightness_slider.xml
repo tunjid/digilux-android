@@ -24,7 +24,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/single_margin"
     android:background="@drawable/color_indicator"
-    tools:context=".ui.brightness.BrightnessActivity">
+    tools:context=".ui.brightness.BrightnessDialogActivity">
 
     <ImageView
         android:id="@+id/go_to_settings"

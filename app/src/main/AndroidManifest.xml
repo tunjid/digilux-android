@@ -86,7 +86,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.brightness.BrightnessActivity"
+            android:name=".ui.brightness.BrightnessDialogActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:theme="@style/BrightnessActivityTheme" />
@@ -96,7 +96,7 @@
             android:launchMode="singleInstance"
             android:theme="@style/DockingActivityTheme" />
         <activity
-            android:name=".ui.popup.PopupActivity"
+            android:name=".ui.popup.PopupDialogActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:theme="@style/PopupActivityTheme" />
