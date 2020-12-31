@@ -15,12 +15,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.viewmodels
+package com.tunjid.fingergestures.ui.brightness
 
 import androidx.lifecycle.ViewModel
 import com.tunjid.fingergestures.BackgroundManager
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.toLiveData
+import com.tunjid.fingergestures.viewmodels.filterIsInstance
 import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables

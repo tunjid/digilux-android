@@ -27,8 +27,6 @@ import com.tunjid.fingergestures.ui.main.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityDockingBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct
-import com.tunjid.fingergestures.viewmodels.DockingState
-import com.tunjid.fingergestures.viewmodels.DockingViewModel
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class DockingActivity : AppCompatActivity() {

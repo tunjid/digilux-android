@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.viewmodels
+package com.tunjid.fingergestures.ui.popup
 
 import androidx.lifecycle.ViewModel
 import com.tunjid.fingergestures.BackgroundManager

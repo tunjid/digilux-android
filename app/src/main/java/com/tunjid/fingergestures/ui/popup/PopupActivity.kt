@@ -33,9 +33,6 @@ import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
-import com.tunjid.fingergestures.viewmodels.PopUpInput
-import com.tunjid.fingergestures.viewmodels.PopUpState
-import com.tunjid.fingergestures.viewmodels.PopUpViewModel
 import java.util.concurrent.atomic.AtomicInteger
 
 class PopupActivity : AppCompatActivity() {

@@ -24,12 +24,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.tunjid.fingergestures.ui.brightness.BrightnessViewModel
+import com.tunjid.fingergestures.ui.docking.DockingViewModel
+import com.tunjid.fingergestures.ui.popup.PopUpViewModel
 import com.tunjid.fingergestures.viewmodels.*
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
 import javax.inject.Inject
-import javax.inject.Qualifier
 import javax.inject.Singleton
 
 inline fun <reified VM : ViewModel> Fragment.viewModelFactory() =

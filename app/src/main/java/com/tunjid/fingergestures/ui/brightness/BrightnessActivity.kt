@@ -43,9 +43,6 @@ import com.tunjid.fingergestures.filter
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.CURRENT_BRIGHTNESS_BYTE
 import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.mapDistinct
-import com.tunjid.fingergestures.viewmodels.BrightnessViewModel
-import com.tunjid.fingergestures.viewmodels.In
-import com.tunjid.fingergestures.viewmodels.State
 
 class BrightnessActivity : AppCompatActivity() {
     private val viewModel by viewModelFactory<BrightnessViewModel>()
