@@ -24,10 +24,10 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.di.AppBroadcaster
-import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.gestureconsumers.*
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.models.*
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
@@ -45,7 +45,7 @@ class MainViewModel @Inject constructor(
     broadcasts: Flowable<Broadcast>,
 ) : ViewModel(), Inputs {
 
-    private val quips = context.resources.getStringArray(R.array.upsell_text)
+    private val quips = context.resources.getTextArray(R.array.upsell_text)
     private val inputProcessor: PublishProcessor<Input> = PublishProcessor.create()
     private val disposable: CompositeDisposable = CompositeDisposable()
 

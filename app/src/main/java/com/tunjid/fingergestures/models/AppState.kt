@@ -132,7 +132,7 @@ val Any?.ignore
 
 sealed class Shilling {
     object Calm : Shilling()
-    data class Quip(val message: String) : Shilling()
+    data class Quip(val message: CharSequence) : Shilling()
 }
 
 val AppState.uiUpdate

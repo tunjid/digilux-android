@@ -281,7 +281,8 @@
     <string name="joke_ad">I\'m just an ad that never grew up.</string>
     <string name="joke_bunny">(•ㅅ•) づ [Go Premium!]</string>
     <string name="joke_game">The game.</string>
-    <string name="joke_wenger">Wenger out.</string>
+    <string name="joke_wenger"><strike>Wenger</strike> <strike>Emery</strike> <strike>Arteta</strike> out? 😭</string>
+    <string name="joke_compose">Jetpack Compose gives me an existential crisis.</string>
 
     <!-- Generic text-->
     <string name="ok">Okay</string>

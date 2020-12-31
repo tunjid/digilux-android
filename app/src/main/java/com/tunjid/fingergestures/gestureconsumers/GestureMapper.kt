@@ -22,13 +22,12 @@ import android.accessibilityservice.FingerprintGestureController.*
 import android.content.Context
 import com.jakewharton.rx.replayingShare
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDisposable
 import com.tunjid.fingergestures.di.GestureConsumers
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.models.Broadcast
-import com.tunjid.fingergestures.filterIsInstance
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
 import io.reactivex.processors.PublishProcessor
@@ -57,6 +56,13 @@ enum class GestureDirection(
     DoubleLeft(direction = "double left gesture", kind = Kind.Double, stringRes = R.string.double_swipe_left),
     DoubleRight(direction = "double right gesture", kind = Kind.Double, stringRes = R.string.double_swipe_right);
 }
+
+private val GestureAction.isSupported: Boolean
+    get() = when (this) {
+        GestureAction.GlobalLockScreen,
+        GestureAction.GlobalTakeScreenshot -> App.isPieOrHigher
+        else -> true
+    }
 
 @Singleton
 class GestureMapper @Inject constructor(
@@ -140,7 +146,6 @@ class GestureMapper @Inject constructor(
         ::State
     ).replayingShare()
 
-    private val actionIds: IntArray
     private val gestures = PublishProcessor.create<GestureDirection>()
     private val currentState by state.asProperty(
         default = State(),
@@ -151,11 +156,10 @@ class GestureMapper @Inject constructor(
         get() = Flowable.just(
             GestureAction.values()
                 .toList()
-                .filter(::isSupportedAction)
+                .filter(GestureAction::isSupported)
         )
 
     init {
-        actionIds = getActionIds()
         broadcasts.filterIsInstance<Broadcast.Gesture>()
             .map(Broadcast.Gesture::gesture)
             .subscribe(this@GestureMapper::performAction)
@@ -233,21 +237,6 @@ class GestureMapper @Inject constructor(
         GestureDirection.DoubleDown -> down.doubleAction
         GestureDirection.DoubleLeft -> left.doubleAction
         GestureDirection.DoubleRight -> right.doubleAction
-    }
-
-    private fun isSupportedAction(action: GestureAction): Boolean =
-        if (action == GestureAction.GlobalLockScreen || action == GestureAction.GlobalTakeScreenshot) App.isPieOrHigher else true
-
-    private fun getActionIds(): IntArray {
-        val array = context.resources.obtainTypedArray(R.array.action_resources)
-        val length = array.length()
-
-        val ints = IntArray(length)
-        for (i in 0 until length) ints[i] = array.getResourceId(i, R.string.do_nothing)
-
-        array.recycle()
-
-        return ints
     }
 
     companion object {
