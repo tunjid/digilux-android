@@ -23,7 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ui.main.dialogLifecycleOwner
+import com.tunjid.fingergestures.ui.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityDockingBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct

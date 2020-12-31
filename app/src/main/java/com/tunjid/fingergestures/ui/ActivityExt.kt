@@ -15,13 +15,19 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.ui.main
+package com.tunjid.fingergestures.ui
 
+import android.R
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.RecyclerView
 
 internal fun AppCompatActivity.dialogLifecycleOwner(): LifecycleOwner {
     val (owner, registry) = with(object : LifecycleOwner {
@@ -44,4 +50,15 @@ internal fun AppCompatActivity.dialogLifecycleOwner(): LifecycleOwner {
     })
 
     return owner
+}
+
+fun Context.divider(): RecyclerView.ItemDecoration {
+    val context = this
+
+    val itemDecoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
+    val decoration = ContextCompat.getDrawable(context, R.drawable.divider_horizontal_dark)
+
+    if (decoration != null) itemDecoration.setDrawable(decoration)
+
+    return itemDecoration
 }

@@ -27,7 +27,7 @@ import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.fingergestures.models.uiState
 import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.baseclasses.divider
+import com.tunjid.fingergestures.ui.divider
 import com.tunjid.fingergestures.databinding.FragmentHomeBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.mapDistinct
@@ -54,7 +54,7 @@ class MainFragment : Fragment(R.layout.fragment_home) {
             adapter = listAdapter
             itemAnimator = null
 
-            addItemDecoration(divider())
+            addItemDecoration(view.context.divider())
             addScrollListener { _, dy -> if (abs(dy) > 3) ::uiState.updatePartial { copy(toolbarShows = dy < 0) } }
         }
 

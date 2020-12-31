@@ -36,7 +36,7 @@ import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ui.main.MainActivity
-import com.tunjid.fingergestures.ui.main.dialogLifecycleOwner
+import com.tunjid.fingergestures.ui.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityBrightnessDialogBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.filter

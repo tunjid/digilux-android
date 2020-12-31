@@ -31,8 +31,8 @@ import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.baseclasses.divider
-import com.tunjid.fingergestures.baseclasses.recursiveBottomSheetNavigator
+import com.tunjid.fingergestures.ui.divider
+import com.tunjid.fingergestures.ui.recursiveBottomSheetNavigator
 import com.tunjid.fingergestures.databinding.FragmentPackagesBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.di.viewModelFactory
@@ -67,7 +67,7 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
         binding.optionsList.apply {
             adapter = listAdapter
             layoutManager = verticalLayoutManager()
-            addItemDecoration(divider())
+            addItemDecoration(view.context.divider())
         }
 
         viewModel.state.apply {

@@ -31,7 +31,7 @@ import com.android.billingclient.api.BillingFlowParams
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.baseclasses.BottomSheetController
+import com.tunjid.fingergestures.ui.BottomSheetController
 import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.managers.getWallpaperFile

@@ -15,17 +15,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.baseclasses
+package com.tunjid.fingergestures.ui
 
 
 import android.view.View
-import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.fingergestures.models.liveUiState
@@ -34,17 +30,6 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.mapDistinct
 import kotlin.properties.ReadOnlyProperty
-
-fun Fragment.divider(): RecyclerView.ItemDecoration {
-    val context = requireContext()
-
-    val itemDecoration = DividerItemDecoration(context, VERTICAL)
-    val decoration = ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark)
-
-    if (decoration != null) itemDecoration.setDrawable(decoration)
-
-    return itemDecoration
-}
 
 interface BottomSheetController {
     val bottomSheetNavigator: BottomSheetNavigator

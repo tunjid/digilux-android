@@ -27,7 +27,7 @@ import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ui.main.dialogLifecycleOwner
+import com.tunjid.fingergestures.ui.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityPopupDialogBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct
