@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.activities
+package com.tunjid.fingergestures.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -23,7 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.main.dialogLifecycleOwner
+import com.tunjid.fingergestures.ui.main.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityDockingBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct

@@ -24,7 +24,7 @@
     android:layout_height="match_parent"
     android:background="@color/transparent"
     android:padding="@dimen/single_margin"
-    tools:context=".activities.BrightnessActivity">
+    tools:context=".ui.BrightnessActivity">
 
     <include
         android:id="@+id/controls"

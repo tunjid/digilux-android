@@ -20,7 +20,7 @@ package com.tunjid.fingergestures.gestureconsumers
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import com.tunjid.fingergestures.activities.DockingActivity
+import com.tunjid.fingergestures.ui.DockingActivity
 import com.tunjid.fingergestures.di.AppContext
 import javax.inject.Inject
 import javax.inject.Singleton

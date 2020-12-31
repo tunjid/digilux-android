@@ -25,7 +25,7 @@
     android:layout_gravity="center"
     android:layout_margin="@dimen/quarter_margin"
     android:padding="@dimen/single_margin"
-    tools:context=".activities.PopupActivity">
+    tools:context=".ui.PopupActivity">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card"

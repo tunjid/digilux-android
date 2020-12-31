@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.activities
+package com.tunjid.fingergestures.ui
 
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -35,7 +35,8 @@ import com.google.android.material.slider.Slider
 import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.main.dialogLifecycleOwner
+import com.tunjid.fingergestures.ui.main.MainActivity
+import com.tunjid.fingergestures.ui.main.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityBrightnessBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.filter

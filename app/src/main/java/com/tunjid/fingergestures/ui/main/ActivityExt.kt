@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.activities.main
+package com.tunjid.fingergestures.ui.main
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle

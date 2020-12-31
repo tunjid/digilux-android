@@ -29,7 +29,7 @@ import androidx.annotation.IntRange
 import com.jakewharton.rx.replayingShare
 import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.activities.BrightnessActivity
+import com.tunjid.fingergestures.ui.BrightnessActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext

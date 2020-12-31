@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.activities
+package com.tunjid.fingergestures.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -27,7 +27,7 @@ import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.main.dialogLifecycleOwner
+import com.tunjid.fingergestures.ui.main.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityPopupBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct

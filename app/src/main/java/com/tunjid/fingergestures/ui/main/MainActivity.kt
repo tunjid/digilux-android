@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.activities
+package com.tunjid.fingergestures.ui.main
 
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
@@ -48,9 +48,6 @@ import com.tunjid.androidx.navigation.MultiStackNavigator
 import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.multiStackNavigationController
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.activities.main.MainApp
-import com.tunjid.fingergestures.activities.main.cropImage
-import com.tunjid.fingergestures.activities.main.observe
 import com.tunjid.fingergestures.baseclasses.BottomSheetNavigator
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.billing.TrialStatus
@@ -80,7 +77,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
     override val wallpaperPickContract = registerForActivityResult(WallpaperPickContract(::getIntent)) {
         lifecycleScope.launchWhenResumed {
-            it?.let(::cropImage) ?: ::uiState.updatePartial { copy(snackbarText = getString(R.string.cancel_wallpaper)) }
+            it?.let(::cropImage)
+                ?: ::uiState.updatePartial { copy(snackbarText = getString(R.string.cancel_wallpaper)) }
         }
     }
     override val cropWallpaperContract = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
