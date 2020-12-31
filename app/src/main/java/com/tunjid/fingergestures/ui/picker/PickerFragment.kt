@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.ui.popup
+package com.tunjid.fingergestures.ui.picker
 
 
 import android.os.Bundle
@@ -39,10 +39,10 @@ import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.ui.main.MainViewModel
 
-class ActionFragment : Fragment(R.layout.fragment_actions) {
+class PickerFragment : Fragment(R.layout.fragment_actions) {
 
     private var direction by fragmentArgs<GestureDirection?>()
-    private val viewModel by viewModelFactory<ActionViewModel>()
+    private val viewModel by viewModelFactory<PickerViewModel>()
     private val appViewModel by activityViewModelFactory<MainViewModel>()
     private val bottomSheetNavigator by recursiveBottomSheetNavigator()
 
@@ -90,10 +90,10 @@ class ActionFragment : Fragment(R.layout.fragment_actions) {
     }
 
     companion object {
-        fun gestureInstance(direction: GestureDirection): ActionFragment =
-            ActionFragment().apply { this.direction = direction }
+        fun gestureInstance(direction: GestureDirection): PickerFragment =
+            PickerFragment().apply { this.direction = direction }
 
-        fun popUpInstance(): ActionFragment =
-            ActionFragment().apply { arguments = Bundle() }
+        fun popUpInstance(): PickerFragment =
+            PickerFragment().apply { arguments = Bundle() }
     }
 }

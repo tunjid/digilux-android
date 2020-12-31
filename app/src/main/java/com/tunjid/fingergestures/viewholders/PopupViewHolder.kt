@@ -30,7 +30,7 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
-import com.tunjid.fingergestures.ui.popup.ActionFragment
+import com.tunjid.fingergestures.ui.picker.PickerFragment
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.ui.main.Input
 
@@ -59,7 +59,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
         when {
             !itemView.context.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
             !item.accessibilityButtonEnabled -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
-            else -> item.input.accept(Input.UiInteraction.ShowSheet(ActionFragment.popUpInstance()))
+            else -> item.input.accept(Input.UiInteraction.ShowSheet(PickerFragment.popUpInstance()))
         }
     }
     binding.itemList.apply {

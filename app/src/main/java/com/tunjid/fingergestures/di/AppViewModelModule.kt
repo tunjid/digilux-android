@@ -28,7 +28,7 @@ import com.tunjid.fingergestures.ui.brightness.BrightnessViewModel
 import com.tunjid.fingergestures.ui.docking.DockingViewModel
 import com.tunjid.fingergestures.ui.main.MainViewModel
 import com.tunjid.fingergestures.ui.packages.PackageViewModel
-import com.tunjid.fingergestures.ui.popup.ActionViewModel
+import com.tunjid.fingergestures.ui.picker.PickerViewModel
 import com.tunjid.fingergestures.ui.popup.PopUpViewModel
 import dagger.Binds
 import dagger.Module
@@ -59,8 +59,8 @@ abstract class AppViewModelModule {
     @Binds @IntoMap @ViewModelKey(MainViewModel::class)
     abstract fun bindAppViewModel(viewModel: MainViewModel): ViewModel
 
-    @Binds @IntoMap @ViewModelKey(ActionViewModel::class)
-    abstract fun bindActionViewModel(viewModel: ActionViewModel): ViewModel
+    @Binds @IntoMap @ViewModelKey(PickerViewModel::class)
+    abstract fun bindActionViewModel(viewModel: PickerViewModel): ViewModel
 
     @Binds @IntoMap @ViewModelKey(PopUpViewModel::class)
     abstract fun bindPopUpViewModel(viewModel: PopUpViewModel): ViewModel

@@ -28,17 +28,17 @@ import com.tunjid.fingergestures.accessibilityServiceEnabled
 import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderMapperBinding
-import com.tunjid.fingergestures.ui.popup.ActionFragment
+import com.tunjid.fingergestures.ui.picker.PickerFragment
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.ui.main.Input
 
 private var BindingViewHolder<ViewholderMapperBinding>.item by viewHolderDelegate<Item.Mapper>()
 
 fun ViewGroup.mapper() = viewHolderFrom(ViewholderMapperBinding::inflate).apply {
-    binding.title.setOnClickListener { item.input.accept(Input.UiInteraction.ShowSheet(ActionFragment.gestureInstance(item.direction))) }
+    binding.title.setOnClickListener { item.input.accept(Input.UiInteraction.ShowSheet(PickerFragment.gestureInstance(item.direction))) }
     binding.subTitle.setOnClickListener {
         item.input.accept(
-            if (item.canUseDoubleSwipes) Input.UiInteraction.ShowSheet(ActionFragment.gestureInstance(item.doubleDirection))
+            if (item.canUseDoubleSwipes) Input.UiInteraction.ShowSheet(PickerFragment.gestureInstance(item.doubleDirection))
             else Input.UiInteraction.GoPremium(R.string.premium_prompt_double_swipe)
         )
     }

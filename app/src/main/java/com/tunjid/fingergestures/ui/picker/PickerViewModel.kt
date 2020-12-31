@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.ui.popup
+package com.tunjid.fingergestures.ui.picker
 
 import androidx.lifecycle.ViewModel
 import com.tunjid.fingergestures.managers.BackgroundManager
@@ -40,7 +40,7 @@ sealed class ActionInput {
     data class MapGesture(val direction: GestureDirection, val action: Action) : ActionInput()
 }
 
-class ActionViewModel @Inject constructor(
+class PickerViewModel @Inject constructor(
     private val gestureMapper: GestureMapper,
     backgroundManager: BackgroundManager,
     popUpGestureConsumer: PopUpGestureConsumer,
