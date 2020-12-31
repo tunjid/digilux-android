@@ -33,7 +33,7 @@ import com.tunjid.fingergestures.databinding.FragmentHomeBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.AppState
-import com.tunjid.fingergestures.ui.main.AppViewModel
+import com.tunjid.fingergestures.ui.main.MainViewModel
 import com.tunjid.fingergestures.ui.main.Tab
 import kotlin.math.abs
 
@@ -42,7 +42,7 @@ private fun AppFragment.tabItems(state: AppState?) = state?.items?.filter { it.t
 
 class AppFragment : Fragment(R.layout.fragment_home) {
 
-    private val viewModel by activityViewModelFactory<AppViewModel>()
+    private val viewModel by activityViewModelFactory<MainViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

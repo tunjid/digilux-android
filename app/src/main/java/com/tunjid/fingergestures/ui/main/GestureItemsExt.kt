@@ -20,9 +20,6 @@ package com.tunjid.fingergestures.ui.main
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
-import com.tunjid.fingergestures.ui.main.Inputs
-import com.tunjid.fingergestures.ui.main.Tab
-import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
@@ -33,7 +30,7 @@ val Inputs.gestureItems: Flowable<List<Item>>
     ) { state, isPremium ->
         listOf(
             Item.Mapper(
-                sortKey = AppViewModel.MAP_UP_ICON,
+                sortKey = MainViewModel.MAP_UP_ICON,
                 tab = Tab.Gestures,
                 direction = GestureDirection.Up,
                 doubleDirection = GestureDirection.DoubleUp,
@@ -42,7 +39,7 @@ val Inputs.gestureItems: Flowable<List<Item>>
                 input = this@gestureItems
             ),
             Item.Mapper(
-                sortKey = AppViewModel.MAP_DOWN_ICON,
+                sortKey = MainViewModel.MAP_DOWN_ICON,
                 tab = Tab.Gestures,
                 direction = GestureDirection.Down,
                 doubleDirection = GestureDirection.DoubleDown,
@@ -51,7 +48,7 @@ val Inputs.gestureItems: Flowable<List<Item>>
                 input = this@gestureItems
             ),
             Item.Mapper(
-                sortKey = AppViewModel.MAP_LEFT_ICON,
+                sortKey = MainViewModel.MAP_LEFT_ICON,
                 tab = Tab.Gestures,
                 direction = GestureDirection.Left,
                 doubleDirection = GestureDirection.DoubleLeft,
@@ -60,7 +57,7 @@ val Inputs.gestureItems: Flowable<List<Item>>
                 input = this@gestureItems
             ),
             Item.Mapper(
-                sortKey = AppViewModel.MAP_RIGHT_ICON,
+                sortKey = MainViewModel.MAP_RIGHT_ICON,
                 tab = Tab.Gestures,
                 direction = GestureDirection.Right,
                 doubleDirection = GestureDirection.DoubleRight,

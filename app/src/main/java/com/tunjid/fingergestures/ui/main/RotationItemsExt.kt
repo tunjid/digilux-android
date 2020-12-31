@@ -21,7 +21,6 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Package
-import com.tunjid.fingergestures.ui.main.AppViewModel
 import com.tunjid.fingergestures.listMap
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
@@ -37,14 +36,14 @@ val Inputs.rotationItems: Flowable<List<Item>>
             listOf(
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    sortKey = AppViewModel.ENABLE_WATCH_WINDOWS,
+                    sortKey = MainViewModel.ENABLE_WATCH_WINDOWS,
                     titleRes = R.string.selective_app_rotation,
                     isChecked = canAutoRotate,
                     consumer = autoRotatePreference.setter
                 ),
                 Item.Rotation(
                     tab = Tab.Shortcuts,
-                    sortKey = AppViewModel.ROTATION_LOCK,
+                    sortKey = MainViewModel.ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.RotatingApps,
                     removeText = getRemoveText(RotationGestureConsumer.Preference.RotatingApps),
                     titleRes = R.string.auto_rotate_apps,
@@ -57,7 +56,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                 ),
                 Item.Rotation(
                     tab = Tab.Shortcuts,
-                    sortKey = AppViewModel.EXCLUDED_ROTATION_LOCK,
+                    sortKey = MainViewModel.EXCLUDED_ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.NonRotatingApps,
                     removeText = getRemoveText(RotationGestureConsumer.Preference.NonRotatingApps),
                     titleRes = R.string.auto_rotate_apps_excluded,
@@ -70,7 +69,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                 ),
                 Item.Rotation(
                     tab = Tab.Shortcuts,
-                    sortKey = AppViewModel.ROTATION_HISTORY,
+                    sortKey = MainViewModel.ROTATION_HISTORY,
                     preference = null,
                     removeText = "",
                     titleRes = R.string.app_rotation_history_title,

@@ -21,9 +21,6 @@ import com.tunjid.fingergestures.PaletteStatus
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.ui.main.Inputs
-import com.tunjid.fingergestures.ui.main.Tab
-import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
@@ -42,7 +39,7 @@ val Inputs.backgroundItems: Flowable<List<Item>>
             listOf(
                 Item.Slider(
                     tab = Tab.Display,
-                    sortKey = AppViewModel.SLIDER_DURATION,
+                    sortKey = MainViewModel.SLIDER_DURATION,
                     titleRes = R.string.adjust_slider_duration,
                     infoRes = 0,
                     value = sliderDuration,
@@ -52,14 +49,14 @@ val Inputs.backgroundItems: Flowable<List<Item>>
                 ),
                 Item.Toggle(
                     tab = Tab.Display,
-                    sortKey = AppViewModel.NAV_BAR_COLOR,
+                    sortKey = MainViewModel.NAV_BAR_COLOR,
                     titleRes = R.string.use_colored_nav,
                     isChecked = coloredNav,
                     consumer = coloredNavPreference.setter
                 ),
                 Item.ColorAdjuster(
                     tab = Tab.Display,
-                    sortKey = AppViewModel.SLIDER_COLOR,
+                    sortKey = MainViewModel.SLIDER_COLOR,
                     backgroundColor = backgroundColor,
                     sliderColor = sliderColor,
                     canPickColorFromWallpaper = purchasesState.isPremium,
@@ -73,7 +70,7 @@ val Inputs.backgroundItems: Flowable<List<Item>>
                 ),
                 Item.WallpaperTrigger(
                     tab = Tab.Display,
-                    sortKey = AppViewModel.WALLPAPER_TRIGGER,
+                    sortKey = MainViewModel.WALLPAPER_TRIGGER,
                     dayStatus = dayStatus,
                     nightStatus = nightStatus,
                     selectTime = setWallpaperChangeTime,
@@ -82,7 +79,7 @@ val Inputs.backgroundItems: Flowable<List<Item>>
                 ),
                 Item.WallpaperPick(
                     tab = Tab.Display,
-                    sortKey = AppViewModel.WALLPAPER_PICKER,
+                    sortKey = MainViewModel.WALLPAPER_PICKER,
                     dayFile = getWallpaperFile(WallpaperSelection.Day),
                     nightFile = getWallpaperFile(WallpaperSelection.Night),
                     screenDimensionRatio = screenDimensionRatio,

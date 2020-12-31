@@ -20,10 +20,7 @@ package com.tunjid.fingergestures.ui.main
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.ui.main.Inputs
-import com.tunjid.fingergestures.ui.main.Tab
 import com.tunjid.fingergestures.models.toPopUpActions
-import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
@@ -39,28 +36,28 @@ val Inputs.popUpItems: Flowable<List<Item>>
             listOf(
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    sortKey = AppViewModel.ENABLE_ACCESSIBILITY_BUTTON,
+                    sortKey = MainViewModel.ENABLE_ACCESSIBILITY_BUTTON,
                     titleRes = R.string.popup_enable,
                     isChecked = accessibilityButtonEnabled,
                     consumer = accessibilityButtonEnabledPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    sortKey = AppViewModel.ACCESSIBILITY_SINGLE_CLICK,
+                    sortKey = MainViewModel.ACCESSIBILITY_SINGLE_CLICK,
                     titleRes = R.string.popup_single_click,
                     isChecked = isSingleClick,
                     consumer = accessibilityButtonSingleClickPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.Shortcuts,
-                    sortKey = AppViewModel.ANIMATES_POPUP,
+                    sortKey = MainViewModel.ANIMATES_POPUP,
                     titleRes = R.string.popup_animate_in,
                     isChecked = animatePopup,
                     consumer = animatePopUpPreference.setter
                 ),
                 Item.PopUp(
                     tab = Tab.Shortcuts,
-                    sortKey = AppViewModel.POPUP_ACTION,
+                    sortKey = MainViewModel.POPUP_ACTION,
                     items = savedActions,
                     editor = setManager.editorFor(PopUpGestureConsumer.Preference.SavedActions),
                     accessibilityButtonEnabled = accessibilityButtonEnabled,

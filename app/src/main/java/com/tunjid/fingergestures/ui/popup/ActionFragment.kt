@@ -37,13 +37,13 @@ import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
-import com.tunjid.fingergestures.ui.main.AppViewModel
+import com.tunjid.fingergestures.ui.main.MainViewModel
 
 class ActionFragment : Fragment(R.layout.fragment_actions) {
 
     private var direction by fragmentArgs<GestureDirection?>()
     private val viewModel by viewModelFactory<ActionViewModel>()
-    private val appViewModel by activityViewModelFactory<AppViewModel>()
+    private val appViewModel by activityViewModelFactory<MainViewModel>()
     private val bottomSheetNavigator by recursiveBottomSheetNavigator()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

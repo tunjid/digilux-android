@@ -39,13 +39,13 @@ import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.models.Unique
-import com.tunjid.fingergestures.ui.main.AppViewModel
+import com.tunjid.fingergestures.ui.main.MainViewModel
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
 
 class PackageFragment : Fragment(R.layout.fragment_packages) {
 
     private val viewModel by viewModelFactory<PackageViewModel>()
-    private val appViewModel by activityViewModelFactory<AppViewModel>()
+    private val appViewModel by activityViewModelFactory<MainViewModel>()
     private var preference by fragmentArgs<RotationGestureConsumer.Preference>()
     private val bottomSheetNavigator by recursiveBottomSheetNavigator()
 

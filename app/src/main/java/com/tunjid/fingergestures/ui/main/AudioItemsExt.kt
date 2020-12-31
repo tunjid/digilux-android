@@ -20,7 +20,6 @@ package com.tunjid.fingergestures.ui.main
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
-import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
@@ -34,14 +33,14 @@ val Inputs.audioItems: Flowable<List<Item>>
             listOf(
                 Item.Toggle(
                     tab = Tab.Audio,
-                    sortKey = AppViewModel.AUDIO_SLIDER_SHOW,
+                    sortKey = MainViewModel.AUDIO_SLIDER_SHOW,
                     titleRes = R.string.audio_stream_slider_show,
                     isChecked = showSlider,
                     consumer = sliderPreference.setter,
                 ),
                 Item.Slider(
                     tab = Tab.Audio,
-                    sortKey = AppViewModel.AUDIO_DELTA,
+                    sortKey = MainViewModel.AUDIO_DELTA,
                     titleRes = R.string.audio_stream_delta,
                     infoRes = 0,
                     value = audioValue,
@@ -52,7 +51,7 @@ val Inputs.audioItems: Flowable<List<Item>>
                 ),
                 Item.AudioStream(
                     tab = Tab.Audio,
-                    sortKey = AppViewModel.AUDIO_STREAM_TYPE,
+                    sortKey = MainViewModel.AUDIO_STREAM_TYPE,
                     titleFunction = ::getStreamTitle,
                     hasDoNotDisturbAccess = hasDoNotDisturbAccess,
                     consumer = streamTypePreference.setter,

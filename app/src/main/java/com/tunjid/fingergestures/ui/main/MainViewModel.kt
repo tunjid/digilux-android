@@ -27,7 +27,6 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.gestureconsumers.*
-import com.tunjid.fingergestures.ui.main.Inputs
 import com.tunjid.fingergestures.models.*
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
@@ -38,7 +37,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class AppViewModel @Inject constructor(
+class MainViewModel @Inject constructor(
     @AppContext private val context: Context,
     broadcasts: Flowable<Broadcast>,
     override val dependencies: AppDependencies
@@ -49,7 +48,7 @@ class AppViewModel @Inject constructor(
     private val disposable: CompositeDisposable = CompositeDisposable()
 
     private val backingState = Flowables.combineLatest(
-        dependencies.purchasesManager.shill(),
+        dependencies.purchasesManager.shillingState,
         dependencies.purchasesManager.state,
         Flowable.just(context.links),
         broadcasts.filterIsInstance<Broadcast.Prompt>().map { Optional.of(it) }.startWith(Optional.empty()),
@@ -98,18 +97,31 @@ class AppViewModel @Inject constructor(
 
     override fun accept(input: Input): Unit = inputProcessor.onNext(input)
 
-    private fun PurchasesManager.shill() = state
-        .map(PurchasesManager.State::hasAds)
-        .distinctUntilChanged()
-        .switchMap {
-            if (it) Flowable.merge(
-                inputProcessor.filterIsInstance<Input.Shill>(),
-                Flowable.interval(10, TimeUnit.SECONDS)
-            ).scan(0) { index, _ -> (index + 1) % quips.size }
-                .map(quips::get)
-                .map(Shilling::Quip)
-            else Flowable.just(Shilling.Calm)
-        }
+    private val PurchasesManager.shillingState
+        get() = state
+            .map(PurchasesManager.State::hasAds)
+            .distinctUntilChanged()
+            .switchMap {
+                if (it) Flowable.merge(
+                    inputProcessor.filterIsInstance<Input.Shill>(),
+                    Flowable.interval(10, TimeUnit.SECONDS)
+                ).scan(0) { index, _ -> (index + 1) % quips.size }
+                    .map(quips::get)
+                    .map(Shilling::Quip)
+                else Flowable.just(Shilling.Calm)
+            }
+
+    private val Flowable<Input>.billingState
+        get() = filterIsInstance<Input.Billing>()
+            .scan(BillingState()) { state, item ->
+                when (item) {
+                    is Input.Billing.Client -> state.copy(client = item.client)
+                    is Input.Billing.Purchase -> when (val client = state.client) {
+                        null -> state.copy(prompt = Unique(R.string.billing_not_connected))
+                        else -> state.copy(cart = Unique(client to item.sku))
+                    }
+                }
+            }
 
     private val Flowable<Input>.permissionState
         get() = filterIsInstance<Input.Permission>()
@@ -146,7 +158,6 @@ class AppViewModel @Inject constructor(
                                 if (context.hasDoNotDisturbAccess) R.string.do_not_disturb_permission_granted to true
                                 else R.string.do_not_disturb_permission_denied to false
                         }
-
                         state.copy(
                             prompt = Unique(prompt),
                             queue = when {
@@ -217,23 +228,10 @@ class AppViewModel @Inject constructor(
 
 val Context.links
     get() = listOf(
-        TextLink(getString(R.string.get_set_icon), AppViewModel.GET_SET_ICON_LINK),
-        TextLink(getString(R.string.rxjava), AppViewModel.RX_JAVA_LINK),
-        TextLink(getString(R.string.color_picker), AppViewModel.COLOR_PICKER_LINK),
-        TextLink(getString(R.string.image_cropper), AppViewModel.IMAGE_CROPPER_LINK),
-        TextLink(getString(R.string.material_design_icons), AppViewModel.MATERIAL_DESIGN_ICONS_LINK),
-        TextLink(getString(R.string.android_bootstrap), AppViewModel.ANDROID_BOOTSTRAP_LINK)
+        TextLink(getString(R.string.get_set_icon), MainViewModel.GET_SET_ICON_LINK),
+        TextLink(getString(R.string.rxjava), MainViewModel.RX_JAVA_LINK),
+        TextLink(getString(R.string.color_picker), MainViewModel.COLOR_PICKER_LINK),
+        TextLink(getString(R.string.image_cropper), MainViewModel.IMAGE_CROPPER_LINK),
+        TextLink(getString(R.string.material_design_icons), MainViewModel.MATERIAL_DESIGN_ICONS_LINK),
+        TextLink(getString(R.string.android_bootstrap), MainViewModel.ANDROID_BOOTSTRAP_LINK)
     )
-
-private val Flowable<Input>.billingState
-    get() = filterIsInstance<Input.Billing>()
-        .scan(BillingState()) { state, item ->
-            when (item) {
-                is Input.Billing.Client -> state.copy(client = item.client)
-                is Input.Billing.Purchase -> when (val client = state.client) {
-                    null -> state.copy(prompt = Unique(R.string.billing_not_connected))
-                    else -> state.copy(cart = Unique(client to item.sku))
-                }
-            }
-        }
-

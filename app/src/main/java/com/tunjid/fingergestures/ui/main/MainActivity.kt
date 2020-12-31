@@ -58,7 +58,6 @@ import com.tunjid.fingergestures.fragments.AppFragment
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
 import com.tunjid.fingergestures.resultcontracts.WallpaperPickContract
-import com.tunjid.fingergestures.ui.main.AppViewModel
 
 class MainActivity : AppCompatActivity(R.layout.activity_main),
     MainApp,
@@ -67,7 +66,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
-    private val viewModel by viewModelFactory<AppViewModel>()
+    private val viewModel by viewModelFactory<MainViewModel>()
 
     private val links get() = (viewModel.state.value?.links ?: listOf()).toTypedArray()
 

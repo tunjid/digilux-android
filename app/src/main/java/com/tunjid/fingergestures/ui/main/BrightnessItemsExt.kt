@@ -21,7 +21,6 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
 import com.tunjid.fingergestures.models.Brightness
-import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 
 val Inputs.brightnessItems: Flowable<List<Item>>
@@ -30,7 +29,7 @@ val Inputs.brightnessItems: Flowable<List<Item>>
             listOf(
                 Item.Slider(
                     tab = Tab.Brightness,
-                    sortKey = AppViewModel.SLIDER_DELTA,
+                    sortKey = MainViewModel.SLIDER_DELTA,
                     titleRes = R.string.adjust_slider_delta,
                     infoRes = 0,
                     consumer = percentagePreference.setter,
@@ -40,7 +39,7 @@ val Inputs.brightnessItems: Flowable<List<Item>>
                 ),
                 Item.Slider(
                     tab = Tab.Display,
-                    sortKey = AppViewModel.SLIDER_POSITION,
+                    sortKey = MainViewModel.SLIDER_POSITION,
                     titleRes = R.string.adjust_slider_position,
                     infoRes = 0,
                     consumer = positionPreference.setter,
@@ -50,7 +49,7 @@ val Inputs.brightnessItems: Flowable<List<Item>>
                 ),
                 Item.Slider(
                     tab = Tab.Brightness,
-                    sortKey = AppViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+                    sortKey = MainViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
                     titleRes = R.string.adjust_adaptive_threshold,
                     infoRes = R.string.adjust_adaptive_threshold_description,
                     consumer = adaptiveBrightnessThresholdPreference.setter,
@@ -60,35 +59,35 @@ val Inputs.brightnessItems: Flowable<List<Item>>
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
-                    sortKey = AppViewModel.ADAPTIVE_BRIGHTNESS,
+                    sortKey = MainViewModel.ADAPTIVE_BRIGHTNESS,
                     titleRes = R.string.adaptive_brightness,
                     isChecked = it.restoresAdaptiveBrightnessOnDisplaySleep,
                     consumer = adaptiveBrightnessPreference.setter,
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
-                    sortKey = AppViewModel.USE_LOGARITHMIC_SCALE,
+                    sortKey = MainViewModel.USE_LOGARITHMIC_SCALE,
                     titleRes = R.string.use_logarithmic_scale,
                     isChecked = it.usesLogarithmicScale,
                     consumer = logarithmicBrightnessPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
-                    sortKey = AppViewModel.SHOW_SLIDER,
+                    sortKey = MainViewModel.SHOW_SLIDER,
                     titleRes = R.string.show_slider,
                     isChecked = it.shouldShowSlider,
                     consumer = showSliderPreference.setter,
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
-                    sortKey = AppViewModel.ANIMATES_SLIDER,
+                    sortKey = MainViewModel.ANIMATES_SLIDER,
                     titleRes = R.string.slider_animate,
                     isChecked = it.shouldAnimateSlider,
                     consumer = animateSliderPreference.setter
                 ),
                 Item.DiscreteBrightness(
                     tab = Tab.Brightness,
-                    sortKey = AppViewModel.DISCRETE_BRIGHTNESS,
+                    sortKey = MainViewModel.DISCRETE_BRIGHTNESS,
                     editor = discreteBrightnessManager.editorFor(BrightnessGestureConsumer.Preference.DiscreteBrightnesses),
                     brightnesses = it.discreteBrightnesses
                         .sorted()
@@ -97,7 +96,7 @@ val Inputs.brightnessItems: Flowable<List<Item>>
                 ),
                 Item.ScreenDimmer(
                     tab = Tab.Brightness,
-                    sortKey = AppViewModel.SLIDER_DELTA,
+                    sortKey = MainViewModel.SLIDER_DELTA,
                     dimmerState = it.dimmerState,
                     consumer = screenDimmerEnabledPreference.setter,
                     input = this@brightnessItems,

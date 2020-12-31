@@ -21,7 +21,6 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.models.Input
-import com.tunjid.fingergestures.viewmodels.*
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 import java.util.*
@@ -84,24 +83,24 @@ private val Item.sortList get() = tabItems.getValue(tab)
 
 private val tabItems = listOf(
     Tab.Gestures to intArrayOf(
-        AppViewModel.MAP_UP_ICON, AppViewModel.MAP_DOWN_ICON, AppViewModel.MAP_LEFT_ICON, AppViewModel.MAP_RIGHT_ICON,
-        AppViewModel.AD_FREE, AppViewModel.SUPPORT, AppViewModel.REVIEW, AppViewModel.LOCKED_CONTENT
+        MainViewModel.MAP_UP_ICON, MainViewModel.MAP_DOWN_ICON, MainViewModel.MAP_LEFT_ICON, MainViewModel.MAP_RIGHT_ICON,
+        MainViewModel.AD_FREE, MainViewModel.SUPPORT, MainViewModel.REVIEW, MainViewModel.LOCKED_CONTENT
     ),
     Tab.Brightness to intArrayOf(
-        AppViewModel.SLIDER_DELTA, AppViewModel.DISCRETE_BRIGHTNESS, AppViewModel.SCREEN_DIMMER, AppViewModel.USE_LOGARITHMIC_SCALE,
-        AppViewModel.SHOW_SLIDER, AppViewModel.ADAPTIVE_BRIGHTNESS, AppViewModel.ANIMATES_SLIDER, AppViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
-        AppViewModel.DOUBLE_SWIPE_SETTINGS
+        MainViewModel.SLIDER_DELTA, MainViewModel.DISCRETE_BRIGHTNESS, MainViewModel.SCREEN_DIMMER, MainViewModel.USE_LOGARITHMIC_SCALE,
+        MainViewModel.SHOW_SLIDER, MainViewModel.ADAPTIVE_BRIGHTNESS, MainViewModel.ANIMATES_SLIDER, MainViewModel.ADAPTIVE_BRIGHTNESS_THRESH_SETTINGS,
+        MainViewModel.DOUBLE_SWIPE_SETTINGS
     ),
     Tab.Audio to intArrayOf(
-        AppViewModel.AUDIO_DELTA, AppViewModel.AUDIO_STREAM_TYPE, AppViewModel.AUDIO_SLIDER_SHOW
+        MainViewModel.AUDIO_DELTA, MainViewModel.AUDIO_STREAM_TYPE, MainViewModel.AUDIO_SLIDER_SHOW
     ),
     Tab.Shortcuts to intArrayOf(
-        AppViewModel.ENABLE_ACCESSIBILITY_BUTTON, AppViewModel.ACCESSIBILITY_SINGLE_CLICK,
-        AppViewModel.ANIMATES_POPUP, AppViewModel.ENABLE_WATCH_WINDOWS, AppViewModel.POPUP_ACTION,
-        AppViewModel.ROTATION_LOCK, AppViewModel.EXCLUDED_ROTATION_LOCK, AppViewModel.ROTATION_HISTORY
+        MainViewModel.ENABLE_ACCESSIBILITY_BUTTON, MainViewModel.ACCESSIBILITY_SINGLE_CLICK,
+        MainViewModel.ANIMATES_POPUP, MainViewModel.ENABLE_WATCH_WINDOWS, MainViewModel.POPUP_ACTION,
+        MainViewModel.ROTATION_LOCK, MainViewModel.EXCLUDED_ROTATION_LOCK, MainViewModel.ROTATION_HISTORY
     ),
     Tab.Display to intArrayOf(
-        AppViewModel.SLIDER_POSITION, AppViewModel.SLIDER_DURATION, AppViewModel.NAV_BAR_COLOR,
-        AppViewModel.SLIDER_COLOR, AppViewModel.WALLPAPER_PICKER, AppViewModel.WALLPAPER_TRIGGER
+        MainViewModel.SLIDER_POSITION, MainViewModel.SLIDER_DURATION, MainViewModel.NAV_BAR_COLOR,
+        MainViewModel.SLIDER_COLOR, MainViewModel.WALLPAPER_PICKER, MainViewModel.WALLPAPER_TRIGGER
     )
 ).toMap()

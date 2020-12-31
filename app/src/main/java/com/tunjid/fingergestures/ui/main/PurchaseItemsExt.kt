@@ -19,9 +19,6 @@ package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.ui.main.Inputs
-import com.tunjid.fingergestures.ui.main.Tab
-import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
@@ -33,7 +30,7 @@ val Inputs.purchaseItems: Flowable<List<Item>>
         ) { doubleSwipe, state ->
             listOf(
                 Item.AdFree(
-                    sortKey = AppViewModel.AD_FREE,
+                    sortKey = MainViewModel.AD_FREE,
                     tab = Tab.Gestures,
                     input = this@purchaseItems,
                     notAdFree = state.notAdFree,
@@ -42,14 +39,14 @@ val Inputs.purchaseItems: Flowable<List<Item>>
                 ),
                 Item.Toggle(
                     tab = Tab.Gestures,
-                    sortKey = AppViewModel.LOCKED_CONTENT,
+                    sortKey = MainViewModel.LOCKED_CONTENT,
                     titleRes = R.string.set_locked_content,
                     isChecked = state.hasLockedContent,
                     consumer = lockedContentPreference.setter
                 ),
                 Item.Slider(
                     tab = Tab.Brightness,
-                    sortKey = AppViewModel.DOUBLE_SWIPE_SETTINGS,
+                    sortKey = MainViewModel.DOUBLE_SWIPE_SETTINGS,
                     titleRes = R.string.adjust_double_swipe_settings,
                     infoRes = 0,
                     isEnabled = state.isPremium,

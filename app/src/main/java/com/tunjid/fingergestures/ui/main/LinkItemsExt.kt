@@ -18,23 +18,20 @@
 package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.ui.main.Inputs
-import com.tunjid.fingergestures.ui.main.Tab
 import com.tunjid.fingergestures.viewholders.ReviewLinkItem
 import com.tunjid.fingergestures.viewholders.SupportLinkItem
-import com.tunjid.fingergestures.ui.main.AppViewModel
 import io.reactivex.Flowable
 
 val Inputs.linkItems: Flowable<List<Item>>
     get() = Flowable.just(listOf(
         Item.Link(
-            sortKey = AppViewModel.SUPPORT,
+            sortKey = MainViewModel.SUPPORT,
             tab = Tab.Gestures,
             linkItem = SupportLinkItem,
             input = this@linkItems
         ),
         Item.Link(
-            sortKey = AppViewModel.REVIEW,
+            sortKey = MainViewModel.REVIEW,
             tab = Tab.Gestures,
             linkItem = ReviewLinkItem,
             input = this@linkItems
