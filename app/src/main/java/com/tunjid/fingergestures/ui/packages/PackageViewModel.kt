@@ -32,18 +32,18 @@ import io.reactivex.processors.PublishProcessor
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
-data class PackageState(
+data class State(
     val title: String = "",
     val needsPremium: Unique<Boolean> = Unique(false),
     val installedApps: List<Package> = listOf(),
 )
 
-sealed class PackageInput {
-    data class Fetch(val preference: RotationGestureConsumer.Preference) : PackageInput()
+sealed class Input {
+    data class Fetch(val preference: RotationGestureConsumer.Preference) : Input()
     data class Add(
         val preference: RotationGestureConsumer.Preference,
         val app: ApplicationInfo
-    ) : PackageInput()
+    ) : Input()
 }
 
 class PackageViewModel @Inject constructor(
@@ -51,13 +51,13 @@ class PackageViewModel @Inject constructor(
     private val rotationGestureConsumer: RotationGestureConsumer
 ) : ViewModel() {
 
-    private val processor: PublishProcessor<PackageInput> = PublishProcessor.create()
+    private val processor: PublishProcessor<Input> = PublishProcessor.create()
 
     val state = Flowable.combineLatest(
-        processor.filterIsInstance<PackageInput.Fetch>()
-            .map(PackageInput.Fetch::preference)
+        processor.filterIsInstance<Input.Fetch>()
+            .map(Input.Fetch::preference)
             .map(rotationGestureConsumer::getAddText),
-        processor.filterIsInstance<PackageInput.Add>().map { add ->
+        processor.filterIsInstance<Input.Add>().map { add ->
             rotationGestureConsumer.setManager
                 .editorFor(add.preference)
                 .plus(add.app)
@@ -65,16 +65,16 @@ class PackageViewModel @Inject constructor(
         }
             .startWith(false)
             .map(::Unique),
-        processor.filterIsInstance<PackageInput.Fetch>().concatMap {
+        processor.filterIsInstance<Input.Fetch>().concatMap {
             Flowable.fromCallable(::installedApps).subscribeOn(Schedulers.io())
         }
             .listMap(::Package)
             .startWith(listOf<Package>()),
-        ::PackageState
+        ::State
     )
         .toLiveData()
 
-    fun accept(input: PackageInput) = processor.onNext(input)
+    fun accept(input: Input) = processor.onNext(input)
 
     private fun installedApps() = app.packageManager
         .getInstalledApplications(0)

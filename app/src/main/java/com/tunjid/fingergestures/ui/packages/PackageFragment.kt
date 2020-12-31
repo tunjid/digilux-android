@@ -37,15 +37,16 @@ import com.tunjid.fingergestures.databinding.FragmentPackagesBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.ui.main.Input
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.ui.main.MainViewModel
 import com.tunjid.fingergestures.viewholders.PackageViewHolder
 
+private typealias GoPremium = com.tunjid.fingergestures.ui.main.Input.UiInteraction.GoPremium
+
 class PackageFragment : Fragment(R.layout.fragment_packages) {
 
     private val viewModel by viewModelFactory<PackageViewModel>()
-    private val appViewModel by activityViewModelFactory<MainViewModel>()
+    private val mainViewModel by activityViewModelFactory<MainViewModel>()
     private var preference by fragmentArgs<RotationGestureConsumer.Preference>()
     private val bottomSheetNavigator by recursiveBottomSheetNavigator()
 
@@ -71,10 +72,10 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
         }
 
         viewModel.state.apply {
-            mapDistinct(PackageState::title)
+            mapDistinct(State::title)
                 .observe(viewLifecycleOwner, binding.titleBar::setTitle)
 
-            mapDistinct(PackageState::installedApps)
+            mapDistinct(State::installedApps)
                 .observe(viewLifecycleOwner) {
                     if (it.isEmpty()) listAdapter.submitList(it)
                     else listAdapter.submitList(it) {
@@ -83,21 +84,23 @@ class PackageFragment : Fragment(R.layout.fragment_packages) {
                     }
                 }
 
-            mapDistinct(PackageState::needsPremium)
+            mapDistinct(State::needsPremium)
                 .filter(Unique<Boolean>::item)
                 .map(Unique<Boolean>::item)
                 .filterUnhandledEvents()
-                .observe(viewLifecycleOwner) { appViewModel.accept(Input.UiInteraction.GoPremium(R.string.auto_rotate_description)) }
+                .observe(viewLifecycleOwner) {
+                    mainViewModel.accept(GoPremium(R.string.auto_rotate_description))
+                }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.accept(PackageInput.Fetch(preference))
+        viewModel.accept(Input.Fetch(preference))
     }
 
     private fun onPackageClicked(app: ApplicationInfo) {
-        viewModel.accept(PackageInput.Add(preference = preference, app = app))
+        viewModel.accept(Input.Add(preference = preference, app = app))
         bottomSheetNavigator.pop()
     }
 
