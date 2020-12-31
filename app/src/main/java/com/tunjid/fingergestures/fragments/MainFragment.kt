@@ -31,7 +31,7 @@ import com.tunjid.fingergestures.ui.divider
 import com.tunjid.fingergestures.databinding.FragmentHomeBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.mapDistinct
-import com.tunjid.fingergestures.models.AppState
+import com.tunjid.fingergestures.ui.main.AppState
 import com.tunjid.fingergestures.ui.main.MainViewModel
 import com.tunjid.fingergestures.ui.main.Tab
 import com.tunjid.fingergestures.ui.main.mainAdapter

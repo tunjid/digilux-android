@@ -197,3 +197,14 @@ val Context.links
         TextLink(text = getString(R.string.material_design_icons), link = "https://materialdesignicons.com/"),
         TextLink(text = getString(R.string.android_bootstrap), link = "http://www.myiconfinder.com/getseticons")
     )
+
+data class AppState(
+    val shilling: Shilling,
+    val purchasesState: PurchasesManager.State,
+    val links: List<TextLink> = listOf(),
+    val broadcasts: Optional<Broadcast.Prompt> = Optional.empty(),
+    val uiInteraction: Input.UiInteraction,
+    val permissionState: PermissionState = PermissionState(),
+    val billingState: BillingState = BillingState(),
+    val items: List<Item> = listOf(),
+)

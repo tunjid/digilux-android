@@ -26,46 +26,25 @@ import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureAction
-import com.tunjid.fingergestures.ui.main.Item
+import com.tunjid.fingergestures.ui.main.AppState
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 import kotlinx.parcelize.Parcelize
-import java.util.*
-
-data class AppState(
-    val shilling: Shilling,
-    val purchasesState: PurchasesManager.State,
-    val links: List<TextLink> = listOf(),
-    val broadcasts: Optional<Broadcast.Prompt> = Optional.empty(),
-    val uiInteraction: Input.UiInteraction,
-    val permissionState: PermissionState = PermissionState(),
-    val billingState: BillingState = BillingState(),
-    val items: List<Item> = listOf(),
-)
 
 sealed class Input {
     sealed class Permission : Input() {
         sealed class Request(val prompt: Int) : Permission(), Parcelable {
-            @Parcelize
-            object Storage : Request(R.string.wallpaper_permission_request)
-
-            @Parcelize
-            object Settings : Request(R.string.settings_permission_request)
-
-            @Parcelize
-            object Accessibility : Request(R.string.accessibility_permissions_request)
-
-            @Parcelize
-            object DoNotDisturb : Request(R.string.do_not_disturb_permissions_request)
+            @Parcelize object Storage : Request(R.string.wallpaper_permission_request)
+            @Parcelize object Settings : Request(R.string.settings_permission_request)
+            @Parcelize object Accessibility : Request(R.string.accessibility_permissions_request)
+            @Parcelize object DoNotDisturb : Request(R.string.do_not_disturb_permissions_request)
         }
-
         sealed class Action : Permission() {
             data class Clear(val time: Long = System.currentTimeMillis()) : Action()
             data class Clicked(val time: Long = System.currentTimeMillis()) : Action()
             data class Changed(val request: Request) : Action()
         }
     }
-
     sealed class UiInteraction : Input() {
         object Default : UiInteraction()
         data class ShowSheet(val fragment: Fragment) : UiInteraction()
@@ -73,12 +52,10 @@ sealed class Input {
         data class PurchaseResult(val messageRes: Int) : UiInteraction()
         data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
     }
-
     sealed class Billing : Input() {
         data class Client(val client: BillingClient?) : Billing()
         data class Purchase(val sku: PurchasesManager.Sku) : Billing()
     }
-
     object StartTrial : Input()
     object Shill : Input()
     object AppResumed : Input()
