@@ -34,7 +34,7 @@ import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.AppState
 import com.tunjid.fingergestures.viewmodels.AppViewModel
-import com.tunjid.fingergestures.main.ext.Tab
+import com.tunjid.fingergestures.ui.main.Tab
 import kotlin.math.abs
 
 private var AppFragment.tab by fragmentArgs<Tab>()

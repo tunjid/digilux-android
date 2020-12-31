@@ -27,7 +27,7 @@ import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.gestureconsumers.*
-import com.tunjid.fingergestures.main.ext.Inputs
+import com.tunjid.fingergestures.ui.main.Inputs
 import com.tunjid.fingergestures.models.*
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable

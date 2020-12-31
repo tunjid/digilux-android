@@ -15,13 +15,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.main.ext
+package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.main.ext.Inputs
-import com.tunjid.fingergestures.main.ext.Tab
+import com.tunjid.fingergestures.ui.main.Inputs
+import com.tunjid.fingergestures.ui.main.Tab
 import com.tunjid.fingergestures.models.toPopUpActions
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 import io.reactivex.Flowable

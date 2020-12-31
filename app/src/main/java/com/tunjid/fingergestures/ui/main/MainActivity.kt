@@ -55,7 +55,6 @@ import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.databinding.TrialViewBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.fragments.AppFragment
-import com.tunjid.fingergestures.main.ext.Tab
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
 import com.tunjid.fingergestures.resultcontracts.WallpaperPickContract
