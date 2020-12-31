@@ -102,15 +102,16 @@ class PurchasesManager @Inject constructor(
     val state: Flowable<State> = Flowables.combineLatest(
         lockedContentPreference.monitor,
         setManager.itemsFlowable(Purchases),
-        trialStatus
-    ) { lockedContent, ownedSkus, trialStatus ->
+        trialStatus,
+        trigger
+    ) { lockedContent, ownedSkus, trialStatus, trialRunning ->
         State(
             numTrials = trialStatus.numTrials,
             isPremium = if (!lockedContent) true else ownedSkus.contains(Sku.Premium),
             trialStatus = trialStatus,
             hasLockedContent = lockedContent,
             ownedSkus = ownedSkus,
-            trialPeriodText = if (isTrialRunning) context.getString(R.string.trial_running)
+            trialPeriodText = if (trialRunning) context.getString(R.string.trial_running)
             else context.getString(R.string.trial_text, when (trialPeriod(trialStatus.numTrials)) {
                 FIRST_TRIAL_PERIOD -> "10m"
                 SECOND_TRIAL_PERIOD -> "60s"
@@ -141,7 +142,7 @@ class PurchasesManager @Inject constructor(
             else -> setManager.getItems(Purchases).contains(Sku.Premium)
         }
 
-    val isTrialRunning: Boolean
+    private val isTrialRunning: Boolean
         get() = trigger.value == true
 
     init {

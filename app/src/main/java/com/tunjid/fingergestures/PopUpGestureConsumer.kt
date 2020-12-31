@@ -75,9 +75,8 @@ class PopUpGestureConsumer @Inject constructor(
     private val list: List<GestureAction>
         get() = setManager.getItems(Preference.SavedActions)
 
-    override fun onGestureActionTriggered(gestureAction: GestureAction) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) =
         broadcaster(Broadcast.Service.ShowPopUp)
-    }
 
     override fun accepts(gesture: GestureAction): Boolean = gesture == PopUpShow
 

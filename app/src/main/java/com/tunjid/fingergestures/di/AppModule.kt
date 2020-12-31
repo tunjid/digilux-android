@@ -27,6 +27,7 @@ import dagger.Module
 import dagger.Provides
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
 import javax.inject.Qualifier
@@ -34,6 +35,7 @@ import javax.inject.Singleton
 
 typealias AppBroadcaster = (@JvmSuppressWildcards Broadcast) -> Unit
 typealias AppBroadcasts = Flowable<Broadcast>
+typealias AppDisposable = CompositeDisposable
 
 @Qualifier
 annotation class AppContext
@@ -41,6 +43,7 @@ annotation class AppContext
 @Module
 class AppModule(private val app: App) {
 
+    private val appDisposable = CompositeDisposable()
     private val broadcaster = PublishProcessor.create<Broadcast>()
     private val listeners: MutableSet<SharedPreferences.OnSharedPreferenceChangeListener> = mutableSetOf()
 
@@ -59,6 +62,10 @@ class AppModule(private val app: App) {
     @Provides
     @Singleton
     fun provideAppBroadcaster(): AppBroadcaster = broadcaster::onNext
+
+    @Provides
+    @Singleton
+    fun provideAppCompositeDisposable(): AppDisposable = appDisposable
 
     @Provides
     @Singleton

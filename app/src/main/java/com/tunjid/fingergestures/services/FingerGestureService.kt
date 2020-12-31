@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class FingerGestureService : AccessibilityService() {
 
+    private val broadcastDisposables get() = dagger.appComponent.appDisposable()
     private val dependencies get() = dagger.appComponent.dependencies()
     private val gestureConsumers get() = dependencies.gestureConsumers
     private val gestureMapper get() = dependencies.gestureMapper
@@ -62,7 +63,6 @@ class FingerGestureService : AccessibilityService() {
     private var overlayView: View? = null
 
     private val gestureThread by lazy { HandlerThread("GestureThread").also(HandlerThread::start) }
-    private val broadcastDisposables = CompositeDisposable()
 
     private val accessibilityButtonCallback = object : AccessibilityButtonCallback() {
         override fun onClicked(controller: AccessibilityButtonController) =
@@ -100,7 +100,6 @@ class FingerGestureService : AccessibilityService() {
         fingerprintGestureController.unregisterFingerprintGestureCallback(gestureMapper)
         accessibilityButtonController.unregisterAccessibilityButtonCallback(accessibilityButtonCallback)
 
-        dependencies.gestureMapper.clear()
         broadcastDisposables.clear()
         gestureThread.quitSafely()
 

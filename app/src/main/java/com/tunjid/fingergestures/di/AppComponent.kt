@@ -27,7 +27,10 @@ import javax.inject.Singleton
     AppViewModelModule::class,
 ])
 interface AppComponent {
+
     fun broadcasts(): AppBroadcasts
+
+    fun appDisposable(): AppDisposable
 
     fun dependencies(): AppDependencies
 

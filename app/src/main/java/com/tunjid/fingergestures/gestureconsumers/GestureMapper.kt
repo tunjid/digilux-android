@@ -25,12 +25,12 @@ import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
+import com.tunjid.fingergestures.di.AppDisposable
 import com.tunjid.fingergestures.di.GestureConsumers
 import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.viewmodels.filterIsInstance
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
 import io.reactivex.rxkotlin.addTo
@@ -64,7 +64,8 @@ class GestureMapper @Inject constructor(
     reactivePreferences: ReactivePreferences,
     private val purchasesManager: PurchasesManager,
     private val consumers: GestureConsumers,
-    broadcasts: AppBroadcasts
+    broadcasts: AppBroadcasts,
+    appDisposable: AppDisposable,
 ) : FingerprintGestureController.FingerprintGestureCallback() {
 
     data class GesturePair(
@@ -141,10 +142,9 @@ class GestureMapper @Inject constructor(
 
     private val actionIds: IntArray
     private val gestures = PublishProcessor.create<GestureDirection>()
-    private val disposables = CompositeDisposable()
     private val currentState by state.asProperty(
         default = State(),
-        disposableHandler = disposables::add
+        disposableHandler = appDisposable::add
     )
 
     val supportedActions: Flowable<List<GestureAction>>
@@ -159,7 +159,7 @@ class GestureMapper @Inject constructor(
         broadcasts.filterIsInstance<Broadcast.Gesture>()
             .map(Broadcast.Gesture::gesture)
             .subscribe(this@GestureMapper::performAction)
-            .addTo(disposables)
+            .addTo(appDisposable)
 
         object : GestureProcessor {
             override val scheduler: Scheduler = Schedulers.io()
@@ -173,7 +173,7 @@ class GestureMapper @Inject constructor(
             init {
                 gestures.processed
                     .subscribe(::performAction)
-                    .addTo(disposables)
+                    .addTo(appDisposable)
             }
         }
     }
@@ -187,8 +187,6 @@ class GestureMapper @Inject constructor(
             purchasesManager.isNotPremium -> R.string.go_premium_text
             else -> R.string.double_swipe_delay
         }, delayPercentageToMillis(percentage))
-
-    fun clear() = disposables.clear()
 
     override fun onGestureDetected(raw: Int) {
         super.onGestureDetected(raw)
