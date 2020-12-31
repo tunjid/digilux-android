@@ -26,12 +26,11 @@ import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.androidx.view.util.inflate
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
-import com.tunjid.fingergestures.fragments.ActionFragment
+import com.tunjid.fingergestures.ui.popup.ActionFragment
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Input
 

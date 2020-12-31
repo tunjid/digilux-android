@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.fragments
+package com.tunjid.fingergestures.ui.popup
 
 
 import android.os.Bundle
@@ -33,14 +33,10 @@ import com.tunjid.fingergestures.baseclasses.recursiveBottomSheetNavigator
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Input
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
-import com.tunjid.fingergestures.viewmodels.ActionInput
-import com.tunjid.fingergestures.viewmodels.ActionState
-import com.tunjid.fingergestures.viewmodels.ActionViewModel
 import com.tunjid.fingergestures.viewmodels.AppViewModel
 
 class ActionFragment : Fragment(R.layout.fragment_actions) {
