@@ -42,7 +42,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-data class AppState(
+data class State(
     val shilling: Shilling,
     val purchasesState: PurchasesManager.State,
     val links: List<TextLink> = listOf(),
@@ -130,10 +130,10 @@ class MainViewModel @Inject constructor(
         inputProcessor.permissionState,
         inputProcessor.billingState,
         items,
-        ::AppState
+        ::State
     )
 
-    val state: LiveData<AppState> = backingState.toLiveData()
+    val state: LiveData<State> = backingState.toLiveData()
 
     override fun onCleared() {
         disposable.clear()
@@ -153,7 +153,7 @@ class MainViewModel @Inject constructor(
         })
 
         backingState
-            .map(AppState::billingState)
+            .map(State::billingState)
             .mapNotNull(BillingState::client)
             .distinctUntilChanged()
             .subscribe {
@@ -270,7 +270,7 @@ private val Context.links
         TextLink(text = getString(R.string.android_bootstrap), link = "http://www.myiconfinder.com/getseticons")
     )
 
-val AppState.fabState
+val State.fabState
     get() = when (permissionState.queue.lastOrNull()) {
         Input.Permission.Request.DoNotDisturb -> FabState(
             titleRes = R.string.enable_do_not_disturb,

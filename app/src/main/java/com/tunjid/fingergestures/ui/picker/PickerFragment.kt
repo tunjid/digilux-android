@@ -34,10 +34,11 @@ import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.models.Action
-import com.tunjid.fingergestures.ui.main.Input
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.ui.main.MainViewModel
+
+private typealias GoPremium = com.tunjid.fingergestures.ui.main.Input.UiInteraction.GoPremium
 
 class PickerFragment : Fragment(R.layout.fragment_actions) {
 
@@ -68,22 +69,24 @@ class PickerFragment : Fragment(R.layout.fragment_actions) {
             addItemDecoration(view.context.divider())
 
             viewModel.state.apply {
-                mapDistinct(ActionState::availableActions)
+                mapDistinct(State::availableActions)
                     .observe(viewLifecycleOwner, listAdapter::submitList)
 
-                mapDistinct(ActionState::needsPremium)
+                mapDistinct(State::needsPremium)
                     .filter(Unique<Boolean>::item)
                     .map(Unique<Boolean>::item)
                     .filterUnhandledEvents()
-                    .observe(viewLifecycleOwner) { appViewModel.accept(Input.UiInteraction.GoPremium(R.string.popup_description)) }
+                    .observe(viewLifecycleOwner) {
+                        appViewModel.accept(GoPremium(R.string.popup_description))
+                    }
             }
         }
     }
 
     private fun onActionClicked(action: Action) {
         viewModel.accept(when (val direction = direction) {
-            null -> ActionInput.Add(action) // Pop up instance
-            else -> ActionInput.MapGesture(direction, action)
+            null -> Input.Add(action) // Pop up instance
+            else -> Input.MapGesture(direction, action)
         })
 
         bottomSheetNavigator.pop()

@@ -49,47 +49,47 @@ interface MainApp : LifecycleOwner, ActivityResultCaller, BottomSheetController 
     val inputs: Inputs
 }
 
-fun MainApp.observe(state: LiveData<AppState>) = with(state) {
-    mapDistinct(AppState::fabState)
+fun MainApp.observe(state: LiveData<State>) = with(state) {
+    mapDistinct(State::fabState)
         .observe(this@observe, ::onStateChanged)
 
-    mapDistinct(AppState::permissionState)
+    mapDistinct(State::permissionState)
         .mapDistinct(PermissionState::active)
         .nonNull()
         .map(Unique<Input.Permission.Request>::item)
         .filterUnhandledEvents()
         .observe(this@observe, ::onPermissionClicked)
 
-    mapDistinct(AppState::permissionState)
+    mapDistinct(State::permissionState)
         .mapDistinct(PermissionState::prompt)
         .nonNull()
         .map(Unique<Int>::item)
         .filterUnhandledEvents()
         .observe(this@observe, ::showSnackbar)
 
-    mapDistinct(AppState::uiInteraction)
+    mapDistinct(State::uiInteraction)
         .filterUnhandledEvents()
         .observe(this@observe, ::onUiInteraction)
 
-    mapDistinct(AppState::broadcasts)
+    mapDistinct(State::broadcasts)
         .filter(Optional<Broadcast.Prompt>::isPresent)
         .map(Optional<Broadcast.Prompt>::get)
         .filterUnhandledEvents()
         .observe(this@observe, ::onBroadcastReceived)
 
-    mapDistinct(AppState::billingState)
+    mapDistinct(State::billingState)
         .mapDistinct(BillingState::cart)
         .nonNull()
         .map(Unique<Pair<BillingClient, PurchasesManager.Sku>>::item)
         .filterUnhandledEvents()
         .observe(this@observe, ::purchase)
 
-    mapDistinct(AppState::purchasesState)
+    mapDistinct(State::purchasesState)
         .filterUnhandledEvents()
         .observe(this@observe) {
             ::uiState.updatePartial { copy(toolbarInvalidated = true) }
         }
-    mapDistinct(AppState::shilling)
+    mapDistinct(State::shilling)
         .observe(this@observe) {
             ::uiState.updatePartial { copy(shilling = it) }
         }

@@ -24,7 +24,7 @@ import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.toLiveData
 import javax.inject.Inject
 
-data class DockingState(
+data class State(
     val backgroundColor: Int
 )
 
@@ -34,7 +34,7 @@ class DockingViewModel @Inject constructor(
 ) : ViewModel() {
 
     val state = backgroundManager.backgroundColorPreference.monitor
-        .map(::DockingState)
+        .map(::State)
         .toLiveData()
 
     fun toggleDock() = broadcaster(Broadcast.Service.ToggleDock)

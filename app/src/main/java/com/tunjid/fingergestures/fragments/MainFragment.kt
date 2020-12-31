@@ -31,14 +31,14 @@ import com.tunjid.fingergestures.ui.divider
 import com.tunjid.fingergestures.databinding.FragmentHomeBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.mapDistinct
-import com.tunjid.fingergestures.ui.main.AppState
+import com.tunjid.fingergestures.ui.main.State
 import com.tunjid.fingergestures.ui.main.MainViewModel
 import com.tunjid.fingergestures.ui.main.Tab
 import com.tunjid.fingergestures.ui.main.mainAdapter
 import kotlin.math.abs
 
 private var MainFragment.tab by fragmentArgs<Tab>()
-private fun MainFragment.tabItems(state: AppState?) = state?.items?.filter { it.tab == tab }
+private fun MainFragment.tabItems(state: State?) = state?.items?.filter { it.tab == tab }
 
 class MainFragment : Fragment(R.layout.fragment_home) {
 

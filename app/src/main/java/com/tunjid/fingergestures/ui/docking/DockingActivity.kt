@@ -47,7 +47,7 @@ class DockingActivity : AppCompatActivity() {
         binding.logo.isVisible = isInMultiWindowMode
 
         viewModel.state.apply {
-            mapDistinct(DockingState::backgroundColor)
+            mapDistinct(State::backgroundColor)
                 .observe(dialogLifecycleOwner, binding.constraintLayout::setBackgroundColor)
         }
 

@@ -30,14 +30,14 @@ import io.reactivex.Flowable
 import io.reactivex.processors.PublishProcessor
 import javax.inject.Inject
 
-data class ActionState(
+data class State(
     val needsPremium: Unique<Boolean> = Unique(false),
     val availableActions: List<Action> = listOf(),
 )
 
-sealed class ActionInput {
-    data class Add(val action: Action) : ActionInput()
-    data class MapGesture(val direction: GestureDirection, val action: Action) : ActionInput()
+sealed class Input {
+    data class Add(val action: Action) : Input()
+    data class MapGesture(val direction: GestureDirection, val action: Action) : Input()
 }
 
 class PickerViewModel @Inject constructor(
@@ -54,15 +54,15 @@ class PickerViewModel @Inject constructor(
     val state = Flowable.combineLatest(
         processor.startWith(false).map(::Unique),
         gestureMapper.supportedActions.toPopUpActions(backgroundManager.sliderColorPreference.monitor),
-        ::ActionState
+        ::State
     ).toLiveData()
 
-    fun accept(input: ActionInput) = when (input) {
-        is ActionInput.Add -> {
+    fun accept(input: Input) = when (input) {
+        is Input.Add -> {
             val added = editor + input.action.value
             if (!added) processor.onNext(true)
             else Unit
         }
-        is ActionInput.MapGesture -> gestureMapper.mapGestureToAction(input.direction, input.action.value)
+        is Input.MapGesture -> gestureMapper.mapGestureToAction(input.direction, input.action.value)
     }
 }

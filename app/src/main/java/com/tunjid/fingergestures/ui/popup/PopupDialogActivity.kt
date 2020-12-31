@@ -78,13 +78,13 @@ class PopupDialogActivity : AppCompatActivity() {
         }
 
         viewModel.state.apply {
-            mapDistinct(PopUpState::sliderColor)
+            mapDistinct(State::sliderColor)
                 .observe(dialogLifecycleOwner, binding.text::setTextColor)
 
-            mapDistinct(PopUpState::backgroundColor)
+            mapDistinct(State::backgroundColor)
                 .observe(dialogLifecycleOwner, binding.card::setCardBackgroundColor)
 
-            mapDistinct(PopUpState::popUpActions)
+            mapDistinct(State::popUpActions)
                 .observe(dialogLifecycleOwner) { items ->
                     val size = items.size
                     spanSizer.set(if (size == 1) 6 else if (size == 2) 3 else 2)
@@ -115,7 +115,7 @@ class PopupDialogActivity : AppCompatActivity() {
     }
 
     private fun onActionClicked(action: Action) {
-        viewModel.accept(PopUpInput.Perform(action))
+        viewModel.accept(Input.Perform(action))
         finish()
     }
 }

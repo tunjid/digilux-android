@@ -27,15 +27,15 @@ import com.tunjid.fingergestures.toLiveData
 import io.reactivex.rxkotlin.Flowables
 import javax.inject.Inject
 
-data class PopUpState(
+data class State(
     val animatesPopUp: Boolean,
     val sliderColor: Int,
     val backgroundColor: Int,
     val popUpActions: List<Action> = listOf(),
 )
 
-sealed class PopUpInput {
-    data class Perform(val action: Action) : PopUpInput()
+sealed class Input {
+    data class Perform(val action: Action) : Input()
 }
 
 class PopUpViewModel @Inject constructor(
@@ -50,10 +50,10 @@ class PopUpViewModel @Inject constructor(
         backgroundManager.backgroundColorPreference.monitor,
         popUpGestureConsumer.popUpActions
             .toPopUpActions(backgroundManager.sliderColorPreference.monitor),
-        ::PopUpState
+        ::State
     ).toLiveData()
 
-    fun accept(input: PopUpInput) = when (input) {
-        is PopUpInput.Perform -> gestureMapper.performAction(input.action.value)
+    fun accept(input: Input) = when (input) {
+        is Input.Perform -> gestureMapper.performAction(input.action.value)
     }
 }
