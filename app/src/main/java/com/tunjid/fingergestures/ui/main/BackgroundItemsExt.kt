@@ -30,11 +30,10 @@ val Inputs.backgroundItems: Flowable<List<Item>>
             sliderDurationPreference.monitor,
             backgroundColorPreference.monitor,
             sliderColorPreference.monitor,
-            coloredNavPreference.monitor,
             nightWallpaperStatus,
             dayWallpaperStatus,
             paletteFlowable,
-        ) { purchasesState, sliderDuration, backgroundColor, sliderColor, coloredNav, nightStatus, dayStatus, paletteStatus ->
+        ) { purchasesState, sliderDuration, backgroundColor, sliderColor, nightStatus, dayStatus, paletteStatus ->
             listOf(
                 Item.Slider(
                     tab = Tab.Display,
@@ -45,13 +44,6 @@ val Inputs.backgroundItems: Flowable<List<Item>>
                     isEnabled = true,
                     consumer = sliderDurationPreference.setter,
                     function = ::getSliderDurationText
-                ),
-                Item.Toggle(
-                    tab = Tab.Display,
-                    sortKey = ItemSorter.NAV_BAR_COLOR,
-                    titleRes = R.string.use_colored_nav,
-                    isChecked = coloredNav,
-                    consumer = coloredNavPreference.setter
                 ),
                 Item.ColorAdjuster(
                     tab = Tab.Display,

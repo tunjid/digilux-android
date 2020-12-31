@@ -22,11 +22,53 @@ import android.app.WallpaperManager
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
+import android.os.Parcelable
 import androidx.palette.graphics.Palette
+import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.hasStoragePermission
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
-import java.util.ArrayList
+import kotlinx.parcelize.Parcelize
+import java.util.*
+
+@Parcelize
+enum class WallpaperSelection(
+    val code: Int,
+    val fileName: String,
+    val textRes: Int,
+    val set: String,
+    val minute: String,
+    val hour: String
+) : Parcelable {
+    //    Invalid(code = -1),
+    Day(
+        code = 0,
+        fileName = "day",
+        textRes = R.string.day_wallpaper,
+        set = "day wallpaper set",
+        minute = "day wallpaper minute",
+        hour = "day wallpaper hour",
+    ),
+    Night(
+        code = 1,
+        fileName = "night",
+        textRes = R.string.night_wallpaper,
+        set = "night wallpaper set",
+        minute = "night wallpaper minute",
+        hour = "night wallpaper hour",
+    );
+}
+
+sealed class PaletteStatus {
+    data class Available(val palette: Palette) : PaletteStatus()
+    data class Unavailable(val reason: String) : PaletteStatus()
+}
+
+data class WallpaperStatus(
+    val selection: WallpaperSelection,
+    val calendar: Calendar,
+    val willChange: Boolean,
+)
 
 val Context.wallpaperPalettes: Flowable<PaletteStatus> get() = Flowable.defer {
     if (!hasStoragePermission) return@defer Flowable.just(PaletteStatus.Unavailable("Need permission"))

@@ -26,10 +26,7 @@ import android.app.WallpaperManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.os.Parcelable
 import androidx.annotation.IntRange
-import androidx.palette.graphics.Palette
 import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.di.AppBroadcaster
@@ -38,7 +35,6 @@ import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.models.Broadcast
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
-import kotlinx.parcelize.Parcelize
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
@@ -74,11 +70,6 @@ class BackgroundManager @Inject constructor(
         reactivePreferences = reactivePreferences,
         key = "slider duration",
         default = DEF_SLIDER_DURATION_PERCENT
-    )
-    val coloredNavPreference: ReactivePreference<Boolean> = ReactivePreference(
-        reactivePreferences = reactivePreferences,
-        key = "colored nav bar",
-        default = Build.VERSION.SDK_INT > Build.VERSION_CODES.P,
     )
 
     val dayWallpaperStatus = WallpaperSelection.Day.wallpaperStatus(reactivePreferences)
@@ -135,8 +126,6 @@ class BackgroundManager @Inject constructor(
     }
 
     fun getWallpaperFile(selection: WallpaperSelection): File = context.getWallpaperFile(selection)
-
-    fun usesColoredNav(): Boolean = coloredNavPreference.value
 
     fun restoreWallpaperChange() {
         reInitializeWallpaperChange(WallpaperSelection.Day)
@@ -212,14 +201,6 @@ class BackgroundManager @Inject constructor(
         alarmManager.setRepeating(RTC_WAKEUP, calendar.timeInMillis, INTERVAL_DAY, alarmIntent)
     }
 
-    fun willChangeWallpaper(selection: WallpaperSelection): Boolean =
-        PendingIntent.getBroadcast(
-            context,
-            selection.code,
-            getWallPaperChangeIntent(context, selection),
-            PendingIntent.FLAG_NO_CREATE
-        ) != null
-
     private fun getWallPaperChangeIntent(app: Context, selection: WallpaperSelection): Intent {
         val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
         intent.action = ACTION_CHANGE_WALLPAPER
@@ -288,41 +269,3 @@ private fun calendarForTime(hourMinutePair: Pair<Int, Int>): Calendar {
     return calendar
 }
 
-@Parcelize
-enum class WallpaperSelection(
-    val code: Int,
-    val fileName: String,
-    val textRes: Int,
-    val set: String,
-    val minute: String,
-    val hour: String
-) : Parcelable {
-    //    Invalid(code = -1),
-    Day(
-        code = 0,
-        fileName = "day",
-        textRes = R.string.day_wallpaper,
-        set = "day wallpaper set",
-        minute = "day wallpaper minute",
-        hour = "day wallpaper hour",
-    ),
-    Night(
-        code = 1,
-        fileName = "night",
-        textRes = R.string.night_wallpaper,
-        set = "night wallpaper set",
-        minute = "night wallpaper minute",
-        hour = "night wallpaper hour",
-    );
-}
-
-data class WallpaperStatus(
-    val selection: WallpaperSelection,
-    val calendar: Calendar,
-    val willChange: Boolean,
-)
-
-sealed class PaletteStatus {
-    data class Available(val palette: Palette) : PaletteStatus()
-    data class Unavailable(val reason: String) : PaletteStatus()
-}
