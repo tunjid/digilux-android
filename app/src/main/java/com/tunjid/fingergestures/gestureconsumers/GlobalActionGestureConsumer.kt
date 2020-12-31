@@ -17,13 +17,7 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_POWER_DIALOG
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_RECENTS
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_TAKE_SCREENSHOT
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
+import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint
 import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.di.AppBroadcaster
@@ -33,7 +27,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GlobalActionGestureConsumer @Inject constructor(
-   private val broadcaster: AppBroadcaster
+    private val broadcaster: AppBroadcaster
 ) : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
@@ -50,22 +44,23 @@ class GlobalActionGestureConsumer @Inject constructor(
 
     @SuppressLint("SwitchIntDef")
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
-        var action = -1
-
-        when (gestureAction) {
-            GestureAction.GlobalHome -> action = GLOBAL_ACTION_HOME
-            GestureAction.GlobalBack -> action = GLOBAL_ACTION_BACK
-            GestureAction.GlobalRecents -> action = GLOBAL_ACTION_RECENTS
-            GestureAction.GlobalSplitScreen -> action = GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
-            GestureAction.GlobalPowerDialog -> action = GLOBAL_ACTION_POWER_DIALOG
+        val action = when (gestureAction) {
+            GestureAction.GlobalHome -> AccessibilityService.GLOBAL_ACTION_HOME
+            GestureAction.GlobalBack -> AccessibilityService.GLOBAL_ACTION_BACK
+            GestureAction.GlobalRecents -> AccessibilityService.GLOBAL_ACTION_RECENTS
+            GestureAction.GlobalSplitScreen -> AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
+            GestureAction.GlobalPowerDialog -> AccessibilityService.GLOBAL_ACTION_POWER_DIALOG
+            else -> null
         }
-
-        if (App.isPieOrHigher) {
-            if (gestureAction == GestureAction.GlobalTakeScreenshot) action = GLOBAL_ACTION_TAKE_SCREENSHOT
-            else if (gestureAction == GestureAction.GlobalLockScreen) action = GLOBAL_ACTION_LOCK_SCREEN
-        }
-
-        if (action == -1) return
+            ?: when {
+                App.isPieOrHigher -> when (gestureAction) {
+                    GestureAction.GlobalTakeScreenshot -> AccessibilityService.GLOBAL_ACTION_TAKE_SCREENSHOT
+                    GestureAction.GlobalLockScreen -> AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN
+                    else -> null
+                }
+                else -> null
+            }
+            ?: return
 
         broadcaster(Broadcast.Service.GlobalAction(action))
     }

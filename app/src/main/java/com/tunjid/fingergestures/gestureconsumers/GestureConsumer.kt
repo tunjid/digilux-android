@@ -17,7 +17,6 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import androidx.annotation.StringRes
 import com.tunjid.fingergestures.R
 
 /**
@@ -31,6 +30,7 @@ enum class GestureAction(val id: Int, val nameRes: Int) {
     MinimizeBrightness(id = 3, nameRes = R.string.minimize_brightness),
     IncreaseAudio(id = 19, nameRes = R.string.increase_audio),
     ReduceAudio(id = 20, nameRes = R.string.reduce_audio),
+
     // int NIGHT_MODE_ON = 4; DO NOT REMOVE FOR LEGACY REASONS
     // int NIGHT_MODE_OFF = 5; DO NOT REMOVE FOR LEGACY REASONS
     NotificationUp(id = 6, nameRes = R.string.notification_up),

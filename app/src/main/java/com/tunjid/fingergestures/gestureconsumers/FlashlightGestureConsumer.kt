@@ -17,7 +17,6 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.hardware.camera2.CameraManager
 import com.tunjid.fingergestures.di.AppContext
@@ -36,11 +35,9 @@ class FlashlightGestureConsumer @Inject constructor(
         isCallbackRegistered = registerTorchCallback(context)
     }
 
-    @SuppressLint("SwitchIntDef")
     override fun accepts(gesture: GestureAction): Boolean =
         gesture == GestureAction.FlashlightToggle
 
-    @SuppressLint("SwitchIntDef")
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
             GestureAction.FlashlightToggle -> {

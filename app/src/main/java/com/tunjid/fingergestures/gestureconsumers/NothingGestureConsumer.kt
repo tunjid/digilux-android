@@ -23,12 +23,8 @@ import javax.inject.Singleton
 @Singleton
 class NothingGestureConsumer @Inject constructor() : GestureConsumer {
 
-    override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.DoNothing
-    }
+    override fun accepts(gesture: GestureAction): Boolean = gesture == GestureAction.DoNothing
 
-    override fun onGestureActionTriggered(gestureAction: GestureAction) {
-        // Do nothing
-    }
+    override fun onGestureActionTriggered(gestureAction: GestureAction) = Unit
 }
 
