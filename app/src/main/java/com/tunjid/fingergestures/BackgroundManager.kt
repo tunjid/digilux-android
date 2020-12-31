@@ -34,8 +34,6 @@ import android.os.Parcelable
 import androidx.annotation.IntRange
 import androidx.palette.graphics.Palette
 import com.tunjid.androidx.core.content.colorAt
-import com.tunjid.androidx.core.delegates.intentExtras
-import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import io.reactivex.Flowable
@@ -60,7 +58,6 @@ fun Context.getWallpaperFile(selection: WallpaperSelection): File =
 class BackgroundManager @Inject constructor(
     @AppContext private val context: Context,
     reactivePreferences: ReactivePreferences,
-    private val broadcaster: AppBroadcaster
 ) {
     val backgroundColorPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
@@ -166,9 +163,9 @@ class BackgroundManager @Inject constructor(
         reInitializeWallpaperChange(WallpaperSelection.Night)
     }
 
-    fun getMainWallpaperCalendar(selection: WallpaperSelection): Calendar {
+    private fun getMainWallpaperCalendar(selection: WallpaperSelection): Calendar {
         val timePair = selection.defaultTime
-        val preferences = context.preferences ?: return Calendar.getInstance()
+        val preferences = context.preferences
 
         val hour = preferences.getInt(selection.hour, timePair.first)
         val minute = preferences.getInt(selection.minute, timePair.second)
@@ -202,7 +199,8 @@ class BackgroundManager @Inject constructor(
     }
 
     private fun selectionFromIntent(intent: Intent): WallpaperSelection? = when (intent.action) {
-        ACTION_CHANGE_WALLPAPER -> intent.changeWallpaperSelection
+        ACTION_CHANGE_WALLPAPER -> intent.getIntExtra(EXTRA_CHANGE_WALLPAPER, -1)
+            .let { code -> WallpaperSelection.values().firstOrNull { it.code == code } }
         else -> null
     }
 
@@ -258,18 +256,18 @@ class BackgroundManager @Inject constructor(
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1 && wallpaperManager.wallpaperInfo != null
     }
 
-    fun willChangeWallpaper(selection: WallpaperSelection): Boolean {
-        val intent = Intent(context, WallpaperBroadcastReceiver::class.java)
-        intent.action = ACTION_CHANGE_WALLPAPER
-        intent.changeWallpaperSelection = selection
-
-        return PendingIntent.getBroadcast(context, selection.code, getWallPaperChangeIntent(context, selection), PendingIntent.FLAG_NO_CREATE) != null
-    }
+    fun willChangeWallpaper(selection: WallpaperSelection): Boolean =
+        PendingIntent.getBroadcast(
+            context,
+            selection.code,
+            getWallPaperChangeIntent(context, selection),
+            PendingIntent.FLAG_NO_CREATE
+        ) != null
 
     private fun getWallPaperChangeIntent(app: Context, selection: WallpaperSelection): Intent {
         val intent = Intent(app, WallpaperBroadcastReceiver::class.java)
         intent.action = ACTION_CHANGE_WALLPAPER
-        intent.changeWallpaperSelection = selection
+        intent.putExtra(EXTRA_CHANGE_WALLPAPER, selection.code)
 
         return intent
     }
@@ -298,9 +296,8 @@ private const val MAX_SLIDER_DURATION = 5000
 private const val DEF_SLIDER_DURATION_PERCENT = 60
 
 private const val EXTRA_CHOSEN_COMPONENT = "android.intent.extra.CHOSEN_COMPONENT"
+private const val EXTRA_CHANGE_WALLPAPER = "com.tunjid.fingergestures.extra.changeWallpaper"
 private const val ACTION_CHANGE_WALLPAPER = "com.tunjid.fingergestures.action.changeWallpaper"
-
-private var Intent.changeWallpaperSelection by intentExtras<WallpaperSelection?>()
 
 private fun WallpaperSelection.wallpaperStatus(reactivePreferences: ReactivePreferences): Flowable<WallpaperStatus> {
     val (defaultHour, defaultMinute) = this.defaultTime
@@ -338,7 +335,6 @@ private fun calendarForTime(hourMinutePair: Pair<Int, Int>): Calendar {
 @Parcelize
 enum class WallpaperSelection(
     val code: Int,
-    val textRes: Int,
     val fileName: String,
     val set: String,
     val minute: String,
@@ -347,7 +343,6 @@ enum class WallpaperSelection(
     //    Invalid(code = -1),
     Day(
         code = 0,
-        textRes = R.string.day_wallpaper,
         fileName = "day",
         set = "day wallpaper set",
         minute = "day wallpaper minute",
@@ -355,7 +350,6 @@ enum class WallpaperSelection(
     ),
     Night(
         code = 1,
-        textRes = R.string.night_wallpaper,
         fileName = "night",
         set = "night wallpaper set",
         minute = "night wallpaper minute",
