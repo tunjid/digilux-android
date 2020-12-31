@@ -23,7 +23,7 @@ import androidx.lifecycle.ViewModel
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDependencies
 import com.tunjid.fingergestures.gestureconsumers.*

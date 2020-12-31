@@ -23,9 +23,9 @@ import androidx.fragment.app.Fragment
 import com.android.billingclient.api.BillingClient
 import com.tunjid.androidx.recyclerview.diff.Differentiable
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.WallpaperSelection
+import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureAction
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables

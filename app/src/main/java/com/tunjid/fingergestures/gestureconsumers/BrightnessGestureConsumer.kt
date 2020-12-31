@@ -30,7 +30,7 @@ import com.jakewharton.rx.replayingShare
 import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.ui.brightness.BrightnessActivity
-import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDisposable

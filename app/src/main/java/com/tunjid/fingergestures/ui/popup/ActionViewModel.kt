@@ -18,7 +18,7 @@
 package com.tunjid.fingergestures.ui.popup
 
 import androidx.lifecycle.ViewModel
-import com.tunjid.fingergestures.BackgroundManager
+import com.tunjid.fingergestures.managers.BackgroundManager
 import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper

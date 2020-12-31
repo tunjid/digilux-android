@@ -25,7 +25,7 @@ import com.tunjid.fingergestures.ReactivePreferences
 import com.tunjid.fingergestures.SetManager
 import com.tunjid.fingergestures.SetPreference
 import com.tunjid.fingergestures.ui.popup.PopupActivity
-import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.PopUpShow

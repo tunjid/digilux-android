@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures.billing
+package com.tunjid.fingergestures.managers
 
 import android.content.Context
 import android.text.TextUtils
@@ -145,7 +145,7 @@ class PurchasesManager @Inject constructor(
         onPurchasesUpdated(responseCode, purchases)
     }
 
-    internal fun clearPurchases() = Sku.values().forEach(editor::minus)
+//    internal fun clearPurchases() = Sku.values().forEach(editor::minus)
 
     // App is open source, do a psuedo check.
     private fun filterPurchases(purchase: Purchase): Boolean {

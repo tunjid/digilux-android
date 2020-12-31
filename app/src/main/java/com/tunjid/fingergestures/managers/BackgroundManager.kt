@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures
+package com.tunjid.fingergestures.managers
 
 
 import android.annotation.TargetApi
@@ -34,6 +34,7 @@ import android.os.Parcelable
 import androidx.annotation.IntRange
 import androidx.palette.graphics.Palette
 import com.tunjid.androidx.core.content.colorAt
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import io.reactivex.Flowable

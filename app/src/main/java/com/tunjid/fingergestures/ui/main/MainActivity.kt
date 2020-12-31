@@ -49,8 +49,8 @@ import com.tunjid.androidx.navigation.Navigator
 import com.tunjid.androidx.navigation.multiStackNavigationController
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.BottomSheetNavigator
-import com.tunjid.fingergestures.billing.PurchasesManager
-import com.tunjid.fingergestures.billing.TrialStatus
+import com.tunjid.fingergestures.managers.PurchasesManager
+import com.tunjid.fingergestures.managers.TrialStatus
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.databinding.TrialViewBinding
 import com.tunjid.fingergestures.di.viewModelFactory

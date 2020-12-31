@@ -32,7 +32,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.baseclasses.BottomSheetController
-import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.managers.PurchasesManager
+import com.tunjid.fingergestures.managers.WallpaperSelection
+import com.tunjid.fingergestures.managers.getWallpaperFile
+import com.tunjid.fingergestures.managers.screenAspectRatio
 import com.tunjid.fingergestures.models.*
 import java.util.*
 

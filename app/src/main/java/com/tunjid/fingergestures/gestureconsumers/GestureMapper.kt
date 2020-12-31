@@ -22,7 +22,7 @@ import android.accessibilityservice.FingerprintGestureController.*
 import android.content.Context
 import com.jakewharton.rx.replayingShare
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDisposable

@@ -23,7 +23,7 @@ import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import com.tunjid.androidx.core.delegates.intentExtras
-import com.tunjid.fingergestures.WallpaperSelection
+import com.tunjid.fingergestures.managers.WallpaperSelection
 
 private var Intent.lastSelection by intentExtras<WallpaperSelection>()
 

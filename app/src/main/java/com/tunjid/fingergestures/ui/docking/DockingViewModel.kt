@@ -18,7 +18,7 @@
 package com.tunjid.fingergestures.ui.docking
 
 import androidx.lifecycle.ViewModel
-import com.tunjid.fingergestures.BackgroundManager
+import com.tunjid.fingergestures.managers.BackgroundManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.toLiveData

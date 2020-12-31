@@ -18,7 +18,7 @@
 package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.adapters.Item
-import com.tunjid.fingergestures.billing.PurchasesManager
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables

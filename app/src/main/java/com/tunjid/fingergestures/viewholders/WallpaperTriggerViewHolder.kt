@@ -28,9 +28,8 @@ import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.models.uiState
 import com.tunjid.fingergestures.models.updatePartial
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.WallpaperSelection
+import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.databinding.ViewholderWallpaperTriggerBinding
 import com.tunjid.fingergestures.hasStoragePermission
