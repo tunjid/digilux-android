@@ -17,7 +17,7 @@
 
 package com.tunjid.fingergestures.ui.main
 
-import com.tunjid.fingergestures.PopUpGestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.adapters.Item
 import com.tunjid.fingergestures.models.toPopUpActions

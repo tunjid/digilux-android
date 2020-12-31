@@ -15,18 +15,20 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.tunjid.fingergestures
+package com.tunjid.fingergestures.gestureconsumers
 
 
 import android.content.Context
 import android.content.Intent
+import com.tunjid.fingergestures.ReactivePreference
+import com.tunjid.fingergestures.ReactivePreferences
+import com.tunjid.fingergestures.SetManager
+import com.tunjid.fingergestures.SetPreference
 import com.tunjid.fingergestures.ui.popup.PopupActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
-import com.tunjid.fingergestures.gestureconsumers.GestureAction
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.PopUpShow
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
 import com.tunjid.fingergestures.models.Broadcast
 import javax.inject.Inject
 import javax.inject.Singleton

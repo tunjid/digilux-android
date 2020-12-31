@@ -18,7 +18,7 @@
 package com.tunjid.fingergestures.di
 
 import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.PopUpGestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.gestureconsumers.*
 import javax.inject.Inject
