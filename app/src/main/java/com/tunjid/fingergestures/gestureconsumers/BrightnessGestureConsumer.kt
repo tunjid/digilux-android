@@ -33,6 +33,7 @@ import com.tunjid.fingergestures.activities.BrightnessActivity
 import com.tunjid.fingergestures.billing.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
+import com.tunjid.fingergestures.di.AppDisposable
 import com.tunjid.fingergestures.models.Broadcast
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
@@ -50,7 +51,8 @@ class BrightnessGestureConsumer @Inject constructor(
     @AppContext private val context: Context,
     reactivePreferences: ReactivePreferences,
     private val broadcaster: AppBroadcaster,
-    private val purchasesManager: PurchasesManager
+    private val purchasesManager: PurchasesManager,
+    appDisposable: AppDisposable
 ) : GestureConsumer {
 
     data class SliderPair(
@@ -59,21 +61,22 @@ class BrightnessGestureConsumer @Inject constructor(
     )
 
     data class DimmerState(
-        val enabled: Boolean,
-        val visible: Boolean,
-        val checked: Boolean
+        val enabled: Boolean = false,
+        val visible: Boolean = false,
+        val checked: Boolean = false,
+        val percentage: Float = 0f,
     )
 
     data class State(
-        val increment: SliderPair,
-        val position: SliderPair,
-        val adaptive: SliderPair,
-        val dimmerState: DimmerState,
-        val restoresAdaptiveBrightnessOnDisplaySleep: Boolean,
-        val usesLogarithmicScale: Boolean,
-        val shouldShowSlider: Boolean,
-        val shouldAnimateSlider: Boolean,
-        val discreteBrightnesses: List<Int>,
+        val increment: SliderPair = SliderPair(value = DEF_INCREMENT_VALUE, enabled = true),
+        val position: SliderPair = SliderPair(value = DEF_POSITION_VALUE, enabled = true),
+        val adaptive: SliderPair = SliderPair(value = DEF_ADAPTIVE_BRIGHTNESS_THRESHOLD, enabled = true),
+        val dimmerState: DimmerState = DimmerState(),
+        val restoresAdaptiveBrightnessOnDisplaySleep: Boolean = true,
+        val usesLogarithmicScale: Boolean = App.isPieOrHigher,
+        val shouldShowSlider: Boolean = true,
+        val shouldAnimateSlider: Boolean = true,
+        val discreteBrightnesses: List<Int> = listOf(),
     )
 
     enum class Preference(override val preferenceName: String) : SetPreference {
@@ -138,7 +141,7 @@ class BrightnessGestureConsumer @Inject constructor(
     private val isDimmerEnabled: Boolean
         get() = hasOverlayPermission
             && purchasesManager.currentState.isPremium
-            && screenDimmerEnabledPreference.value
+            && currentState.dimmerState.checked
 
     private val hasOverlayPermission: Boolean
         get() = Settings.canDrawOverlays(context)
@@ -170,12 +173,14 @@ class BrightnessGestureConsumer @Inject constructor(
         Flowables.combineLatest(
             purchasesManager.state,
             screenDimmerEnabledPreference.monitor,
-        ) { purchaseState, dimmerEnabled ->
+            screenDimmerPercentPreference.monitor
+        ) { purchaseState, dimmerEnabled, dimmerPercent ->
             DimmerState(
                 enabled = purchaseState.isPremium,
                 // TODO: Make reactive
                 visible = hasOverlayPermission,
-                checked = dimmerEnabled
+                checked = dimmerEnabled,
+                percentage = dimmerPercent
             )
         },
         adaptiveBrightnessPreference.monitor,
@@ -185,6 +190,8 @@ class BrightnessGestureConsumer @Inject constructor(
         discreteBrightnessManager.itemsFlowable(Preference.DiscreteBrightnesses),
         ::State,
     ).replayingShare()
+
+    private val currentState by state.asProperty(State(), appDisposable::add)
 
     override fun onGestureActionTriggered(gestureAction: GestureAction) {
         var byteValue: Int
@@ -211,6 +218,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
         if (engagedDimmer(gestureAction, originalValue)) {
             byteValue = originalValue
+            // Read it directly, can't optimize by checking current
             val percent = screenDimmerPercentPreference.value
             intent.action = ACTION_SCREEN_DIMMER_CHANGED
             intent.screenDimmerPercent = percent
@@ -286,7 +294,7 @@ class BrightnessGestureConsumer @Inject constructor(
                 increaseScreenDimmer()
                 true
             }
-            gestureAction == GestureAction.IncreaseBrightness && screenDimmerPercentPreference.value > MIN_DIM_PERCENT -> {
+            gestureAction == GestureAction.IncreaseBrightness && currentState.dimmerState.percentage > MIN_DIM_PERCENT -> {
                 reduceScreenDimmer()
                 true
             }
@@ -294,13 +302,13 @@ class BrightnessGestureConsumer @Inject constructor(
         }
 
     private fun reduceScreenDimmer() {
-        val current = screenDimmerPercentPreference.value
+        val current = currentState.dimmerState.percentage
         val changed = current - GestureConsumer.normalizePercentageToFraction(percentagePreference.value)
         screenDimmerPercentPreference.value = max(roundDown(changed), MIN_DIM_PERCENT)
     }
 
     private fun increaseScreenDimmer() {
-        val current = screenDimmerPercentPreference.value
+        val current = currentState.dimmerState.percentage
         val changed = current + GestureConsumer.normalizePercentageToFraction(percentagePreference.value)
         screenDimmerPercentPreference.value = min(roundDown(changed), MAX_DIM_PERCENT)
     }
@@ -323,7 +331,7 @@ class BrightnessGestureConsumer @Inject constructor(
         return percentToByte(asPercentage)
     }
 
-    fun shouldShowDimmer(): Boolean = screenDimmerPercentPreference.value != MIN_DIM_PERCENT
+    fun shouldShowDimmer(): Boolean = currentState.dimmerState.percentage != MIN_DIM_PERCENT
 
     fun getAdjustDeltaText(percentage: Int): String = context.let { app ->
         if (purchasesManager.currentState.isPremium && !noDiscreteBrightness())
