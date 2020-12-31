@@ -37,10 +37,10 @@ import com.tunjid.fingergestures.ui.main.MainViewModel
 import com.tunjid.fingergestures.ui.main.Tab
 import kotlin.math.abs
 
-private var AppFragment.tab by fragmentArgs<Tab>()
-private fun AppFragment.tabItems(state: AppState?) = state?.items?.filter { it.tab == tab }
+private var MainFragment.tab by fragmentArgs<Tab>()
+private fun MainFragment.tabItems(state: AppState?) = state?.items?.filter { it.tab == tab }
 
-class AppFragment : Fragment(R.layout.fragment_home) {
+class MainFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel by activityViewModelFactory<MainViewModel>()
 
@@ -69,7 +69,7 @@ class AppFragment : Fragment(R.layout.fragment_home) {
     }
 
     companion object {
-        fun newInstance(tab: Tab): AppFragment = AppFragment().apply {
+        fun newInstance(tab: Tab): MainFragment = MainFragment().apply {
             this.tab = tab
         }
     }

@@ -54,7 +54,7 @@ import com.tunjid.fingergestures.billing.TrialStatus
 import com.tunjid.fingergestures.databinding.ActivityMainBinding
 import com.tunjid.fingergestures.databinding.TrialViewBinding
 import com.tunjid.fingergestures.di.viewModelFactory
-import com.tunjid.fingergestures.fragments.AppFragment
+import com.tunjid.fingergestures.fragments.MainFragment
 import com.tunjid.fingergestures.models.*
 import com.tunjid.fingergestures.resultcontracts.PermissionRequestContract
 import com.tunjid.fingergestures.resultcontracts.WallpaperPickContract
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     override val navigator: MultiStackNavigator by multiStackNavigationController(
         stackCount = 5,
         containerId = R.id.content_container
-    ) { AppFragment.newInstance(Tab.values()[it]) }
+    ) { MainFragment.newInstance(Tab.values()[it]) }
 
     override var uiState: UiState
         get() = globalUiController.uiState
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
-                if (f is AppFragment) viewModel.accept(Input.Permission.Action.Clear())
+                if (f is MainFragment) viewModel.accept(Input.Permission.Action.Clear())
             }
         }, true)
 
