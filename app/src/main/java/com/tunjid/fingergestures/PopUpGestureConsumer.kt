@@ -92,7 +92,7 @@ class PopUpGestureConsumer @Inject constructor(
     }
 
     private fun canAddToSet(preferenceName: Preference): Boolean =
-        setManager.getSet(preferenceName).size < 2 || purchasesManager.isPremiumNotTrial
+        setManager.getSet(preferenceName).size < 2 || purchasesManager.currentState.isPremiumNotTrial
 
     companion object {
         private const val ACCESSIBILITY_BUTTON_ENABLED = "accessibility button enabled"

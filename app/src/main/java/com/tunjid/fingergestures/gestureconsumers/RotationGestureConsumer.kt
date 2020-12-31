@@ -139,7 +139,7 @@ class RotationGestureConsumer @Inject constructor(
     private fun canAddToSet(preferenceName: Preference): Boolean {
         val set = setManager.getSet(preferenceName)
         val count = set.filterNot(unRemovablePackages::contains).count()
-        return count < 2 || purchasesManager.isPremiumNotTrial
+        return count < 2 || purchasesManager.currentState.isPremiumNotTrial
     }
 
     private fun compareApplicationInfo(infoA: ApplicationInfo, infoB: ApplicationInfo): Int {
@@ -160,7 +160,6 @@ class RotationGestureConsumer @Inject constructor(
         private const val ENABLE_AUTO_ROTATION = 1
         private const val DISABLE_AUTO_ROTATION = 0
         private const val WATCHES_WINDOW_CONTENT = "watches window content"
-        private const val EMPTY_STRING = ""
     }
 }
 

@@ -137,7 +137,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
     private val isDimmerEnabled: Boolean
         get() = hasOverlayPermission
-            && purchasesManager.isPremium
+            && purchasesManager.currentState.isPremium
             && screenDimmerEnabledPreference.value
 
     private val hasOverlayPermission: Boolean
@@ -249,7 +249,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
         val threshold = adaptiveThresholdToLux(adaptiveBrightnessThresholdPreference.value)
         val restoresAdaptiveBrightness = adaptiveBrightnessPreference.value
-        val toggleAndLeave = restoresAdaptiveBrightness && purchasesManager.isNotPremium
+        val toggleAndLeave = restoresAdaptiveBrightness && !purchasesManager.currentState.isPremium
 
         if (!restoresAdaptiveBrightness) return
 
@@ -326,10 +326,9 @@ class BrightnessGestureConsumer @Inject constructor(
     fun shouldShowDimmer(): Boolean = screenDimmerPercentPreference.value != MIN_DIM_PERCENT
 
     fun getAdjustDeltaText(percentage: Int): String = context.let { app ->
-        if (purchasesManager.isPremium && !noDiscreteBrightness())
+        if (purchasesManager.currentState.isPremium && !noDiscreteBrightness())
             app.getString(R.string.delta_percent_premium, percentage)
-        else
-            app.getString(R.string.delta_percent, percentage)
+        else app.getString(R.string.delta_percent, percentage)
     }
 
     fun getAdaptiveBrightnessThresholdText(@IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
@@ -337,7 +336,7 @@ class BrightnessGestureConsumer @Inject constructor(
         if (!hasBrightnessSensor())
             return context.getString(R.string.unavailable_brightness_sensor)
 
-        if (purchasesManager.isNotPremium)
+        if (!purchasesManager.currentState.isPremium)
             return context.getString(R.string.go_premium_text)
 
         if (!adaptiveBrightnessPreference.value)
@@ -403,7 +402,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
     private fun shouldRemoveDimmerOnChange(gestureAction: GestureAction): Boolean =
         (gestureAction == GestureAction.MinimizeBrightness || gestureAction == GestureAction.MaximizeBrightness
-            || shouldShowDimmer() && purchasesManager.isNotPremium)
+            || shouldShowDimmer() && !purchasesManager.currentState.isPremium)
 
     private fun noDiscreteBrightness(): Boolean =
         discreteBrightnessManager.getSet(Preference.DiscreteBrightnesses).isEmpty()

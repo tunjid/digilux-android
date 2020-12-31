@@ -25,6 +25,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.jakewharton.rx.replayingShare
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.di.AppContext
+import com.tunjid.fingergestures.di.AppDisposable
 import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.rxkotlin.Flowables
@@ -40,6 +41,7 @@ private object Purchases : SetPreference {
 class PurchasesManager @Inject constructor(
     @AppContext private val context: Context,
     reactivePreferences: ReactivePreferences,
+    appDisposable: AppDisposable,
 ) : PurchasesUpdatedListener {
 
     enum class Sku(val id: String) {
@@ -48,25 +50,25 @@ class PurchasesManager @Inject constructor(
     }
 
     data class State(
-        val numTrials: Int,
-        val trialStatus: TrialStatus,
-        val hasLockedContent: Boolean,
-        val ownedSkus: List<Sku>,
-        val isPremium: Boolean,
-        val trialPeriodText: String
+        val numTrials: Int = 0,
+        val trialStatus: TrialStatus = TrialStatus.Normal(numTrials = 0),
+        val hasLockedContent: Boolean = false,
+        val ownedSkus: List<Sku> = listOf(),
+        val isPremium: Boolean = true,
+        val trialPeriodText: String = ""
     ) {
-        private val isTrialRunning get() = trialStatus is TrialStatus.Trial
-
         val isOnTrial get() = trialStatus is TrialStatus.Trial
 
         val notAdFree: Boolean
             get() = when {
                 !hasLockedContent -> false
-                isTrialRunning -> false
+                isOnTrial -> false
                 else -> !ownedSkus.contains(Sku.AdFree)
             }
 
         val hasAds get() = if (!hasLockedContent) false else !isPremium && notAdFree
+
+        val isPremiumNotTrial: Boolean get() = if (hasLockedContent) false else isPremium
     }
 
     val lockedContentPreference: ReactivePreference<Boolean> = ReactivePreference(
@@ -98,7 +100,6 @@ class PurchasesManager @Inject constructor(
         }
         .replayingShare()
 
-
     val state: Flowable<State> = Flowables.combineLatest(
         lockedContentPreference.monitor,
         setManager.itemsFlowable(Purchases),
@@ -107,7 +108,11 @@ class PurchasesManager @Inject constructor(
     ) { lockedContent, ownedSkus, trialStatus, trialRunning ->
         State(
             numTrials = trialStatus.numTrials,
-            isPremium = if (!lockedContent) true else ownedSkus.contains(Sku.Premium),
+            isPremium = when {
+                !lockedContent -> true
+                trialRunning -> false
+                else -> ownedSkus.contains(Sku.Premium)
+            },
             trialStatus = trialStatus,
             hasLockedContent = lockedContent,
             ownedSkus = ownedSkus,
@@ -121,34 +126,7 @@ class PurchasesManager @Inject constructor(
     }
         .replayingShare()
 
-    //        if (BuildConfig.DEV) return false;
-    val isNotPremium: Boolean
-        get() = when {
-            !lockedContentPreference.value -> false
-            isTrialRunning -> false
-            else -> !setManager.getItems(Purchases).contains(Sku.Premium)
-        }
-
-    val isPremium: Boolean
-        get() = when {
-            !lockedContentPreference.value -> true
-            else -> !isNotPremium
-        }
-
-    //        if (BuildConfig.DEV) return true;
-    val isPremiumNotTrial: Boolean
-        get() = when {
-            !lockedContentPreference.value -> true
-            else -> setManager.getItems(Purchases).contains(Sku.Premium)
-        }
-
-    private val isTrialRunning: Boolean
-        get() = trigger.value == true
-
-    init {
-        // Keep the Flowable alive
-        trialStatus.subscribe()
-    }
+    val currentState by state.asProperty(State(), appDisposable::add)
 
     override fun onPurchasesUpdated(responseCode: Int, purchases: List<Purchase>?) {
         if (purchases == null) return

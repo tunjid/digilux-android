@@ -184,8 +184,8 @@ class GestureMapper @Inject constructor(
 
     fun getSwipeDelayText(percentage: Int): String =
         context.getString(when {
-            purchasesManager.isNotPremium -> R.string.go_premium_text
-            else -> R.string.double_swipe_delay
+            purchasesManager.currentState.isPremium -> R.string.double_swipe_delay
+            else -> R.string.go_premium_text
         }, delayPercentageToMillis(percentage))
 
     override fun onGestureDetected(raw: Int) {
