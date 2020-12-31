@@ -73,7 +73,7 @@
                 android:resource="@xml/provider_paths"/>
         </provider>
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.main.MainActivity"
             android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
