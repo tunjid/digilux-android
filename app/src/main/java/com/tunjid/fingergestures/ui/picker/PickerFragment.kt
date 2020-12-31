@@ -33,7 +33,7 @@ import com.tunjid.fingergestures.ui.recursiveBottomSheetNavigator
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
-import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.PopUp
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import com.tunjid.fingergestures.ui.main.MainViewModel
@@ -53,12 +53,12 @@ class PickerFragment : Fragment(R.layout.fragment_actions) {
         view.findViewById<Toolbar>(R.id.title_bar).setTitle(R.string.pick_action)
         view.findViewById<RecyclerView>(R.id.options_list).apply {
             val listAdapter = listAdapterOf(
-                initialItems = viewModel.state.value?.availableActions ?: listOf(),
+                initialItems = viewModel.state.value?.availablePopUps ?: listOf(),
                 viewHolderCreator = { viewGroup, _ ->
                     ActionViewHolder(
                         showsText = true,
                         itemView = viewGroup.inflate(R.layout.viewholder_action_vertical),
-                        clickListener = ::onActionClicked
+                        clickListener = ::onPopUpClicked
                     )
                 },
                 viewHolderBinder = { holder, item, _ -> holder.bind(item) }
@@ -69,7 +69,7 @@ class PickerFragment : Fragment(R.layout.fragment_actions) {
             addItemDecoration(view.context.divider())
 
             viewModel.state.apply {
-                mapDistinct(State::availableActions)
+                mapDistinct(State::availablePopUps)
                     .observe(viewLifecycleOwner, listAdapter::submitList)
 
                 mapDistinct(State::needsPremium)
@@ -83,10 +83,10 @@ class PickerFragment : Fragment(R.layout.fragment_actions) {
         }
     }
 
-    private fun onActionClicked(action: Action) {
+    private fun onPopUpClicked(popUp: PopUp) {
         viewModel.accept(when (val direction = direction) {
-            null -> Input.Add(action) // Pop up instance
-            else -> Input.MapGesture(direction, action)
+            null -> Input.Add(popUp) // Pop up instance
+            else -> Input.MapGesture(direction, popUp)
         })
 
         bottomSheetNavigator.pop()

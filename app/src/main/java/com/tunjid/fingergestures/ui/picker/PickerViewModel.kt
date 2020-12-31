@@ -22,7 +22,7 @@ import com.tunjid.fingergestures.managers.BackgroundManager
 import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.PopUp
 import com.tunjid.fingergestures.models.Unique
 import com.tunjid.fingergestures.models.toPopUpActions
 import com.tunjid.fingergestures.toLiveData
@@ -32,12 +32,12 @@ import javax.inject.Inject
 
 data class State(
     val needsPremium: Unique<Boolean> = Unique(false),
-    val availableActions: List<Action> = listOf(),
+    val availablePopUps: List<PopUp> = listOf(),
 )
 
 sealed class Input {
-    data class Add(val action: Action) : Input()
-    data class MapGesture(val direction: GestureDirection, val action: Action) : Input()
+    data class Add(val popUp: PopUp) : Input()
+    data class MapGesture(val direction: GestureDirection, val popUp: PopUp) : Input()
 }
 
 class PickerViewModel @Inject constructor(
@@ -59,10 +59,10 @@ class PickerViewModel @Inject constructor(
 
     fun accept(input: Input) = when (input) {
         is Input.Add -> {
-            val added = editor + input.action.value
+            val added = editor + input.popUp.value
             if (!added) processor.onNext(true)
             else Unit
         }
-        is Input.MapGesture -> gestureMapper.mapGestureToAction(input.direction, input.action.value)
+        is Input.MapGesture -> gestureMapper.mapGestureToAction(input.direction, input.popUp.value)
     }
 }

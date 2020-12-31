@@ -26,35 +26,35 @@ import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.*
-import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.PopUp
 
 class ActionViewHolder(
     private val showsText: Boolean,
     itemView: View,
-    private val clickListener: (Action) -> Unit
+    private val clickListener: (PopUp) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
-    private var action: Action? = null
+    private var popUp: PopUp? = null
     private val textView: TextView = itemView.findViewById(R.id.text)
     private val imageView: ImageView = itemView.findViewById(R.id.icon)
 
     init {
-        itemView.setOnClickListener { action?.let(clickListener) }
+        itemView.setOnClickListener { popUp?.let(clickListener) }
     }
 
-    fun bind(action: Action) {
-        this.action = action
+    fun bind(popUp: PopUp) {
+        this.popUp = popUp
 
         textView.isVisible = showsText
-        textView.setText(action.value.nameRes)
+        textView.setText(popUp.value.nameRes)
 
-        val iconRes = actionToIcon(action)
+        val iconRes = actionToIcon(popUp)
 
         if (showsText) imageView.setImageResource(iconRes)
-        else imageView.setImageDrawable(imageView.context.drawableAt(iconRes)?.withTint(action.iconColor))
+        else imageView.setImageDrawable(imageView.context.drawableAt(iconRes)?.withTint(popUp.iconColor))
     }
 
-    private fun actionToIcon(action: Action): Int = when (action.value) {
+    private fun actionToIcon(popUp: PopUp): Int = when (popUp.value) {
         DoNothing -> R.drawable.ic_do_nothing_24dp
 
         IncreaseBrightness -> R.drawable.ic_brightness_medium_24dp

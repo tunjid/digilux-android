@@ -18,7 +18,6 @@
 package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.listMap
@@ -35,14 +34,14 @@ val Inputs.rotationItems: Flowable<List<Item>>
         ) { rotating, excluded, lastSeen, canAutoRotate ->
             listOf(
                 Item.Toggle(
-                    tab = Tab.Shortcuts,
+                    tab = Tab.PopUp,
                     sortKey = ItemSorter.ENABLE_WATCH_WINDOWS,
                     titleRes = R.string.selective_app_rotation,
                     isChecked = canAutoRotate,
                     consumer = autoRotatePreference.setter
                 ),
                 Item.Rotation(
-                    tab = Tab.Shortcuts,
+                    tab = Tab.PopUp,
                     sortKey = ItemSorter.ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.RotatingApps,
                     removeText = getRemoveText(RotationGestureConsumer.Preference.RotatingApps),
@@ -55,7 +54,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                     input = this@rotationItems
                 ),
                 Item.Rotation(
-                    tab = Tab.Shortcuts,
+                    tab = Tab.PopUp,
                     sortKey = ItemSorter.EXCLUDED_ROTATION_LOCK,
                     preference = RotationGestureConsumer.Preference.NonRotatingApps,
                     removeText = getRemoveText(RotationGestureConsumer.Preference.NonRotatingApps),
@@ -68,7 +67,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                     input = this@rotationItems
                 ),
                 Item.Rotation(
-                    tab = Tab.Shortcuts,
+                    tab = Tab.PopUp,
                     sortKey = ItemSorter.ROTATION_HISTORY,
                     preference = null,
                     removeText = "",

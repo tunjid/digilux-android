@@ -27,7 +27,7 @@ enum class Tab(val resource: Int) {
     Gestures(R.id.action_directions),
     Brightness(R.id.action_slider),
     Audio(R.id.action_audio),
-    Shortcuts(R.id.action_accessibility_popup),
+    PopUp(R.id.action_accessibility_popup),
     Display(R.id.action_wallpaper);
 }
 
@@ -130,7 +130,7 @@ private val tabItems = listOf(
     Tab.Audio to intArrayOf(
         ItemSorter.AUDIO_DELTA, ItemSorter.AUDIO_STREAM_TYPE, ItemSorter.AUDIO_SLIDER_SHOW
     ),
-    Tab.Shortcuts to intArrayOf(
+    Tab.PopUp to intArrayOf(
         ItemSorter.ENABLE_ACCESSIBILITY_BUTTON, ItemSorter.ACCESSIBILITY_SINGLE_CLICK,
         ItemSorter.ANIMATES_POPUP, ItemSorter.ENABLE_WATCH_WINDOWS, ItemSorter.POPUP_ACTION,
         ItemSorter.ROTATION_LOCK, ItemSorter.EXCLUDED_ROTATION_LOCK, ItemSorter.ROTATION_HISTORY

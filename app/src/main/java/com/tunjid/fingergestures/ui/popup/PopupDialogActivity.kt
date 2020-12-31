@@ -31,7 +31,7 @@ import com.tunjid.fingergestures.ui.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityPopupDialogBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct
-import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.PopUp
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -57,12 +57,12 @@ class PopupDialogActivity : AppCompatActivity() {
         val spanSizer = AtomicInteger(0)
 
         val listAdapter = listAdapterOf(
-            initialItems = listOf<Action>(),
+            initialItems = listOf<PopUp>(),
             viewHolderCreator = { viewGroup, _ ->
                 ActionViewHolder(
                     showsText = true,
                     itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
-                    clickListener = ::onActionClicked
+                    clickListener = ::onPopUpClicked
                 )
             },
             viewHolderBinder = { holder, item, _ -> holder.bind(item) }
@@ -114,8 +114,8 @@ class PopupDialogActivity : AppCompatActivity() {
         }
     }
 
-    private fun onActionClicked(action: Action) {
-        viewModel.accept(Input.Perform(action))
+    private fun onPopUpClicked(popUp: PopUp) {
+        viewModel.accept(Input.Perform(popUp))
         finish()
     }
 }

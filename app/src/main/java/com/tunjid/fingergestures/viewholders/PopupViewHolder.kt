@@ -31,11 +31,11 @@ import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.canWriteToSettings
 import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.ui.picker.PickerFragment
-import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.PopUp
 import com.tunjid.fingergestures.ui.main.Input
 
 private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.PopUp>()
-private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Action, ActionViewHolder> by viewHolderDelegate()
+private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<PopUp, ActionViewHolder> by viewHolderDelegate()
 
 fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate).apply {
     listAdapter = listAdapterOf(
@@ -75,7 +75,7 @@ fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.PopUp) = 
     listAdapter.submitList(item.items)
 }
 
-private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(action: Action) {
+private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(popUp: PopUp) {
     val builder = MaterialAlertDialogBuilder(itemView.context)
 
     when {
@@ -83,7 +83,7 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(a
         !item.accessibilityButtonEnabled -> builder.setMessage(R.string.popup_prompt)
         else -> builder.setTitle(R.string.popup_remove)
             .setPositiveButton(R.string.yes) { _, _ ->
-                item.editor - action.value
+                item.editor - popUp.value
                 if (!itemView.context.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
             }
             .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }

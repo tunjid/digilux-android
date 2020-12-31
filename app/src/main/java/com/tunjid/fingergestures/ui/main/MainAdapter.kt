@@ -32,7 +32,6 @@ import com.tunjid.fingergestures.gestureconsumers.*
 import com.tunjid.fingergestures.managers.PaletteStatus
 import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.managers.WallpaperStatus
-import com.tunjid.fingergestures.models.Action
 import com.tunjid.fingergestures.models.Brightness
 import com.tunjid.fingergestures.models.Package
 import com.tunjid.fingergestures.viewholders.*
@@ -189,7 +188,7 @@ sealed class Item(
         override val sortKey: Int,
         val accessibilityButtonEnabled: Boolean,
         val editor: SetPreferenceEditor<GestureAction>,
-        val items: List<Action>,
+        val items: List<com.tunjid.fingergestures.models.PopUp>,
         val input: Inputs
     ) : Item("PopUp")
 

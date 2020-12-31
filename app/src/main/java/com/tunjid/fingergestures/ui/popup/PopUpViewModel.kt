@@ -21,7 +21,7 @@ import androidx.lifecycle.ViewModel
 import com.tunjid.fingergestures.managers.BackgroundManager
 import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.models.PopUp
 import com.tunjid.fingergestures.models.toPopUpActions
 import com.tunjid.fingergestures.toLiveData
 import io.reactivex.rxkotlin.Flowables
@@ -31,11 +31,11 @@ data class State(
     val animatesPopUp: Boolean,
     val sliderColor: Int,
     val backgroundColor: Int,
-    val popUpActions: List<Action> = listOf(),
+    val popUpActions: List<PopUp> = listOf(),
 )
 
 sealed class Input {
-    data class Perform(val action: Action) : Input()
+    data class Perform(val popUp: PopUp) : Input()
 }
 
 class PopUpViewModel @Inject constructor(
@@ -54,6 +54,6 @@ class PopUpViewModel @Inject constructor(
     ).toLiveData()
 
     fun accept(input: Input) = when (input) {
-        is Input.Perform -> gestureMapper.performAction(input.action.value)
+        is Input.Perform -> gestureMapper.performAction(input.popUp.value)
     }
 }

@@ -17,9 +17,8 @@
 
 package com.tunjid.fingergestures.ui.main
 
-import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ui.main.Item
+import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.models.toPopUpActions
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
@@ -35,28 +34,28 @@ val Inputs.popUpItems: Flowable<List<Item>>
         ) { savedActions, isSingleClick, accessibilityButtonEnabled, animatePopup ->
             listOf(
                 Item.Toggle(
-                    tab = Tab.Shortcuts,
+                    tab = Tab.PopUp,
                     sortKey = ItemSorter.ENABLE_ACCESSIBILITY_BUTTON,
                     titleRes = R.string.popup_enable,
                     isChecked = accessibilityButtonEnabled,
                     consumer = accessibilityButtonEnabledPreference.setter
                 ),
                 Item.Toggle(
-                    tab = Tab.Shortcuts,
+                    tab = Tab.PopUp,
                     sortKey = ItemSorter.ACCESSIBILITY_SINGLE_CLICK,
                     titleRes = R.string.popup_single_click,
                     isChecked = isSingleClick,
                     consumer = accessibilityButtonSingleClickPreference.setter
                 ),
                 Item.Toggle(
-                    tab = Tab.Shortcuts,
+                    tab = Tab.PopUp,
                     sortKey = ItemSorter.ANIMATES_POPUP,
                     titleRes = R.string.popup_animate_in,
                     isChecked = animatePopup,
                     consumer = animatePopUpPreference.setter
                 ),
                 Item.PopUp(
-                    tab = Tab.Shortcuts,
+                    tab = Tab.PopUp,
                     sortKey = ItemSorter.POPUP_ACTION,
                     items = savedActions,
                     editor = setManager.editorFor(PopUpGestureConsumer.Preference.SavedActions),

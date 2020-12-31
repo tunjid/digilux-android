@@ -35,10 +35,10 @@ data class Package(val app: ApplicationInfo) : Differentiable {
         (other as? Package)?.let { it.diffId == diffId } ?: super.areContentsTheSame(other)
 }
 
-data class Action(val value: GestureAction, val iconColor: Int) : Differentiable {
+data class PopUp(val value: GestureAction, val iconColor: Int) : Differentiable {
     override val diffId: String get() = value.toString()
     override fun areContentsTheSame(other: Differentiable): Boolean =
-        (other as? Action)?.let { it.value == value } ?: super.areContentsTheSame(other)
+        (other as? PopUp)?.let { it.value == value } ?: super.areContentsTheSame(other)
 }
 
 data class Brightness(val value: Int) : Differentiable {
@@ -54,4 +54,4 @@ val Any?.ignore
 fun Flowable<List<GestureAction>>.toPopUpActions(colorSource: Flowable<Int>) = Flowables.combineLatest(
     this,
     colorSource
-) { gestures, color -> gestures.map { Action(it, color) } }
+) { gestures, color -> gestures.map { PopUp(it, color) } }
