@@ -18,37 +18,34 @@
 package com.tunjid.fingergestures.gestureconsumers
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import com.tunjid.fingergestures.ui.docking.DockingActivity
+import com.tunjid.fingergestures.di.AppContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.activities.DockingActivity
-
-class DockingGestureConsumer private constructor() : GestureConsumer {
+@Singleton
+class DockingGestureConsumer @Inject constructor(
+    @AppContext private val context: Context
+) : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
-        return gesture == GestureConsumer.TOGGLE_DOCK
+    override fun accepts(gesture: GestureAction): Boolean {
+        return gesture == GestureAction.DockToggle
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
-            GestureConsumer.TOGGLE_DOCK -> {
-                val app = App.instance ?: return
-
-                val intent = Intent(app, DockingActivity::class.java)
+            GestureAction.DockToggle -> {
+                val intent = Intent(context, DockingActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
-                app.startActivity(intent)
+                context.startActivity(intent)
             }
+            else -> Unit
         }
-    }
-
-    companion object {
-
-        const val ACTION_TOGGLE_DOCK = "DockingGestureConsumer toggle dock"
-
-        val instance: DockingGestureConsumer by lazy { DockingGestureConsumer() }
     }
 }
 

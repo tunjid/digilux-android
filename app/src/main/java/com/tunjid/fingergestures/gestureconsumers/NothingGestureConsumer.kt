@@ -17,20 +17,14 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-class NothingGestureConsumer private constructor() : GestureConsumer {
+import javax.inject.Inject
+import javax.inject.Singleton
 
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
-        return gesture == GestureConsumer.DO_NOTHING
-    }
+@Singleton
+class NothingGestureConsumer @Inject constructor() : GestureConsumer {
 
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
-        // Do nothing
-    }
+    override fun accepts(gesture: GestureAction): Boolean = gesture == GestureAction.DoNothing
 
-    companion object {
-
-        val instance: NothingGestureConsumer by lazy { NothingGestureConsumer() }
-
-    }
+    override fun onGestureActionTriggered(gestureAction: GestureAction) = Unit
 }
 

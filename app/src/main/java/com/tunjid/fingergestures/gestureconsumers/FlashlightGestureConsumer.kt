@@ -17,48 +17,46 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import android.annotation.SuppressLint
+import android.content.Context
 import android.hardware.camera2.CameraManager
+import com.tunjid.fingergestures.di.AppContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-import com.tunjid.fingergestures.App
-
-class FlashlightGestureConsumer private constructor() : GestureConsumer {
+@Singleton
+class FlashlightGestureConsumer @Inject constructor(
+    @AppContext private val context: Context
+) : GestureConsumer {
 
     private var isCallbackRegistered: Boolean = false
     private var isTorchOn: Boolean = false
 
     init {
-        isCallbackRegistered = registerTorchCallback(App.instance)
+        isCallbackRegistered = registerTorchCallback(context)
     }
 
-    @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
-        return gesture == GestureConsumer.TOGGLE_FLASHLIGHT
-    }
+    override fun accepts(gesture: GestureAction): Boolean =
+        gesture == GestureAction.FlashlightToggle
 
-    @SuppressLint("SwitchIntDef")
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
-            GestureConsumer.TOGGLE_FLASHLIGHT -> {
-                val app = App.instance ?: return
-                if (!isCallbackRegistered) isCallbackRegistered = registerTorchCallback(app)
+            GestureAction.FlashlightToggle -> {
+                if (!isCallbackRegistered) isCallbackRegistered = registerTorchCallback(context)
                 if (!isCallbackRegistered) return
 
-                val cameraManager = app.getSystemService(CameraManager::class.java) ?: return
+                val cameraManager = context.getSystemService(CameraManager::class.java) ?: return
 
                 try {
                     cameraManager.setTorchMode(cameraManager.cameraIdList[0], !isTorchOn)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-
             }
+            else -> Unit
         }
     }
 
-    private fun registerTorchCallback(app: App?): Boolean {
-        if (app == null) return false
-
+    private fun registerTorchCallback(app: Context): Boolean {
         val cameraManager = app.getSystemService(CameraManager::class.java) ?: return false
 
         cameraManager.registerTorchCallback(object : CameraManager.TorchCallback() {
@@ -68,12 +66,6 @@ class FlashlightGestureConsumer private constructor() : GestureConsumer {
         }, null)
 
         return true
-    }
-
-    companion object {
-
-        val instance: FlashlightGestureConsumer by lazy { FlashlightGestureConsumer() }
-
     }
 
     //     try {

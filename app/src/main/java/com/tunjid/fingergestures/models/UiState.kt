@@ -1,144 +1,158 @@
-/*
- * Copyright (c) 2017, 2018, 2019 Adetunji Dahunsi.
- *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package com.tunjid.fingergestures.models
 
 import android.graphics.Color
-import android.os.Parcel
-import android.os.Parcelable
-import android.text.TextUtils
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.MenuRes
 import androidx.dynamicanimation.animation.SpringAnimation
+import com.tunjid.fingergestures.ui.main.Shilling
+import kotlin.reflect.KMutableProperty0
+
+fun KMutableProperty0<UiState>.updatePartial(updater: UiState.() -> UiState) = set(updater.invoke(get()))
 
 data class UiState(
-        @MenuRes val toolBarMenu: Int,
-        val toolbarShows: Boolean,
-        val toolbarInvalidated: Boolean,
-        val toolbarTitle: CharSequence,
-        @DrawableRes val fabIcon: Int,
-        val fabShows: Boolean,
-        val fabExtended: Boolean,
-        val fabText: CharSequence,
-        val snackbarText: CharSequence,
-        @ColorInt val navBarColor: Int,
-        @ColorInt val statusBarColor: Int,
-        val showsBottomNav: Boolean,
-        val fabClickListener: View.OnClickListener?,
-        val fabTransitionOptions: (SpringAnimation.() -> Unit)?
-) : Parcelable {
+    @param:MenuRes
+    @field:MenuRes
+    @get:MenuRes
+    val toolbarMenuRes: Int = 0,
+    val toolbarShows: Boolean = false,
+    val toolbarOverlaps: Boolean = false,
+    val toolbarInvalidated: Boolean = false,
+    val toolbarTitle: CharSequence = "",
+    @param:DrawableRes
+    @field:DrawableRes
+    @get:DrawableRes
+    val fabIcon: Int = 0,
+    val fabShows: Boolean = false,
+    val fabExtended: Boolean = true,
+    val fabText: CharSequence = "",
+    @param:ColorInt
+    @field:ColorInt
+    @get:ColorInt
+    val backgroundColor: Int = Color.TRANSPARENT,
+    val snackbarText: CharSequence = "",
+    @param:ColorInt
+    @field:ColorInt
+    @get:ColorInt
+    val navBarColor: Int = Color.TRANSPARENT,
+    @param:ColorInt
+    @field:ColorInt
+    @get:ColorInt
+    val statusBarColor: Int = Color.TRANSPARENT,
+    val lightStatusBar: Boolean = false,
+    val showsBottomNav: Boolean? = null,
+    val insetFlags: InsetDescriptor = InsetFlags.ALL,
+    val systemUI: SystemUI = NoOpSystemUI,
+    val shilling: Shilling = Shilling.Calm,
+    val fabClickListener: (View) -> Unit = emptyCallback(),
+    val fabTransitionOptions: SpringAnimation.() -> Unit = emptyCallback(),
+    val toolbarMenuClickListener: (MenuItem) -> Unit = emptyCallback(),
+    val toolbarMenuRefresher: (Menu) -> Unit = emptyCallback()
+)
 
-    fun diff(newState: UiState,
-             showsBottomNavConsumer: (Boolean) -> Unit,
-             showsFabConsumer: (Boolean) -> Unit,
-             showsToolbarConsumer: (Boolean) -> Unit,
-             navBarColorConsumer: (Int) -> Unit,
-             statusBarConsumer: (Int) -> Unit,
-             fabStateConsumer: (Int, CharSequence) -> Unit,
-             fabExtendedConsumer: (Boolean) -> Unit,
-             snackbarTextConsumer: (CharSequence) -> Unit,
-             toolbarStateConsumer: (Int, Boolean, CharSequence) -> Unit,
-             fabClickListenerConsumer: (View.OnClickListener?) -> Unit,
-             fabTransitionOptionConsumer: ((SpringAnimation.() -> Unit)?) -> Unit
-    ): UiState {
+private fun <T> emptyCallback(): (T) -> Unit = {}
 
-        fabClickListenerConsumer.invoke(newState.fabClickListener)
-        fabTransitionOptionConsumer.invoke(newState.fabTransitionOptions)
+// Internal state slices for memoizing animations.
+// They aggregate the parts of Global UI they react to
 
-        onChanged(newState, UiState::toolBarMenu, UiState::toolbarInvalidated, UiState::toolbarTitle) {
-            toolbarStateConsumer(toolBarMenu, toolbarInvalidated, toolbarTitle)
-        }
+internal data class ToolbarState(
+    val toolbarMenuRes: Int,
+    val toolbarTitle: CharSequence,
+    val toolbarInvalidated: Boolean
+)
 
-        onChanged(newState, UiState::fabIcon, UiState::fabText) { fabStateConsumer(fabIcon, fabText) }
-        onChanged(newState, UiState::showsBottomNav) { showsBottomNavConsumer(showsBottomNav) }
-        onChanged(newState, UiState::fabShows) { showsFabConsumer(fabShows) }
-        onChanged(newState, UiState::fabExtended) { fabExtendedConsumer(fabExtended) }
-        onChanged(newState, UiState::snackbarText) { snackbarTextConsumer(snackbarText) }
-        onChanged(newState, UiState::toolbarShows) { showsToolbarConsumer(toolbarShows) }
-        onChanged(newState, UiState::navBarColor) { navBarColorConsumer(navBarColor) }
-        onChanged(newState, UiState::statusBarColor) { statusBarConsumer(statusBarColor) }
+internal data class SnackbarPositionalState(
+    val bottomNavVisible: Boolean,
+    override val bottomInset: Int,
+    override val navBarSize: Int,
+    override val insetDescriptor: InsetDescriptor
+) : KeyboardAware
 
-        return newState
-    }
+internal data class FabPositionalState(
+    val fabVisible: Boolean,
+    val bottomNavVisible: Boolean,
+    val snackbarHeight: Int,
+    val shilling: Shilling,
+    override val bottomInset: Int,
+    override val navBarSize: Int,
+    override val insetDescriptor: InsetDescriptor
+) : KeyboardAware
 
-    private inline fun onChanged(that: UiState, vararg selectors: (UiState) -> Any?, invocation: UiState.() -> Unit) {
-        if (selectors.any { it(this) != it(that) }) invocation.invoke(that)
-    }
+internal data class FragmentContainerPositionalState(
+    val statusBarSize: Int,
+    val toolbarOverlaps: Boolean,
+    val bottomNavVisible: Boolean,
+    override val bottomInset: Int,
+    override val navBarSize: Int,
+    override val insetDescriptor: InsetDescriptor
+) : KeyboardAware
 
-    private constructor(`in`: Parcel) : this(
-            toolBarMenu = `in`.readInt(),
-            toolbarShows = `in`.readByte().toInt() != 0x00,
-            toolbarInvalidated = `in`.readByte().toInt() != 0x00,
-            toolbarTitle = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(`in`),
-            fabIcon = `in`.readInt(),
-            fabShows = `in`.readByte().toInt() != 0x00,
-            fabExtended = `in`.readByte().toInt() != 0x00,
-            fabText = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(`in`),
-            snackbarText = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(`in`),
-            navBarColor = `in`.readInt(),
-            statusBarColor = `in`.readInt(),
-            showsBottomNav = `in`.readByte().toInt() != 0x00,
-            fabClickListener = null,
-            fabTransitionOptions = null
+internal data class BottomNavPositionalState(
+    val insetDescriptor: InsetDescriptor,
+    val bottomNavVisible: Boolean,
+    val navBarSize: Int
+)
+
+internal val UiState.toolbarState
+    get() = ToolbarState(
+        toolbarMenuRes = toolbarMenuRes,
+        toolbarTitle = toolbarTitle,
+        toolbarInvalidated = toolbarInvalidated
     )
 
-    override fun describeContents(): Int = 0
+internal val UiState.fabState
+    get() = FabPositionalState(
+        fabVisible = fabShows,
+        snackbarHeight = systemUI.dynamic.snackbarHeight,
+        bottomNavVisible = showsBottomNav == true,
+        bottomInset = systemUI.dynamic.bottomInset,
+        navBarSize = systemUI.static.navBarSize,
+        insetDescriptor = insetFlags,
+        shilling = shilling
+    )
 
-    override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeInt(toolBarMenu)
-        dest.writeByte((if (toolbarShows) 0x01 else 0x00).toByte())
-        dest.writeByte((if (toolbarInvalidated) 0x01 else 0x00).toByte())
-        TextUtils.writeToParcel(toolbarTitle, dest, 0)
-        dest.writeInt(fabIcon)
-        dest.writeByte((if (fabShows) 0x01 else 0x00).toByte())
-        dest.writeByte((if (fabExtended) 0x01 else 0x00).toByte())
-        TextUtils.writeToParcel(fabText, dest, 0)
-        TextUtils.writeToParcel(snackbarText, dest, 0)
-        dest.writeInt(navBarColor)
-        dest.writeInt(statusBarColor)
-    }
+internal val UiState.snackbarPositionalState
+    get() = SnackbarPositionalState(
+        bottomNavVisible = showsBottomNav == true,
+        bottomInset = systemUI.dynamic.bottomInset,
+        navBarSize = systemUI.static.navBarSize,
+        insetDescriptor = insetFlags
+    )
 
-    companion object {
+internal val UiState.fabGlyphs
+    get() = fabIcon to fabText
 
-        fun freshState(): UiState = UiState(
-                fabIcon = 0,
-                fabText = "",
-                toolBarMenu = 0,
-                navBarColor = Color.BLACK,
-                statusBarColor = Color.TRANSPARENT,
-                showsBottomNav = true,
-                fabShows = true,
-                fabExtended = true,
-                toolbarShows = true,
-                snackbarText = "",
-                toolbarInvalidated = false,
-                toolbarTitle = "",
-                fabClickListener = null,
-                fabTransitionOptions = null
-        )
+internal val UiState.toolbarPosition
+    get() = systemUI.static.statusBarSize
 
-        @JvmField
-        @Suppress("unused")
-        val CREATOR: Parcelable.Creator<UiState> = object : Parcelable.Creator<UiState> {
-            override fun createFromParcel(`in`: Parcel): UiState = UiState(`in`)
+internal val UiState.bottomNavPositionalState
+    get() = BottomNavPositionalState(
+        bottomNavVisible = showsBottomNav == true,
+        navBarSize = systemUI.static.navBarSize,
+        insetDescriptor = insetFlags
+    )
 
-            override fun newArray(size: Int): Array<UiState?> = arrayOfNulls(size)
-        }
-    }
+internal val UiState.fragmentContainerState
+    get() = FragmentContainerPositionalState(
+        statusBarSize = systemUI.dynamic.topInset,
+        insetDescriptor = insetFlags,
+        toolbarOverlaps = toolbarOverlaps,
+        bottomNavVisible = showsBottomNav == true,
+        bottomInset = systemUI.dynamic.bottomInset,
+        navBarSize = systemUI.static.navBarSize
+    )
+
+/**
+ * Interface for [UiState] state slices that are aware of the keyboard. Useful for
+ * keyboard visibility changes for bottom aligned views like Floating Action Buttons and Snack Bars
+ */
+interface KeyboardAware {
+    val bottomInset: Int
+    val navBarSize: Int
+    val insetDescriptor: InsetDescriptor
 }
+
+internal val KeyboardAware.keyboardSize get() = bottomInset - navBarSize

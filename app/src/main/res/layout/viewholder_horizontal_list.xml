@@ -40,6 +40,7 @@
         android:id="@+id/item_list"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:clickable="false"
         android:minHeight="@dimen/triple_and_half_margin"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/add"
@@ -47,8 +48,8 @@
 
     <ImageButton
         android:id="@+id/add"
-        android:layout_width="@dimen/single_and_half_margin"
-        android:layout_height="@dimen/single_and_half_margin"
+        android:layout_width="@dimen/double_and_half_margin"
+        android:layout_height="@dimen/double_and_half_margin"
         android:background="@drawable/circle_background"
         android:backgroundTint="@color/colorPrimary"
         android:elevation="@dimen/half_margin"

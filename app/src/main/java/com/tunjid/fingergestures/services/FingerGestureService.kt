@@ -43,42 +43,33 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK
 import android.view.accessibility.AccessibilityWindowInfo
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.PopUpGestureConsumer
-import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.ACTION_ACCESSIBILITY_BUTTON
-import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.ACTION_SHOW_POPUP
-import com.tunjid.fingergestures.PopUpGestureConsumer.Companion.EXTRA_SHOWS_ACCESSIBILITY_BUTTON
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer.Companion.ACTION_EXPAND_VOLUME_CONTROLS
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.ACTION_SCREEN_DIMMER_CHANGED
-import com.tunjid.fingergestures.gestureconsumers.DockingGestureConsumer.Companion.ACTION_TOGGLE_DOCK
-import com.tunjid.fingergestures.gestureconsumers.GestureMapper
-import com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.Companion.ACTION_GLOBAL_ACTION
-import com.tunjid.fingergestures.gestureconsumers.GlobalActionGestureConsumer.Companion.EXTRA_GLOBAL_ACTION
-import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_DOWN
-import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_TOGGLE
-import com.tunjid.fingergestures.gestureconsumers.NotificationGestureConsumer.Companion.ACTION_NOTIFICATION_UP
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.ACTION_WATCH_WINDOW_CHANGES
-import com.tunjid.fingergestures.gestureconsumers.RotationGestureConsumer.Companion.EXTRA_WATCHES_WINDOWS
-import io.reactivex.disposables.Disposable
+import com.tunjid.fingergestures.di.dagger
+import com.tunjid.fingergestures.models.Broadcast
+import com.tunjid.fingergestures.models.ignore
+import com.tunjid.fingergestures.filterIsInstance
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.addTo
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class FingerGestureService : AccessibilityService() {
 
+    private val broadcastDisposables get() = dagger.appComponent.appDisposable()
+    private val dependencies get() = dagger.appComponent.dependencies()
+    private val gestureConsumers get() = dependencies.gestureConsumers
+    private val gestureMapper get() = dependencies.gestureMapper
+
     private var overlayView: View? = null
 
-    private var gestureThread: HandlerThread? = null
-    private var broadcastDisposable: Disposable? = null
+    private val gestureThread by lazy { HandlerThread("GestureThread").also(HandlerThread::start) }
 
     private val accessibilityButtonCallback = object : AccessibilityButtonCallback() {
         override fun onClicked(controller: AccessibilityButtonController) =
-                PopUpGestureConsumer.instance.showPopup()
+            gestureConsumers.popUp.showPopup()
     }
 
     private val screenWakeReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) = onIntentReceived(intent)
+        override fun onReceive(context: Context, intent: Intent) = gestureConsumers.brightness.onScreenTurnedOn()
     }
 
     private val isQuickSettingsShowing: Boolean
@@ -94,38 +85,30 @@ class FingerGestureService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
 
-        if (gestureThread != null) gestureThread?.quitSafely()
-
-        gestureThread = HandlerThread("GestureThread").apply {
-            start()
-            fingerprintGestureController.registerFingerprintGestureCallback(GestureMapper.instance, Handler(looper))
-        }
-
-        BackgroundManager.instance.restoreWallpaperChange()
+        fingerprintGestureController.registerFingerprintGestureCallback(gestureMapper, Handler(gestureThread.looper))
+        dependencies.backgroundManager.restoreWallpaperChange()
 
         subscribeToBroadcasts()
         registerReceiver(screenWakeReceiver, IntentFilter(ACTION_SCREEN_ON))
-        setWatchesWindows(RotationGestureConsumer.instance.canAutoRotate())
-        setShowsAccessibilityButton(PopUpGestureConsumer.instance.hasAccessibilityButton())
+        setWatchesWindows(gestureConsumers.rotation.autoRotatePreference.value)
+        setShowsAccessibilityButton(gestureConsumers.popUp.accessibilityButtonEnabledPreference.value)
     }
 
     override fun onDestroy() {
         unregisterReceiver(screenWakeReceiver)
-        fingerprintGestureController.unregisterFingerprintGestureCallback(GestureMapper.instance)
+        fingerprintGestureController.unregisterFingerprintGestureCallback(gestureMapper)
         accessibilityButtonController.unregisterAccessibilityButtonCallback(accessibilityButtonCallback)
 
-        if (broadcastDisposable != null) broadcastDisposable!!.dispose()
-        if (gestureThread != null) gestureThread!!.quitSafely()
-        gestureThread = null
+        broadcastDisposables.clear()
+        gestureThread.quitSafely()
 
         super.onDestroy()
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        RotationGestureConsumer.instance.onAccessibilityEvent(event)
-    }
+    override fun onAccessibilityEvent(event: AccessibilityEvent) =
+        gestureConsumers.rotation.onAccessibilityEvent(event)
 
-    override fun onInterrupt() {}
+    override fun onInterrupt() = Unit
 
     private fun expandQuickSettings() {
         val info = findNode(rootInActiveWindow, getSystemUiString(RESOURCE_EXPAND_QUICK_SETTINGS, DEFAULT_EXPAND_QUICK_SETTINGS))
@@ -137,15 +120,16 @@ class FingerGestureService : AccessibilityService() {
         return info != null && info.packageName != null && ANDROID_SYSTEM_UI_PACKAGE == info.packageName.toString()
     }
 
-    private fun expandAudioControls() {
+    private fun expandAudioControls() =
         windows
-                .asSequence()
-                .map(AccessibilityWindowInfo::getRoot)
-                .filterNotNull()
-                .map { nodeInfo -> findNode(nodeInfo, getSystemUiString(RESOURCE_EXPAND_VOLUME_CONTROLS, DEFAULT_EXPAND_VOLUME)) }
-                .filterNotNull()
-                .firstOrNull()?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-    }
+            .asSequence()
+            .map(AccessibilityWindowInfo::getRoot)
+            .filterNotNull()
+            .map { nodeInfo -> findNode(nodeInfo, getSystemUiString(RESOURCE_EXPAND_VOLUME_CONTROLS, DEFAULT_EXPAND_VOLUME)) }
+            .filterNotNull()
+            .firstOrNull()
+            ?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            .ignore
 
     private fun closeNotifications() {
         val closeIntent = Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
@@ -168,16 +152,16 @@ class FingerGestureService : AccessibilityService() {
         }, null)
     }
 
-    private fun adjustDimmer() {
+    private fun adjustDimmer(broadcast: Broadcast.Service.ScreenDimmerChanged) {
         val windowManager = getSystemService(WindowManager::class.java) ?: return
 
-        val brightnessGestureConsumer = BrightnessGestureConsumer.instance
-        val dimAmount = brightnessGestureConsumer.screenDimmerDimPercent
+        val brightnessGestureConsumer = gestureConsumers.brightness
+        val dimAmount = broadcast.percent
 
         if (brightnessGestureConsumer.shouldShowDimmer()) {
             val params: WindowManager.LayoutParams =
-                    if (overlayView == null) getLayoutParams(windowManager)
-                    else overlayView?.layoutParams as WindowManager.LayoutParams
+                if (overlayView == null) getLayoutParams(windowManager)
+                else overlayView?.layoutParams as? WindowManager.LayoutParams ?: return
 
             params.alpha = 0.1f
             params.dimAmount = dimAmount
@@ -191,15 +175,15 @@ class FingerGestureService : AccessibilityService() {
     @SuppressLint("InflateParams")
     private fun getLayoutParams(windowManager: WindowManager): WindowManager.LayoutParams {
         val params = WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                        or WindowManager.LayoutParams.FLAG_DIM_BEHIND,
-                PixelFormat.TRANSLUCENT)
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                or WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+            PixelFormat.TRANSLUCENT)
 
         val inflater = getSystemService(LayoutInflater::class.java) ?: return params
 
@@ -219,79 +203,60 @@ class FingerGestureService : AccessibilityService() {
         val controller = accessibilityButtonController
         val info = serviceInfo
 
-        if (enabled)
-            info.flags = info.flags or FLAG_REQUEST_ACCESSIBILITY_BUTTON
-        else
-            info.flags = info.flags and FLAG_REQUEST_ACCESSIBILITY_BUTTON.inv()
+        info.flags = when {
+            enabled -> info.flags or FLAG_REQUEST_ACCESSIBILITY_BUTTON
+            else -> info.flags and FLAG_REQUEST_ACCESSIBILITY_BUTTON.inv()
+        }
 
         serviceInfo = info
         controller.registerAccessibilityButtonCallback(accessibilityButtonCallback)
     }
 
     private fun subscribeToBroadcasts() {
-        App.withApp { app ->
-            broadcastDisposable = app.broadcasts()
-                    .filter(this::intentMatches)
-                    .subscribe(this::onIntentReceived) { error ->
-                        error.printStackTrace()
-                        subscribeToBroadcasts() // Resubscribe on error
-                    }
+        dagger.appComponent.broadcasts()
+            .filterIsInstance<Broadcast.Service>()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(::onBroadcastReceived) { error ->
+                error.printStackTrace()
+                subscribeToBroadcasts() // Resubscribe on error
+            }
+            .addTo(broadcastDisposables)
+    }
+
+    private fun onBroadcastReceived(broadcast: Broadcast.Service) = when (broadcast) {
+        Broadcast.Service.ExpandVolumeControls -> expandAudioControls()
+        Broadcast.Service.ShowPopUp -> gestureConsumers.popUp.showPopup()
+        Broadcast.Service.ToggleDock -> {
+            performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
+            App.delay(DELAY.toLong(), MILLISECONDS) { performGlobalAction(GLOBAL_ACTION_RECENTS) }
+            Unit
         }
-    }
-
-    private fun onIntentReceived(intent: Intent) {
-        when (intent.action ?: return) {
-            ACTION_SCREEN_ON -> BrightnessGestureConsumer.instance.onScreenTurnedOn()
-            ACTION_NOTIFICATION_DOWN -> if (notificationsShowing())
-                expandQuickSettings()
-            else
-                performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
-            ACTION_NOTIFICATION_UP -> closeNotifications()
-            ACTION_NOTIFICATION_TOGGLE -> when {
-                isQuickSettingsShowing -> closeNotifications()
-                notificationsShowing() -> expandQuickSettings()
-                else -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
-            }
-            ACTION_EXPAND_VOLUME_CONTROLS -> expandAudioControls()
-            ACTION_SCREEN_DIMMER_CHANGED -> adjustDimmer()
-            ACTION_TOGGLE_DOCK -> {
-                performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
-                App.delay(DELAY.toLong(), MILLISECONDS) { performGlobalAction(GLOBAL_ACTION_RECENTS) }
-            }
-            ACTION_WATCH_WINDOW_CHANGES -> setWatchesWindows(intent.getBooleanExtra(EXTRA_WATCHES_WINDOWS, false))
-            ACTION_ACCESSIBILITY_BUTTON -> setShowsAccessibilityButton(intent.getBooleanExtra(EXTRA_SHOWS_ACCESSIBILITY_BUTTON, false))
-            ACTION_GLOBAL_ACTION -> {
-                val globalAction = intent.getIntExtra(EXTRA_GLOBAL_ACTION, -1)
-                if (globalAction != -1) performGlobalAction(globalAction)
-            }
-            ACTION_SHOW_POPUP -> PopUpGestureConsumer.instance.showPopup()
+        Broadcast.Service.ShadeDown -> when {
+            notificationsShowing() -> expandQuickSettings()
+            else -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS).ignore
         }
+        Broadcast.Service.ShadeUp -> closeNotifications()
+        Broadcast.Service.ShadeToggle -> when {
+            isQuickSettingsShowing -> closeNotifications()
+            notificationsShowing() -> expandQuickSettings()
+            else -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS).ignore
+        }
+        is Broadcast.Service.AccessibilityButtonChanged -> setShowsAccessibilityButton(broadcast.enabled)
+        is Broadcast.Service.ScreenDimmerChanged -> adjustDimmer(broadcast)
+        is Broadcast.Service.GlobalAction -> {
+            val globalAction = broadcast.action
+            if (globalAction != -1) performGlobalAction(globalAction).ignore
+            else Unit
+        }
+        is Broadcast.Service.WatchesWindows -> setWatchesWindows(broadcast.enabled)
     }
-
-    private fun intentMatches(intent: Intent): Boolean = when (intent.action) {
-        ACTION_SCREEN_DIMMER_CHANGED,
-        ACTION_EXPAND_VOLUME_CONTROLS,
-        ACTION_ACCESSIBILITY_BUTTON,
-        ACTION_WATCH_WINDOW_CHANGES,
-        ACTION_NOTIFICATION_TOGGLE,
-        ACTION_NOTIFICATION_DOWN,
-        ACTION_NOTIFICATION_UP,
-        ACTION_GLOBAL_ACTION,
-        ACTION_TOGGLE_DOCK,
-        ACTION_SHOW_POPUP,
-        ACTION_SCREEN_ON -> true
-        else -> false
-    }
-
 
     private fun getSystemUiString(resourceID: String, defaultValue: String): String {
         val resources = systemUiResources ?: return defaultValue
         val id = resources.getIdentifier(resourceID, STRING_RESOURCE, ANDROID_SYSTEM_UI_PACKAGE)
 
-        return if (id == INVALID_RESOURCE)
-            defaultValue
-        else
-            resources.getString(id)
+        return if (id == INVALID_RESOURCE) defaultValue
+        else resources.getString(id)
     }
 
     private fun findNode(info: AccessibilityNodeInfo?, name: String): AccessibilityNodeInfo? {
@@ -313,9 +278,6 @@ class FingerGestureService : AccessibilityService() {
     }
 
     companion object {
-
-        const val ACTION_SHOW_SNACK_BAR = "action show snack bar"
-        const val EXTRA_SHOW_SNACK_BAR = " extra show snack bar"
         const val ANDROID_SYSTEM_UI_PACKAGE = "com.android.systemui"
 
         private const val RESOURCE_EXPAND_VOLUME_CONTROLS = "accessibility_volume_expand"

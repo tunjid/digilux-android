@@ -17,65 +17,52 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_POWER_DIALOG
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_RECENTS
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_TAKE_SCREENSHOT
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
+import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint
-import android.content.Intent
 import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.models.Broadcast
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class GlobalActionGestureConsumer private constructor() : GestureConsumer {
+@Singleton
+class GlobalActionGestureConsumer @Inject constructor(
+    private val broadcaster: AppBroadcaster
+) : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean = when (gesture) {
-        GestureConsumer.GLOBAL_HOME,
-        GestureConsumer.GLOBAL_BACK,
-        GestureConsumer.GLOBAL_RECENTS,
-        GestureConsumer.GLOBAL_LOCK_SCREEN,
-        GestureConsumer.GLOBAL_SPLIT_SCREEN,
-        GestureConsumer.GLOBAL_POWER_DIALOG,
-        GestureConsumer.GLOBAL_TAKE_SCREENSHOT -> true
+    override fun accepts(gesture: GestureAction): Boolean = when (gesture) {
+        GestureAction.GlobalHome,
+        GestureAction.GlobalBack,
+        GestureAction.GlobalRecents,
+        GestureAction.GlobalLockScreen,
+        GestureAction.GlobalSplitScreen,
+        GestureAction.GlobalPowerDialog,
+        GestureAction.GlobalTakeScreenshot -> true
         else -> false
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
-        val app = App.instance ?: return
-
-        var action = -1
-
-        when (gestureAction) {
-            GestureConsumer.GLOBAL_HOME -> action = GLOBAL_ACTION_HOME
-            GestureConsumer.GLOBAL_BACK -> action = GLOBAL_ACTION_BACK
-            GestureConsumer.GLOBAL_RECENTS -> action = GLOBAL_ACTION_RECENTS
-            GestureConsumer.GLOBAL_SPLIT_SCREEN -> action = GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
-            GestureConsumer.GLOBAL_POWER_DIALOG -> action = GLOBAL_ACTION_POWER_DIALOG
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
+        val action = when (gestureAction) {
+            GestureAction.GlobalHome -> AccessibilityService.GLOBAL_ACTION_HOME
+            GestureAction.GlobalBack -> AccessibilityService.GLOBAL_ACTION_BACK
+            GestureAction.GlobalRecents -> AccessibilityService.GLOBAL_ACTION_RECENTS
+            GestureAction.GlobalSplitScreen -> AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN
+            GestureAction.GlobalPowerDialog -> AccessibilityService.GLOBAL_ACTION_POWER_DIALOG
+            else -> null
         }
+            ?: when {
+                App.isPieOrHigher -> when (gestureAction) {
+                    GestureAction.GlobalTakeScreenshot -> AccessibilityService.GLOBAL_ACTION_TAKE_SCREENSHOT
+                    GestureAction.GlobalLockScreen -> AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN
+                    else -> null
+                }
+                else -> null
+            }
+            ?: return
 
-        if (App.isPieOrHigher) {
-            if (gestureAction == GestureConsumer.GLOBAL_TAKE_SCREENSHOT) action = GLOBAL_ACTION_TAKE_SCREENSHOT
-            else if (gestureAction == GestureConsumer.GLOBAL_LOCK_SCREEN) action = GLOBAL_ACTION_LOCK_SCREEN
-        }
-
-        if (action == -1) return
-
-        val intent = Intent(ACTION_GLOBAL_ACTION)
-        intent.putExtra(EXTRA_GLOBAL_ACTION, action)
-
-        app.broadcast(intent)
-    }
-
-    companion object {
-
-        const val ACTION_GLOBAL_ACTION = "GlobalActionConsumer action"
-        const val EXTRA_GLOBAL_ACTION = "GlobalActionConsumer action extra"
-
-        val instance: GlobalActionGestureConsumer by lazy { GlobalActionGestureConsumer() }
-
+        broadcaster(Broadcast.Service.GlobalAction(action))
     }
 }
 

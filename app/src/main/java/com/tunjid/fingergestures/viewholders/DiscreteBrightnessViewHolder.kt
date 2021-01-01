@@ -21,131 +21,115 @@ import android.content.DialogInterface
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
 import android.text.InputType
-import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.TextView
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.observe
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ListAdapter
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.recyclerview.listAdapterOf
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
+import com.tunjid.fingergestures.models.uiState
+import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.androidx.view.util.inflate
-import com.tunjid.fingergestures.App
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapterListener
-import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer
-import com.tunjid.fingergestures.lifecycleOwner
+import com.tunjid.fingergestures.SetPreferenceEditor
+import com.tunjid.fingergestures.ui.main.Item
+import com.tunjid.fingergestures.canWriteToSettings
+import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
 import com.tunjid.fingergestures.models.Brightness
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.SLIDER_DELTA
+import com.tunjid.fingergestures.ui.main.Input
 
-class DiscreteBrightnessViewHolder(
-        itemView: View,
-        items: LiveData<List<Brightness>>,
-        listener: AppAdapterListener
-) : AppViewHolder(itemView, listener) {
+private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.DiscreteBrightness>()
+private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<Brightness, DiscreteItemViewHolder> by viewHolderDelegate()
 
-    init {
-        val title = itemView.findViewById<TextView>(R.id.title)
-        title.setText(R.string.discrete_brightness_title)
-        title.setOnClickListener {
-            MaterialAlertDialogBuilder(itemView.context)
-                    .setMessage(R.string.discrete_brightness_description)
-                    .show()
-        }
-
-        itemView.findViewById<RecyclerView>(R.id.item_list).run {
-            layoutManager = FlexboxLayoutManager(context).apply {
-                justifyContent = JustifyContent.FLEX_START
-                flexDirection = FlexDirection.ROW
-                alignItems = AlignItems.CENTER
+fun ViewGroup.discreteBrightness() = viewHolderFrom(ViewholderHorizontalListBinding::inflate).apply {
+    listAdapter = listAdapterOf(
+        initialItems = listOf(),
+        viewHolderCreator = { viewGroup, _ ->
+            DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
+                item.editor - it.value
             }
-            adapter = listAdapterOf(
-                    initialItems = items.value ?: listOf(),
-                    viewHolderCreator = { viewGroup, _ ->
-                        DiscreteItemViewHolder(viewGroup.inflate(R.layout.viewholder_chip)) {
-                            BrightnessGestureConsumer.instance.removeDiscreteBrightnessValue(it.value)
-                            listener.notifyItemChanged(SLIDER_DELTA)
-                            bind()
-                        }
-                    },
-                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-            ).also { items.observe(lifecycleOwner, it::submitList) }
-        }
+        },
+        viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+    )
+    binding.title.setText(R.string.discrete_brightness_title)
+    binding.title.setOnClickListener {
+        MaterialAlertDialogBuilder(itemView.context)
+            .setMessage(R.string.discrete_brightness_description)
+            .show()
+    }
+    binding.add.setOnClickListener {
+        val builder = MaterialAlertDialogBuilder(itemView.context)
 
-        itemView.findViewById<View>(R.id.add).setOnClickListener {
-            val builder = MaterialAlertDialogBuilder(itemView.context)
-
-            if (App.canWriteToSettings()) requestDiscreteValue(builder)
-            else builder.setMessage(R.string.permission_required).show()
+        if (itemView.context.canWriteToSettings) requestDiscreteValue(builder)
+        else builder.setMessage(R.string.permission_required).show()
+    }
+    binding.itemList.apply {
+        adapter = listAdapter
+        layoutManager = FlexboxLayoutManager(context).apply {
+            justifyContent = JustifyContent.FLEX_START
+            flexDirection = FlexDirection.ROW
+            alignItems = AlignItems.CENTER
         }
     }
+}
 
-    override fun bind() {
-        super.bind()
-        if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
+fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.DiscreteBrightness) = binding.run {
+    this@bind.item = item
+
+    listAdapter.submitList(item.brightnesses)
+    if (!itemView.context.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
+}
+
+private fun BindingViewHolder<ViewholderHorizontalListBinding>.requestDiscreteValue(builder: MaterialAlertDialogBuilder) {
+    val context = itemView.context
+
+    val container = FrameLayout(context)
+    val editText = EditText(context)
+
+    val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+    params.rightMargin = context.resources.getDimensionPixelSize(R.dimen.single_and_half_margin)
+    params.leftMargin = params.rightMargin
+
+    container.addView(editText, params)
+
+    val alertDialog = builder.setTitle(R.string.discrete_brightness_hint)
+        .setView(container)
+        .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+        .setPositiveButton(R.string.ok) { dialog, _ -> editText.onDiscreteValueEntered(dialog, item.editor) }
+        .create()
+
+    editText.imeOptions = EditorInfo.IME_ACTION_SEND
+    editText.inputType = InputType.TYPE_CLASS_NUMBER
+    editText.filters = arrayOf<InputFilter>(LengthFilter(2))
+    editText.setOnEditorActionListener { _, actionId, _ ->
+        if (actionId == EditorInfo.IME_ACTION_SEND) editText.onDiscreteValueEntered(alertDialog, item.editor)
+        true
     }
 
-    private fun onDiscreteValueEntered(dialogInterface: DialogInterface, editText: EditText) {
-        val discreteValue = editText.text.toString()
-        var value = -1
+    alertDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+    alertDialog.show()
+}
 
-        try {
-            value = Integer.valueOf(discreteValue)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+private fun EditText.onDiscreteValueEntered(dialogInterface: DialogInterface, editor: SetPreferenceEditor<Int>) {
+    text.toString()
+        .toIntOrNull()
+        ?.takeIf(::isValidValue)
+        ?.let(editor::plus)
 
-        if (isValidValue(value)) {
-            BrightnessGestureConsumer.instance.addDiscreteBrightnessValue(discreteValue)
-            listener.notifyItemChanged(SLIDER_DELTA)
-            bind()
-        }
+    dialogInterface.dismiss()
+}
 
-        dialogInterface.dismiss()
-    }
-
-    private fun requestDiscreteValue(builder: MaterialAlertDialogBuilder) {
-        val context = itemView.context
-
-        val container = FrameLayout(context)
-        val editText = EditText(context)
-
-        val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        params.rightMargin = context.resources.getDimensionPixelSize(R.dimen.single_and_half_margin)
-        params.leftMargin = params.rightMargin
-
-        container.addView(editText, params)
-
-        val alertDialog = builder.setTitle(R.string.discrete_brightness_hint)
-                .setView(container)
-                .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                .setPositiveButton(R.string.ok) { dialog, _ -> onDiscreteValueEntered(dialog, editText) }
-                .create()
-
-        editText.imeOptions = EditorInfo.IME_ACTION_SEND
-        editText.inputType = InputType.TYPE_CLASS_NUMBER
-        editText.filters = arrayOf<InputFilter>(LengthFilter(2))
-        editText.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEND) onDiscreteValueEntered(alertDialog, editText)
-            true
-        }
-
-        alertDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
-        alertDialog.show()
-    }
-
-    private fun isValidValue(value: Int): Boolean {
-        val invalid = value < 1 || value > 99
-        if (invalid) listener.showSnackbar(R.string.discrete_brightness_error)
-        return !invalid
-    }
+private fun EditText.isValidValue(value: Int): Boolean {
+    val invalid = value < 1 || value > 99
+    if (invalid) ::uiState.updatePartial { copy(snackbarText = context.getString(R.string.discrete_brightness_error)) }
+    return !invalid
 }

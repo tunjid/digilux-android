@@ -20,8 +20,9 @@ package com.tunjid.fingergestures
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.tunjid.fingergestures.di.dagger
 
 class WallpaperBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) =
-            BackgroundManager.instance.onIntentReceived(intent)
+        context.dagger.appComponent.dependencies().backgroundManager.onIntentReceived(intent)
 }

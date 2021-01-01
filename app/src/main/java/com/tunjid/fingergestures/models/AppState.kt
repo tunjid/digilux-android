@@ -19,69 +19,39 @@ package com.tunjid.fingergestures.models
 
 import android.content.pm.ApplicationInfo
 import com.tunjid.androidx.recyclerview.diff.Differentiable
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.gestureconsumers.GestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.GestureAction
+import io.reactivex.Flowable
+import io.reactivex.rxkotlin.Flowables
 
-data class AppState(
-        val links: List<TextLink> = listOf(),
-        val brightnessValues: List<Brightness> = listOf(),
-        val popUpActions: List<Action> = listOf(),
-        val availableActions: List<Action> = listOf(),
-        val installedApps: List<Package> = listOf(),
-        val rotationApps: List<Package> = listOf(),
-        val excludedRotationApps: List<Package> = listOf(),
-        val rotationScreenedApps: List<Package> = listOf(),
-        val permissionsQueue: List<Int> = listOf()
+data class Unique<T>(
+    val item: T,
+    val time: Long = System.currentTimeMillis()
 )
 
 data class Package(val app: ApplicationInfo) : Differentiable {
     override val diffId: String get() = app.packageName
 
     override fun areContentsTheSame(other: Differentiable): Boolean =
-            (other as? Package)?.let { it.diffId == diffId } ?: super.areContentsTheSame(other)
+        (other as? Package)?.let { it.diffId == diffId } ?: super.areContentsTheSame(other)
 }
 
-data class Action(@GestureConsumer.GestureAction val value: Int) : Differentiable {
+data class PopUp(val value: GestureAction, val iconColor: Int) : Differentiable {
     override val diffId: String get() = value.toString()
     override fun areContentsTheSame(other: Differentiable): Boolean =
-            (other as? Action)?.let { it.value == value } ?: super.areContentsTheSame(other)
+        (other as? PopUp)?.let { it.value == value } ?: super.areContentsTheSame(other)
 }
 
-data class Brightness(val value: String) : Differentiable {
-    override val diffId: String get() = value
+data class Brightness(val value: Int) : Differentiable {
+    override val diffId: String get() = value.toString()
     override fun areContentsTheSame(other: Differentiable): Boolean =
-            (other as? Brightness)?.let { it.value == value } ?: super.areContentsTheSame(other)
+        (other as? Brightness)?.let { it.value == value } ?: super.areContentsTheSame(other)
 }
 
-data class UiUpdate(
-        val titleRes: Int = R.string.blank_string,
-        val iconRes: Int = R.drawable.ic_add_24dp,
-        val fabVisible: Boolean = false
-)
+@Suppress("unused")
+val Any?.ignore
+    get() = Unit
 
-sealed class Shilling {
-    object Calm : Shilling()
-    data class Quip(val message: String) : Shilling()
-}
-
-val AppState.uiUpdate
-    get() = when (permissionsQueue.lastOrNull()) {
-        MainActivity.DO_NOT_DISTURB_CODE -> UiUpdate(
-                titleRes = R.string.enable_do_not_disturb,
-                iconRes = R.drawable.ic_volume_loud_24dp
-        )
-        MainActivity.ACCESSIBILITY_CODE -> UiUpdate(
-                titleRes = R.string.enable_accessibility,
-                iconRes = R.drawable.ic_human_24dp
-        )
-        MainActivity.SETTINGS_CODE -> UiUpdate(
-                titleRes = R.string.enable_write_settings,
-                iconRes = R.drawable.ic_settings_white_24dp
-        )
-        MainActivity.STORAGE_CODE -> UiUpdate(
-                titleRes = R.string.enable_storage_settings,
-                iconRes = R.drawable.ic_storage_24dp
-        )
-        else -> UiUpdate()
-    }.copy(fabVisible = permissionsQueue.isNotEmpty())
+fun Flowable<List<GestureAction>>.toPopUpActions(colorSource: Flowable<Int>) = Flowables.combineLatest(
+    this,
+    colorSource
+) { gestures, color -> gestures.map { PopUp(it, color) } }

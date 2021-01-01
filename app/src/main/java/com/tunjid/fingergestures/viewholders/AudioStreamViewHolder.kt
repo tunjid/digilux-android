@@ -17,46 +17,36 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import android.view.View
+import android.view.ViewGroup
 import android.widget.RadioButton
-import android.widget.RadioGroup
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.MainActivity.Companion.DO_NOT_DISTURB_CODE
-import com.tunjid.fingergestures.adapters.AppAdapterListener
+import androidx.core.view.children
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
+import com.tunjid.fingergestures.ui.main.Item
+import com.tunjid.fingergestures.databinding.ViewholderAudioStreamTypeBinding
 import com.tunjid.fingergestures.gestureconsumers.AudioGestureConsumer
-import com.tunjid.fingergestures.viewmodels.AppViewModel.Companion.AUDIO_DELTA
+import com.tunjid.fingergestures.ui.main.Input
 
+private var BindingViewHolder<ViewholderAudioStreamTypeBinding>.item by viewHolderDelegate<Item.AudioStream>()
 
-class AudioStreamViewHolder(
-        itemView: View,
-        listener: AppAdapterListener
-) : AppViewHolder(itemView, listener) {
+fun ViewGroup.audioStream() = viewHolderFrom(ViewholderAudioStreamTypeBinding::inflate).apply {
+    binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
+        item.consumer(AudioGestureConsumer.Stream.forId(checkedId).type)
+    }
+}
 
-    private val radioGroup: RadioGroup = itemView.findViewById(R.id.radio_group)
+fun BindingViewHolder<ViewholderAudioStreamTypeBinding>.bind(item: Item.AudioStream) = binding.run {
+    this@bind.item = item
 
-    override fun bind() {
-        super.bind()
-        val hasDoNotDisturbAccess = App.hasDoNotDisturbAccess()
-        if (!hasDoNotDisturbAccess) listener.requestPermission(DO_NOT_DISTURB_CODE)
+    if (!item.hasDoNotDisturbAccess) item.input.accept(Input.Permission.Request.DoNotDisturb)
 
-        val gestureConsumer = AudioGestureConsumer.instance
+    radioGroup.check(item.stream.id)
 
-        radioGroup.check(gestureConsumer.checkedId)
-        radioGroup.setOnCheckedChangeListener { _, checkedId -> onStreamPicked(checkedId) }
-
-        val count = radioGroup.childCount
-
-        for (i in 0 until count) {
-            val view = radioGroup.getChildAt(i) as? RadioButton ?: continue
-
-            view.isEnabled = hasDoNotDisturbAccess
-            view.text = gestureConsumer.getStreamTitle(view.id)
+    radioGroup.children
+        .filterIsInstance<RadioButton>()
+        .forEach { radioButton ->
+            radioButton.isEnabled = item.hasDoNotDisturbAccess
+            radioButton.text = item.titleFunction(radioButton.id)
         }
-    }
-
-    private fun onStreamPicked(checkedId: Int) {
-        AudioGestureConsumer.instance.streamType = checkedId
-        listener.notifyItemChanged(AUDIO_DELTA)
-    }
 }

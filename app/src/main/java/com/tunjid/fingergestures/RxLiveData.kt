@@ -19,6 +19,7 @@ package com.tunjid.fingergestures
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.LiveDataReactiveStreams
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Transformations
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -26,13 +27,48 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 
 fun <T> Flowable<T>.toLiveData(errorHandler: ((Throwable) -> Unit)? = null): LiveData<T> =
-        MainThreadLiveData(this, errorHandler)
+    MainThreadLiveData(this, errorHandler)
 
 fun <T, R> LiveData<T>.map(mapper: (T) -> R): LiveData<R> =
-        Transformations.map(this, mapper)
+    Transformations.map(this, mapper)
 
 fun <T> LiveData<T>.distinctUntilChanged(): LiveData<T> =
-        Transformations.distinctUntilChanged(this)
+    Transformations.distinctUntilChanged(this)
+
+fun <T, R> LiveData<T>.mapDistinct(mapper: (T) -> R): LiveData<R> =
+    map(mapper).distinctUntilChanged()
+
+fun <T> LiveData<T>.filter(predicate: (T) -> Boolean): LiveData<T> {
+    val mediator = MediatorLiveData<T>()
+    val current = this.value
+    if (current != null && predicate(current)) mediator.value = current
+    mediator.addSource(this) { it.takeIf(predicate)?.let(mediator::setValue) }
+    return mediator
+}
+
+fun <T> LiveData<T>.filterUnhandledEvents(): LiveData<T> =
+    mapDistinct(::LiveDataEvent)
+        .map(LiveDataEvent<T>::unhandledContent)
+        .nonNull()
+
+fun <T> LiveData<T?>.nonNull(): LiveData<T> =
+    filter { it != null }.map { it!! }
+
+private data class LiveDataEvent<out T>(private val content: T) {
+
+    var hasBeenHandled = false
+        private set // Allow external read but not write
+
+    /**
+     * Returns the content and prevents its use again.
+     */
+    val unhandledContent: T?
+        get() = if (hasBeenHandled) null else {
+            hasBeenHandled = true
+            content
+        }
+
+}
 
 /**
  * [LiveDataReactiveStreams.fromPublisher] uses [LiveData.postValue] internally which swallows
@@ -42,8 +78,8 @@ fun <T> LiveData<T>.distinctUntilChanged(): LiveData<T> =
  * which does not swallow emissions.
  */
 private class MainThreadLiveData<T>(
-        val source: Flowable<T>,
-        val errorHandler: ((Throwable) -> Unit)? = null
+    val source: Flowable<T>,
+    val errorHandler: ((Throwable) -> Unit)? = null
 ) : LiveData<T>() {
 
     val disposeBag = CompositeDisposable()
@@ -51,12 +87,12 @@ private class MainThreadLiveData<T>(
     override fun onActive() {
         disposeBag.clear()
         source
-                .observeOn(AndroidSchedulers.mainThread())
-                .run {
-                    if (errorHandler == null) subscribe(this@MainThreadLiveData::setValue)
-                    else subscribe(this@MainThreadLiveData::setValue, errorHandler)
-                }
-                .addTo(disposeBag)
+            .observeOn(AndroidSchedulers.mainThread())
+            .run {
+                if (errorHandler == null) subscribe(this@MainThreadLiveData::setValue)
+                else subscribe(this@MainThreadLiveData::setValue, errorHandler)
+            }
+            .addTo(disposeBag)
     }
 
     override fun onInactive() = disposeBag.clear()

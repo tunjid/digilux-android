@@ -52,5 +52,6 @@
         <item>@string/joke_parents</item>
         <item>@string/joke_game</item>
         <item>@string/joke_wenger</item>
+        <item>@string/joke_compose</item>
     </array>
 </resources>

@@ -17,6 +17,7 @@
 
 package com.tunjid.fingergestures.viewholders
 
+import android.content.pm.ApplicationInfo
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -26,23 +27,23 @@ import com.tunjid.fingergestures.models.Package
 
 class PackageViewHolder(
         itemView: View,
-        private val listener: (String) -> Unit
+        private val listener: (ApplicationInfo) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
-    private var packageName: String? = null
+    private var app: ApplicationInfo? = null
 
     private val imageView: ImageView = itemView.findViewById(R.id.icon)
     private val textView: TextView? = itemView.findViewById(R.id.text)
 
     init {
-        itemView.setOnClickListener { packageName?.let(listener) }
+        itemView.setOnClickListener { app?.let(listener) }
     }
 
     fun bind(item: Package?) {
         if (item == null) return
         val packageManager = itemView.context.packageManager
 
-        packageName = item.app.packageName
+        app = item.app
         imageView.setImageDrawable(packageManager.getApplicationIcon(item.app))
         if (textView != null) textView.text = packageManager.getApplicationLabel(item.app)
     }

@@ -73,7 +73,7 @@
                 android:resource="@xml/provider_paths"/>
         </provider>
         <activity
-            android:name=".activities.MainActivity"
+            android:name=".ui.main.MainActivity"
             android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -86,17 +86,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.BrightnessActivity"
+            android:name=".ui.brightness.BrightnessDialogActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:theme="@style/BrightnessActivityTheme" />
         <activity
-            android:name=".activities.DockingActivity"
+            android:name=".ui.docking.DockingActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:theme="@style/DockingActivityTheme" />
         <activity
-            android:name=".activities.PopupActivity"
+            android:name=".ui.popup.PopupDialogActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:theme="@style/PopupActivityTheme" />

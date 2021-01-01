@@ -17,155 +17,140 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.NotificationManager.INTERRUPTION_FILTER_ALARMS
 import android.app.NotificationManager.INTERRUPTION_FILTER_ALL
-import android.content.Intent
+import android.content.Context
 import android.media.AudioManager
 import android.media.AudioManager.ADJUST_LOWER
 import android.media.AudioManager.ADJUST_RAISE
+import android.os.Build
 import androidx.annotation.IdRes
-import androidx.annotation.IntDef
-import androidx.annotation.IntRange
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.R
+import androidx.core.content.getSystemService
+import com.jakewharton.rx.replayingShare
+import com.tunjid.fingergestures.*
+import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.di.AppBroadcasts
+import com.tunjid.fingergestures.di.AppContext
+import com.tunjid.fingergestures.models.Broadcast
+import io.reactivex.Flowable
 import java.util.concurrent.TimeUnit.MILLISECONDS
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.max
 import kotlin.math.min
 
-class AudioGestureConsumer private constructor() : GestureConsumer {
+@Singleton
+class AudioGestureConsumer @Inject constructor(
+    @AppContext private val context: Context,
+    reactivePreferences: ReactivePreferences,
+    appBroadcasts: AppBroadcasts,
+    private val broadcaster: AppBroadcaster
+) : GestureConsumer {
 
-    var volumeDelta: Int
-        @IntRange(from = GestureConsumer.ZERO_PERCENT.toLong(), to = GestureConsumer.HUNDRED_PERCENT.toLong())
+    val incrementPreference: ReactivePreference<Int> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
+        key = INCREMENT_VALUE,
+        default = DEF_INCREMENT_VALUE
+    )
+    val sliderPreference: ReactivePreference<Boolean> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
+        key = SHOWS_AUDIO_SLIDER,
+        default = true
+    )
+    val streamTypePreference: ReactivePreference<Int> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
+        key = AUDIO_STREAM_TYPE,
+        default = Stream.Default.type
+    )
 
-        get() = App.transformApp({ app -> app.preferences.getInt(INCREMENT_VALUE, DEF_INCREMENT_VALUE) }, DEF_INCREMENT_VALUE)
-        set(@IntRange(
-                from = GestureConsumer.ZERO_PERCENT.toLong(),
-                to = GestureConsumer.HUNDRED_PERCENT.toLong()
-        ) volumeDelta) = App.withApp { app -> app.preferences.edit().putInt(INCREMENT_VALUE, volumeDelta).apply() }
+    val hasDoNotDisturbAccess: Flowable<Boolean> = appBroadcasts.filterIsInstance<Broadcast.AppResumed>()
+        .map { context.hasDoNotDisturbAccess }
+        .replayingShare()
 
-
-    var streamType: Int
-        get() = App.transformApp({ app -> app.preferences.getInt(AUDIO_STREAM_TYPE, STREAM_TYPE_DEFAULT) }, STREAM_TYPE_DEFAULT)
-        set(@IdRes resId) {
-            @AudioStream val streamType = getStreamTypeFromId(resId)
-            App.withApp { app -> app.preferences.edit().putInt(AUDIO_STREAM_TYPE, streamType).apply() }
-        }
+    private val audioManager get() = context.getSystemService<AudioManager>()!!
 
     private val flags: Int
         get() {
-            val shouldShowSlider = shouldShowSliders()
-            if (shouldShowSlider && streamType == STREAM_TYPE_ALL) broadcastExpandVolumeIntent()
+            val shouldShowSlider = sliderPreference.value
+            if (shouldShowSlider && streamTypePreference.value == Stream.All.type) broadcastExpandVolumeIntent()
             return if (shouldShowSlider) AudioManager.FLAG_SHOW_UI else NO_FLAGS
         }
 
-    val checkedId: Int
-        @IdRes
-        get() {
-            return when (streamType) {
-                STREAM_TYPE_DEFAULT -> R.id.stream_default
-                STREAM_TYPE_MEDIA -> R.id.stream_media
-                STREAM_TYPE_RING -> R.id.stream_ring
-                STREAM_TYPE_ALARM -> R.id.stream_alarm
-                STREAM_TYPE_ALL -> R.id.stream_all
-                else -> R.id.stream_default
-            }
-        }
+    override fun accepts(gesture: GestureAction): Boolean =
+        gesture == GestureAction.IncreaseAudio || gesture == GestureAction.ReduceAudio
 
-
-    @IntDef(STREAM_TYPE_MEDIA, STREAM_TYPE_RING, STREAM_TYPE_ALARM, STREAM_TYPE_ALL, STREAM_TYPE_DEFAULT)
-    internal annotation class AudioStream
-
-    @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
-        return gesture == GestureConsumer.INCREASE_AUDIO || gesture == GestureConsumer.REDUCE_AUDIO
-    }
-
-    @SuppressLint("SwitchIntDef")
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) =
-            adjustAudio(gestureAction == GestureConsumer.INCREASE_AUDIO)
-
-    fun canSetVolumeDelta(): Boolean =
-            App.hasDoNotDisturbAccess() && streamType != STREAM_TYPE_DEFAULT
-
-    fun shouldShowSliders(): Boolean =
-            App.transformApp({ app -> app.preferences.getBoolean(SHOWS_AUDIO_SLIDER, true) }, true)
+    override fun onGestureActionTriggered(gestureAction: GestureAction) =
+        adjustAudio(increase = gestureAction == GestureAction.IncreaseAudio)
 
     private fun setStreamVolume(increase: Boolean, audioManager: AudioManager, streamType: Int) {
         val currentVolume = audioManager.getStreamVolume(streamType)
         val newVolume = if (increase) increase(currentVolume, streamType, audioManager) else reduce(currentVolume, streamType, audioManager)
 
-        val ringStream = STREAM_TYPE_RING == streamType
+        val ringStream = Stream.Ring.type == streamType
         val turnDnDOn = ringStream && currentVolume == 0 && !increase
         val turnDnDOff = ringStream && newVolume != 0 && increase
 
-        if (turnDnDOn || turnDnDOff) App.withApp { app ->
-            val notificationManager = app.getSystemService(NotificationManager::class.java)
-                    ?: return@withApp
+        if (turnDnDOn || turnDnDOff) {
+            val notificationManager = context.getSystemService(NotificationManager::class.java)
+                ?: return
 
             val filter = if (turnDnDOn) INTERRUPTION_FILTER_ALARMS else INTERRUPTION_FILTER_ALL
-            if (notificationManager.currentInterruptionFilter == filter) return@withApp
-
-            notificationManager.setInterruptionFilter(filter)
+            if (notificationManager.currentInterruptionFilter != filter) notificationManager.setInterruptionFilter(filter)
         }
 
         if (!turnDnDOn) audioManager.setStreamVolume(streamType, newVolume, flags)
     }
 
-    fun setShowsSliders(visible: Boolean) =
-            App.withApp { app -> app.preferences.edit().putBoolean(SHOWS_AUDIO_SLIDER, visible).apply() }
+    private fun reduce(currentValue: Int, stream: Int, audioManager: AudioManager): Int = max(
+        a = currentValue - normalizePercentageForStream(incrementPreference.value, stream, audioManager),
+        b = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P -> audioManager.getStreamMinVolume(stream)
+            else -> MIN_VOLUME
+        })
 
-    private fun reduce(currentValue: Int, stream: Int, audioManager: AudioManager): Int =
-            max(currentValue - normalizePercentageForStream(volumeDelta, stream, audioManager), MIN_VOLUME)
-
-    private fun increase(currentValue: Int, stream: Int, audioManager: AudioManager): Int =
-            min(currentValue + normalizePercentageForStream(volumeDelta, stream, audioManager), audioManager.getStreamMaxVolume(stream))
+    private fun increase(currentValue: Int, stream: Int, audioManager: AudioManager): Int = min(
+        a = currentValue + normalizePercentageForStream(incrementPreference.value, stream, audioManager),
+        b = audioManager.getStreamMaxVolume(stream)
+    )
 
     private fun adjustAudio(increase: Boolean) {
-        requireAppAndAudioManager({ _, audioManager ->
-            if (!App.hasDoNotDisturbAccess()) return@requireAppAndAudioManager Void.TYPE
-            when (val streamType = streamType) {
-                STREAM_TYPE_DEFAULT -> audioManager.adjustSuggestedStreamVolume(if (increase) ADJUST_RAISE else ADJUST_LOWER, streamType, flags)
-                STREAM_TYPE_MEDIA, STREAM_TYPE_ALARM, STREAM_TYPE_RING -> setStreamVolume(increase, audioManager, streamType)
-                STREAM_TYPE_ALL -> {
-                    setStreamVolume(increase, audioManager, STREAM_TYPE_MEDIA)
-                    setStreamVolume(increase, audioManager, STREAM_TYPE_RING)
-                    setStreamVolume(increase, audioManager, STREAM_TYPE_ALARM)
-                }
-                else -> audioManager.adjustSuggestedStreamVolume(if (increase) ADJUST_RAISE else ADJUST_LOWER, streamType, flags)
+        if (!context.hasDoNotDisturbAccess) return
+        when (val stream = Stream.forType(streamTypePreference.value)) {
+            Stream.Default -> audioManager.adjustSuggestedStreamVolume(if (increase) ADJUST_RAISE else ADJUST_LOWER, stream.type, flags)
+            Stream.Media, Stream.Alarm, Stream.Ring -> setStreamVolume(increase, audioManager, stream.type)
+            Stream.All -> {
+                setStreamVolume(increase, audioManager, Stream.Media.type)
+                setStreamVolume(increase, audioManager, Stream.Ring.type)
+                setStreamVolume(increase, audioManager, Stream.Alarm.type)
             }
-            Void.TYPE
-        }, Void.TYPE)
+            else -> audioManager.adjustSuggestedStreamVolume(if (increase) ADJUST_RAISE else ADJUST_LOWER, stream.type, flags)
+        }
     }
 
     fun getChangeText(percentage: Int): String {
-        return requireAppAndAudioManager({ app, audioManager ->
-            if (!App.hasDoNotDisturbAccess()) return@requireAppAndAudioManager app.getString(R.string.enable_do_not_disturb)
+        if (!context.hasDoNotDisturbAccess) return context.getString(R.string.enable_do_not_disturb)
+        val normalized = normalizePercentageForStream(percentage, streamTypePreference.value, audioManager)
 
-            val normalized = normalizePercentageForStream(percentage, streamType, audioManager)
-            val maxSteps = getMaxSteps(audioManager)
-
-            if (maxSteps == MANAGED_BY_SYSTEM)
-                app.getString(R.string.audio_stream_text_system)
-            else
-                app.getString(R.string.audio_stream_text, normalized, maxSteps)
-        }, EMPTY_STRING)
+        return when (val maxSteps = getMaxSteps(audioManager)) {
+            MANAGED_BY_SYSTEM -> context.getString(R.string.audio_stream_text_system)
+            else -> context.getString(R.string.audio_stream_text, normalized, maxSteps)
+        }
     }
 
-    fun getStreamTitle(@IdRes resId: Int): String = when (getStreamTypeFromId(resId)) {
-        STREAM_TYPE_DEFAULT -> App.transformApp({ app -> app.getString(R.string.audio_stream_default) }, EMPTY_STRING)
-        STREAM_TYPE_MEDIA -> requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_media, audioManager.getStreamMaxVolume(STREAM_TYPE_MEDIA)) }, EMPTY_STRING)
-        STREAM_TYPE_RING -> requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_ringtone, audioManager.getStreamMaxVolume(STREAM_TYPE_RING)) }, EMPTY_STRING)
-        STREAM_TYPE_ALARM -> requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_alarm, audioManager.getStreamMaxVolume(STREAM_TYPE_ALARM)) }, EMPTY_STRING)
-        STREAM_TYPE_ALL -> requireAppAndAudioManager({ app, audioManager -> app.getString(R.string.audio_stream_all, getMaxSteps(audioManager)) }, EMPTY_STRING)
-        else -> App.transformApp({ app -> app.getString(R.string.audio_stream_default) }, EMPTY_STRING)
+    fun getStreamTitle(@IdRes resId: Int): String = when (val stream = Stream.forId(resId)) {
+        Stream.Default -> context.getString(R.string.audio_stream_default)
+        Stream.Media -> context.getString(R.string.audio_stream_media, audioManager.getStreamMaxVolume(stream.type))
+        Stream.Ring -> context.getString(R.string.audio_stream_ringtone, audioManager.getStreamMaxVolume(stream.type))
+        Stream.Alarm -> context.getString(R.string.audio_stream_alarm, audioManager.getStreamMaxVolume(stream.type))
+        Stream.All -> context.getString(R.string.audio_stream_all)
+        else -> context.getString(R.string.audio_stream_default)
     }
 
     private fun normalizePercentageForStream(percentage: Int, streamType: Int, audioManager: AudioManager): Int {
-        val actualStreamType: Int = when (streamType) {
-            STREAM_TYPE_MEDIA, STREAM_TYPE_RING, STREAM_TYPE_ALARM -> streamType
-            else -> STREAM_TYPE_MEDIA
+        val actualStreamType: Int = when (Stream.forType(streamType)) {
+            Stream.Media, Stream.Ring, Stream.Alarm -> streamType
+            else -> Stream.Media.type
         }
 
         val streamMax = audioManager.getStreamMaxVolume(actualStreamType)
@@ -173,37 +158,48 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
     }
 
     private fun broadcastExpandVolumeIntent() {
-        val expandVolumeIntent = Intent(ACTION_EXPAND_VOLUME_CONTROLS)
-        App.delay(EXPAND_VOLUME_DELAY, MILLISECONDS) { App.withApp { app -> app.broadcast(expandVolumeIntent) } }
+        App.delay(EXPAND_VOLUME_DELAY, MILLISECONDS) { broadcaster(Broadcast.Service.ExpandVolumeControls) }
     }
 
-    @AudioStream
     private fun getStreamWithLargestMax(audioManager: AudioManager): Int {
-        val max = max(audioManager.getStreamMaxVolume(STREAM_TYPE_ALARM), audioManager.getStreamMaxVolume(STREAM_TYPE_RING))
-        return max(max, audioManager.getStreamMaxVolume(STREAM_TYPE_MEDIA))
+        val max = max(audioManager.getStreamMaxVolume(Stream.Alarm.type), audioManager.getStreamMaxVolume(Stream.Ring.type))
+        return max(max, audioManager.getStreamMaxVolume(Stream.Media.type))
     }
 
-    private fun getMaxSteps(audioManager: AudioManager): Int = when (val streamType = streamType) {
-        STREAM_TYPE_MEDIA, STREAM_TYPE_RING, STREAM_TYPE_ALARM -> audioManager.getStreamMaxVolume(streamType)
-        STREAM_TYPE_ALL -> getStreamWithLargestMax(audioManager)
+    private fun getMaxSteps(audioManager: AudioManager): Int = when (val stream = Stream.forType(streamTypePreference.value)) {
+        Stream.Media, Stream.Ring, Stream.Alarm -> audioManager.getStreamMaxVolume(stream.type)
+        Stream.All -> getStreamWithLargestMax(audioManager)
         else -> MANAGED_BY_SYSTEM
     }
 
-    private fun <T> requireAppAndAudioManager(biFunction: (App, AudioManager) -> T, defaultValue: T): T =
-            App.transformApp({ app ->
-                val audioManager = app.getSystemService(AudioManager::class.java)
-                if (audioManager != null) biFunction.invoke(app, audioManager) else defaultValue
-            }, defaultValue)
+    enum class Stream(
+        val id: Int,
+        val type: Int
+    ) {
+        Default(
+            id = R.id.stream_default,
+            type = AudioManager.USE_DEFAULT_STREAM_TYPE
+        ),
+        Media(
+            id = R.id.stream_media,
+            type = AudioManager.STREAM_MUSIC
+        ),
+        Ring(
+            id = R.id.stream_ring,
+            type = AudioManager.STREAM_RING
+        ),
+        Alarm(
+            id = R.id.stream_alarm,
+            type = AudioManager.STREAM_ALARM
+        ),
+        All(
+            id = R.id.stream_all,
+            type = Integer.MAX_VALUE
+        );
 
-    @AudioStream
-    private fun getStreamTypeFromId(@IdRes resId: Int): Int {
-        return when (resId) {
-            R.id.stream_default -> STREAM_TYPE_DEFAULT
-            R.id.stream_media -> STREAM_TYPE_MEDIA
-            R.id.stream_ring -> STREAM_TYPE_RING
-            R.id.stream_alarm -> STREAM_TYPE_ALARM
-            R.id.stream_all -> STREAM_TYPE_ALL
-            else -> STREAM_TYPE_DEFAULT
+        companion object {
+            fun forId(id: Int) = values().firstOrNull { it.id == id } ?: Default
+            fun forType(type: Int) = values().firstOrNull { it.type == type } ?: Default
         }
     }
 
@@ -213,21 +209,17 @@ class AudioGestureConsumer private constructor() : GestureConsumer {
         private const val MIN_VOLUME = 0
         private const val DEF_INCREMENT_VALUE = 20
         private const val EXPAND_VOLUME_DELAY = 200L
-        private const val STREAM_TYPE_MEDIA = AudioManager.STREAM_MUSIC
-        private const val STREAM_TYPE_RING = AudioManager.STREAM_RING
-        private const val STREAM_TYPE_ALARM = AudioManager.STREAM_ALARM
-        private const val STREAM_TYPE_DEFAULT = AudioManager.USE_DEFAULT_STREAM_TYPE
-        private const val STREAM_TYPE_ALL = Integer.MAX_VALUE
+
+        //        private const val STREAM_TYPE_MEDIA = AudioManager.STREAM_MUSIC
+//        private const val STREAM_TYPE_RING = AudioManager.STREAM_RING
+//        private const val STREAM_TYPE_ALARM = AudioManager.STREAM_ALARM
+//        private const val STREAM_TYPE_DEFAULT = AudioManager.USE_DEFAULT_STREAM_TYPE
+//        private const val STREAM_TYPE_ALL = Integer.MAX_VALUE
         private const val MANAGED_BY_SYSTEM = -1
 
-        const val ACTION_EXPAND_VOLUME_CONTROLS = "AudioGestureConsumer expand volume"
         private const val INCREMENT_VALUE = "audio increment value"
         private const val AUDIO_STREAM_TYPE = "audio stream type"
         private const val SHOWS_AUDIO_SLIDER = "audio slider show"
-        private const val EMPTY_STRING = ""
-
-        val instance: AudioGestureConsumer  by lazy { AudioGestureConsumer() }
-
     }
 }
 

@@ -17,71 +17,82 @@
 
 package com.tunjid.fingergestures
 
-
-import android.content.SharedPreferences
 import io.reactivex.Flowable
-import io.reactivex.processors.BehaviorProcessor
-import io.reactivex.schedulers.Schedulers
 import java.util.*
 import kotlin.collections.HashSet
 
+interface SetPreferenceEditor<V : Any> {
+    /**
+     * Adds an item to the set.
+     * Returns false if the item could not be added for whatever reason.
+     */
+    operator fun plus(value: V): Boolean
 
-class SetManager<T : Any>(private val sorter: Comparator<T>,
-                          private val addFilter: (String) -> Boolean,
-                          private val stringMapper: (String) -> T?,
-                          private val objectMapper: (T) -> String) {
+    /**
+     * Removes an item from the set
+     */
+    operator fun minus(value: V)
+}
 
-    fun addToSet(value: String, preferencesName: String): Boolean {
-        if (!addFilter.invoke(preferencesName)) return false
+interface SetPreference {
+    val preferenceName: String
+}
 
-        val set = getSet(preferencesName)
-        set.add(value)
-        saveSet(set, preferencesName)
+class SetManager<K : SetPreference, V : Any>(
+    keys: Iterable<K>,
+    private val reactivePreferences: ReactivePreferences,
+    private val sorter: Comparator<V>,
+    private val addFilter: (K) -> Boolean,
+    private val stringMapper: (String) -> V?,
+    private val objectMapper: (V) -> String
+) {
+
+    private val reactivePreferenceMap = keys.map { key ->
+        key to ReactivePreference(reactivePreferences, key.preferenceName, emptySet<String>())
+            .monitor
+            .map { it.mapNotNull(stringMapper) }
+    }.toMap()
+
+    private val editorMap = keys.map { key ->
+        key to object : SetPreferenceEditor<V> {
+            override fun plus(value: V) = addToSet(key, value)
+
+            override fun minus(value: V) = removeFromSet(key, value)
+        }
+    }.toMap()
+
+    fun editorFor(key: K) = editorMap.getValue(key)
+
+    private fun addToSet(key: K, value: V): Boolean {
+        if (!addFilter.invoke(key)) return false
+
+        val set = getSet(key)
+        set.add(objectMapper(value))
+        saveSet(set, key)
 
         return true
     }
 
-    fun removeFromSet(packageName: String, preferencesName: String) {
-        val set = getSet(preferencesName)
-        set.remove(packageName)
-        saveSet(set, preferencesName)
+    private fun removeFromSet(key: K, value: V) {
+        val set = getSet(key)
+        set.remove(objectMapper(value))
+        saveSet(set, key)
     }
 
-    fun getList(preferenceName: String): List<String> = stream(preferenceName)
+    fun getItems(key: K): List<V> = stream(key).mapNotNull(stringMapper)
 
-    fun getItems(preferenceName: String): List<T> = stream(preferenceName).mapNotNull(stringMapper)
+    private fun stream(key: K): List<String> = getSet(key)
+        .mapNotNull(stringMapper)
+        .sortedWith(sorter)
+        .map(objectMapper)
 
-    private fun stream(preferenceName: String): List<String> = getSet(preferenceName)
-            .mapNotNull(stringMapper)
-            .sortedWith(sorter)
-            .map(objectMapper)
-
-    fun getSet(preferencesName: String): MutableSet<String> = HashSet<String>().apply {
-        val saved = App.transformApp { app -> app.preferences.getStringSet(preferencesName, emptySet())?.filterNotNull() }
+    fun getSet(key: K): MutableSet<String> = HashSet<String>().apply {
+        val saved = reactivePreferences.preferences.getStringSet(key.preferenceName, emptySet())?.filterNotNull()
         if (saved != null) addAll(saved)
     }
 
-    private fun saveSet(set: Set<String>, preferencesName: String) =
-            App.withApp { app -> app.preferences.edit().putStringSet(preferencesName, set).apply() }
+    private fun saveSet(set: Set<String>, key: K) =
+        reactivePreferences.preferences.edit().putStringSet(key.preferenceName, set).apply()
 
-    fun itemsFlowable(preferencesName: String): Flowable<List<T>> {
-        val processor = BehaviorProcessor.create<List<T>>()
-        val prefs = App.transformApp(App::preferences)!!
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == preferencesName) processor.onNext(getItems(preferencesName))
-        }
-
-        return processor.subscribeOn(Schedulers.io())
-                .startWith(getItems(preferencesName))
-                .doOnSubscribe {
-                    listener.also(prefs::registerOnSharedPreferenceChangeListener)
-                            .let(listeners::add)
-                }
-                .doFinally {
-                    listener.also(prefs::unregisterOnSharedPreferenceChangeListener)
-                            .let(listeners::remove)
-                }
-    }
-
-    private val listeners = mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
+    fun itemsFlowable(key: K): Flowable<List<V>> = reactivePreferenceMap.getValue(key)
 }

@@ -18,43 +18,38 @@
 package com.tunjid.fingergestures.gestureconsumers
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import com.tunjid.fingergestures.App
+import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.models.Broadcast
+import javax.inject.Inject
+import javax.inject.Singleton
 
-
-class NotificationGestureConsumer private constructor() : GestureConsumer {
+@Singleton
+class NotificationGestureConsumer @Inject constructor(
+    private val broadcaster: AppBroadcaster
+) : GestureConsumer {
 
     @SuppressLint("SwitchIntDef")
-    override fun accepts(@GestureConsumer.GestureAction gesture: Int): Boolean {
+    override fun accepts(gesture: GestureAction): Boolean {
         return when (gesture) {
-            GestureConsumer.NOTIFICATION_UP, GestureConsumer.NOTIFICATION_DOWN, GestureConsumer.NOTIFICATION_TOGGLE -> true
+            GestureAction.NotificationUp,
+            GestureAction.NotificationDown,
+            GestureAction.NotificationToggle -> true
             else -> false
         }
     }
 
     @SuppressLint("SwitchIntDef")
-    override fun onGestureActionTriggered(@GestureConsumer.GestureAction gestureAction: Int) {
+    override fun onGestureActionTriggered(gestureAction: GestureAction) {
         when (gestureAction) {
-            GestureConsumer.NOTIFICATION_UP,
-            GestureConsumer.NOTIFICATION_DOWN,
-            GestureConsumer.NOTIFICATION_TOGGLE -> App.withApp { app ->
-                app.broadcast(Intent(when (gestureAction) {
-                    GestureConsumer.NOTIFICATION_UP -> ACTION_NOTIFICATION_UP
-                    GestureConsumer.NOTIFICATION_DOWN -> ACTION_NOTIFICATION_DOWN
-                    else -> ACTION_NOTIFICATION_TOGGLE
-                }))
-            }
+            GestureAction.NotificationUp,
+            GestureAction.NotificationDown,
+            GestureAction.NotificationToggle -> broadcaster(when (gestureAction) {
+                GestureAction.NotificationUp -> Broadcast.Service.ShadeUp
+                GestureAction.NotificationDown -> Broadcast.Service.ShadeDown
+                else -> Broadcast.Service.ShadeToggle
+            })
+            else -> Unit
         }
-    }
-
-    companion object {
-
-        const val ACTION_NOTIFICATION_UP = "NotificationGestureConsumer up"
-        const val ACTION_NOTIFICATION_DOWN = "NotificationGestureConsumer down"
-        const val ACTION_NOTIFICATION_TOGGLE = "NotificationGestureConsumer toggle"
-
-        val instance: NotificationGestureConsumer by lazy { NotificationGestureConsumer() }
-
     }
 }
 
