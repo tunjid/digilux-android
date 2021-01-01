@@ -111,7 +111,7 @@ class AudioGestureConsumer @Inject constructor(
 
     private fun increase(currentValue: Int, stream: Int, audioManager: AudioManager): Int = min(
         a = currentValue + normalizePercentageForStream(incrementPreference.value, stream, audioManager),
-        b = audioManager.getStreamMaxVolume(stream).also { println("max vol: $it") }
+        b = audioManager.getStreamMaxVolume(stream)
     )
 
     private fun adjustAudio(increase: Boolean) {
