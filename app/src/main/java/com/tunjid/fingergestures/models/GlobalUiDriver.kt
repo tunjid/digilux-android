@@ -150,10 +150,7 @@ class GlobalUiDriver(
     private fun updateFabState(state: FabPositionalState) {
         val isShilling = when (val shill = state.shilling) {
             Shilling.Calm -> false
-            is Shilling.Quip -> {
-                println("Shilling: ${shill.message}")
-                binding.upgradePrompt.setText(shill.message).let { true }
-            }
+            is Shilling.Quip -> binding.upgradePrompt.setText(shill.message).let { true }
         }
 
         if (state.fabVisible) binding.fab.isVisible = true

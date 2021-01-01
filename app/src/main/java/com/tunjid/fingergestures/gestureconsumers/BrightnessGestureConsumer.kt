@@ -30,6 +30,7 @@ import com.jakewharton.rx.replayingShare
 import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDisposable
 import com.tunjid.fingergestures.managers.PurchasesManager
@@ -52,6 +53,7 @@ class BrightnessGestureConsumer @Inject constructor(
     reactivePreferences: ReactivePreferences,
     private val broadcaster: AppBroadcaster,
     private val purchasesManager: PurchasesManager,
+    appBroadcasts: AppBroadcasts,
     appDisposable: AppDisposable
 ) : GestureConsumer {
 
@@ -171,18 +173,12 @@ class BrightnessGestureConsumer @Inject constructor(
             ::SliderPair,
         ),
         Flowables.combineLatest(
-            purchasesManager.state,
+            purchasesManager.state.map(PurchasesManager.State::isPremium),
+            appBroadcasts.filterIsInstance<Broadcast.AppResumed>().map { hasOverlayPermission },
             screenDimmerEnabledPreference.monitor,
-            screenDimmerPercentPreference.monitor
-        ) { purchaseState, dimmerEnabled, dimmerPercent ->
-            DimmerState(
-                enabled = purchaseState.isPremium,
-                // TODO: Make reactive
-                visible = hasOverlayPermission,
-                checked = dimmerEnabled,
-                percentage = dimmerPercent
-            )
-        },
+            screenDimmerPercentPreference.monitor,
+            :: DimmerState
+        ),
         adaptiveBrightnessPreference.monitor,
         logarithmicBrightnessPreference.monitor,
         showSliderPreference.monitor,

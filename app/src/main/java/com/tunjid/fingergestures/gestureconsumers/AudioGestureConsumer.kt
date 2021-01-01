@@ -17,7 +17,6 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.NotificationManager.INTERRUPTION_FILTER_ALARMS
 import android.app.NotificationManager.INTERRUPTION_FILTER_ALL
@@ -25,12 +24,16 @@ import android.content.Context
 import android.media.AudioManager
 import android.media.AudioManager.ADJUST_LOWER
 import android.media.AudioManager.ADJUST_RAISE
+import android.os.Build
 import androidx.annotation.IdRes
 import androidx.core.content.getSystemService
+import com.jakewharton.rx.replayingShare
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.models.Broadcast
+import io.reactivex.Flowable
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,6 +44,7 @@ import kotlin.math.min
 class AudioGestureConsumer @Inject constructor(
     @AppContext private val context: Context,
     reactivePreferences: ReactivePreferences,
+    appBroadcasts: AppBroadcasts,
     private val broadcaster: AppBroadcaster
 ) : GestureConsumer {
 
@@ -60,12 +64,11 @@ class AudioGestureConsumer @Inject constructor(
         default = Stream.Default.type
     )
 
-    val hasDoNotDisturbAccess get() = context.hasDoNotDisturbAccess
+    val hasDoNotDisturbAccess: Flowable<Boolean> = appBroadcasts.filterIsInstance<Broadcast.AppResumed>()
+        .map { context.hasDoNotDisturbAccess }
+        .replayingShare()
 
     private val audioManager get() = context.getSystemService<AudioManager>()!!
-
-    val canSetVolumeDelta: Boolean
-        get() = context.hasDoNotDisturbAccess && streamTypePreference.value != Stream.Default.type
 
     private val flags: Int
         get() {
@@ -74,14 +77,11 @@ class AudioGestureConsumer @Inject constructor(
             return if (shouldShowSlider) AudioManager.FLAG_SHOW_UI else NO_FLAGS
         }
 
-    @SuppressLint("SwitchIntDef")
-    override fun accepts(gesture: GestureAction): Boolean {
-        return gesture == GestureAction.IncreaseAudio || gesture == GestureAction.ReduceAudio
-    }
+    override fun accepts(gesture: GestureAction): Boolean =
+        gesture == GestureAction.IncreaseAudio || gesture == GestureAction.ReduceAudio
 
-    @SuppressLint("SwitchIntDef")
     override fun onGestureActionTriggered(gestureAction: GestureAction) =
-        adjustAudio(gestureAction == GestureAction.IncreaseAudio)
+        adjustAudio(increase = gestureAction == GestureAction.IncreaseAudio)
 
     private fun setStreamVolume(increase: Boolean, audioManager: AudioManager, streamType: Int) {
         val currentVolume = audioManager.getStreamVolume(streamType)
@@ -96,19 +96,23 @@ class AudioGestureConsumer @Inject constructor(
                 ?: return
 
             val filter = if (turnDnDOn) INTERRUPTION_FILTER_ALARMS else INTERRUPTION_FILTER_ALL
-            if (notificationManager.currentInterruptionFilter == filter) return
-
-            notificationManager.setInterruptionFilter(filter)
+            if (notificationManager.currentInterruptionFilter != filter) notificationManager.setInterruptionFilter(filter)
         }
 
         if (!turnDnDOn) audioManager.setStreamVolume(streamType, newVolume, flags)
     }
 
-    private fun reduce(currentValue: Int, stream: Int, audioManager: AudioManager): Int =
-        max(currentValue - normalizePercentageForStream(incrementPreference.value, stream, audioManager), MIN_VOLUME)
+    private fun reduce(currentValue: Int, stream: Int, audioManager: AudioManager): Int = max(
+        a = currentValue - normalizePercentageForStream(incrementPreference.value, stream, audioManager),
+        b = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P -> audioManager.getStreamMinVolume(stream)
+            else -> MIN_VOLUME
+        })
 
-    private fun increase(currentValue: Int, stream: Int, audioManager: AudioManager): Int =
-        min(currentValue + normalizePercentageForStream(incrementPreference.value, stream, audioManager), audioManager.getStreamMaxVolume(stream))
+    private fun increase(currentValue: Int, stream: Int, audioManager: AudioManager): Int = min(
+        a = currentValue + normalizePercentageForStream(incrementPreference.value, stream, audioManager),
+        b = audioManager.getStreamMaxVolume(stream).also { println("max vol: $it") }
+    )
 
     private fun adjustAudio(increase: Boolean) {
         if (!context.hasDoNotDisturbAccess) return
@@ -139,7 +143,7 @@ class AudioGestureConsumer @Inject constructor(
         Stream.Media -> context.getString(R.string.audio_stream_media, audioManager.getStreamMaxVolume(stream.type))
         Stream.Ring -> context.getString(R.string.audio_stream_ringtone, audioManager.getStreamMaxVolume(stream.type))
         Stream.Alarm -> context.getString(R.string.audio_stream_alarm, audioManager.getStreamMaxVolume(stream.type))
-        Stream.All -> context.getString(R.string.audio_stream_all, getMaxSteps(audioManager))
+        Stream.All -> context.getString(R.string.audio_stream_all)
         else -> context.getString(R.string.audio_stream_default)
     }
 

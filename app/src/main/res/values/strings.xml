@@ -83,7 +83,7 @@
     <string name="audio_stream_media">Media (%1$d levels)</string>
     <string name="audio_stream_ringtone">Ring (%1$d levels)</string>
     <string name="audio_stream_alarm">Alarm (%1$d levels)</string>
-    <string name="audio_stream_all">All (%1$d levels)</string>
+    <string name="audio_stream_all">All (variable levels)</string>
     <string name="audio_stream_text">%1$d step(s) of %2$d</string>
     <string name="audio_stream_text_system">Set by Android System</string>
     <string name="audio_stream_default">Most relevant (Android Default)</string>

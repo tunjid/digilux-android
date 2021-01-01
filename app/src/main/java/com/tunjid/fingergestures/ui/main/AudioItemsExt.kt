@@ -27,8 +27,9 @@ val Inputs.audioItems: Flowable<List<Item>>
         Flowables.combineLatest(
             sliderPreference.monitor,
             incrementPreference.monitor,
-            streamTypePreference.monitor
-        ) { showSlider, audioValue, streamType ->
+            streamTypePreference.monitor,
+            hasDoNotDisturbAccess,
+        ) { showSlider, audioValue, streamType, hasDoNotDisturbAccess ->
             listOf(
                 Item.Toggle(
                     tab = Tab.Audio,
@@ -43,10 +44,10 @@ val Inputs.audioItems: Flowable<List<Item>>
                     titleRes = R.string.audio_stream_delta,
                     infoRes = 0,
                     value = audioValue,
-                    // TODO : make reactive
-                    isEnabled = canSetVolumeDelta,
+                    isEnabled = hasDoNotDisturbAccess && streamType != AudioGestureConsumer.Stream.Default.type,
                     consumer = incrementPreference.setter,
-                    function = ::getChangeText
+                    // Using a lambda create a new instance and force a rebind
+                    function = { getChangeText(it) }
                 ),
                 Item.AudioStream(
                     tab = Tab.Audio,
