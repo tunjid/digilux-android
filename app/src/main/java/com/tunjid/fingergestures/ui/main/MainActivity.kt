@@ -134,11 +134,6 @@ class MainActivity : AppCompatActivity(),
             showsBottomNav = true,
             insetFlags = InsetFlags.NO_BOTTOM,
             fabClickListener = { viewModel.accept(Input.Permission.Action.Clicked()) },
-//            navBarColor = colorAt(
-//                if (BackgroundManager.instance.usesColoredNav()) R.color.colorPrimary
-//                else R.color.black
-//            ),
-            navBarColor = colorAt(R.color.colorPrimary),
         )
 
         onBackPressedDispatcher.addCallback(this) {

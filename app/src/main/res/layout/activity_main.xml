@@ -71,14 +71,10 @@
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:itemIconTint="@color/toggle_text"
+        app:itemTextColor="@color/toggle_text"
         android:layout_gravity="bottom"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/main_navigation" />
-
-    <View
-        android:id="@+id/nav_background"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_gravity="bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

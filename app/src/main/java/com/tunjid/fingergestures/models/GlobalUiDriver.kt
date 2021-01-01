@@ -1,18 +1,12 @@
 package com.tunjid.fingergestures.models
 
-import android.animation.ArgbEvaluator
-import android.animation.ValueAnimator
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.EditText
-import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
-import androidx.core.graphics.ColorUtils
 import androidx.core.view.*
 import androidx.dynamicanimation.animation.FloatPropertyCompat
 import androidx.dynamicanimation.animation.SpringAnimation
@@ -25,7 +19,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import com.tunjid.androidx.core.content.colorAt
 import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.material.animator.FabExtensionAnimator
 import com.tunjid.androidx.navigation.Navigator
@@ -118,8 +111,7 @@ class GlobalUiDriver(
 
     init {
         host.window.decorView.systemUiVisibility = FULL_CONTROL_SYSTEM_UI_FLAGS
-        host.window.navigationBarColor = host.colorAt(R.color.transparent)
-        host.window.statusBarColor = host.colorAt(R.color.transparent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) host.window.isNavigationBarContrastEnforced = false
 
         binding.root.setOnApplyWindowInsetsListener(rootInsetsListener)
 
@@ -147,18 +139,16 @@ class GlobalUiDriver(
         UiState::fabTransitionOptions.distinct onChanged this::setFabTransitionOptions
 
         UiState::snackbarText.distinct onChanged this::showSnackBar
-        UiState::navBarColor.distinct onChanged this::setNavBarColor
+        UiState::navBarColor.distinct onChanged host.window::setNavigationBarColor
         UiState::statusBarColor.distinct onChanged host.window::setStatusBarColor
-        UiState::lightStatusBar.distinct onChanged this::setLightStatusBar
         UiState::fragmentContainerState.distinct onChanged this::updateFragmentContainer
-        UiState::backgroundColor.distinct onChanged binding.contentRoot::animateBackground
 
         UiState::bottomNavPositionalState.distinct onChanged this::updateBottomNav
         UiState::snackbarPositionalState.distinct onChanged this::updateSnackbar
     }
 
     private fun updateFabState(state: FabPositionalState) {
-        val isShilling =  when(val shill = state.shilling) {
+        val isShilling = when (val shill = state.shilling) {
             Shilling.Calm -> false
             is Shilling.Quip -> {
                 println("Shilling: ${shill.message}")
@@ -238,26 +228,6 @@ class GlobalUiDriver(
             item?.invoke(it)?.let { true } ?: host.onOptionsItemSelected(it)
         }
 
-    private fun setNavBarColor(color: Int) {
-        binding.navBackground.background = GradientDrawable(
-            GradientDrawable.Orientation.BOTTOM_TOP,
-            intArrayOf(color, Color.TRANSPARENT))
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) uiFlagTweak {
-            if (color.isBrightColor) it or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            else it and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
-        }
-    }
-
-    private fun setLightStatusBar(lightStatusBar: Boolean) = uiFlagTweak { flags ->
-        if (lightStatusBar) flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        else flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-    }
-
-    private fun uiFlagTweak(tweaker: (Int) -> Int) = host.window.decorView.run {
-        systemUiVisibility = tweaker(systemUiVisibility)
-    }
-
     private fun setFabGlyphs(fabGlyphState: Pair<Int, CharSequence>) = host.runOnUiThread {
         val (@DrawableRes icon: Int, title: CharSequence) = fabGlyphState
         fabExtensionAnimator.updateGlyphs(title, if (icon != 0) host.drawableAt(icon) else null)
@@ -300,24 +270,8 @@ class GlobalUiDriver(
         if (this is LifeCycleAwareCallback) this else LifeCycleAwareCallback(shortestAvailableLifecycle, this)
 }
 
-private val View.backgroundAnimator by viewDelegate(ValueAnimator().apply {
-    setIntValues(Color.TRANSPARENT)
-    setEvaluator(ArgbEvaluator())
-})
-
-private fun View.animateBackground(@ColorInt to: Int) {
-    if (backgroundAnimator.values.size == 1) doOnDetach { backgroundAnimator.removeAllUpdateListeners() }
-    if (backgroundAnimator.isRunning) backgroundAnimator.cancel()
-    backgroundAnimator.removeAllUpdateListeners()
-    backgroundAnimator.addUpdateListener { setBackgroundColor(it.animatedValue as Int) }
-    backgroundAnimator.setIntValues(backgroundAnimator.animatedValue as Int, to)
-    backgroundAnimator.start()
-}
-
 fun View.softSpring(property: FloatPropertyCompat<View>) =
     spring(property, SpringForce.STIFFNESS_LOW)
-
-private val Int.isBrightColor get() = ColorUtils.calculateLuminance(this) > 0.5
 
 private fun ViewHider<*>.set(show: Boolean) =
     if (show) show()

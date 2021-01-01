@@ -37,7 +37,7 @@ data class UiState(
     @param:ColorInt
     @field:ColorInt
     @get:ColorInt
-    val navBarColor: Int = Color.BLACK,
+    val navBarColor: Int = Color.TRANSPARENT,
     @param:ColorInt
     @field:ColorInt
     @get:ColorInt
