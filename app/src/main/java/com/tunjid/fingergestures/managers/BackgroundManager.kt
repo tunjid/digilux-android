@@ -77,7 +77,6 @@ class BackgroundManager @Inject constructor(
 
     val paletteFlowable: Flowable<PaletteStatus> =
         broadcasts.filterIsInstance<Broadcast.AppResumed>()
-            .doOnNext { println("APP RESUMED") }
             .switchMap { context.wallpaperPalettes }
 
     val sliderDurationMillis: Int
