@@ -57,7 +57,7 @@ class AppModule(private val app: App) {
 
     @Provides
     @Singleton
-    fun provideAppBroadcasts(): AppBroadcasts = broadcaster
+    fun provideAppBroadcasts(): AppBroadcasts = broadcaster.share()
 
     @Provides
     @Singleton
