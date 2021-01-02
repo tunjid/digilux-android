@@ -38,6 +38,7 @@ import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
 import io.reactivex.rxkotlin.addTo
 import kotlinx.parcelize.Parcelize
+import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -82,10 +83,13 @@ sealed class Input {
         sealed class Request(val prompt: Int) : Permission(), Parcelable {
             @Parcelize
             object Storage : Request(R.string.wallpaper_permission_request)
+
             @Parcelize
             object Settings : Request(R.string.settings_permission_request)
+
             @Parcelize
             object Accessibility : Request(R.string.accessibility_permissions_request)
+
             @Parcelize
             object DoNotDisturb : Request(R.string.do_not_disturb_permissions_request)
         }
@@ -153,16 +157,16 @@ class MainViewModel @Inject constructor(
 
     init {
         client.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(result: BillingResult) =
-                accept(Input.Billing.Client(client = client.takeIf { result.responseCode == BillingClient.BillingResponseCode.OK }))
+            val weakInputs = WeakReference<Inputs>(this@MainViewModel)
+            override fun onBillingSetupFinished(result: BillingResult) = weakInputs.get()
+                ?.accept(Input.Billing.Client(client = client.takeIf { result.responseCode == BillingClient.BillingResponseCode.OK }))
+                ?: Unit
 
-            override fun onBillingServiceDisconnected() = accept(Input.Billing.Client(client = null))
+            override fun onBillingServiceDisconnected() = weakInputs.get()
+                ?.accept(Input.Billing.Client(client = null))
+                ?: Unit
         })
 
-        backingState
-            .map(State::billingState)
-            .subscribe { println("Billing State: $it") }
-            .addTo(disposable)
         backingState
             .map(State::billingState)
             .mapNotNull(BillingState::client)
