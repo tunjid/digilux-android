@@ -17,13 +17,16 @@
 
 package com.tunjid.fingergestures.ui.popup
 
+import android.graphics.Color
 import androidx.lifecycle.ViewModel
-import com.tunjid.fingergestures.managers.BackgroundManager
-import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
+import com.tunjid.fingergestures.gestureconsumers.GestureAction
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
+import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
+import com.tunjid.fingergestures.managers.BackgroundManager
 import com.tunjid.fingergestures.models.PopUp
 import com.tunjid.fingergestures.models.toPopUpActions
 import com.tunjid.fingergestures.toLiveData
+import io.reactivex.processors.PublishProcessor
 import io.reactivex.rxkotlin.Flowables
 import javax.inject.Inject
 
@@ -31,6 +34,8 @@ data class State(
     val animatesPopUp: Boolean,
     val sliderColor: Int,
     val backgroundColor: Int,
+    val verticalBias: Float,
+    val selectedPopUp: PopUp,
     val popUpActions: List<PopUp> = listOf(),
 )
 
@@ -44,16 +49,25 @@ class PopUpViewModel @Inject constructor(
     private val gestureMapper: GestureMapper
 ) : ViewModel() {
 
+    private val inputProcessor =  PublishProcessor.create<PopUp>()
+
     val state = Flowables.combineLatest(
         popUpGestureConsumer.animatePopUpPreference.monitor,
         backgroundManager.sliderColorPreference.monitor,
         backgroundManager.backgroundColorPreference.monitor,
+        popUpGestureConsumer.positionPreference.monitor.map { it / 100f },
+        inputProcessor.startWith(PopUp(GestureAction.DoNothing, Color.TRANSPARENT)),
         popUpGestureConsumer.popUpActions
             .toPopUpActions(backgroundManager.sliderColorPreference.monitor),
         ::State
     ).toLiveData()
 
     fun accept(input: Input) = when (input) {
-        is Input.Perform -> gestureMapper.performAction(input.popUp.value)
+        is Input.Perform -> inputProcessor.onNext(input.popUp)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        state.value?.selectedPopUp?.value?.let(gestureMapper::performAction)
     }
 }

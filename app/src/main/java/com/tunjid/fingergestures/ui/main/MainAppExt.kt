@@ -28,6 +28,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.SkuDetails
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.tunjid.fingergestures.*
@@ -80,7 +81,7 @@ fun MainApp.observe(state: LiveData<State>) = with(state) {
     mapDistinct(State::billingState)
         .mapDistinct(BillingState::cart)
         .nonNull()
-        .map(Unique<Pair<BillingClient, PurchasesManager.Sku>>::item)
+        .map(Unique<Pair<BillingClient, SkuDetails>>::item)
         .filterUnhandledEvents()
         .observe(this@observe, ::purchase)
 
@@ -156,18 +157,17 @@ private fun MainApp.showSnackbar(@StringRes resource: Int) = ::uiState.updatePar
     copy(snackbarText = getString(resource))
 }
 
-private fun MainApp.purchase(cart: Pair<BillingClient, PurchasesManager.Sku>) {
-    val (client, sku) = cart
-    val launchStatus = client.launchBillingFlow(activity, BillingFlowParams.newBuilder()
-        .setSku(sku.id)
-        .setType(BillingClient.SkuType.INAPP)
+private fun MainApp.purchase(cart: Pair<BillingClient, SkuDetails>) {
+    val (client, skuDetails) = cart
+    val result = client.launchBillingFlow(activity, BillingFlowParams.newBuilder()
+        .setSkuDetails(skuDetails)
         .build())
 
-    when (launchStatus) {
-        BillingClient.BillingResponse.OK -> Unit
-        BillingClient.BillingResponse.SERVICE_UNAVAILABLE,
-        BillingClient.BillingResponse.SERVICE_DISCONNECTED -> showSnackbar(R.string.billing_not_connected)
-        BillingClient.BillingResponse.ITEM_ALREADY_OWNED -> showSnackbar(R.string.billing_you_own_this)
+    when (result.responseCode) {
+        BillingClient.BillingResponseCode.OK -> Unit
+        BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE,
+        BillingClient.BillingResponseCode.SERVICE_DISCONNECTED -> showSnackbar(R.string.billing_not_connected)
+        BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> showSnackbar(R.string.billing_you_own_this)
         else -> showSnackbar(R.string.generic_error)
     }
 }

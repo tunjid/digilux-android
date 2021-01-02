@@ -17,6 +17,7 @@
 
 package com.tunjid.fingergestures
 
+import com.jakewharton.rx.replayingShare
 import io.reactivex.Flowable
 import java.util.*
 import kotlin.collections.HashSet
@@ -48,9 +49,14 @@ class SetManager<K : SetPreference, V : Any>(
 ) {
 
     private val reactivePreferenceMap = keys.map { key ->
-        key to ReactivePreference(reactivePreferences, key.preferenceName, emptySet<String>())
+        key to ReactivePreference(
+            reactivePreferences = reactivePreferences,
+            key = key.preferenceName,
+            default = emptySet<String>()
+        )
             .monitor
-            .map { it.mapNotNull(stringMapper) }
+            .map(::deserialize)
+            .replayingShare()
     }.toMap()
 
     private val editorMap = keys.map { key ->
@@ -62,6 +68,8 @@ class SetManager<K : SetPreference, V : Any>(
     }.toMap()
 
     fun editorFor(key: K) = editorMap.getValue(key)
+
+    fun itemsFor(key: K): Flowable<List<V>> = reactivePreferenceMap.getValue(key)
 
     private fun addToSet(key: K, value: V): Boolean {
         if (!addFilter.invoke(key)) return false
@@ -79,12 +87,9 @@ class SetManager<K : SetPreference, V : Any>(
         saveSet(set, key)
     }
 
-    fun getItems(key: K): List<V> = stream(key).mapNotNull(stringMapper)
-
-    private fun stream(key: K): List<String> = getSet(key)
+    private fun deserialize(it: Set<String>) = it
         .mapNotNull(stringMapper)
         .sortedWith(sorter)
-        .map(objectMapper)
 
     fun getSet(key: K): MutableSet<String> = HashSet<String>().apply {
         val saved = reactivePreferences.preferences.getStringSet(key.preferenceName, emptySet())?.filterNotNull()
@@ -93,6 +98,4 @@ class SetManager<K : SetPreference, V : Any>(
 
     private fun saveSet(set: Set<String>, key: K) =
         reactivePreferences.preferences.edit().putStringSet(key.preferenceName, set).apply()
-
-    fun itemsFlowable(key: K): Flowable<List<V>> = reactivePreferenceMap.getValue(key)
 }

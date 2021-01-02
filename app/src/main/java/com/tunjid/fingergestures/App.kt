@@ -23,14 +23,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK
 import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import com.tunjid.fingergestures.di.Dagger
-import io.reactivex.Flowable.timer
-import io.reactivex.disposables.Disposable
 import java.util.concurrent.TimeUnit
 
 val Context.preferences: SharedPreferences get() = getSharedPreferences(BRIGHTNESS_PREFS, Context.MODE_PRIVATE)
@@ -40,9 +40,9 @@ class App : android.app.Application() {
     val dagger: Dagger by lazy { Dagger.make(this) }
 
     companion object {
-        fun delay(interval: Long, timeUnit: TimeUnit, runnable: () -> Unit): Disposable {
-            return timer(interval, timeUnit).subscribe({ runnable.invoke() }, { it.printStackTrace() })
-        }
+        private val mainLooperHandler by lazy { Handler(Looper.getMainLooper()) }
+        fun delay(interval: Long, timeUnit: TimeUnit, runnable: () -> Unit) =
+            mainLooperHandler.postDelayed(runnable, timeUnit.toMillis(interval))
 
         val isPieOrHigher: Boolean
             get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P

@@ -18,20 +18,23 @@
 package com.tunjid.fingergestures.ui.popup
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import com.tunjid.androidx.core.delegates.intentExtras
 import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ui.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityPopupDialogBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.mapDistinct
 import com.tunjid.fingergestures.models.PopUp
+import com.tunjid.fingergestures.ui.dialogLifecycleOwner
+import com.tunjid.fingergestures.ui.updateVerticalBiasFor
 import com.tunjid.fingergestures.viewholders.ActionViewHolder
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -43,7 +46,7 @@ class PopupDialogActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        finish()
+        end()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -73,7 +76,7 @@ class PopupDialogActivity : AppCompatActivity() {
             adapter = listAdapter
         }
         binding.constraintLayout.setOnTouchListener { _, _ ->
-            finish()
+            end()
             true
         }
 
@@ -83,6 +86,12 @@ class PopupDialogActivity : AppCompatActivity() {
 
             mapDistinct(State::backgroundColor)
                 .observe(dialogLifecycleOwner, binding.card::setCardBackgroundColor)
+
+            mapDistinct(State::verticalBias)
+                .observe(
+                    dialogLifecycleOwner,
+                    binding.constraintLayout.updateVerticalBiasFor(binding.card.id)
+                )
 
             mapDistinct(State::popUpActions)
                 .observe(dialogLifecycleOwner) { items ->
@@ -116,6 +125,21 @@ class PopupDialogActivity : AppCompatActivity() {
 
     private fun onPopUpClicked(popUp: PopUp) {
         viewModel.accept(Input.Perform(popUp))
-        finish()
+        end()
+    }
+
+    private fun end() = if (intent.isInBubble) onBackPressed() else finish()
+
+    companion object {
+        fun intent(context: Context, isInBubble: Boolean = false) = Intent(
+            context,
+            PopupDialogActivity::class.java
+        ).apply {
+            action = "pop up"
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            this.isInBubble = isInBubble
+        }
     }
 }
+
+private var Intent.isInBubble by intentExtras(false)

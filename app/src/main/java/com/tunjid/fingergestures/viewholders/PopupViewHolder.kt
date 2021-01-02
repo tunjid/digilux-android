@@ -58,7 +58,7 @@ fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate)
     binding.add.setOnClickListener {
         when {
             !itemView.context.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
-            !item.accessibilityButtonEnabled -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
+            !item.enabled -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
             else -> item.input.accept(Input.UiInteraction.ShowSheet(PickerFragment.popUpInstance()))
         }
     }
@@ -80,7 +80,7 @@ private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(p
 
     when {
         !itemView.context.canWriteToSettings -> builder.setMessage(R.string.permission_required)
-        !item.accessibilityButtonEnabled -> builder.setMessage(R.string.popup_prompt)
+        !item.enabled -> builder.setMessage(R.string.popup_prompt)
         else -> builder.setTitle(R.string.popup_remove)
             .setPositiveButton(R.string.yes) { _, _ ->
                 item.editor - popUp.value

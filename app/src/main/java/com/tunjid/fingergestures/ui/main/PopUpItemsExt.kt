@@ -26,13 +26,15 @@ import io.reactivex.rxkotlin.Flowables
 val Inputs.popUpItems: Flowable<List<Item>>
     get() = with(dependencies.gestureConsumers.popUp) {
         Flowables.combineLatest(
-            setManager.itemsFlowable(PopUpGestureConsumer.Preference.SavedActions)
+            setManager.itemsFor(PopUpGestureConsumer.Preference.SavedActions)
                 .toPopUpActions(dependencies.backgroundManager.sliderColorPreference.monitor),
             accessibilityButtonSingleClickPreference.monitor,
             accessibilityButtonEnabledPreference.monitor,
             animatePopUpPreference.monitor,
-        ) { savedActions, isSingleClick, accessibilityButtonEnabled, animatePopup ->
-            listOf(
+            bubblePopUpPreference.monitor,
+            positionPreference.monitor,
+        ) { savedActions, isSingleClick, accessibilityButtonEnabled, animatePopup, isInBubble, popUpPosition ->
+            listOfNotNull(
                 Item.Toggle(
                     tab = Tab.PopUp,
                     sortKey = ItemSorter.ENABLE_ACCESSIBILITY_BUTTON,
@@ -54,12 +56,29 @@ val Inputs.popUpItems: Flowable<List<Item>>
                     isChecked = animatePopup,
                     consumer = animatePopUpPreference.setter
                 ),
+                Item.Toggle(
+                    tab = Tab.PopUp,
+                    sortKey = ItemSorter.BUBBLES_POPUP,
+                    titleRes = R.string.popup_is_in_bubble,
+                    isChecked = isInBubble,
+                    consumer = bubblePopUpPreference.setter
+                ).takeIf { hasBubbleApi },
+                Item.Slider(
+                    tab = Tab.PopUp,
+                    sortKey = ItemSorter.POPUP_POSITION,
+                    titleRes = R.string.adjust_pop_up_position,
+                    infoRes = 0,
+                    consumer = positionPreference.setter,
+                    value = popUpPosition,
+                    isEnabled = true,
+                    function = percentageFormatter
+                ),
                 Item.PopUp(
                     tab = Tab.PopUp,
                     sortKey = ItemSorter.POPUP_ACTION,
                     items = savedActions,
                     editor = setManager.editorFor(PopUpGestureConsumer.Preference.SavedActions),
-                    accessibilityButtonEnabled = accessibilityButtonEnabled,
+                    enabled = accessibilityButtonEnabled || isInBubble,
                     input = this@popUpItems
                 )
             )

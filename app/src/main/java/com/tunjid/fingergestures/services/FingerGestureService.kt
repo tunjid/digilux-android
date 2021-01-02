@@ -65,7 +65,7 @@ class FingerGestureService : AccessibilityService() {
 
     private val accessibilityButtonCallback = object : AccessibilityButtonCallback() {
         override fun onClicked(controller: AccessibilityButtonController) =
-            gestureConsumers.popUp.showPopup()
+            dagger.appComponent.broadcaster().invoke(Broadcast.ShowPopUp)
     }
 
     private val screenWakeReceiver = object : BroadcastReceiver() {
@@ -225,7 +225,6 @@ class FingerGestureService : AccessibilityService() {
 
     private fun onBroadcastReceived(broadcast: Broadcast.Service) = when (broadcast) {
         Broadcast.Service.ExpandVolumeControls -> expandAudioControls()
-        Broadcast.Service.ShowPopUp -> gestureConsumers.popUp.showPopup()
         Broadcast.Service.ToggleDock -> {
             performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
             App.delay(DELAY.toLong(), MILLISECONDS) { performGlobalAction(GLOBAL_ACTION_RECENTS) }
