@@ -20,6 +20,7 @@ package com.tunjid.fingergestures.managers
 import android.content.Context
 import android.text.TextUtils
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.jakewharton.rx.replayingShare
@@ -128,9 +129,9 @@ class PurchasesManager @Inject constructor(
 
     val currentState by state.asProperty(State(), appDisposable::add)
 
-    override fun onPurchasesUpdated(responseCode: Int, purchases: List<Purchase>?) {
+    override fun onPurchasesUpdated(result: BillingResult, purchases: List<Purchase>?) {
         if (purchases == null) return
-        if (responseCode != BillingClient.BillingResponse.OK) return
+        if (result.responseCode != BillingClient.BillingResponseCode.OK) return
 
         purchases.filter(::filterPurchases)
             .map(Purchase::getSku)
@@ -140,9 +141,10 @@ class PurchasesManager @Inject constructor(
 
     fun startTrial() = trigger.onNext(true)
 
-    internal fun onPurchasesQueried(responseCode: Int, purchases: List<Purchase>?) {
+    internal fun onPurchasesQueried(result: Purchase.PurchasesResult) {
+        if (result.responseCode != BillingClient.BillingResponseCode.OK) return
         Sku.values().forEach(editor::minus)
-        onPurchasesUpdated(responseCode, purchases)
+        onPurchasesUpdated(result.billingResult, result.purchasesList)
     }
 
 //    internal fun clearPurchases() = Sku.values().forEach(editor::minus)

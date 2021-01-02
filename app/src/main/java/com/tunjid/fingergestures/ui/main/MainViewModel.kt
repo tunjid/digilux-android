@@ -22,8 +22,7 @@ import android.os.Parcelable
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.android.billingclient.api.BillingClient
-import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.*
 import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppContext
@@ -32,6 +31,7 @@ import com.tunjid.fingergestures.gestureconsumers.*
 import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.managers.WallpaperSelection
 import com.tunjid.fingergestures.models.*
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
@@ -61,8 +61,9 @@ data class PermissionState(
 
 data class BillingState(
     val client: BillingClient? = null,
+    val skuDetails: List<SkuDetails> = listOf(),
     val prompt: Unique<Int>? = null,
-    val cart: Unique<Pair<BillingClient, PurchasesManager.Sku>>? = null
+    val cart: Unique<Pair<BillingClient, SkuDetails>>? = null
 )
 
 sealed class Shilling {
@@ -88,12 +89,14 @@ sealed class Input {
             @Parcelize
             object DoNotDisturb : Request(R.string.do_not_disturb_permissions_request)
         }
+
         sealed class Action : Permission() {
             data class Clear(val time: Long = System.currentTimeMillis()) : Action()
             data class Clicked(val time: Long = System.currentTimeMillis()) : Action()
             data class Changed(val request: Request) : Action()
         }
     }
+
     sealed class UiInteraction : Input() {
         object Default : UiInteraction()
         data class ShowSheet(val fragment: Fragment) : UiInteraction()
@@ -101,10 +104,12 @@ sealed class Input {
         data class PurchaseResult(val messageRes: Int) : UiInteraction()
         data class WallpaperPick(val selection: WallpaperSelection) : UiInteraction()
     }
+
     sealed class Billing : Input() {
         data class Client(val client: BillingClient?) : Billing()
         data class Purchase(val sku: PurchasesManager.Sku) : Billing()
     }
+
     object StartTrial : Input()
     object Shill : Input()
     object AppResumed : Input()
@@ -116,6 +121,11 @@ class MainViewModel @Inject constructor(
     private val broadcaster: AppBroadcaster,
     broadcasts: Flowable<Broadcast>,
 ) : ViewModel(), Inputs {
+
+    val client = BillingClient.newBuilder(context)
+        .enablePendingPurchases()
+        .setListener(dependencies.purchasesManager)
+        .build()
 
     private val quips = context.resources.getTextArray(R.array.upsell_text)
     private val inputProcessor: PublishProcessor<Input> = PublishProcessor.create()
@@ -136,31 +146,31 @@ class MainViewModel @Inject constructor(
     val state: LiveData<State> = backingState.toLiveData()
 
     override fun onCleared() {
-        state.value?.billingState?.client?.endConnection()
+        client.endConnection()
         accept(Input.Billing.Client(client = null))
         disposable.clear()
     }
 
     init {
-        val client = BillingClient.newBuilder(context)
-            .setListener(dependencies.purchasesManager)
-            .build()
-
         client.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(@BillingClient.BillingResponse billingResponseCode: Int) =
-                accept(Input.Billing.Client(client = client.takeIf { billingResponseCode == BillingClient.BillingResponse.OK }))
+            override fun onBillingSetupFinished(result: BillingResult) =
+                accept(Input.Billing.Client(client = client.takeIf { result.responseCode == BillingClient.BillingResponseCode.OK }))
 
             override fun onBillingServiceDisconnected() = accept(Input.Billing.Client(client = null))
         })
 
         backingState
             .map(State::billingState)
+            .subscribe { println("Billing State: $it") }
+            .addTo(disposable)
+        backingState
+            .map(State::billingState)
             .mapNotNull(BillingState::client)
             .distinctUntilChanged()
             .subscribe {
                 val result = it.queryPurchases(BillingClient.SkuType.INAPP)
-                if (result.responseCode != BillingClient.BillingResponse.OK) return@subscribe
-                dependencies.purchasesManager.onPurchasesQueried(result.responseCode, result.purchasesList)
+                if (result.responseCode != BillingClient.BillingResponseCode.OK) return@subscribe
+                dependencies.purchasesManager.onPurchasesQueried(result)
             }
             .addTo(disposable)
 
@@ -192,16 +202,38 @@ class MainViewModel @Inject constructor(
             }
 
     private val Flowable<Input>.billingState
-        get() = filterIsInstance<Input.Billing>()
-            .scan(BillingState()) { state, item ->
-                when (item) {
-                    is Input.Billing.Client -> state.copy(client = item.client)
-                    is Input.Billing.Purchase -> when (val client = state.client) {
-                        null -> state.copy(prompt = Unique(R.string.billing_not_connected))
-                        else -> state.copy(cart = Unique(client to item.sku))
+        get() = Flowables.combineLatest(
+            filterIsInstance<Input.Billing>()
+                .scan(BillingState()) { state, item ->
+                    when (item) {
+                        is Input.Billing.Client -> state.copy(client = item.client)
+                        is Input.Billing.Purchase -> when (val client = state.client) {
+                            null -> state.copy(prompt = Unique(R.string.billing_not_connected))
+                            else -> when (val skuDetail = state.skuDetails.firstOrNull { it.sku == item.sku.id }) {
+                                null -> state.copy(prompt = Unique(R.string.billing_item_unavailable))
+                                else -> state.copy(cart = Unique(client to skuDetail))
+                            }
+                        }
                     }
+                },
+            filterIsInstance<Input.Billing.Client>().distinctUntilChanged().switchMap {
+                it.client?.skuDetails ?: Flowable.just(listOf())
+            }.startWith(listOf<SkuDetails>())
+        ) { state, skuDetails -> state.copy(skuDetails = skuDetails) }
+
+    private val BillingClient.skuDetails: Flowable<List<SkuDetails>>
+        get() = Flowable.defer {
+            Flowables.create<List<SkuDetails>>(BackpressureStrategy.BUFFER) { emitter ->
+                querySkuDetailsAsync(SkuDetailsParams
+                    .newBuilder()
+                    .setSkusList(listOf(PurchasesManager.Sku.AdFree.id, PurchasesManager.Sku.Premium.id))
+                    .setType(BillingClient.SkuType.INAPP)
+                    .build()) { _, skuDetailsList ->
+                    emitter.onNext(skuDetailsList.orEmpty())
+                    emitter.onComplete()
                 }
             }
+        }.startWith(listOf<SkuDetails>())
 
     private val Flowable<Input>.permissionState
         get() = filterIsInstance<Input.Permission>()

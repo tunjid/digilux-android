@@ -258,6 +258,8 @@
 
     <!-- Billing Api Feedback-->
     <string name="billing_thanks">Thank you so much!</string>
+    <string name="billing_item_unavailable">Sorry, the requested item is currently unavailable.
+        \n\nPlease try again later.</string>
     <string name="billing_not_connected">Sorry, unable to connect to Google Play</string>
     <string name="billing_you_own_this">You\'ve already gotten this. Thank you!</string>
 

@@ -205,7 +205,7 @@ class MainActivity : AppCompatActivity(),
             MaterialAlertDialogBuilder(this).apply {
                 setTitle(R.string.app_name)
                 setMessage(purchaseState?.trialPeriodText ?: "")
-                setPositiveButton(android.R.string.yes) { _, _ -> viewModel.accept(Input.StartTrial) }
+                setPositiveButton(R.string.yes) { _, _ -> viewModel.accept(Input.StartTrial) }
                 show()
             }
         }
