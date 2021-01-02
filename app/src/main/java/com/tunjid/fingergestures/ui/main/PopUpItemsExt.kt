@@ -65,7 +65,7 @@ val Inputs.popUpItems: Flowable<List<Item>>
                 ).takeIf { hasBubbleApi },
                 Item.Slider(
                     tab = Tab.PopUp,
-                    sortKey = 9,
+                    sortKey = ItemSorter.POPUP_POSITION,
                     titleRes = R.string.adjust_pop_up_position,
                     infoRes = 0,
                     consumer = positionPreference.setter,
