@@ -58,7 +58,7 @@ val Inputs.popUpItems: Flowable<List<Item>>
                 ),
                 Item.Toggle(
                     tab = Tab.PopUp,
-                    sortKey = 7,
+                    sortKey = ItemSorter.BUBBLES_POPUP,
                     titleRes = R.string.popup_is_in_bubble,
                     isChecked = isInBubble,
                     consumer = bubblePopUpPreference.setter
@@ -78,7 +78,7 @@ val Inputs.popUpItems: Flowable<List<Item>>
                     sortKey = ItemSorter.POPUP_ACTION,
                     items = savedActions,
                     editor = setManager.editorFor(PopUpGestureConsumer.Preference.SavedActions),
-                    accessibilityButtonEnabled = accessibilityButtonEnabled,
+                    enabled = accessibilityButtonEnabled || isInBubble,
                     input = this@popUpItems
                 )
             )

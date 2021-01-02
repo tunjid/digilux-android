@@ -186,7 +186,7 @@ sealed class Item(
     data class PopUp(
         override val tab: Tab,
         override val sortKey: Int,
-        val accessibilityButtonEnabled: Boolean,
+        val enabled: Boolean,
         val editor: SetPreferenceEditor<GestureAction>,
         val items: List<com.tunjid.fingergestures.models.PopUp>,
         val input: Inputs
