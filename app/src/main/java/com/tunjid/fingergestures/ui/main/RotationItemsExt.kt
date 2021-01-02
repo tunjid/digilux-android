@@ -27,8 +27,8 @@ import io.reactivex.rxkotlin.Flowables
 val Inputs.rotationItems: Flowable<List<Item>>
     get() = with(dependencies.gestureConsumers.rotation) {
         Flowables.combineLatest(
-            setManager.itemsFlowable(RotationGestureConsumer.Preference.RotatingApps),
-            setManager.itemsFlowable(RotationGestureConsumer.Preference.NonRotatingApps),
+            setManager.itemsFor(RotationGestureConsumer.Preference.RotatingApps),
+            setManager.itemsFor(RotationGestureConsumer.Preference.NonRotatingApps),
             lastSeenApps.listMap(::Package),
             autoRotatePreference.monitor,
         ) { rotating, excluded, lastSeen, canAutoRotate ->

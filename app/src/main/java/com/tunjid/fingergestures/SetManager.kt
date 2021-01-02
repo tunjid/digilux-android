@@ -69,7 +69,7 @@ class SetManager<K : SetPreference, V : Any>(
 
     fun editorFor(key: K) = editorMap.getValue(key)
 
-    fun itemsFlowable(key: K): Flowable<List<V>> = reactivePreferenceMap.getValue(key)
+    fun itemsFor(key: K): Flowable<List<V>> = reactivePreferenceMap.getValue(key)
 
     private fun addToSet(key: K, value: V): Boolean {
         if (!addFilter.invoke(key)) return false

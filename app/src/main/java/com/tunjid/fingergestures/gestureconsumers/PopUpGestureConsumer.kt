@@ -99,12 +99,12 @@ class PopUpGestureConsumer @Inject constructor(
 
     @TargetApi(Build.VERSION_CODES.Q)
     val hasBubbleApi = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-    val popUpActions = setManager.itemsFlowable(Preference.SavedActions)
+    val popUpActions = setManager.itemsFor(Preference.SavedActions)
 
     val percentageFormatter = { percent: Int -> context.getString(R.string.position_percent, percent) }
 
     private val list: List<GestureAction>
-        by setManager.itemsFlowable(Preference.SavedActions).asProperty(listOf(), appDisposable::add)
+        by setManager.itemsFor(Preference.SavedActions).asProperty(listOf(), appDisposable::add)
 
     private val showsInBubble by bubblePopUpPreference.monitor.asProperty(false, appDisposable::add)
 

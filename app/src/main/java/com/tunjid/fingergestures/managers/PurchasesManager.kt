@@ -102,7 +102,7 @@ class PurchasesManager @Inject constructor(
 
     val state: Flowable<State> = Flowables.combineLatest(
         lockedContentPreference.monitor,
-        setManager.itemsFlowable(Purchases),
+        setManager.itemsFor(Purchases),
         trialStatus,
         trigger
     ) { lockedContent, ownedSkus, trialStatus, trialRunning ->

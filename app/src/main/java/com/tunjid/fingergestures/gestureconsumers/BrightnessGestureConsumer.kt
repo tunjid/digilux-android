@@ -155,7 +155,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
     val state: Flowable<State> = Flowables.combineLatest(
         Flowables.combineLatest(
-            discreteBrightnessManager.itemsFlowable(Preference.DiscreteBrightnesses),
+            discreteBrightnessManager.itemsFor(Preference.DiscreteBrightnesses),
             purchasesManager.state,
             percentagePreference.monitor,
 
@@ -183,7 +183,7 @@ class BrightnessGestureConsumer @Inject constructor(
         logarithmicBrightnessPreference.monitor,
         showSliderPreference.monitor,
         animateSliderPreference.monitor,
-        discreteBrightnessManager.itemsFlowable(Preference.DiscreteBrightnesses),
+        discreteBrightnessManager.itemsFor(Preference.DiscreteBrightnesses),
         ::State,
     ).replayingShare()
 

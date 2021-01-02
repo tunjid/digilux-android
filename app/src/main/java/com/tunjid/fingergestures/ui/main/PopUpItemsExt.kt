@@ -26,7 +26,7 @@ import io.reactivex.rxkotlin.Flowables
 val Inputs.popUpItems: Flowable<List<Item>>
     get() = with(dependencies.gestureConsumers.popUp) {
         Flowables.combineLatest(
-            setManager.itemsFlowable(PopUpGestureConsumer.Preference.SavedActions)
+            setManager.itemsFor(PopUpGestureConsumer.Preference.SavedActions)
                 .toPopUpActions(dependencies.backgroundManager.sliderColorPreference.monitor),
             accessibilityButtonSingleClickPreference.monitor,
             accessibilityButtonEnabledPreference.monitor,
