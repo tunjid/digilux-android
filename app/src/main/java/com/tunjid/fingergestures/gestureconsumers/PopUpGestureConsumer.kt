@@ -135,19 +135,19 @@ class PopUpGestureConsumer @Inject constructor(
             ?.let(broadcaster)
             ?: Unit
         hasBubbleApi && showsInBubble -> bubbleNotification()
-        else -> context.startActivity(PopupDialogActivity.intent(context, false))
+        else -> context.startActivity(PopupDialogActivity.intent(context = context, isInBubble = false))
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun bubbleNotification() {
         val bitmap = context.drawableAt(R.drawable.ic_logo)?.toBitmap() ?: return
         val icon = IconCompat.createWithAdaptiveBitmap(bitmap)
+        val intent = PopupDialogActivity.intent(context, true)
         val person = Person.Builder()
             .setName(context.getString(R.string.popup_bubble_notification_title))
             .setIcon(icon)
             .setImportant(true)
             .build()
-        val intent = PopupDialogActivity.intent(context, true)
 
         ShortcutManagerCompat.pushDynamicShortcut(context, ShortcutInfoCompat.Builder(context, popUpBubbleShortcutId)
             .setLongLived(true)
@@ -157,36 +157,33 @@ class PopUpGestureConsumer @Inject constructor(
             .setPerson(person)
             .build())
 
-        with(NotificationManagerCompat.from(context)) {
-            // notificationId is a unique int for each notification that you must define
-            notify(popUpBubbleRequestCode, NotificationCompat.Builder(context, popUpBubbleChannel)
-                .setShortcutId(popUpBubbleShortcutId)
-                .setContentTitle(context.getString(R.string.popup_bubble_notification_title))
-                .setLargeIcon(bitmap)
-                .setSmallIcon(icon)
-                .setCategory(Notification.CATEGORY_MESSAGE)
-                .setStyle(NotificationCompat.MessagingStyle(person)
-                    .setGroupConversation(false)
-                    .addMessage(
-                        context.getString(R.string.popup_bubble_notification_message),
-                        System.currentTimeMillis(),
-                        person
-                    )
+        NotificationManagerCompat.from(context).notify(popUpBubbleRequestCode, NotificationCompat.Builder(context, popUpBubbleChannel)
+            .setShortcutId(popUpBubbleShortcutId)
+            .setContentTitle(context.getString(R.string.popup_bubble_notification_title))
+            .setLargeIcon(bitmap)
+            .setSmallIcon(icon)
+            .setCategory(Notification.CATEGORY_MESSAGE)
+            .setStyle(NotificationCompat.MessagingStyle(person)
+                .setGroupConversation(false)
+                .addMessage(
+                    context.getString(R.string.popup_bubble_notification_message),
+                    System.currentTimeMillis(),
+                    person
                 )
-                .addPerson(person)
-                .setShowWhen(true)
-                .setContentIntent(intent.toPendingIntent())
-                .setBubbleMetadata(NotificationCompat.BubbleMetadata
-                    .Builder()
-                    .setIcon(icon)
-                    .setAutoExpandBubble(true)
-                    .setSuppressNotification(true)
-                    .setIntent(PopupDialogActivity.intent(context, true).toPendingIntent())
-                    .setDesiredHeight(context.resources.getDimensionPixelSize(R.dimen.popup_bubble_size))
-                    .build()
-                )
-                .build())
-        }
+            )
+            .addPerson(person)
+            .setShowWhen(true)
+            .setContentIntent(intent.toPendingIntent())
+            .setBubbleMetadata(NotificationCompat.BubbleMetadata
+                .Builder()
+                .setIcon(icon)
+                .setAutoExpandBubble(true)
+                .setSuppressNotification(true)
+                .setIntent(intent.toPendingIntent())
+                .setDesiredHeight(context.resources.getDimensionPixelSize(R.dimen.popup_bubble_size))
+                .build()
+            )
+            .build())
     }
 
     private fun Intent.toPendingIntent() = PendingIntent.getActivity(
