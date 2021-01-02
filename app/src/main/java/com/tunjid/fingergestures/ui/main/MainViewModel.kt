@@ -136,8 +136,9 @@ class MainViewModel @Inject constructor(
     val state: LiveData<State> = backingState.toLiveData()
 
     override fun onCleared() {
-        disposable.clear()
         state.value?.billingState?.client?.endConnection()
+        accept(Input.Billing.Client(client = null))
+        disposable.clear()
     }
 
     init {
