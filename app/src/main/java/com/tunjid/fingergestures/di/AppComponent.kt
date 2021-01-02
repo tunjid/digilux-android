@@ -30,6 +30,8 @@ interface AppComponent {
 
     fun broadcasts(): AppBroadcasts
 
+    fun broadcaster(): AppBroadcaster
+
     fun appDisposable(): AppDisposable
 
     fun dependencies(): AppDependencies

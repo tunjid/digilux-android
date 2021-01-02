@@ -20,16 +20,16 @@ package com.tunjid.fingergestures.gestureconsumers
 
 import android.content.Context
 import android.content.Intent
-import com.tunjid.fingergestures.ReactivePreference
-import com.tunjid.fingergestures.ReactivePreferences
-import com.tunjid.fingergestures.SetManager
-import com.tunjid.fingergestures.SetPreference
+import com.tunjid.fingergestures.*
 import com.tunjid.fingergestures.ui.popup.PopupDialogActivity
 import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
+import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
+import com.tunjid.fingergestures.di.AppDisposable
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.PopUpShow
 import com.tunjid.fingergestures.models.Broadcast
+import io.reactivex.rxkotlin.addTo
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,6 +37,8 @@ import javax.inject.Singleton
 class PopUpGestureConsumer @Inject constructor(
     @AppContext private val context: Context,
     reactivePreferences: ReactivePreferences,
+    appDisposable: AppDisposable,
+    broadcasts: AppBroadcasts,
     private val broadcaster: AppBroadcaster,
     private val purchasesManager: PurchasesManager
 ) : GestureConsumer {
@@ -47,7 +49,7 @@ class PopUpGestureConsumer @Inject constructor(
 
     val accessibilityButtonEnabledPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        key = ACCESSIBILITY_BUTTON_ENABLED,
+        key = "accessibility button enabled",
         default = false,
         onSet = { enabled ->
             broadcaster(Broadcast.Service.AccessibilityButtonChanged(enabled))
@@ -55,15 +57,14 @@ class PopUpGestureConsumer @Inject constructor(
     )
     val accessibilityButtonSingleClickPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        key = ACCESSIBILITY_BUTTON_SINGLE_CLICK,
+        key = "accessibility button single click",
         default = false
     )
     val animatePopUpPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
-        key = ANIMATES_POPUP,
+        key = "animates popup",
         default = true
     )
-
     val setManager: SetManager<Preference, GestureAction> = SetManager(
         reactivePreferences = reactivePreferences,
         keys = Preference.values().toList(),
@@ -77,12 +78,17 @@ class PopUpGestureConsumer @Inject constructor(
     private val list: List<GestureAction>
         get() = setManager.getItems(Preference.SavedActions)
 
-    override fun onGestureActionTriggered(gestureAction: GestureAction) =
-        broadcaster(Broadcast.Service.ShowPopUp)
+    init {
+        broadcasts.filterIsInstance<Broadcast.ShowPopUp>()
+            .subscribe { showPopup() }
+            .addTo(appDisposable)
+    }
+
+    override fun onGestureActionTriggered(gestureAction: GestureAction) = showPopup()
 
     override fun accepts(gesture: GestureAction): Boolean = gesture == PopUpShow
 
-    fun showPopup() = when {
+   private fun showPopup() = when {
         accessibilityButtonSingleClickPreference.value -> list
             .firstOrNull()
             ?.let(Broadcast::Gesture)
@@ -95,10 +101,4 @@ class PopUpGestureConsumer @Inject constructor(
 
     private fun canAddToSet(preferenceName: Preference): Boolean =
         setManager.getSet(preferenceName).size < 2 || purchasesManager.currentState.isPremiumNotTrial
-
-    companion object {
-        private const val ACCESSIBILITY_BUTTON_ENABLED = "accessibility button enabled"
-        private const val ACCESSIBILITY_BUTTON_SINGLE_CLICK = "accessibility button single click"
-        private const val ANIMATES_POPUP = "animates popup"
-    }
 }

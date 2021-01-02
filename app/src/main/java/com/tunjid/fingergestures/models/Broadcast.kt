@@ -22,7 +22,6 @@ import com.tunjid.fingergestures.gestureconsumers.GestureAction
 sealed class Broadcast {
     sealed class Service: Broadcast() {
         object ExpandVolumeControls : Service()
-        object ShowPopUp : Service()
         object ToggleDock : Service()
         data class AccessibilityButtonChanged(val enabled: Boolean) : Service()
         data class ScreenDimmerChanged(val percent: Float) : Service()
@@ -34,5 +33,6 @@ sealed class Broadcast {
     }
     data class Prompt(val message: String): Broadcast()
     data class Gesture(val gesture: GestureAction): Broadcast()
+    object ShowPopUp : Broadcast()
     object AppResumed : Broadcast()
 }
