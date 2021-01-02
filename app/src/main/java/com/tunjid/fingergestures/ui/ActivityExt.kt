@@ -20,8 +20,9 @@ package com.tunjid.fingergestures.ui
 import android.R
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -35,11 +36,15 @@ internal fun AppCompatActivity.dialogLifecycleOwner(): LifecycleOwner {
         override fun getLifecycle(): Lifecycle = registry
     }) { this to registry }
 
+    // Start observing immediately
     registry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
     lifecycle.addObserver(object : LifecycleEventObserver {
         override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
             when (event) {
+                Lifecycle.Event.ON_RESUME,
+                Lifecycle.Event.ON_PAUSE,
+                Lifecycle.Event.ON_STOP -> registry.handleLifecycleEvent(event)
                 Lifecycle.Event.ON_DESTROY -> {
                     registry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
                     source.lifecycle.removeObserver(this)
@@ -61,4 +66,11 @@ fun Context.divider(): RecyclerView.ItemDecoration {
     if (decoration != null) itemDecoration.setDrawable(decoration)
 
     return itemDecoration
+}
+
+fun ConstraintLayout.updateVerticalBiasFor(viewId: Int) = { verticalBias: Float ->
+    val set = ConstraintSet()
+    set.clone(this)
+    set.setVerticalBias(viewId, verticalBias)
+    set.applyTo(this)
 }

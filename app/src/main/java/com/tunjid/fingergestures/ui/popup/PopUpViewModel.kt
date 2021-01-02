@@ -18,9 +18,9 @@
 package com.tunjid.fingergestures.ui.popup
 
 import androidx.lifecycle.ViewModel
-import com.tunjid.fingergestures.managers.BackgroundManager
-import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.gestureconsumers.GestureMapper
+import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
+import com.tunjid.fingergestures.managers.BackgroundManager
 import com.tunjid.fingergestures.models.PopUp
 import com.tunjid.fingergestures.models.toPopUpActions
 import com.tunjid.fingergestures.toLiveData
@@ -31,6 +31,7 @@ data class State(
     val animatesPopUp: Boolean,
     val sliderColor: Int,
     val backgroundColor: Int,
+    val verticalBias: Float,
     val popUpActions: List<PopUp> = listOf(),
 )
 
@@ -48,6 +49,7 @@ class PopUpViewModel @Inject constructor(
         popUpGestureConsumer.animatePopUpPreference.monitor,
         backgroundManager.sliderColorPreference.monitor,
         backgroundManager.backgroundColorPreference.monitor,
+        popUpGestureConsumer.positionPreference.monitor.map { it / 100f },
         popUpGestureConsumer.popUpActions
             .toPopUpActions(backgroundManager.sliderColorPreference.monitor),
         ::State

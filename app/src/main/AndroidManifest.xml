@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2017, 2018, 2019 Adetunji Dahunsi.
   ~
   ~     This program is free software: you can redistribute it and/or modify
@@ -16,9 +15,9 @@
   ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
   -->
 
-<manifest xmlns:tools="http://schemas.android.com/tools"
-    package="com.tunjid.fingergestures"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.tunjid.fingergestures">
 
     <uses-feature android:name="android.hardware.fingerprint" />
 
@@ -70,8 +69,9 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/provider_paths" />
         </provider>
+
         <activity
             android:name=".ui.main.MainActivity"
             android:launchMode="singleInstance">
@@ -97,8 +97,11 @@
             android:theme="@style/DockingActivityTheme" />
         <activity
             android:name=".ui.popup.PopupDialogActivity"
+            android:allowEmbedded="true"
+            android:documentLaunchMode="always"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
+            android:resizeableActivity="true"
             android:theme="@style/PopupActivityTheme" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"

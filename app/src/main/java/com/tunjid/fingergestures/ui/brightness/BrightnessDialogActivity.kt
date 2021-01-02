@@ -26,7 +26,6 @@ import android.transition.AutoTransition
 import android.transition.TransitionManager
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.isVisible
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.dynamicanimation.animation.springAnimationOf
@@ -35,14 +34,15 @@ import com.google.android.material.slider.Slider
 import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.androidx.core.graphics.drawable.withTint
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ui.main.MainActivity
-import com.tunjid.fingergestures.ui.dialogLifecycleOwner
 import com.tunjid.fingergestures.databinding.ActivityBrightnessDialogBinding
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.filter
 import com.tunjid.fingergestures.gestureconsumers.BrightnessGestureConsumer.Companion.CURRENT_BRIGHTNESS_BYTE
 import com.tunjid.fingergestures.map
 import com.tunjid.fingergestures.mapDistinct
+import com.tunjid.fingergestures.ui.dialogLifecycleOwner
+import com.tunjid.fingergestures.ui.main.MainActivity
+import com.tunjid.fingergestures.ui.updateVerticalBiasFor
 
 class BrightnessDialogActivity : AppCompatActivity() {
     private val viewModel by viewModelFactory<BrightnessViewModel>()
@@ -90,14 +90,10 @@ class BrightnessDialogActivity : AppCompatActivity() {
                         ?.withTint(backgroundColor)
                 }
             mapDistinct(State::verticalBias)
-                .observe(dialogLifecycleOwner) { verticalBias ->
-                    val layout = binding.constraintLayout
-
-                    val set = ConstraintSet()
-                    set.clone(layout)
-                    set.setVerticalBias(controls.sliderBackground.id, verticalBias)
-                    set.applyTo(layout)
-                }
+                .observe(
+                    dialogLifecycleOwner,
+                    binding.constraintLayout.updateVerticalBiasFor(controls.sliderBackground.id)
+                )
             mapDistinct(State::showDimmerText)
                 .observe(dialogLifecycleOwner, { dimmerVisible ->
                     TransitionManager.beginDelayedTransition(binding.controls.sliderBackground, AutoTransition())

@@ -31,8 +31,10 @@ val Inputs.popUpItems: Flowable<List<Item>>
             accessibilityButtonSingleClickPreference.monitor,
             accessibilityButtonEnabledPreference.monitor,
             animatePopUpPreference.monitor,
-        ) { savedActions, isSingleClick, accessibilityButtonEnabled, animatePopup ->
-            listOf(
+            bubblePopUpPreference.monitor,
+            positionPreference.monitor,
+        ) { savedActions, isSingleClick, accessibilityButtonEnabled, animatePopup, isInBubble, popUpPosition ->
+            listOfNotNull(
                 Item.Toggle(
                     tab = Tab.PopUp,
                     sortKey = ItemSorter.ENABLE_ACCESSIBILITY_BUTTON,
@@ -53,6 +55,23 @@ val Inputs.popUpItems: Flowable<List<Item>>
                     titleRes = R.string.popup_animate_in,
                     isChecked = animatePopup,
                     consumer = animatePopUpPreference.setter
+                ),
+                Item.Toggle(
+                    tab = Tab.PopUp,
+                    sortKey = 7,
+                    titleRes = R.string.popup_is_in_bubble,
+                    isChecked = isInBubble,
+                    consumer = bubblePopUpPreference.setter
+                ).takeIf { hasBubbleApi },
+                Item.Slider(
+                    tab = Tab.PopUp,
+                    sortKey = 9,
+                    titleRes = R.string.adjust_pop_up_position,
+                    infoRes = 0,
+                    consumer = positionPreference.setter,
+                    value = popUpPosition,
+                    isEnabled = true,
+                    function = percentageFormatter
                 ),
                 Item.PopUp(
                     tab = Tab.PopUp,

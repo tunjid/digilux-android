@@ -18,17 +18,31 @@
 package com.tunjid.fingergestures.gestureconsumers
 
 
+import android.annotation.TargetApi
+import android.app.Notification
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.Person
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.drawable.IconCompat
+import androidx.core.graphics.drawable.toBitmap
+import com.tunjid.androidx.core.content.drawableAt
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.ui.popup.PopupDialogActivity
-import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.di.AppBroadcaster
 import com.tunjid.fingergestures.di.AppBroadcasts
 import com.tunjid.fingergestures.di.AppContext
 import com.tunjid.fingergestures.di.AppDisposable
 import com.tunjid.fingergestures.gestureconsumers.GestureAction.PopUpShow
+import com.tunjid.fingergestures.managers.PurchasesManager
 import com.tunjid.fingergestures.models.Broadcast
+import com.tunjid.fingergestures.ui.popup.PopupDialogActivity
 import io.reactivex.rxkotlin.addTo
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -65,6 +79,16 @@ class PopUpGestureConsumer @Inject constructor(
         key = "animates popup",
         default = true
     )
+    val bubblePopUpPreference: ReactivePreference<Boolean> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
+        key = "popup bubbles",
+        default = false
+    )
+    val positionPreference: ReactivePreference<Int> = ReactivePreference(
+        reactivePreferences = reactivePreferences,
+        key = "popup position",
+        default = 50
+    )
     val setManager: SetManager<Preference, GestureAction> = SetManager(
         reactivePreferences = reactivePreferences,
         keys = Preference.values().toList(),
@@ -73,12 +97,24 @@ class PopUpGestureConsumer @Inject constructor(
         stringMapper = GestureAction::deserialize,
         objectMapper = GestureAction::serialized)
 
+    @TargetApi(Build.VERSION_CODES.Q)
+    val hasBubbleApi = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     val popUpActions = setManager.itemsFlowable(Preference.SavedActions)
 
+    val percentageFormatter = { percent: Int -> context.getString(R.string.position_percent, percent) }
+
     private val list: List<GestureAction>
-        get() = setManager.getItems(Preference.SavedActions)
+        by setManager.itemsFlowable(Preference.SavedActions).asProperty(listOf(), appDisposable::add)
+
+    private val showsInBubble by bubblePopUpPreference.monitor.asProperty(false, appDisposable::add)
 
     init {
+        NotificationManagerCompat.from(context).createNotificationChannel(
+            NotificationChannelCompat.Builder(popUpBubbleChannel, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                .setName(context.getString(R.string.popup_bubble_channel_name))
+                .setDescription(context.getString(R.string.popup_bubble_channel_description))
+                .build()
+        )
         broadcasts.filterIsInstance<Broadcast.ShowPopUp>()
             .subscribe { showPopup() }
             .addTo(appDisposable)
@@ -88,17 +124,79 @@ class PopUpGestureConsumer @Inject constructor(
 
     override fun accepts(gesture: GestureAction): Boolean = gesture == PopUpShow
 
-   private fun showPopup() = when {
+    private fun canAddToSet(preferenceName: Preference): Boolean =
+        setManager.getSet(preferenceName).size < 2 || purchasesManager.currentState.isPremiumNotTrial
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    private fun showPopup() = when {
         accessibilityButtonSingleClickPreference.value -> list
             .firstOrNull()
             ?.let(Broadcast::Gesture)
             ?.let(broadcaster)
             ?: Unit
-        else -> context.startActivity(Intent(context, PopupDialogActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        })
+        hasBubbleApi && showsInBubble -> bubbleNotification()
+        else -> context.startActivity(PopupDialogActivity.intent(context, false))
     }
 
-    private fun canAddToSet(preferenceName: Preference): Boolean =
-        setManager.getSet(preferenceName).size < 2 || purchasesManager.currentState.isPremiumNotTrial
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun bubbleNotification() {
+        val bitmap = context.drawableAt(R.drawable.ic_logo)?.toBitmap() ?: return
+        val icon = IconCompat.createWithAdaptiveBitmap(bitmap)
+        val person = Person.Builder()
+            .setName(context.getString(R.string.popup_bubble_notification_title))
+            .setIcon(icon)
+            .setImportant(true)
+            .build()
+        val intent = PopupDialogActivity.intent(context, true)
+
+        ShortcutManagerCompat.pushDynamicShortcut(context, ShortcutInfoCompat.Builder(context, popUpBubbleShortcutId)
+            .setLongLived(true)
+            .setIntent(intent)
+            .setShortLabel(context.getString(R.string.popup_bubble_notification_title))
+            .setIcon(icon)
+            .setPerson(person)
+            .build())
+
+        with(NotificationManagerCompat.from(context)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(popUpBubbleRequestCode, NotificationCompat.Builder(context, popUpBubbleChannel)
+                .setShortcutId(popUpBubbleShortcutId)
+                .setContentTitle(context.getString(R.string.popup_bubble_notification_title))
+                .setLargeIcon(bitmap)
+                .setSmallIcon(icon)
+                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setStyle(NotificationCompat.MessagingStyle(person)
+                    .setGroupConversation(false)
+                    .addMessage(
+                        context.getString(R.string.popup_bubble_notification_message),
+                        System.currentTimeMillis(),
+                        person
+                    )
+                )
+                .addPerson(person)
+                .setShowWhen(true)
+                .setContentIntent(intent.toPendingIntent())
+                .setBubbleMetadata(NotificationCompat.BubbleMetadata
+                    .Builder()
+                    .setIcon(icon)
+                    .setAutoExpandBubble(true)
+                    .setSuppressNotification(true)
+                    .setIntent(PopupDialogActivity.intent(context, true).toPendingIntent())
+                    .setDesiredHeight(context.resources.getDimensionPixelSize(R.dimen.popup_bubble_size))
+                    .build()
+                )
+                .build())
+        }
+    }
+
+    private fun Intent.toPendingIntent() = PendingIntent.getActivity(
+        context,
+        popUpBubbleRequestCode,
+        this,
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
 }
+
+private const val popUpBubbleChannel = "Popup Bubbles"
+private const val popUpBubbleShortcutId = "Popup Bubbles Shortcut Id"
+private const val popUpBubbleRequestCode = 7

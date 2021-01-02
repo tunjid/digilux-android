@@ -66,6 +66,7 @@
 
     <!-- Position ViewHolder-->
     <string name="adjust_slider_position">Adjust Slider Position</string>
+    <string name="adjust_pop_up_position">Adjust pop up Position</string>
     <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
     <!-- Duration ViewHolder-->
@@ -202,6 +203,11 @@
     <string name="popup_no_actions">No pop up actions have been added yet.</string>
     <string name="popup_description">Adds actions to the accessibility button pop up.</string>
     <string name="popup_animate_in">Animate shortcut pop up window\'s entrance and exit</string>
+    <string name="popup_is_in_bubble">Pop up window shows in a persistent bubble</string>
+    <string name="popup_bubble_channel_name">Pop up bubbles</string>
+    <string name="popup_bubble_channel_description">Allows pop ups to show in a bubble notification</string>
+    <string name="popup_bubble_notification_title">Digilux Popup Actions</string>
+    <string name="popup_bubble_notification_message">Allow Digilux to show your favorite actions in a pop up</string>
 
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>
