@@ -131,7 +131,10 @@ class PopupDialogActivity : AppCompatActivity() {
     private fun end() = if (intent.isInBubble) onBackPressed() else finish()
 
     companion object {
-        fun intent(context: Context, isInBubble: Boolean = false) = Intent(context, PopupDialogActivity::class.java).apply {
+        fun intent(context: Context, isInBubble: Boolean = false) = Intent(
+            context,
+            PopupDialogActivity::class.java
+        ).apply {
             action = "pop up"
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
             this.isInBubble = isInBubble
