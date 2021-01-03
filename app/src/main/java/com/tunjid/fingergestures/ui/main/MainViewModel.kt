@@ -299,12 +299,12 @@ class MainViewModel @Inject constructor(
 
 private val Context.links
     get() = listOf(
-        TextLink(text = getString(R.string.get_set_icon), link = "https://github.com/tunjid/android-bootstrap"),
+        TextLink(text = getString(R.string.get_set_icon), link = "http://www.myiconfinder.com/getseticons"),
         TextLink(text = getString(R.string.rxjava), link = "https://github.com/ReactiveX/RxJava"),
         TextLink(text = getString(R.string.color_picker), link = "https://github.com/QuadFlask/colorpicker"),
         TextLink(text = getString(R.string.image_cropper), link = "https://github.com/ArthurHub/Android-Image-Cropper"),
         TextLink(text = getString(R.string.material_design_icons), link = "https://materialdesignicons.com/"),
-        TextLink(text = getString(R.string.android_bootstrap), link = "http://www.myiconfinder.com/getseticons")
+        TextLink(text = getString(R.string.android_bootstrap), link = "https://github.com/tunjid/android-bootstrap")
     )
 
 val State.fabState
