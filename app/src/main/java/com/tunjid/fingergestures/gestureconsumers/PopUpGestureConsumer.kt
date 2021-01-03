@@ -24,7 +24,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -82,7 +81,8 @@ class PopUpGestureConsumer @Inject constructor(
     val bubblePopUpPreference: ReactivePreference<Boolean> = ReactivePreference(
         reactivePreferences = reactivePreferences,
         key = "popup bubbles",
-        default = false
+        default = false,
+        onSet = { enabled -> if (enabled && hasBubbleApi) bubbleNotification() }
     )
     val positionPreference: ReactivePreference<Int> = ReactivePreference(
         reactivePreferences = reactivePreferences,
@@ -97,8 +97,7 @@ class PopUpGestureConsumer @Inject constructor(
         stringMapper = GestureAction::deserialize,
         objectMapper = GestureAction::serialized)
 
-    @TargetApi(Build.VERSION_CODES.Q)
-    val hasBubbleApi = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+    val hasBubbleApi = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
     val popUpActions = setManager.itemsFor(Preference.SavedActions)
 
     val percentageFormatter = { percent: Int -> context.getString(R.string.position_percent, percent) }
@@ -138,7 +137,7 @@ class PopUpGestureConsumer @Inject constructor(
         else -> context.startActivity(PopupDialogActivity.intent(context = context, isInBubble = false))
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
+    @TargetApi(Build.VERSION_CODES.Q)
     private fun bubbleNotification() {
         val bitmap = context.drawableAt(R.drawable.ic_logo)?.toBitmap() ?: return
         val icon = IconCompat.createWithAdaptiveBitmap(bitmap)

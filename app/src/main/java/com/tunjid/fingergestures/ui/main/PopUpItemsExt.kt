@@ -18,6 +18,9 @@
 package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.di.AppDependencies
+import com.tunjid.fingergestures.gestureconsumers.GestureAction
+import com.tunjid.fingergestures.gestureconsumers.GestureMapper
 import com.tunjid.fingergestures.gestureconsumers.PopUpGestureConsumer
 import com.tunjid.fingergestures.models.toPopUpActions
 import io.reactivex.Flowable
@@ -33,7 +36,8 @@ val Inputs.popUpItems: Flowable<List<Item>>
             animatePopUpPreference.monitor,
             bubblePopUpPreference.monitor,
             positionPreference.monitor,
-        ) { savedActions, isSingleClick, accessibilityButtonEnabled, animatePopup, isInBubble, popUpPosition ->
+            dependencies.hasPopUp
+        ) { savedActions, isSingleClick, accessibilityButtonEnabled, animatePopup, isInBubble, popUpPosition, hasPopUp ->
             listOfNotNull(
                 Item.Toggle(
                     tab = Tab.PopUp,
@@ -78,9 +82,20 @@ val Inputs.popUpItems: Flowable<List<Item>>
                     sortKey = ItemSorter.POPUP_ACTION,
                     items = savedActions,
                     editor = setManager.editorFor(PopUpGestureConsumer.Preference.SavedActions),
-                    enabled = accessibilityButtonEnabled || isInBubble,
+                    enabled = hasPopUp,
                     input = this@popUpItems
                 )
             )
         }
     }
+
+private val GestureMapper.GesturePair.hasPopUp get() = singleAction == GestureAction.PopUpShow || doubleAction == GestureAction.PopUpShow
+private val GestureMapper.State.hasPopUp get() = listOf(left, up, right, down).any(GestureMapper.GesturePair::hasPopUp)
+private val AppDependencies.hasPopUp
+    get() = Flowables.combineLatest(
+        gestureConsumers.popUp.accessibilityButtonEnabledPreference.monitor,
+        gestureConsumers.popUp.bubblePopUpPreference.monitor,
+        gestureMapper.state.map(GestureMapper.State::hasPopUp),
+    )
+        .map(Triple<Boolean, Boolean, Boolean>::toList)
+        .map { options -> options.any { it } }
