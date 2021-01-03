@@ -24,7 +24,7 @@
     android:layout_height="match_parent"
     android:background="#C75C5C"
     android:padding="@dimen/single_margin"
-    tools:context=".activities.DockingActivity">
+    tools:context=".ui.docking.DockingActivity">
 
     <ImageView
         android:id="@+id/logo"

@@ -17,67 +17,55 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import android.view.View
-import android.widget.SeekBar
-import android.widget.TextView
-import androidx.annotation.StringRes
+import android.view.ViewGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.slider.LabelFormatter
+import com.google.android.material.slider.Slider
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.ui.main.Item
+import com.tunjid.fingergestures.databinding.ViewholderSliderDeltaBinding
 
-class SliderAdjusterViewHolder(itemView: View,
-                               @StringRes titleRes: Int,
-                               @StringRes infoRes: Int,
-                               private val consumer: (Int) -> Unit,
-                               private val valueSupplier: () -> Int,
-                               private val enabledSupplier: () -> Boolean,
-                               private val function: (Int) -> String
-) : AppViewHolder(itemView), SeekBar.OnSeekBarChangeListener {
+private var BindingViewHolder<ViewholderSliderDeltaBinding>.item by viewHolderDelegate<Item.Slider>()
+private var BindingViewHolder<ViewholderSliderDeltaBinding>.isTouched by viewHolderDelegate(false)
 
-    private val value: TextView = itemView.findViewById(R.id.value)
-    private val seekBar: SeekBar
+fun ViewGroup.sliderAdjuster() = viewHolderFrom(ViewholderSliderDeltaBinding::inflate).apply {
+    itemView.setOnClickListener { if (item.infoRes != 0) MaterialAlertDialogBuilder(itemView.context).setMessage(item.infoRes).show() }
+    binding.seekbar.labelBehavior = LabelFormatter.LABEL_GONE
+    binding.seekbar.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+        override fun onStartTrackingTouch(slider: Slider) {
+            isTouched = true
+        }
 
-    init {
-        val title = itemView.findViewById<TextView>(R.id.title)
-        title.setText(titleRes)
-
-        seekBar = itemView.findViewById(R.id.seekbar)
-        seekBar.setOnSeekBarChangeListener(this)
-
-        if (infoRes != 0) {
-            title.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_info_outline_white_24dp, 0)
-            itemView.setOnClickListener { MaterialAlertDialogBuilder(itemView.context).setMessage(infoRes).show() }
+        override fun onStopTrackingTouch(slider: Slider) {
+            isTouched = false
+            val percentage = slider.value.toInt()
+            item.consumer.invoke(percentage)
+            binding.value.text = item.function.invoke(percentage)
+        }
+    })
+    binding.seekbar.addOnChangeListener { _, percentage, fromUser ->
+        if (fromUser) {
+            item.consumer.invoke(percentage.toInt())
+            binding.value.text = item.function.invoke(percentage.toInt())
         }
     }
+}
 
-    constructor(itemView: View,
-                @StringRes titleRes: Int,
-                consumer: (Int) -> Unit,
-                valueSupplier: () -> Int,
-                enabledSupplier: () -> Boolean,
-                function: (Int) -> String) : this(itemView, titleRes, 0, consumer, valueSupplier, enabledSupplier, function)
+fun BindingViewHolder<ViewholderSliderDeltaBinding>.bind(item: Item.Slider) = binding.run {
+    this@bind.item = item
 
-    override fun bind() {
-        super.bind()
-        val enabled = enabledSupplier.invoke()
+    title.setText(item.titleRes)
 
-        seekBar.isEnabled = enabled
-        seekBar.progress = valueSupplier.invoke()
+    val enabled = item.isEnabled
 
-        value.isEnabled = enabled
-        value.text = function.invoke(valueSupplier.invoke())
-    }
+    seekbar.isEnabled = enabled
+    if (!isTouched) seekbar.value = item.value.toFloat()
 
-    override fun onProgressChanged(seekBar: SeekBar, percentage: Int, fromUser: Boolean) {
-        if (!fromUser) return
-        consumer.invoke(percentage)
-        value.text = function.invoke(percentage)
-    }
+    value.isEnabled = enabled
+    value.text = item.function.invoke(item.value)
 
-    override fun onStartTrackingTouch(seekBar: SeekBar) {
-
-    }
-
-    override fun onStopTrackingTouch(seekBar: SeekBar) {
-
-    }
+    if (item.infoRes != 0) title.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_info_outline_white_24dp, 0)
 }

@@ -1,0 +1,60 @@
+<!--
+  ~ Copyright (c) 2017, 2018, 2019 Adetunji Dahunsi.
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU General Public License as published by
+  ~     the Free Software Foundation, either version 3 of the License, or
+  ~     (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+  <path
+      android:pathData="M201.029,329.333v61.999c0,3.78 4.424,10.27 7.696,12.16l41.324,23.858c3.273,1.89 8.629,1.89 11.902,0l41.324,-23.858c3.272,-1.889 7.696,-8.38 7.696,-12.16v-61.999c-16.586,8.276 -35.211,13.051 -54.971,13.051C236.239,342.384 217.614,337.608 201.029,329.333z"
+      android:fillColor="#E0E0D1"/>
+  <path
+      android:pathData="M256,256m-113.347,0a113.347,113.347 0,1 1,226.694 0a113.347,113.347 0,1 1,-226.694 0"
+      android:fillColor="#FFFFFF"/>
+  <path
+      android:pathData="M256,256m-113.347,0a113.347,113.347 0,1 1,226.694 0a113.347,113.347 0,1 1,-226.694 0"
+      android:fillColor="#FFFFFF"/>
+  <path
+      android:pathData="M267.78,110.718c0,6.505 -5.274,11.78 -11.78,11.78l0,0c-6.506,0 -11.78,-5.274 -11.78,-11.78V95.012c0,-6.505 5.274,-11.78 11.78,-11.78l0,0c6.505,0 11.78,5.274 11.78,11.78V110.718z"
+      android:fillColor="#E0E0D1"/>
+  <path
+      android:pathData="M401.282,267.78c-6.506,0 -11.78,-5.274 -11.78,-11.78l0,0c0,-6.505 5.274,-11.78 11.78,-11.78h15.706c6.505,0 11.78,5.274 11.78,11.78l0,0c0,6.505 -5.274,11.78 -11.78,11.78H401.282z"
+      android:fillColor="#E0E0D1"/>
+  <path
+      android:pathData="M110.718,244.22c6.505,0 11.78,5.274 11.78,11.78l0,0c0,6.505 -5.274,11.78 -11.78,11.78H95.012c-6.506,0 -11.78,-5.274 -11.78,-11.78l0,0c0,-6.505 5.274,-11.78 11.78,-11.78H110.718z"
+      android:fillColor="#E0E0D1"/>
+  <path
+      android:pathData="M193.56,124.292c3.253,5.635 1.322,12.839 -4.311,16.092l0,0c-5.634,3.253 -12.838,1.322 -16.091,-4.312l-7.853,-13.602c-3.254,-5.635 -1.322,-12.838 4.311,-16.092l0,0c5.634,-3.253 12.838,-1.322 16.091,4.312L193.56,124.292z"
+      android:fillColor="#E0E0D1"/>
+  <path
+      android:pathData="M387.708,193.56c-5.635,3.254 -12.839,1.322 -16.092,-4.311l0,0c-3.253,-5.634 -1.322,-12.838 4.312,-16.091l13.602,-7.853c5.635,-3.254 12.838,-1.322 16.092,4.311l0,0c3.253,5.634 1.322,12.838 -4.312,16.091L387.708,193.56z"
+      android:fillColor="#E0E0D1"/>
+  <path
+      android:pathData="M124.292,318.44c5.635,-3.254 12.839,-1.322 16.092,4.311l0,0c3.253,5.634 1.322,12.838 -4.312,16.091l-13.602,7.853c-5.635,3.254 -12.838,1.322 -16.092,-4.311l0,0c-3.253,-5.634 -1.322,-12.838 4.312,-16.091L124.292,318.44z"
+      android:fillColor="#E0E0D1"/>
+  <path
+      android:pathData="M136.072,173.158c5.635,3.253 7.565,10.457 4.312,16.091l0,0c-3.253,5.634 -10.457,7.565 -16.092,4.311l-13.602,-7.853c-5.635,-3.253 -7.565,-10.457 -4.312,-16.091l0,0c3.254,-5.634 10.457,-7.565 16.092,-4.311L136.072,173.158z"
+      android:fillColor="#E0E0D1"/>
+  <path
+      android:pathData="M375.928,338.842c-5.635,-3.253 -7.565,-10.457 -4.312,-16.091l0,0c3.253,-5.634 10.457,-7.565 16.092,-4.311l13.602,7.853c5.635,3.253 7.565,10.457 4.312,16.091l0,0c-3.254,5.634 -10.457,7.565 -16.092,4.311L375.928,338.842z"
+      android:fillColor="#E0E0D1"/>
+  <path
+      android:pathData="M338.842,136.072c-3.253,5.635 -10.457,7.565 -16.091,4.312l0,0c-5.634,-3.253 -7.565,-10.457 -4.311,-16.092l7.853,-13.602c3.253,-5.635 10.457,-7.565 16.091,-4.312l0,0c5.634,3.254 7.565,10.457 4.311,16.092L338.842,136.072z"
+      android:fillColor="#E0E0D1"/>
+</vector>

@@ -19,36 +19,44 @@ package com.tunjid.fingergestures.viewholders
 
 import android.content.Intent
 import android.net.Uri
-import android.view.View
-import android.widget.TextView
+import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.AppAdapterListener
-class LinkViewHolder(
-        itemView: View,
-        linkItem: LinkItem,
-        listener: AppAdapterListener
-) : AppViewHolder(itemView, listener) {
+import com.tunjid.fingergestures.ui.main.Item
+import com.tunjid.fingergestures.databinding.ViewholderSimpleTextBinding
 
-    init {
-        val title = itemView.findViewById<TextView>(R.id.title)
+private var BindingViewHolder<ViewholderSimpleTextBinding>.item by viewHolderDelegate<Item.Link>()
 
-        title.setText(linkItem.titleRes)
-        title.setCompoundDrawablesRelativeWithIntrinsicBounds(linkItem.icon, 0, 0, 0)
-
-        itemView.setOnClickListener { view -> view.context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(linkItem.link))) }
-    }
-
-
-    class LinkItem internal constructor(@field:StringRes internal var titleRes: Int, @field:DrawableRes internal var icon: Int, internal var link: String)
-
-    companion object {
-
-        private const val APP_URI = "market://details?id=com.tunjid.fingergestures"
-        private const val SUPPORT_LINK = "https://github.com/tunjid/digilux-android/issues"
-
-        val REVIEW_LINK_ITEM = LinkItem(R.string.review_app, R.drawable.ic_rate_review_white_24dp, APP_URI)
-        val SUPPORT_LINK_ITEM = LinkItem(R.string.help_support, R.drawable.ic_help_24dp, SUPPORT_LINK)
-    }
+fun ViewGroup.link() = viewHolderFrom(ViewholderSimpleTextBinding::inflate).apply {
+    itemView.setOnClickListener { view -> view.context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.linkItem.link))) }
 }
+
+fun BindingViewHolder<ViewholderSimpleTextBinding>.bind(item: Item.Link) = binding.run {
+    this@bind.item = item
+
+    title.setText(item.linkItem.titleRes)
+    title.setCompoundDrawablesRelativeWithIntrinsicBounds(item.linkItem.icon, 0, 0, 0)
+}
+
+val ReviewLinkItem = LinkItem(
+    titleRes = R.string.review_app,
+    icon = R.drawable.ic_rate_review_white_24dp,
+    link = "market://details?id=com.tunjid.fingergestures"
+)
+val SupportLinkItem = LinkItem(
+    titleRes = R.string.help_support,
+    icon = R.drawable.ic_help_24dp,
+    link = "https://github.com/tunjid/digilux-android/issues"
+)
+
+class LinkItem internal constructor(
+    @field:StringRes
+    internal val titleRes: Int,
+    @field:DrawableRes
+    internal val icon: Int,
+    internal val link: String
+)

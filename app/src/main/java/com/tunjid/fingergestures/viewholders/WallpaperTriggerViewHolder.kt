@@ -19,87 +19,70 @@ package com.tunjid.fingergestures.viewholders
 
 import android.app.TimePickerDialog
 import android.graphics.drawable.Drawable
-import android.view.View
-import android.widget.TextView
-import androidx.annotation.DrawableRes
-import androidx.core.content.ContextCompat
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.BackgroundManager
-import com.tunjid.fingergestures.BackgroundManager.Companion.DAY_WALLPAPER_PICK_CODE
-import com.tunjid.fingergestures.BackgroundManager.Companion.NIGHT_WALLPAPER_PICK_CODE
+import android.view.ViewGroup
+import com.tunjid.androidx.core.content.colorAt
+import com.tunjid.androidx.core.content.drawableAt
+import com.tunjid.androidx.core.graphics.drawable.withTint
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
+import com.tunjid.fingergestures.models.uiState
+import com.tunjid.fingergestures.models.updatePartial
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.adapters.AppAdapterListener
+import com.tunjid.fingergestures.managers.WallpaperSelection
+import com.tunjid.fingergestures.ui.main.Item
+import com.tunjid.fingergestures.databinding.ViewholderWallpaperTriggerBinding
+import com.tunjid.fingergestures.hasStoragePermission
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Calendar.HOUR_OF_DAY
 import java.util.Calendar.MINUTE
 
-class WallpaperTriggerViewHolder(
-        itemView: View,
-        appAdapterListener: AppAdapterListener
-) : AppViewHolder(itemView, appAdapterListener) {
+private var BindingViewHolder<ViewholderWallpaperTriggerBinding>.item by viewHolderDelegate<Item.WallpaperTrigger>()
 
-    private val backgroundManager: BackgroundManager = BackgroundManager.instance
-    private val start: TextView = itemView.findViewById(R.id.start)
-    private val end: TextView = itemView.findViewById(R.id.end)
-
-    init {
-        start.setOnClickListener {
-            showTimePicker(backgroundManager.getMainWallpaperCalendar(DAY_WALLPAPER_PICK_CODE),
-                    TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                        backgroundManager.setWallpaperChangeTime(DAY_WALLPAPER_PICK_CODE, hour, minute)
-                        bind()
-                    })
-        }
-
-        end.setOnClickListener {
-            showTimePicker(backgroundManager.getMainWallpaperCalendar(NIGHT_WALLPAPER_PICK_CODE),
-                    TimePickerDialog.OnTimeSetListener { _, hour, minute ->
-                        backgroundManager.setWallpaperChangeTime(NIGHT_WALLPAPER_PICK_CODE, hour, minute)
-                        bind()
-                    }
-            )
-        }
-
-        itemView.findViewById<View>(R.id.cancel_auto_wallpaper).setOnClickListener {
-            backgroundManager.cancelAutoWallpaper()
-            bind()
-        }
-    }
-
-    override fun bind() {
-        super.bind()
-        start.setCompoundDrawablesWithIntrinsicBounds(null, getTopDrawable(DAY_WALLPAPER_PICK_CODE), null, null)
-        end.setCompoundDrawablesWithIntrinsicBounds(null, getTopDrawable(NIGHT_WALLPAPER_PICK_CODE), null, null)
-        start.text = getCalendarString(backgroundManager.getMainWallpaperCalendar(DAY_WALLPAPER_PICK_CODE))
-        end.text = getCalendarString(backgroundManager.getMainWallpaperCalendar(NIGHT_WALLPAPER_PICK_CODE))
-        start.setTextColor(getTextColor(DAY_WALLPAPER_PICK_CODE))
-        end.setTextColor(getTextColor(NIGHT_WALLPAPER_PICK_CODE))
-    }
-
-    private fun showTimePicker(calendar: Calendar, onTimeSetListener: TimePickerDialog.OnTimeSetListener) {
-        if (App.hasStoragePermission)
-            TimePickerDialog(itemView.context, onTimeSetListener, calendar.get(HOUR_OF_DAY), calendar.get(MINUTE), false).show()
-        else
-            listener.showSnackbar(R.string.enable_storage_settings)
-    }
-
-    private fun getCalendarString(calendar: Calendar): String = dateFormat.format(calendar.time)
-
-    private fun getTextColor(@BackgroundManager.WallpaperSelection selection: Int): Int {
-        return ContextCompat.getColor(itemView.context, if (backgroundManager.willChangeWallpaper(selection))
-            R.color.toggle_text
-        else
-            R.color.dark_grey)
-    }
-
-    private fun getTopDrawable(@BackgroundManager.WallpaperSelection selection: Int): Drawable {
-        @DrawableRes val drawableRes = if (selection == DAY_WALLPAPER_PICK_CODE) R.drawable.ic_day_24dp else R.drawable.ic_night_24dp
-        return backgroundManager.tint(drawableRes, getTextColor(selection))
-    }
-
-    companion object {
-
-        private val dateFormat = SimpleDateFormat("h:mm a", Locale.US)
-    }
+fun ViewGroup.wallpaperTrigger() = viewHolderFrom(ViewholderWallpaperTriggerBinding::inflate).apply {
+    binding.start.setOnClickListener { selectTime(WallpaperSelection.Day) }
+    binding.end.setOnClickListener { selectTime(WallpaperSelection.Night) }
+    binding.cancelAutoWallpaper.setOnClickListener { item.cancelAutoWallpaper() }
 }
+
+fun BindingViewHolder<ViewholderWallpaperTriggerBinding>.bind(item: Item.WallpaperTrigger) = binding.run {
+    this@bind.item = item
+    start.setCompoundDrawablesWithIntrinsicBounds(null, getTopDrawable(WallpaperSelection.Day), null, null)
+    end.setCompoundDrawablesWithIntrinsicBounds(null, getTopDrawable(WallpaperSelection.Night), null, null)
+    start.text = getCalendarString(item.dayStatus.calendar)
+    end.text = getCalendarString(item.nightStatus.calendar)
+    start.setTextColor(getTextColor(WallpaperSelection.Day))
+    end.setTextColor(getTextColor(WallpaperSelection.Night))
+}
+
+private fun BindingViewHolder<ViewholderWallpaperTriggerBinding>.showTimePicker(calendar: Calendar, onTimeSetListener: TimePickerDialog.OnTimeSetListener) {
+    if (itemView.context.hasStoragePermission)
+        TimePickerDialog(itemView.context, onTimeSetListener, calendar.get(HOUR_OF_DAY), calendar.get(MINUTE), false).show()
+    else itemView::uiState.updatePartial { copy(snackbarText = itemView.context.getString(R.string.enable_storage_settings)) }
+}
+
+private fun getCalendarString(calendar: Calendar): String = dateFormat.format(calendar.time)
+
+private fun BindingViewHolder<ViewholderWallpaperTriggerBinding>.getTextColor(selection: WallpaperSelection): Int =
+    itemView.context.colorAt(when {
+        when (selection) {
+            WallpaperSelection.Day -> item.dayStatus.willChange
+            WallpaperSelection.Night -> item.nightStatus.willChange
+        } -> R.color.toggle_text
+        else -> R.color.dark_grey
+    })
+
+private fun BindingViewHolder<ViewholderWallpaperTriggerBinding>.getTopDrawable(selection: WallpaperSelection): Drawable? =
+    itemView.context.drawableAt(when (selection) {
+        WallpaperSelection.Day -> R.drawable.ic_day_24dp
+        WallpaperSelection.Night -> R.drawable.ic_night_24dp
+    })?.withTint(getTextColor(selection))
+
+private fun BindingViewHolder<ViewholderWallpaperTriggerBinding>.selectTime(selection: WallpaperSelection) =
+    showTimePicker(when (selection) {
+        WallpaperSelection.Day -> item.dayStatus.calendar
+        WallpaperSelection.Night -> item.nightStatus.calendar
+    }) { _, hour, minute -> item.selectTime(selection, hour, minute) }
+
+private val dateFormat = SimpleDateFormat("h:mm a", Locale.US)

@@ -17,21 +17,21 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import android.view.View
-import android.widget.Switch
-import androidx.annotation.StringRes
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.R
+import android.view.ViewGroup
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
+import com.tunjid.fingergestures.ui.main.Item
+import com.tunjid.fingergestures.databinding.ViewholderToggleBinding
 
-class ToggleViewHolder(itemView: View,
-                       @StringRes titleRes: Int,
-                       supplier: () -> Boolean,
-                       consumer: (Boolean) -> Unit) : AppViewHolder(itemView) {
+private var BindingViewHolder<ViewholderToggleBinding>.item by viewHolderDelegate<Item.Toggle>()
 
-    init {
-        val toggle = itemView.findViewById<Switch>(R.id.toggle)
-        toggle.setText(titleRes)
-        toggle.setOnClickListener { consumer.invoke(toggle.isChecked) }
-        disposables.add(App.backgroundToMain(supplier).subscribe((toggle::setChecked), Throwable::printStackTrace))
-    }
+fun ViewGroup.toggle() = viewHolderFrom(ViewholderToggleBinding::inflate).apply {
+    binding.toggle.setOnClickListener { item.consumer.invoke(binding.toggle.isChecked) }
+}
+
+fun BindingViewHolder<ViewholderToggleBinding>.bind(item: Item.Toggle) = binding.run {
+    this@bind.item = item
+    toggle.setText(item.titleRes)
+    toggle.isChecked = item.isChecked
 }

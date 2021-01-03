@@ -17,73 +17,55 @@
 
 package com.tunjid.fingergestures.gestureconsumers
 
-import androidx.annotation.IntDef
+import com.tunjid.fingergestures.R
+
+/**
+ * Actions available. The ids are serialized to shared preferences and MUST not change
+ */
+enum class GestureAction(val id: Int, val nameRes: Int) {
+    DoNothing(id = 8, nameRes = R.string.do_nothing),
+    IncreaseBrightness(id = 0, nameRes = R.string.increase_brightness),
+    ReduceBrightness(id = 1, nameRes = R.string.reduce_brightness),
+    MaximizeBrightness(id = 2, nameRes = R.string.maximize_brightness),
+    MinimizeBrightness(id = 3, nameRes = R.string.minimize_brightness),
+    IncreaseAudio(id = 19, nameRes = R.string.increase_audio),
+    ReduceAudio(id = 20, nameRes = R.string.reduce_audio),
+
+    // int NIGHT_MODE_ON = 4; DO NOT REMOVE FOR LEGACY REASONS
+    // int NIGHT_MODE_OFF = 5; DO NOT REMOVE FOR LEGACY REASONS
+    NotificationUp(id = 6, nameRes = R.string.notification_up),
+    NotificationDown(id = 7, nameRes = R.string.notification_down),
+    NotificationToggle(id = 12, nameRes = R.string.toggle_notifications),
+    PopUpShow(id = 18, nameRes = R.string.show_popup),
+    FlashlightToggle(id = 9, nameRes = R.string.toggle_flashlight),
+    DockToggle(id = 10, nameRes = R.string.toggle_dock),
+    AutoRotateToggle(id = 11, nameRes = R.string.toggle_auto_rotate),
+    GlobalHome(id = 13, nameRes = R.string.global_home),
+    GlobalBack(id = 14, nameRes = R.string.global_back),
+    GlobalRecents(id = 15, nameRes = R.string.global_recents),
+    GlobalSplitScreen(id = 16, nameRes = R.string.global_split_screen),
+    GlobalPowerDialog(id = 17, nameRes = R.string.global_power_dialog),
+    GlobalLockScreen(id = 21, nameRes = R.string.global_lock_screen),
+    GlobalTakeScreenshot(id = 22, nameRes = R.string.global_take_screenshot);
+
+    val serialized get() = id.toString()
+
+    companion object {
+        private val map = values().map { it.id to it }.toMap()
+        fun fromId(id: Int) = map.getValue(id)
+        fun deserialize(id: String) = fromId(id.toInt())
+    }
+}
 
 interface GestureConsumer {
 
-    @Retention(AnnotationRetention.SOURCE)
-    @IntDef(
-            INCREASE_BRIGHTNESS,
-            REDUCE_BRIGHTNESS,
-            MAXIMIZE_BRIGHTNESS,
-            MINIMIZE_BRIGHTNESS,
-            NOTIFICATION_DOWN,
-            NOTIFICATION_UP,
-            NOTIFICATION_TOGGLE,
-            DO_NOTHING,
-            TOGGLE_FLASHLIGHT,
-            TOGGLE_DOCK,
-            TOGGLE_AUTO_ROTATE,
-            GLOBAL_HOME,
-            GLOBAL_BACK,
-            GLOBAL_RECENTS,
-            GLOBAL_SPLIT_SCREEN,
-            GLOBAL_POWER_DIALOG,
-            SHOW_POPUP,
-            REDUCE_AUDIO,
-            INCREASE_AUDIO,
-            GLOBAL_LOCK_SCREEN,
-            GLOBAL_TAKE_SCREENSHOT
-    )
-    annotation class GestureAction
+    fun onGestureActionTriggered(gestureAction: GestureAction)
 
-    fun onGestureActionTriggered(@GestureAction gestureAction: Int)
-
-    fun accepts(@GestureAction gesture: Int): Boolean
+    fun accepts(gesture: GestureAction): Boolean
 
     companion object {
-
         const val ZERO_PERCENT = 0
-        const val FIFTY_PERCENT = 50
         const val HUNDRED_PERCENT = 100
-
-        const val INCREASE_BRIGHTNESS = 0
-        const val REDUCE_BRIGHTNESS = 1
-        const val MAXIMIZE_BRIGHTNESS = 2
-        const val MINIMIZE_BRIGHTNESS = 3
-        // int NIGHT_MODE_ON = 4; DO NOT REMOVE FOR LEGACY REASONS
-        // int NIGHT_MODE_OFF = 5; DO NOT REMOVE FOR LEGACY REASONS
-        const val NOTIFICATION_UP = 6
-        const val NOTIFICATION_DOWN = 7
-        const val DO_NOTHING = 8
-        const val TOGGLE_FLASHLIGHT = 9
-        const val TOGGLE_DOCK = 10
-        const val TOGGLE_AUTO_ROTATE = 11
-        const val NOTIFICATION_TOGGLE = 12
-        const val GLOBAL_HOME = 13
-        const val GLOBAL_BACK = 14
-        const val GLOBAL_RECENTS = 15
-        const val GLOBAL_SPLIT_SCREEN = 16
-        const val GLOBAL_POWER_DIALOG = 17
-        const val SHOW_POPUP = 18
-        const val INCREASE_AUDIO = 19
-        const val REDUCE_AUDIO = 20
-        const val GLOBAL_LOCK_SCREEN = 21
-        const val GLOBAL_TAKE_SCREENSHOT = 22
-
-        fun normalizePercentageToFraction(percentage: Int): Float {
-            return percentage / 100f
-        }
+        fun normalizePercentageToFraction(percentage: Int): Float = percentage / 100f
     }
-
 }

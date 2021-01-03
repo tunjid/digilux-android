@@ -66,6 +66,7 @@
 
     <!-- Position ViewHolder-->
     <string name="adjust_slider_position">Adjust Slider Position</string>
+    <string name="adjust_pop_up_position">Adjust pop up Position</string>
     <string name="position_percent">%1$d%% to the bottom of the screen</string>
 
     <!-- Duration ViewHolder-->
@@ -77,13 +78,13 @@
     <string name="discrete_brightness_description">Allows you to set discrete values for brightness changes instead of choosing a fixed interval per swipe</string>
     <string name="discrete_brightness_error">Please enter a value between 1 and 99</string>
     <string name="discrete_brightness_hint">Enter a brightness percentage</string>
-    <string name="discrete_brightness_text">%1$s%%</string>
+    <string name="discrete_brightness_text">%1$d%%</string>
 
     <!-- Audio Stream ViewHolder-->
     <string name="audio_stream_media">Media (%1$d levels)</string>
     <string name="audio_stream_ringtone">Ring (%1$d levels)</string>
     <string name="audio_stream_alarm">Alarm (%1$d levels)</string>
-    <string name="audio_stream_all">All (%1$d levels)</string>
+    <string name="audio_stream_all">All (variable levels)</string>
     <string name="audio_stream_text">%1$d step(s) of %2$d</string>
     <string name="audio_stream_text_system">Set by Android System</string>
     <string name="audio_stream_default">Most relevant (Android Default)</string>
@@ -194,13 +195,23 @@
     <string name="popup_title">Shortcut Pop Up Actions</string>
     <string name="popup_add">Add to accessibility button pop up.</string>
     <string name="popup_remove">Remove from accessibility button pop up?</string>
-    <string name="popup_prompt">Please enable the accessibility button.</string>
-    <string name="popup_enable">Enable accessibility shortcut button in navbar</string>
+    <string name="popup_prompt">Please make sure you have one of the following done:
+        \n\nMapped a gesture to show the pop up
+        \n\nEnabled the accessibility button if your device has 2 or 3 button navigation
+        \n\nAllowed the pop up to show in a bubble (Android 11 only)</string>
+    <string name="popup_enable">Enable accessibility shortcut button in navbar.
+        \n\nOnly valid for devices with 2 or 3 button navigation.</string>
     <string name="popup_single_click">Use accessibility shortcut button in navbar as single click button.
-        \n\nThis doesn\'t show the pop up and performs the first action in the pop up list if it exists.</string>
+        \n\nThis doesn\'t show the pop up and performs the first action in the pop up list if it exists.
+        \n\nOnly valid for devices with 2 or 3 button navigation.</string>
     <string name="popup_no_actions">No pop up actions have been added yet.</string>
     <string name="popup_description">Adds actions to the accessibility button pop up.</string>
-    <string name="popup_animate_in">Animate shortcut pop up window\'s entrance and exit</string>
+    <string name="popup_animate_in">Animate shortcut pop up window\'s entrance and exit when not in a pop up</string>
+    <string name="popup_is_in_bubble">Pop up window shows in a persistent bubble (Requires Android 11)</string>
+    <string name="popup_bubble_channel_name">Pop up bubbles</string>
+    <string name="popup_bubble_channel_description">Allows pop ups to show in a bubble notification</string>
+    <string name="popup_bubble_notification_title">Digilux Popup Actions</string>
+    <string name="popup_bubble_notification_message">Allow Digilux to show your favorite actions in a pop up</string>
 
     <!-- Available gestures-->
     <string name="mapper_format">%1$s: %2$s</string>
@@ -250,6 +261,8 @@
 
     <!-- Billing Api Feedback-->
     <string name="billing_thanks">Thank you so much!</string>
+    <string name="billing_item_unavailable">Sorry, the requested item is currently unavailable.
+        \n\nPlease try again later.</string>
     <string name="billing_not_connected">Sorry, unable to connect to Google Play</string>
     <string name="billing_you_own_this">You\'ve already gotten this. Thank you!</string>
 
@@ -270,7 +283,7 @@
     <string name="appearance">Display</string>
 
     <!-- Trial-->
-    <string name="trial_text">Start trial for %1$s? Swipe to dismiss.</string>
+    <string name="trial_text">Start trial for %1$s?</string>
     <string name="trial_running">Trial is already running.</string>
 
     <!-- Upsell text-->
@@ -280,7 +293,8 @@
     <string name="joke_ad">I\'m just an ad that never grew up.</string>
     <string name="joke_bunny">(•ㅅ•) づ [Go Premium!]</string>
     <string name="joke_game">The game.</string>
-    <string name="joke_wenger">Wenger out.</string>
+    <string name="joke_wenger"><strike>Wenger</strike> <strike>Emery</strike> <strike>Arteta</strike> out? 😭</string>
+    <string name="joke_compose">Jetpack Compose gives me an existential crisis.</string>
 
     <!-- Generic text-->
     <string name="ok">Okay</string>

@@ -17,86 +17,77 @@
 
 package com.tunjid.fingergestures.viewholders
 
-import android.view.View
-import android.widget.TextView
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.observe
-import androidx.recyclerview.widget.RecyclerView
+import android.view.ViewGroup
+import androidx.recyclerview.widget.ListAdapter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tunjid.androidx.recyclerview.gridLayoutManager
 import com.tunjid.androidx.recyclerview.listAdapterOf
+import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
+import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.androidx.view.util.inflate
-import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.PopUpGestureConsumer
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.activities.MainActivity
-import com.tunjid.fingergestures.adapters.AppAdapterListener
-import com.tunjid.fingergestures.fragments.ActionFragment
-import com.tunjid.fingergestures.lifecycleOwner
-import com.tunjid.fingergestures.models.Action
+import com.tunjid.fingergestures.ui.main.Item
+import com.tunjid.fingergestures.canWriteToSettings
+import com.tunjid.fingergestures.databinding.ViewholderHorizontalListBinding
+import com.tunjid.fingergestures.ui.picker.PickerFragment
+import com.tunjid.fingergestures.models.PopUp
+import com.tunjid.fingergestures.ui.main.Input
 
-class PopupViewHolder(
-        itemView: View,
-        items: LiveData<List<Action>>,
-        listener: AppAdapterListener
-) : AppViewHolder(itemView, listener) {
+private var BindingViewHolder<ViewholderHorizontalListBinding>.item by viewHolderDelegate<Item.PopUp>()
+private var BindingViewHolder<ViewholderHorizontalListBinding>.listAdapter: ListAdapter<PopUp, ActionViewHolder> by viewHolderDelegate()
 
-    init {
-
-        itemView.findViewById<View>(R.id.add).setOnClickListener {
-            when {
-                !App.canWriteToSettings() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
-                !PopUpGestureConsumer.instance.hasAccessibilityButton() -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
-                else -> listener.showBottomSheetFragment(ActionFragment.popUpInstance())
-            }
-        }
-
-        itemView.findViewById<RecyclerView>(R.id.item_list).run {
-            layoutManager = gridLayoutManager(3)
-            adapter = listAdapterOf(
-                    initialItems = items.value ?: listOf(),
-                    viewHolderCreator = { viewGroup, _ ->
-                        ActionViewHolder(
-                                showsText = true,
-                                itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
-                                clickListener = ::onActionClicked
-                        )
-                    },
-                    viewHolderBinder = { holder, item, _ -> holder.bind(item) }
-            ).also { items.observe(lifecycleOwner, it::submitList) }
-        }
-
-        val title = itemView.findViewById<TextView>(R.id.title)
-
-        title.setText(R.string.popup_title)
-        title.setOnClickListener {
-            MaterialAlertDialogBuilder(itemView.context)
-                    .setMessage(R.string.popup_description)
-                    .show()
-        }
+fun ViewGroup.popUp() = viewHolderFrom(ViewholderHorizontalListBinding::inflate).apply {
+    listAdapter = listAdapterOf(
+        initialItems = listOf(),
+        viewHolderCreator = { viewGroup, _ ->
+            ActionViewHolder(
+                showsText = true,
+                itemView = viewGroup.inflate(R.layout.viewholder_action_horizontal),
+                clickListener = ::onActionClicked
+            )
+        },
+        viewHolderBinder = { holder, item, _ -> holder.bind(item) }
+    )
+    binding.title.setText(R.string.popup_title)
+    binding.title.setOnClickListener {
+        MaterialAlertDialogBuilder(itemView.context)
+            .setMessage(R.string.popup_description)
+            .show()
     }
-
-    override fun bind() {
-        super.bind()
-        if (!App.canWriteToSettings()) listener.requestPermission(MainActivity.SETTINGS_CODE)
-    }
-
-    private fun onActionClicked(action: Action) {
-        val buttonManager = PopUpGestureConsumer.instance
-
-        val builder = MaterialAlertDialogBuilder(itemView.context)
-
+    binding.add.setOnClickListener {
         when {
-            !App.canWriteToSettings() -> builder.setMessage(R.string.permission_required)
-            !buttonManager.hasAccessibilityButton() -> builder.setMessage(R.string.popup_prompt)
-            else -> builder.setTitle(R.string.popup_remove)
-                    .setPositiveButton(R.string.yes) { _, _ ->
-                        buttonManager.removeFromSet(action.value)
-                        bind()
-                    }
-                    .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
+            !itemView.context.canWriteToSettings -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.permission_required).show()
+            !item.enabled -> MaterialAlertDialogBuilder(itemView.context).setMessage(R.string.popup_prompt).show()
+            else -> item.input.accept(Input.UiInteraction.ShowSheet(PickerFragment.popUpInstance()))
         }
-
-        builder.show()
     }
+    binding.itemList.apply {
+        layoutManager = gridLayoutManager(3)
+        adapter = listAdapter
+    }
+}
+
+fun BindingViewHolder<ViewholderHorizontalListBinding>.bind(item: Item.PopUp) = binding.run {
+    this@bind.item = item
+
+    if (!itemView.context.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
+    listAdapter.submitList(item.items)
+}
+
+private fun BindingViewHolder<ViewholderHorizontalListBinding>.onActionClicked(popUp: PopUp) {
+    val builder = MaterialAlertDialogBuilder(itemView.context)
+
+    when {
+        !itemView.context.canWriteToSettings -> builder.setMessage(R.string.permission_required)
+        !item.enabled -> builder.setMessage(R.string.popup_prompt)
+        else -> builder.setTitle(R.string.popup_remove)
+            .setPositiveButton(R.string.yes) { _, _ ->
+                item.editor - popUp.value
+                if (!itemView.context.canWriteToSettings) item.input.accept(Input.Permission.Request.Settings)
+            }
+            .setNegativeButton(R.string.no) { dialog, _ -> dialog.dismiss() }
+    }
+
+    builder.show()
 }
