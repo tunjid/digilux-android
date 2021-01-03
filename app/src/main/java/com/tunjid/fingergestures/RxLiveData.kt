@@ -47,7 +47,7 @@ fun <T> LiveData<T>.filter(predicate: (T) -> Boolean): LiveData<T> {
 }
 
 fun <T> LiveData<T>.filterUnhandledEvents(): LiveData<T> =
-    mapDistinct(::LiveDataEvent)
+    map(::LiveDataEvent)
         .map(LiveDataEvent<T>::unhandledContent)
         .nonNull()
 
