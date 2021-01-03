@@ -68,10 +68,10 @@ class BrightnessDialogActivity : AppCompatActivity() {
 
         controls.slider.labelBehavior = LabelFormatter.LABEL_GONE
         controls.slider.addOnChangeListener { _, value, fromUser ->
-            if (fromUser) viewModel.accept(In.Change(value.toInt()))
+            if (fromUser) viewModel.accept(Input.Change(value.toInt()))
         }
         controls.slider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
-            override fun onStartTrackingTouch(slider: Slider) = viewModel.accept(In.RemoveDimmer)
+            override fun onStartTrackingTouch(slider: Slider) = viewModel.accept(Input.RemoveDimmer)
 
             override fun onStopTrackingTouch(slider: Slider) = Unit
         })
@@ -140,6 +140,6 @@ class BrightnessDialogActivity : AppCompatActivity() {
 
     private fun handleIntent(intent: Intent) {
         val brightnessByte = intent.getIntExtra(CURRENT_BRIGHTNESS_BYTE, 0)
-        viewModel.accept(In.Start(brightnessByte))
+        viewModel.accept(Input.Start(brightnessByte))
     }
 }

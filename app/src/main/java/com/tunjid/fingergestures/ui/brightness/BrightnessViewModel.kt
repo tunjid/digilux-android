@@ -39,10 +39,10 @@ data class State(
     val backgroundColor: Int
 )
 
-sealed class In {
-    data class Change(val percentage: Int) : In()
-    data class Start(val brightnessByte: Int) : In()
-    object RemoveDimmer : In()
+sealed class Input {
+    data class Change(val percentage: Int) : Input()
+    data class Start(val brightnessByte: Int) : Input()
+    object RemoveDimmer : Input()
 }
 
 class BrightnessViewModel @Inject constructor(
@@ -52,7 +52,7 @@ class BrightnessViewModel @Inject constructor(
 
     private var brightnessByte: Int = 0
 
-    private val processor = PublishProcessor.create<In>()
+    private val processor = PublishProcessor.create<Input>()
 
     val state = Flowables.combineLatest(
         processor.switchMap {
@@ -67,27 +67,27 @@ class BrightnessViewModel @Inject constructor(
             .map { it / 100f },
         brightnessGestureConsumer.screenDimmerPercentPreference.monitor
             .map { it * 100f },
-        processor.filterIsInstance<In.Start>()
-            .map(In.Start::brightnessByte)
+        processor.filterIsInstance<Input.Start>()
+            .map(Input.Start::brightnessByte)
             .map(brightnessGestureConsumer::byteToPercentage),
         backgroundManager.sliderColorPreference.monitor,
         backgroundManager.backgroundColorPreference.monitor,
         ::State
     ).toLiveData()
 
-    fun accept(input: In) {
+    fun accept(input: Input) {
         processor.onNext(input)
 
         when (input) {
-            is In.Start -> Unit
-            is In.Change -> {
+            is Input.Start -> Unit
+            is Input.Change -> {
                 var value = input.percentage
                 if (value == 100) value--
 
                 brightnessByte = brightnessGestureConsumer.percentToByte(value)
                 brightnessGestureConsumer.saveBrightness(brightnessByte)
             }
-            In.RemoveDimmer -> brightnessGestureConsumer.removeDimmer()
+            Input.RemoveDimmer -> brightnessGestureConsumer.removeDimmer()
         }
     }
 }
