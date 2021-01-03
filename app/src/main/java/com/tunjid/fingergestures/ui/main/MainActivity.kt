@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity(),
         val (r, g, b) = Color.valueOf(primary)
 
         BottomSheetNavigator(host = this, binding = binding) { a ->
-            bottomNavBackground.colors = intArrayOf(primary, Color.argb((0.5f * a + 0.5f), r, g, b))
+            bottomNavBackground.colors = intArrayOf(primary, Color.argb((0.2f * a + 0.8f), r, g, b))
             ::uiState.updatePartial { copy(statusBarColor = Color.argb(a, r, g, b)) }
         }
     }
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity(),
 
         GradientDrawable(
             GradientDrawable.Orientation.BOTTOM_TOP,
-            intArrayOf(primary, Color.argb(0.5f, r, g, b))
+            intArrayOf(primary, Color.argb(0.8f, r, g, b))
         )
     }
 

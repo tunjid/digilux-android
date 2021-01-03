@@ -23,6 +23,7 @@
     <color name="colorAccent">#bdbdbd</color>
     <color name="colorBackground">#131313</color>
     <color name="toggle_text">#bdbdbd</color>
+    <color name="toggle_text_dim">#66bdbdbd</color>
     <color name="transparent">#00000000</color>
 
     <!-- card colors -->
