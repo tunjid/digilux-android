@@ -157,7 +157,7 @@ class GlobalUiDriver(
         if (isShilling) binding.upgradePrompt.isVisible = true
 
         val navBarHeight = state.navBarSize
-        val snackbarHeight = state.snackbarHeight
+        val snackbarHeight = state.snackbarHeight + uiSizes.snackbarPadding.countIf(state.snackbarHeight != 0)
         val bottomNavHeight = uiSizes.bottomNavSize countIf state.bottomNavVisible
         val insetClearance = max(bottomNavHeight, state.keyboardSize)
         val shillClearance = uiSizes.shillTextSize countIf isShilling
@@ -184,9 +184,7 @@ class GlobalUiDriver(
         snackbar.view.doOnLayout {
             val bottomNavClearance = uiSizes.bottomNavSize countIf state.bottomNavVisible
             val navBarClearance = state.navBarSize countIf state.insetDescriptor.hasBottomInset
-            var insetClearance = uiSizes.snackbarPadding
-
-            insetClearance +=
+            val insetClearance =
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) max(bottomNavClearance, state.keyboardSize)
                 else max(bottomNavClearance + navBarClearance, state.keyboardSize)
 
