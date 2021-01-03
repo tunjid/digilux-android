@@ -139,12 +139,14 @@ class PopUpGestureConsumer @Inject constructor(
 
     @TargetApi(Build.VERSION_CODES.Q)
     private fun bubbleNotification() {
-        val bitmap = context.drawableAt(R.drawable.ic_logo)?.toBitmap() ?: return
-        val icon = IconCompat.createWithAdaptiveBitmap(bitmap)
+        val largeBitmap = context.drawableAt(R.drawable.ic_bubble_icon)?.toBitmap() ?: return
+        val smallBitmap = context.drawableAt(R.drawable.ic_small_notification)?.toBitmap() ?: return
+        val largeIcon = IconCompat.createWithAdaptiveBitmap(largeBitmap)
+        val smallIcon = IconCompat.createWithAdaptiveBitmap(smallBitmap)
         val intent = PopupDialogActivity.intent(context, true)
         val person = Person.Builder()
             .setName(context.getString(R.string.popup_bubble_notification_title))
-            .setIcon(icon)
+            .setIcon(largeIcon)
             .setImportant(true)
             .build()
 
@@ -152,15 +154,15 @@ class PopUpGestureConsumer @Inject constructor(
             .setLongLived(true)
             .setIntent(intent)
             .setShortLabel(context.getString(R.string.popup_bubble_notification_title))
-            .setIcon(icon)
+            .setIcon(largeIcon)
             .setPerson(person)
             .build())
 
         NotificationManagerCompat.from(context).notify(popUpBubbleRequestCode, NotificationCompat.Builder(context, popUpBubbleChannel)
             .setShortcutId(popUpBubbleShortcutId)
             .setContentTitle(context.getString(R.string.popup_bubble_notification_title))
-            .setLargeIcon(bitmap)
-            .setSmallIcon(icon)
+            .setLargeIcon(largeBitmap)
+            .setSmallIcon(smallIcon)
             .setCategory(Notification.CATEGORY_MESSAGE)
             .setStyle(NotificationCompat.MessagingStyle(person)
                 .setGroupConversation(false)
@@ -175,7 +177,7 @@ class PopUpGestureConsumer @Inject constructor(
             .setContentIntent(intent.toPendingIntent())
             .setBubbleMetadata(NotificationCompat.BubbleMetadata
                 .Builder()
-                .setIcon(icon)
+                .setIcon(largeIcon)
                 .setAutoExpandBubble(true)
                 .setSuppressNotification(true)
                 .setIntent(intent.toPendingIntent())

@@ -36,10 +36,10 @@ import com.tunjid.androidx.recyclerview.viewbinding.BindingViewHolder
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderDelegate
 import com.tunjid.androidx.recyclerview.viewbinding.viewHolderFrom
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ui.main.Item
 import com.tunjid.fingergestures.databinding.ViewholderSliderColorBinding
 import com.tunjid.fingergestures.hasStoragePermission
 import com.tunjid.fingergestures.ui.main.Input
+import com.tunjid.fingergestures.ui.main.Item
 
 private var BindingViewHolder<ViewholderSliderColorBinding>.item by viewHolderDelegate<Item.ColorAdjuster>()
 private var BindingViewHolder<ViewholderSliderColorBinding>.targetOptions by viewHolderDelegate<List<String>>()
@@ -126,7 +126,7 @@ private fun BindingViewHolder<ViewholderSliderColorBinding>.getColorFromWallpape
 }
 
 private fun Context.pickColor(initialColor: Int, consumer: (Int) -> Unit) {
-    ColorPickerDialogBuilder.with(this)
+    ColorPickerDialogBuilder.with(this, R.style.DigiluxAlertDialogTheme)
         .setPositiveButton(R.string.ok) { _: DialogInterface, selectedColor: Int, _: Array<Int> -> consumer.invoke(selectedColor) }
         .setNegativeButton(R.string.cancel) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
         .density(COLOR_WHEEL_DENSITY)

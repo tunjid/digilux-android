@@ -138,14 +138,7 @@ dependencies {
         exclude module: 'design'
     }
 
-    implementation(group: "com.github.QuadFlask", name: "colorpicker", version: "0.0.13") {
-        exclude module: 'appcompat-v7'
-        exclude module: 'support-annotations'
-        exclude module: 'support-v4'
-        exclude module: 'support-v13'
-        exclude module: 'recyclerview-v7'
-        exclude module: 'design'
-    }
+    implementation(group: "com.github.QuadFlask", name: "colorpicker", version: "0.0.15")
 
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.5'
 
