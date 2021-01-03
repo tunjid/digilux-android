@@ -22,7 +22,6 @@ import android.accessibilityservice.AccessibilityButtonController.AccessibilityB
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_ACCESSIBILITY_BUTTON
 import android.accessibilityservice.GestureDescription
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -30,24 +29,21 @@ import android.content.Intent.ACTION_SCREEN_ON
 import android.content.IntentFilter
 import android.content.res.Resources
 import android.graphics.Path
-import android.graphics.PixelFormat
 import android.os.Handler
 import android.os.HandlerThread
 import android.text.TextUtils
-import android.view.LayoutInflater
-import android.view.View
-import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK
 import android.view.accessibility.AccessibilityWindowInfo
 import com.tunjid.fingergestures.App
-import com.tunjid.fingergestures.R
 import com.tunjid.fingergestures.di.dagger
+import com.tunjid.fingergestures.filterIsInstance
 import com.tunjid.fingergestures.models.Broadcast
 import com.tunjid.fingergestures.models.ignore
-import com.tunjid.fingergestures.filterIsInstance
+import com.tunjid.fingergestures.ui.dimmer.onOverlayChanged
+import com.tunjid.fingergestures.ui.dimmer.overlayState
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -58,8 +54,6 @@ class FingerGestureService : AccessibilityService() {
     private val dependencies get() = dagger.appComponent.dependencies()
     private val gestureConsumers get() = dependencies.gestureConsumers
     private val gestureMapper get() = dependencies.gestureMapper
-
-    private var overlayView: View? = null
 
     private val gestureThread by lazy { HandlerThread("GestureThread").also(HandlerThread::start) }
 
@@ -152,47 +146,6 @@ class FingerGestureService : AccessibilityService() {
         }, null)
     }
 
-    private fun adjustDimmer(broadcast: Broadcast.Service.ScreenDimmerChanged) {
-        val windowManager = getSystemService(WindowManager::class.java) ?: return
-
-        val brightnessGestureConsumer = gestureConsumers.brightness
-        val dimAmount = broadcast.percent
-
-        if (brightnessGestureConsumer.shouldShowDimmer()) {
-            val params: WindowManager.LayoutParams =
-                if (overlayView == null) getLayoutParams(windowManager)
-                else overlayView?.layoutParams as? WindowManager.LayoutParams ?: return
-
-            params.alpha = 0.1f
-            params.dimAmount = dimAmount
-            windowManager.updateViewLayout(overlayView, params)
-        } else if (overlayView != null) {
-            windowManager.removeView(overlayView)
-            overlayView = null
-        }
-    }
-
-    @SuppressLint("InflateParams")
-    private fun getLayoutParams(windowManager: WindowManager): WindowManager.LayoutParams {
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                or WindowManager.LayoutParams.FLAG_DIM_BEHIND,
-            PixelFormat.TRANSLUCENT)
-
-        val inflater = getSystemService(LayoutInflater::class.java) ?: return params
-
-        overlayView = inflater.inflate(R.layout.window_overlay, null)
-        windowManager.addView(overlayView, params)
-
-        return params
-    }
-
     private fun setWatchesWindows(enabled: Boolean) {
         val info = serviceInfo
         info.eventTypes = if (enabled) TYPE_WINDOW_STATE_CHANGED else 0
@@ -221,6 +174,8 @@ class FingerGestureService : AccessibilityService() {
                 subscribeToBroadcasts() // Resubscribe on error
             }
             .addTo(broadcastDisposables)
+
+        overlayState().subscribe(::onOverlayChanged).addTo(broadcastDisposables)
     }
 
     private fun onBroadcastReceived(broadcast: Broadcast.Service) = when (broadcast) {
@@ -241,7 +196,6 @@ class FingerGestureService : AccessibilityService() {
             else -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS).ignore
         }
         is Broadcast.Service.AccessibilityButtonChanged -> setShowsAccessibilityButton(broadcast.enabled)
-        is Broadcast.Service.ScreenDimmerChanged -> adjustDimmer(broadcast)
         is Broadcast.Service.GlobalAction -> {
             val globalAction = broadcast.action
             if (globalAction != -1) performGlobalAction(globalAction).ignore

@@ -24,12 +24,14 @@ sealed class Broadcast {
         object ExpandVolumeControls : Service()
         object ToggleDock : Service()
         data class AccessibilityButtonChanged(val enabled: Boolean) : Service()
-        data class ScreenDimmerChanged(val percent: Float) : Service()
         data class GlobalAction(val action: Int) : Service()
         data class WatchesWindows(val enabled: Boolean) : Service()
         object ShadeDown : Service()
         object ShadeUp : Service()
         object ShadeToggle : Service()
+    }
+    sealed class Overlay: Broadcast() {
+        data class ScreenDimmerChanged(val percent: Float) : Broadcast()
     }
     data class Prompt(val message: String): Broadcast()
     data class Gesture(val gesture: GestureAction): Broadcast()

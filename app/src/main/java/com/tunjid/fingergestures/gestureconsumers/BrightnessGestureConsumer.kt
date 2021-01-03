@@ -140,10 +140,15 @@ class BrightnessGestureConsumer @Inject constructor(
         objectMapper = Int::toString
     )
 
+    val percentageFormatter = { percent: Int -> context.getString(R.string.position_percent, percent) }
+
     private val isDimmerEnabled: Boolean
         get() = hasOverlayPermission
             && purchasesManager.currentState.isPremium
             && currentState.dimmerState.checked
+
+    private val shouldShowDimmer: Boolean
+        get() = currentState.dimmerState.percentage != MIN_DIM_PERCENT
 
     private val hasOverlayPermission: Boolean
         get() = Settings.canDrawOverlays(context)
@@ -218,7 +223,7 @@ class BrightnessGestureConsumer @Inject constructor(
             val percent = screenDimmerPercentPreference.value
             intent.action = ACTION_SCREEN_DIMMER_CHANGED
             intent.screenDimmerPercent = percent
-            broadcaster(Broadcast.Service.ScreenDimmerChanged(percent))
+            broadcaster(Broadcast.Overlay.ScreenDimmerChanged(percent))
         } else if (shouldRemoveDimmerOnChange(gestureAction)) removeDimmer()
 
         saveBrightness(byteValue)
@@ -236,8 +241,6 @@ class BrightnessGestureConsumer @Inject constructor(
         GestureAction.MinimizeBrightness -> true
         else -> false
     }
-
-    val percentageFormatter = { percent: Int -> context.getString(R.string.position_percent, percent) }
 
     fun saveBrightness(byteValue: Int) {
         if (!context.canWriteToSettings) return
@@ -257,10 +260,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
         if (!restoresAdaptiveBrightness) return
 
-        if (threshold == 0 || toggleAndLeave) {
-            toggleAdaptiveBrightness(true)
-            return
-        }
+        if (threshold == 0 || toggleAndLeave) return toggleAdaptiveBrightness(true)
 
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
             ?: return
@@ -327,8 +327,6 @@ class BrightnessGestureConsumer @Inject constructor(
         return percentToByte(asPercentage)
     }
 
-    fun shouldShowDimmer(): Boolean = currentState.dimmerState.percentage != MIN_DIM_PERCENT
-
     fun getAdjustDeltaText(percentage: Int): String = context.let { app ->
         if (purchasesManager.currentState.isPremium && !noDiscreteBrightness())
             app.getString(R.string.delta_percent_premium, percentage)
@@ -358,7 +356,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
     fun removeDimmer() {
         screenDimmerPercentPreference.value = MIN_DIM_PERCENT
-        broadcaster(Broadcast.Service.ScreenDimmerChanged(MIN_DIM_PERCENT))
+        broadcaster(Broadcast.Overlay.ScreenDimmerChanged(MIN_DIM_PERCENT))
     }
 
     fun percentToByte(percentage: Int): Int =
@@ -406,7 +404,7 @@ class BrightnessGestureConsumer @Inject constructor(
 
     private fun shouldRemoveDimmerOnChange(gestureAction: GestureAction): Boolean =
         (gestureAction == GestureAction.MinimizeBrightness || gestureAction == GestureAction.MaximizeBrightness
-            || shouldShowDimmer() && !purchasesManager.currentState.isPremium)
+            || shouldShowDimmer && !purchasesManager.currentState.isPremium)
 
     private fun noDiscreteBrightness(): Boolean =
         discreteBrightnessManager.getSet(Preference.DiscreteBrightnesses).isEmpty()
