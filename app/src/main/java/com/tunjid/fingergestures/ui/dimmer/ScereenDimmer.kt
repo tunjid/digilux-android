@@ -69,8 +69,6 @@ fun FingerGestureService.onOverlayChanged(state: State) {
 }
 
 private fun Context.createBinding(): WindowOverlayBinding? {
-    println("Adding overlay")
-
     val binding = getSystemService<LayoutInflater>()
         ?.cloneInContext(ContextThemeWrapper(this, R.style.AppTheme))
         ?.let(WindowOverlayBinding::inflate)
@@ -88,12 +86,10 @@ private fun Context.createBinding(): WindowOverlayBinding? {
         PixelFormat.TRANSLUCENT))
         ?: return null
 
-    println("Added overlay")
     return binding
 }
 
 private fun Context.removeBinding(old: WindowOverlayBinding?): WindowOverlayBinding? {
-    println("Removed overlay")
     old?.let { windowManager?.removeView(it.root) }
     return null
 }
