@@ -264,8 +264,8 @@ class MainActivity : AppCompatActivity(),
 }
 
 private fun TrialViewBinding.bind(state: PurchasesManager.State) {
-    icon.isVisible = !state.isOnTrial
-    text.isVisible = state.isOnTrial
+    icon.isVisible = !state.isPremium && !state.isOnTrial
+    text.isVisible = !state.isPremium && state.isOnTrial
 
     if (state.trialStatus is TrialStatus.Trial) text.text = state.trialStatus.countDown.toString()
 }
