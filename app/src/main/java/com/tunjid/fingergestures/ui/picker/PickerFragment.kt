@@ -20,27 +20,29 @@ package com.tunjid.fingergestures.ui.picker
 
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.widget.Toolbar
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.RecyclerView
 import com.tunjid.androidx.core.delegates.fragmentArgs
 import com.tunjid.androidx.recyclerview.listAdapterOf
 import com.tunjid.androidx.recyclerview.verticalLayoutManager
 import com.tunjid.androidx.view.util.inflate
 import com.tunjid.fingergestures.*
-import com.tunjid.fingergestures.ui.divider
-import com.tunjid.fingergestures.ui.recursiveBottomSheetNavigator
+import com.tunjid.fingergestures.databinding.FragmentBottomSheetBinding
 import com.tunjid.fingergestures.di.activityViewModelFactory
 import com.tunjid.fingergestures.di.viewModelFactory
 import com.tunjid.fingergestures.gestureconsumers.GestureDirection
 import com.tunjid.fingergestures.models.PopUp
 import com.tunjid.fingergestures.models.Unique
-import com.tunjid.fingergestures.viewholders.ActionViewHolder
+import com.tunjid.fingergestures.models.liveUiState
+import com.tunjid.fingergestures.ui.bottomUiClearance
+import com.tunjid.fingergestures.ui.divider
 import com.tunjid.fingergestures.ui.main.MainViewModel
+import com.tunjid.fingergestures.ui.recursiveBottomSheetNavigator
+import com.tunjid.fingergestures.viewholders.ActionViewHolder
 
 private typealias GoPremium = com.tunjid.fingergestures.ui.main.Input.UiInteraction.GoPremium
 
-class PickerFragment : Fragment(R.layout.fragment_actions) {
+class PickerFragment : Fragment(R.layout.fragment_bottom_sheet) {
 
     private var direction by fragmentArgs<GestureDirection?>()
     private val viewModel by viewModelFactory<PickerViewModel>()
@@ -50,8 +52,10 @@ class PickerFragment : Fragment(R.layout.fragment_actions) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<Toolbar>(R.id.title_bar).setTitle(R.string.pick_action)
-        view.findViewById<RecyclerView>(R.id.options_list).apply {
+        val binding = FragmentBottomSheetBinding.bind(view)
+
+        binding.titleBar.setTitle(R.string.pick_action)
+        binding.optionsList.apply {
             val listAdapter = listAdapterOf(
                 initialItems = viewModel.state.value?.availablePopUps ?: listOf(),
                 viewHolderCreator = { viewGroup, _ ->
@@ -68,6 +72,9 @@ class PickerFragment : Fragment(R.layout.fragment_actions) {
 
             addItemDecoration(view.context.divider())
 
+            liveUiState.mapDistinct(binding.root.context::bottomUiClearance).observe(viewLifecycleOwner) {
+                binding.optionsList.updatePadding(bottom = it)
+            }
             viewModel.state.apply {
                 mapDistinct(State::availablePopUps)
                     .observe(viewLifecycleOwner, listAdapter::submitList)

@@ -17,7 +17,6 @@
 
 package com.tunjid.fingergestures.ui
 
-import android.R
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -29,6 +28,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
+import com.tunjid.fingergestures.R
+import com.tunjid.fingergestures.models.UiState
 
 internal fun AppCompatActivity.dialogLifecycleOwner(): LifecycleOwner {
     val (owner, registry) = with(object : LifecycleOwner {
@@ -61,7 +62,7 @@ fun Context.divider(): RecyclerView.ItemDecoration {
     val context = this
 
     val itemDecoration = DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
-    val decoration = ContextCompat.getDrawable(context, R.drawable.divider_horizontal_dark)
+    val decoration = ContextCompat.getDrawable(context, android.R.drawable.divider_horizontal_dark)
 
     if (decoration != null) itemDecoration.setDrawable(decoration)
 
@@ -74,3 +75,6 @@ fun ConstraintLayout.updateVerticalBiasFor(viewId: Int) = { verticalBias: Float 
     set.setVerticalBias(viewId, verticalBias)
     set.applyTo(this)
 }
+
+fun Context.bottomUiClearance(uiState: UiState) = uiState.systemUI.static.navBarSize +
+    resources.getDimensionPixelSize(R.dimen.quadruple_margin)

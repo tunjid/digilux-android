@@ -75,8 +75,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        app:itemIconTint="@color/toggle_text"
-        app:itemTextColor="@color/toggle_text"
+        app:itemIconTint="@color/bottom_nav_glyph_colors"
+        app:itemTextColor="@color/bottom_nav_glyph_colors"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/main_navigation" />
 
