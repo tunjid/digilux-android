@@ -36,7 +36,7 @@ val Inputs.audioItems: Flowable<List<Item>>
                     sortKey = ItemSorter.AUDIO_SLIDER_SHOW,
                     titleRes = R.string.audio_stream_slider_show,
                     isChecked = showSlider,
-                    consumer = sliderPreference.setter,
+                    onChanged = sliderPreference.setter,
                 ),
                 Item.Slider(
                     tab = Tab.Audio,

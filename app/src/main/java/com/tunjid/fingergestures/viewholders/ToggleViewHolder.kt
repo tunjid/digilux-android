@@ -27,7 +27,7 @@ import com.tunjid.fingergestures.databinding.ViewholderToggleBinding
 private var BindingViewHolder<ViewholderToggleBinding>.item by viewHolderDelegate<Item.Toggle>()
 
 fun ViewGroup.toggle() = viewHolderFrom(ViewholderToggleBinding::inflate).apply {
-    binding.toggle.setOnClickListener { item.consumer.invoke(binding.toggle.isChecked) }
+    binding.toggle.setOnClickListener { item.onChanged.invoke(binding.toggle.isChecked) }
 }
 
 fun BindingViewHolder<ViewholderToggleBinding>.bind(item: Item.Toggle) = binding.run {

@@ -18,7 +18,6 @@
 package com.tunjid.fingergestures.ui.main
 
 import com.tunjid.fingergestures.R
-import com.tunjid.fingergestures.ui.main.Item
 import io.reactivex.Flowable
 import io.reactivex.rxkotlin.Flowables
 
@@ -42,7 +41,7 @@ val Inputs.purchaseItems: Flowable<List<Item>>
                     sortKey = ItemSorter.LOCKED_CONTENT,
                     titleRes = R.string.set_locked_content,
                     isChecked = state.hasLockedContent,
-                    consumer = lockedContentPreference.setter
+                    onChanged = lockedContentPreference.setter
                 ),
                 Item.Slider(
                     tab = Tab.Brightness,

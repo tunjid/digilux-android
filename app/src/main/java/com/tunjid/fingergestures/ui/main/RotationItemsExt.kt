@@ -38,7 +38,7 @@ val Inputs.rotationItems: Flowable<List<Item>>
                     sortKey = ItemSorter.ENABLE_WATCH_WINDOWS,
                     titleRes = R.string.selective_app_rotation,
                     isChecked = canAutoRotate,
-                    consumer = autoRotatePreference.setter
+                    onChanged = autoRotatePreference.setter
                 ),
                 Item.Rotation(
                     tab = Tab.PopUp,

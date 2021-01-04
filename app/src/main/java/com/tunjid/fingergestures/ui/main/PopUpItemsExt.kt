@@ -44,28 +44,28 @@ val Inputs.popUpItems: Flowable<List<Item>>
                     sortKey = ItemSorter.ENABLE_ACCESSIBILITY_BUTTON,
                     titleRes = R.string.popup_enable,
                     isChecked = accessibilityButtonEnabled,
-                    consumer = accessibilityButtonEnabledPreference.setter
+                    onChanged = accessibilityButtonEnabledPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.PopUp,
                     sortKey = ItemSorter.ACCESSIBILITY_SINGLE_CLICK,
                     titleRes = R.string.popup_single_click,
                     isChecked = isSingleClick,
-                    consumer = accessibilityButtonSingleClickPreference.setter
+                    onChanged = accessibilityButtonSingleClickPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.PopUp,
                     sortKey = ItemSorter.ANIMATES_POPUP,
                     titleRes = R.string.popup_animate_in,
                     isChecked = animatePopup,
-                    consumer = animatePopUpPreference.setter
+                    onChanged = animatePopUpPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.PopUp,
                     sortKey = ItemSorter.BUBBLES_POPUP,
                     titleRes = R.string.popup_is_in_bubble,
                     isChecked = isInBubble,
-                    consumer = bubblePopUpPreference.setter
+                    onChanged = bubblePopUpPreference.setter
                 ).takeIf { hasBubbleApi },
                 Item.Slider(
                     tab = Tab.PopUp,

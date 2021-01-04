@@ -97,7 +97,7 @@ sealed class Item(
         override val tab: Tab,
         override val sortKey: Int,
         @StringRes val titleRes: Int,
-        val consumer: (Boolean) -> Unit,
+        val onChanged: (Boolean) -> Unit,
         val isChecked: Boolean,
     ) : Item(titleRes.toString())
 
