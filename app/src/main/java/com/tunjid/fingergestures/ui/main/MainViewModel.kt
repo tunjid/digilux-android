@@ -110,6 +110,7 @@ sealed class Input {
     }
 
     sealed class Billing : Input() {
+        data class SkuDetails(val details: List<com.android.billingclient.api.SkuDetails>) : Billing()
         data class Client(val client: BillingClient?) : Billing()
         data class Purchase(val sku: PurchasesManager.Sku) : Billing()
     }
@@ -206,26 +207,27 @@ class MainViewModel @Inject constructor(
             }
 
     private val Flowable<Input>.billingState
-        get() = Flowables.combineLatest(
-            filterIsInstance<Input.Billing>()
-                .scan(BillingState()) { state, item ->
-                    when (item) {
-                        is Input.Billing.Client -> state.copy(client = item.client)
-                        is Input.Billing.Purchase -> when (val client = state.client) {
-                            null -> state.copy(prompt = Unique(R.string.billing_not_connected))
-                            else -> when (val skuDetail = state.skuDetails.firstOrNull { it.sku == item.sku.id }) {
-                                null -> state.copy(prompt = Unique(R.string.billing_item_unavailable))
-                                else -> state.copy(cart = Unique(client to skuDetail))
-                            }
+        get() = filterIsInstance<Input.Billing>().flatMap {
+            Flowable.just(it).concatWith(
+                if (it is Input.Billing.Client) it.client?.skuDetails ?: Flowable.empty()
+                else Flowable.empty()
+            )
+        }
+            .scan(BillingState()) { state, item ->
+                when (item) {
+                    is Input.Billing.SkuDetails -> state.copy(skuDetails = item.details)
+                    is Input.Billing.Client -> state.copy(client = item.client)
+                    is Input.Billing.Purchase -> when (val client = state.client) {
+                        null -> state.copy(prompt = Unique(R.string.billing_not_connected))
+                        else -> when (val skuDetail = state.skuDetails.firstOrNull { it.sku == item.sku.id }) {
+                            null -> state.copy(prompt = Unique(R.string.billing_item_unavailable))
+                            else -> state.copy(cart = Unique(client to skuDetail))
                         }
                     }
-                },
-            filterIsInstance<Input.Billing.Client>().distinctUntilChanged().switchMap {
-                it.client?.skuDetails ?: Flowable.just(listOf())
-            }.startWith(listOf<SkuDetails>())
-        ) { state, skuDetails -> state.copy(skuDetails = skuDetails) }
+                }
+            }
 
-    private val BillingClient.skuDetails: Flowable<List<SkuDetails>>
+    private val BillingClient.skuDetails: Flowable<Input.Billing>
         get() = Flowable.defer {
             Flowables.create<List<SkuDetails>>(BackpressureStrategy.BUFFER) { emitter ->
                 querySkuDetailsAsync(SkuDetailsParams
@@ -237,7 +239,9 @@ class MainViewModel @Inject constructor(
                     emitter.onComplete()
                 }
             }
-        }.startWith(listOf<SkuDetails>())
+        }
+            .startWith(listOf<SkuDetails>())
+            .map(Input.Billing::SkuDetails)
 
     private val Flowable<Input>.permissionState
         get() = filterIsInstance<Input.Permission>()
