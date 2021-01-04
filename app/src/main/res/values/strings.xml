@@ -18,6 +18,9 @@
 <resources>
     <!-- App strings-->
     <string name="app_name" translatable="false">DigiLux</string>
+    <string name="app_name_gestures" translatable="false">DigiLux Fingerprint Gestures</string>
+    <string name="app_name_accessibility_button" translatable="false">DigiLux Accessibility Button</string>
+
     <string name="about_app">About App</string>
     <string name="start_trial">Start Trial</string>
 
@@ -48,14 +51,19 @@
     <string name="settings_permission_denied">Settings permission denied</string>
     <string name="storage_permission_denied">Storage permission denied</string>
 
-    <string name="accessibility_service_summary">Enable this to ease one handed phone brightness control by using fingerprint sensor gestures</string>
-    <string name="accessibility_service_description">This app uses accessibility to listen for fingerprint gestures to aid in one handed usage of your device. Accessibility is used for the following:\n
+    <string name="gesture_accessibility_service_summary">Enable this to ease one handed phone brightness control by using fingerprint sensor gestures</string>
+    <string name="gesture_accessibility_service_description">This app uses accessibility to listen for fingerprint gestures to aid in one handed usage of your device. Accessibility is used for the following:\n
         \n1. To listen for gestures on the fingerprint sensor.\n
         \n2. To enable the docking the current app for accessible one handed use via Android\'s multi-window feature.\n
         \n3. To determine if the notification shade is showing to keep the 1 – 2 gesture combo to show the notification shade first and quick settings second.\n
         \n4. To check what app is currently showing to decide whether the phone should auto rotate the screen in landscape mode.\n
         \n5. To show the accessibility button in the navbar for access to actions if you would prefer not to use a gesture for it.\n
         \n6. To show and / or expand volume controls when adjusting volume.\n
+        \n\nEnabling this does not affect the functionality of any apps depending on the fingerprint sensor; gestures will be temporarily unavailable while fingerprint authentication is requested by any app,
+        and will become available again after fingerprint authentication is complete.</string>
+
+    <string name="button_accessibility_service_summary">Shows the accessibility button in the navbar; use only if you use 2 or 3 button navigation, not gesture navigation.</string>
+    <string name="button_accessibility_service_description">This app uses this to show the accessibility button in the navbar to allow you more easily perform actions:\n
         \n\nEnabling this does not affect the functionality of any apps depending on the fingerprint sensor; gestures will be temporarily unavailable while fingerprint authentication is requested by any app,
         and will become available again after fingerprint authentication is complete.</string>
 

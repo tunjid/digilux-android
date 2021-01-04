@@ -18,9 +18,6 @@
 
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagDefault|flagRequestFingerprintGestures|flagRetrieveInteractiveWindows"
-    android:canPerformGestures="true"
-    android:canRequestFingerprintGestures="true"
-    android:canRetrieveWindowContent="true"
-    android:description="@string/gesture_accessibility_service_description"
-    android:summary="@string/gesture_accessibility_service_summary" />
+    android:accessibilityFlags="flagDefault|flagRequestAccessibilityButton"
+    android:description="@string/button_accessibility_service_description"
+    android:summary="@string/button_accessibility_service_summary" />
