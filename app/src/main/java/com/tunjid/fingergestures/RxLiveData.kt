@@ -40,8 +40,7 @@ fun <T, R> LiveData<T>.mapDistinct(mapper: (T) -> R): LiveData<R> =
 
 fun <T> LiveData<T>.filter(predicate: (T) -> Boolean): LiveData<T> {
     val mediator = MediatorLiveData<T>()
-    val current = this.value
-    if (current != null && predicate(current)) mediator.value = current
+    this.value?.takeIf(predicate)?.let(mediator::setValue)
     mediator.addSource(this) { it.takeIf(predicate)?.let(mediator::setValue) }
     return mediator
 }

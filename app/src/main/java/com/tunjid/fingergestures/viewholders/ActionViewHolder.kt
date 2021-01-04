@@ -96,7 +96,5 @@ class ActionViewHolder(
         GlobalTakeScreenshot -> R.drawable.ic_screenshot_24dp
 
         PopUpShow -> R.drawable.ic_more_horizontal_24dp
-
-        else -> R.drawable.ic_do_nothing_24dp
     }
 }

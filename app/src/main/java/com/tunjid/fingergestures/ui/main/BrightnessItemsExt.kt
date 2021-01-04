@@ -61,28 +61,28 @@ val Inputs.brightnessItems: Flowable<List<Item>>
                     sortKey = ItemSorter.ADAPTIVE_BRIGHTNESS,
                     titleRes = R.string.adaptive_brightness,
                     isChecked = it.restoresAdaptiveBrightnessOnDisplaySleep,
-                    consumer = adaptiveBrightnessPreference.setter,
+                    onChanged = adaptiveBrightnessPreference.setter,
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
                     sortKey = ItemSorter.USE_LOGARITHMIC_SCALE,
                     titleRes = R.string.use_logarithmic_scale,
                     isChecked = it.usesLogarithmicScale,
-                    consumer = logarithmicBrightnessPreference.setter
+                    onChanged = logarithmicBrightnessPreference.setter
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
                     sortKey = ItemSorter.SHOW_SLIDER,
                     titleRes = R.string.show_slider,
                     isChecked = it.shouldShowSlider,
-                    consumer = showSliderPreference.setter,
+                    onChanged = showSliderPreference.setter,
                 ),
                 Item.Toggle(
                     tab = Tab.Brightness,
                     sortKey = ItemSorter.ANIMATES_SLIDER,
                     titleRes = R.string.slider_animate,
                     isChecked = it.shouldAnimateSlider,
-                    consumer = animateSliderPreference.setter
+                    onChanged = animateSliderPreference.setter
                 ),
                 Item.DiscreteBrightness(
                     tab = Tab.Brightness,

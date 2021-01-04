@@ -46,7 +46,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <service
             android:name=".services.FingerGestureService"
-            android:label="@string/app_name"
+            android:label="@string/app_name_gestures"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -54,6 +54,17 @@
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/gesture_accessibility_service" />
+        </service>
+        <service
+            android:name=".services.AccessibilityButtonService"
+            android:label="@string/app_name_accessibility_button"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_button_service" />
         </service>
         <receiver
             android:name=".WallpaperBroadcastReceiver"
