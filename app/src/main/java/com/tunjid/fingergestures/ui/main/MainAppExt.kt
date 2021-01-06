@@ -85,6 +85,13 @@ fun MainApp.observe(state: LiveData<State>) = with(state) {
         .filterUnhandledEvents()
         .observe(this@observe, ::purchase)
 
+    mapDistinct(State::billingState)
+        .mapDistinct(BillingState::prompt)
+        .nonNull()
+        .map(Unique<Int>::item)
+        .filterUnhandledEvents()
+        .observe(this@observe, ::showSnackbar)
+
     mapDistinct(State::purchasesState)
         .filterUnhandledEvents()
         .observe(this@observe) {
@@ -158,6 +165,8 @@ private fun MainApp.showSnackbar(@StringRes resource: Int) = ::uiState.updatePar
 }
 
 private fun MainApp.purchase(cart: Pair<BillingClient, SkuDetails>) {
+    println("Cart: $cart")
+
     val (client, skuDetails) = cart
     val result = client.launchBillingFlow(activity, BillingFlowParams.newBuilder()
         .setSkuDetails(skuDetails)
